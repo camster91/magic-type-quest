@@ -684,7 +684,9 @@ body {
 	border-radius: 28px;
 	padding: clamp(2.2rem, 5vh, 3.5rem) clamp(2rem, 5vw, 3.5rem);
 	max-width: min(92%, 520px);
-	box-shadow: 0 8px 40px rgba(139, 92, 246, 0.3), 0 0 60px rgba(139, 92, 246, 0.1);
+	box-shadow:
+		0 8px 40px rgba(139, 92, 246, 0.3),
+		0 0 60px rgba(139, 92, 246, 0.1);
 }
 
 .tutorial .tutorial-card h2 {
@@ -1169,17 +1171,39 @@ body {
 
 /* ===== SCREEN SHAKE ===== */
 @keyframes screenShake {
-	0% { transform: translate(0, 0); }
-	10% { transform: translate(-4px, 2px); }
-	20% { transform: translate(4px, -2px); }
-	30% { transform: translate(-3px, 3px); }
-	40% { transform: translate(3px, -1px); }
-	50% { transform: translate(-2px, 2px); }
-	60% { transform: translate(2px, -3px); }
-	70% { transform: translate(-1px, 1px); }
-	80% { transform: translate(1px, -2px); }
-	90% { transform: translate(-1px, 1px); }
-	100% { transform: translate(0, 0); }
+	0% {
+		transform: translate(0, 0);
+	}
+	10% {
+		transform: translate(-4px, 2px);
+	}
+	20% {
+		transform: translate(4px, -2px);
+	}
+	30% {
+		transform: translate(-3px, 3px);
+	}
+	40% {
+		transform: translate(3px, -1px);
+	}
+	50% {
+		transform: translate(-2px, 2px);
+	}
+	60% {
+		transform: translate(2px, -3px);
+	}
+	70% {
+		transform: translate(-1px, 1px);
+	}
+	80% {
+		transform: translate(1px, -2px);
+	}
+	90% {
+		transform: translate(-1px, 1px);
+	}
+	100% {
+		transform: translate(0, 0);
+	}
 }
 
 .shake-screen {
@@ -1278,4 +1302,286 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
 	background: rgba(255, 255, 255, 0.35);
+}
+
+/* ===== TYPING PET ===== */
+.typing-pet {
+	position: fixed;
+	bottom: clamp(90px, 18vh, 140px);
+	left: clamp(10px, 2vw, 20px);
+	z-index: 12;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.25rem;
+	pointer-events: none;
+	transition: transform 0.3s ease;
+}
+.pet-emoji {
+	font-size: clamp(2.2rem, 5vw, 3.5rem);
+	transition:
+		transform 0.3s ease,
+		filter 0.3s ease;
+}
+.pet-emoji.happy {
+	animation: petHappy 0.6s ease;
+}
+.pet-emoji.celebrate {
+	animation: petCelebrate 1s ease infinite;
+}
+.pet-emoji.sad {
+	filter: grayscale(0.7) brightness(0.6);
+	animation: petSad 0.5s ease;
+}
+.pet-emoji.shake {
+	animation: petShake 0.4s ease;
+}
+@keyframes petHappy {
+	0%,
+	100% {
+		transform: translateY(0) scale(1);
+	}
+	25% {
+		transform: translateY(-10px) scale(1.15);
+	}
+	50% {
+		transform: translateY(0) scale(1.1);
+	}
+	75% {
+		transform: translateY(-5px) scale(1.15);
+	}
+}
+@keyframes petCelebrate {
+	0%,
+	100% {
+		transform: rotate(0deg) scale(1);
+	}
+	25% {
+		transform: rotate(-10deg) scale(1.1);
+	}
+	50% {
+		transform: rotate(10deg) scale(1.1);
+	}
+	75% {
+		transform: rotate(-5deg) scale(1.15);
+	}
+}
+@keyframes petSad {
+	0% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(8px);
+	}
+	100% {
+		transform: translateY(0);
+	}
+}
+@keyframes petShake {
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	25% {
+		transform: translateX(-4px);
+	}
+	50% {
+		transform: translateX(4px);
+	}
+	75% {
+		transform: translateX(-2px);
+	}
+}
+.pet-bubble {
+	font-family: "Nunito", sans-serif;
+	font-size: 0.7rem;
+	font-weight: 700;
+	color: var(--text);
+	background: rgba(139, 92, 246, 0.85);
+	padding: 0.3rem 0.7rem;
+	border-radius: 12px;
+	max-width: 120px;
+	text-align: center;
+	opacity: 0;
+	transform: translateY(5px);
+	transition:
+		opacity 0.3s,
+		transform 0.3s;
+	pointer-events: none;
+}
+.pet-bubble.visible {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+/* ===== WORD IMAGE POPUP ===== */
+.word-popup {
+	position: absolute;
+	z-index: 15;
+	left: 50%;
+	top: 40%;
+	transform: translate(-50%, -50%) scale(0.5);
+	background: rgba(255, 255, 255, 0.15);
+	backdrop-filter: blur(20px);
+	border: 1px solid var(--glass-border);
+	border-radius: 24px;
+	padding: clamp(1rem, 3vh, 2rem);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+	transition:
+		opacity 0.3s,
+		transform 0.3s;
+	opacity: 0;
+	pointer-events: none;
+}
+.word-popup.visible {
+	transform: translate(-50%, -50%) scale(1);
+	opacity: 1;
+	pointer-events: auto;
+}
+.word-popup-emoji {
+	font-size: clamp(4rem, 12vw, 8rem);
+	animation: wordPopIn 0.5s ease;
+	text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+}
+@keyframes wordPopIn {
+	0% {
+		transform: scale(0) rotate(-20deg);
+	}
+	60% {
+		transform: scale(1.2) rotate(5deg);
+	}
+	100% {
+		transform: scale(1) rotate(0deg);
+	}
+}
+.word-popup-text {
+	font-family: "Fredoka One", cursive;
+	font-size: clamp(1rem, 3vw, 1.5rem);
+	color: var(--text);
+}
+
+/* ===== ACHIEVEMENT TOAST ===== */
+.achievement-toast {
+	position: fixed;
+	top: clamp(60px, 10vh, 100px);
+	left: 50%;
+	z-index: 200;
+	background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+	border: 1px solid var(--glass-border);
+	border-radius: 50px;
+	padding: 0.6rem 1.2rem;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	box-shadow: var(--shadow-glow);
+	transition:
+		opacity 0.4s ease,
+		transform 0.4s ease;
+	opacity: 0;
+	transform: translateX(-50%) translateY(-40px);
+	pointer-events: none;
+	max-width: 90%;
+}
+.achievement-toast.visible {
+	opacity: 1;
+	transform: translateX(-50%) translateY(0);
+}
+.toast-icon {
+	font-size: 1.8rem;
+}
+.toast-title {
+	font-family: "Fredoka One", cursive;
+	font-size: 0.8rem;
+	color: var(--warning);
+	letter-spacing: 0.03em;
+}
+.toast-desc {
+	font-family: "Nunito", sans-serif;
+	font-weight: 700;
+	font-size: 0.95rem;
+	color: #fff;
+}
+
+/* ===== LEVEL PROGRESS BAR ===== */
+.level-progress-wrap {
+	position: absolute;
+	bottom: clamp(60px, 12vh, 100px);
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 10;
+	width: min(80%, 300px);
+	height: 10px;
+	background: rgba(0, 0, 0, 0.4);
+	border: 1px solid var(--glass-border);
+	border-radius: 10px;
+	overflow: hidden;
+	backdrop-filter: blur(10px);
+}
+.level-progress-fill {
+	height: 100%;
+	background: linear-gradient(90deg, var(--primary), var(--accent));
+	border-radius: 10px;
+	width: 0%;
+	transition: width 0.4s ease;
+	box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+}
+
+/* ===== POWER-UP INDICATOR ===== */
+.powerup-indicator {
+	position: absolute;
+	top: clamp(50px, 8vh, 80px);
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 10;
+	font-family: "Fredoka One", cursive;
+	font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+	color: var(--warning);
+	text-shadow: 0 0 12px rgba(251, 191, 36, 0.5);
+	opacity: 0;
+	transition: opacity 0.3s;
+	pointer-events: none;
+}
+.powerup-indicator.active {
+	opacity: 1;
+	animation: pulseCombo 1s ease-in-out infinite;
+}
+
+/* ===== ADAPTIVE DIFFICULTY BADGE ===== */
+.difficulty-badge {
+	position: fixed;
+	top: clamp(4px, 1vh, 8px);
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 10;
+	background: rgba(0, 0, 0, 0.5);
+	border: 1px solid var(--glass-border);
+	border-radius: 50px;
+	padding: 0.2rem 0.8rem;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--text-dim);
+	opacity: 0;
+	transition: opacity 0.5s;
+	pointer-events: none;
+}
+.difficulty-badge.active {
+	opacity: 1;
+}
+
+@media (max-width: 480px) {
+	.level-progress-wrap {
+		bottom: 55px;
+		height: 8px;
+	}
+	.powerup-indicator {
+		top: 42px;
+		font-size: 0.8rem;
+	}
+	.difficulty-badge {
+		font-size: 0.65rem;
+		padding: 0.15rem 0.6rem;
+	}
 }
