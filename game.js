@@ -1,0 +1,1401 @@
+/**
+ * ✨ Magic Type Quest ✨
+ * A magical typing game for kids - full Canvas game engine
+ */
+
+// ===== AUDIO ENGINE =====
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+function initAudio() {
+	if (!audioCtx) audioCtx = new AudioCtx();
+	if (audioCtx.state === "suspended") audioCtx.resume();
+}
+
+function playSound(type) {
+	if (!audioCtx) return;
+	const osc = audioCtx.createOscillator();
+	const gain = audioCtx.createGain();
+	osc.connect(gain);
+	gain.connect(audioCtx.destination);
+	const now = audioCtx.currentTime;
+
+	switch (type) {
+		case "correct":
+			osc.type = "sine";
+			osc.frequency.setValueAtTime(880, now);
+			osc.frequency.exponentialRampToValueAtTime(1318, now + 0.1);
+			gain.gain.setValueAtTime(0.15, now);
+			gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+			osc.start(now);
+			osc.stop(now + 0.2);
+			break;
+		case "wrong":
+			osc.type = "sawtooth";
+			osc.frequency.setValueAtTime(200, now);
+			osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+			gain.gain.setValueAtTime(0.1, now);
+			gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+			osc.start(now);
+			osc.stop(now + 0.2);
+			break;
+		case "word":
+			osc.type = "sine";
+			[659, 784, 1047].forEach((freq, i) => {
+				const o = audioCtx.createOscillator();
+				const g = audioCtx.createGain();
+				o.connect(g);
+				g.connect(audioCtx.destination);
+				o.frequency.setValueAtTime(freq, now + i * 0.1);
+				g.gain.setValueAtTime(0.12, now + i * 0.1);
+				g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.2);
+				o.start(now + i * 0.1);
+				o.stop(now + i * 0.1 + 0.2);
+			});
+			break;
+		case "level":
+			[523, 659, 784, 1047, 1318].forEach((freq, i) => {
+				setTimeout(() => {
+					if (!audioCtx) return;
+					const o = audioCtx.createOscillator();
+					const g = audioCtx.createGain();
+					o.connect(g);
+					g.connect(audioCtx.destination);
+					o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+					g.gain.setValueAtTime(0.12, audioCtx.currentTime);
+					g.gain.exponentialRampToValueAtTime(
+						0.001,
+						audioCtx.currentTime + 0.25,
+					);
+					o.start(audioCtx.currentTime);
+					o.stop(audioCtx.currentTime + 0.25);
+				}, i * 120);
+			});
+			break;
+		case "gameover":
+			[400, 350, 300, 200].forEach((freq, i) => {
+				setTimeout(() => {
+					if (!audioCtx) return;
+					const o = audioCtx.createOscillator();
+					const g = audioCtx.createGain();
+					o.connect(g);
+					g.connect(audioCtx.destination);
+					o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+					o.type = "sawtooth";
+					g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+					g.gain.exponentialRampToValueAtTime(
+						0.001,
+						audioCtx.currentTime + 0.3,
+					);
+					o.start(audioCtx.currentTime);
+					o.stop(audioCtx.currentTime + 0.3);
+				}, i * 180);
+			});
+			break;
+		case "heart": {
+			const o = audioCtx.createOscillator();
+			const g = audioCtx.createGain();
+			o.connect(g);
+			g.connect(audioCtx.destination);
+			o.type = "sine";
+			o.frequency.setValueAtTime(523, now);
+			o.frequency.exponentialRampToValueAtTime(784, now + 0.15);
+			g.gain.setValueAtTime(0.15, now);
+			g.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+			o.start(now);
+			o.stop(now + 0.25);
+			break;
+		}
+		case "combo": {
+			const c = audioCtx.createOscillator();
+			const cg = audioCtx.createGain();
+			c.connect(cg);
+			cg.connect(audioCtx.destination);
+			c.type = "triangle";
+			const base = 440 + Math.min(Math.max(gameState.combo - 1, 0), 8) * 65;
+			c.frequency.setValueAtTime(base, now);
+			c.frequency.exponentialRampToValueAtTime(base * 1.5, now + 0.1);
+			cg.gain.setValueAtTime(0.12, now);
+			cg.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+			c.start(now);
+			c.stop(now + 0.2);
+			break;
+		}
+	}
+}
+
+// ===== DATA =====
+const WORD_LISTS = {
+	1: [
+		"cat",
+		"dog",
+		"sun",
+		"hat",
+		"cup",
+		"red",
+		"big",
+		"run",
+		"fun",
+		"bed",
+		"box",
+		"net",
+		"pen",
+		"pig",
+		"van",
+		"zoo",
+		"ant",
+		"bee",
+		"cow",
+		"fox",
+		"owl",
+		"rat",
+		"bat",
+		"bug",
+		"egg",
+		"jam",
+		"leg",
+		"mop",
+		"nut",
+		"pet",
+		"rug",
+		"tag",
+		"web",
+		"yam",
+		"zip",
+	],
+	2: [
+		"cake",
+		"fish",
+		"door",
+		"tree",
+		"bird",
+		"moon",
+		"star",
+		"duck",
+		"frog",
+		"hand",
+		"jump",
+		"king",
+		"lamp",
+		"milk",
+		"nose",
+		"open",
+		"pink",
+		"queen",
+		"rain",
+		"shoe",
+		"toy",
+		"unicorn",
+		"vase",
+		"wall",
+		"yarn",
+		"zebra",
+		"book",
+		"candy",
+		"dance",
+		"eagle",
+		"fairy",
+		"gift",
+		"happy",
+		"ice",
+		"jelly",
+		"kite",
+		"lion",
+		"magic",
+		"nest",
+		"orange",
+		"puppy",
+		"quiet",
+		"rose",
+		"smile",
+		"tiger",
+		"under",
+		"violet",
+		"wolf",
+		"xray",
+		"yellow",
+	],
+	3: [
+		"apple",
+		"beach",
+		"cloud",
+		"dance",
+		"earth",
+		"flame",
+		"garden",
+		"honey",
+		"island",
+		"jewel",
+		"kiwi",
+		"lemon",
+		"melon",
+		"night",
+		"ocean",
+		"pearl",
+		"queen",
+		"robot",
+		"shell",
+		"tulip",
+		"unicorn",
+		"violet",
+		"water",
+		"xray",
+		"yogurt",
+		"zebra",
+		"angel",
+		"butterfly",
+		"castle",
+		"diamond",
+		"emerald",
+		"flower",
+		"glitter",
+		"heaven",
+		"island",
+		"jasmine",
+		"kingdom",
+		"lullaby",
+		"moonlight",
+		"nebula",
+		"orchid",
+		"paradise",
+		"rainbow",
+		"stardust",
+		"treasure",
+		"universe",
+		"velvet",
+		"wonder",
+		"xylophone",
+		"yesterday",
+	],
+	4: [
+		"rainbow",
+		"butterfly",
+		"fireworks",
+		"wonderful",
+		"beautiful",
+		"chocolate",
+		"marshmallow",
+		"sparkling",
+		"glittering",
+		"adventure",
+		"enchanted",
+		"fairyland",
+		"starlight",
+		"moonbeams",
+		"daydreams",
+		"treasure",
+		"kingdom",
+		"friendship",
+		"happiness",
+		"champion",
+		"chocolate",
+		"dandelion",
+		"fantastic",
+		"glistening",
+		"jellybean",
+		"lollypop",
+		"macaroon",
+		"mermaid",
+		"nighttime",
+		"parachute",
+		"quest",
+		"rosebud",
+		"sunshine",
+		"twilight",
+		"underwater",
+		"vacation",
+		"waterfall",
+		"xylophone",
+		"yesterday",
+		"zeppelin",
+		"carousel",
+		"dolphins",
+		"elephant",
+		"football",
+		"gorgeous",
+		"honeybee",
+		"icecream",
+		"juggling",
+		"kangaroo",
+		"laughter",
+	],
+	5: [
+		"fantastical",
+		"marvellous",
+		"butterflies",
+		"marshmallow",
+		"chocolates",
+		"adventures",
+		"wonderland",
+		"glistening",
+		"champignon",
+		"beautifully",
+		"dandelion",
+		"butterscotch",
+		"jellybeans",
+		"lollipops",
+		"macaroons",
+		"mermaids",
+		"nightingale",
+		"pirouettes",
+		"rainbow",
+		"sunflower",
+		"twinkling",
+		"underwater",
+		"volleyball",
+		"wonderful",
+		"xenophobia",
+		"youngsters",
+		"zoological",
+	],
+};
+
+const LEVEL_CONFIG = {
+	1: { words: 10, speed: 0.4, spawnRate: 3500, health: 5 },
+	2: { words: 12, speed: 0.5, spawnRate: 3200, health: 5 },
+	3: { words: 14, speed: 0.6, spawnRate: 3000, health: 5 },
+	4: { words: 15, speed: 0.7, spawnRate: 2800, health: 5 },
+	5: { words: 16, speed: 0.75, spawnRate: 2600, health: 5 },
+	6: { words: 18, speed: 0.85, spawnRate: 2400, health: 5 },
+	7: { words: 20, speed: 0.9, spawnRate: 2200, health: 4 },
+	8: { words: 22, speed: 1.0, spawnRate: 2000, health: 4 },
+	9: { words: 25, speed: 1.1, spawnRate: 1900, health: 4 },
+	10: { words: 30, speed: 1.2, spawnRate: 1700, health: 3 },
+};
+function getLevelConfig(lvl) {
+	if (LEVEL_CONFIG[lvl]) return LEVEL_CONFIG[lvl];
+	return {
+		words: 30 + (lvl - 10) * 2,
+		speed: Math.min(1.2 + (lvl - 10) * 0.08, 2.5),
+		spawnRate: Math.max(1700 - (lvl - 10) * 50, 800),
+		health: 3,
+	};
+}
+function getWordList(lvl) {
+	const key = Math.min(lvl, 5);
+	return WORD_LISTS[key] || WORD_LISTS[1];
+}
+
+// ===== GAME STATE =====
+const gameState = {
+	screen: "menu",
+	level: 1,
+	score: 0,
+	combo: 0,
+	maxCombo: 0,
+	health: 5,
+	wordsTyped: 0,
+	totalKeystrokes: 0,
+	correctKeystrokes: 0,
+	activeWords: [],
+	particles: [],
+	stars: [],
+	wordQueue: [],
+	targetWord: null,
+	targetIndex: 0,
+	paused: false,
+	gameOver: false,
+	lastSpawn: 0,
+	levelStartTime: 0,
+	wordsSpawned: 0,
+	wordsCompleted: 0,
+	canvasW: 0,
+	canvasH: 0,
+	frameTime: 0,
+	animationId: null,
+	challenge: null,
+	challengeProgress: 0,
+	profile: loadProfile(),
+};
+
+function loadProfile() {
+	try {
+		return (
+			JSON.parse(localStorage.getItem("mtp_profile")) || {
+				name: "",
+				avatar: "🦄",
+				totalStars: 0,
+				highScore: 0,
+				totalWords: 0,
+				totalTime: 0,
+				daysPlayed: new Set(),
+				levelsUnlocked: 1,
+				challenges: {},
+				unlockedAvatars: ["🦄"],
+			}
+		);
+	} catch {
+		return {
+			name: "",
+			avatar: "🦄",
+			totalStars: 0,
+			highScore: 0,
+			totalWords: 0,
+			totalTime: 0,
+			daysPlayed: new Set(),
+			levelsUnlocked: 1,
+			challenges: {},
+			unlockedAvatars: ["🦄"],
+		};
+	}
+}
+
+function saveProfile() {
+	try {
+		localStorage.setItem("mtp_profile", JSON.stringify(gameState.profile));
+	} catch {}
+}
+
+// ===== DOM ELEMENTS =====
+const $ = (id) => document.getElementById(id);
+const canvas = $("game-canvas");
+const ctx = canvas.getContext("2d");
+
+// ===== STARS BACKGROUND =====
+function initStars() {
+	gameState.stars = [];
+	for (let i = 0; i < 80; i++) {
+		gameState.stars.push({
+			x: Math.random() * gameState.canvasW,
+			y: Math.random() * gameState.canvasH,
+			size: Math.random() * 2 + 0.5,
+			twinkleSpeed: Math.random() * 3 + 1,
+			twinkleOffset: Math.random() * Math.PI * 2,
+		});
+	}
+}
+
+function drawStars(_dt) {
+	const time = performance.now() / 1000;
+	for (const s of gameState.stars) {
+		const alpha =
+			0.3 +
+			0.7 * (0.5 + 0.5 * Math.sin(time * s.twinkleSpeed + s.twinkleOffset));
+		ctx.globalAlpha = alpha;
+		ctx.fillStyle = "#fff";
+		ctx.beginPath();
+		ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+		ctx.fill();
+	}
+	ctx.globalAlpha = 1;
+}
+
+// ===== PARTICLES =====
+function spawnParticles(x, y, color, count = 15, type = "burst") {
+	for (let i = 0; i < count; i++) {
+		const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+		const speed =
+			type === "burst" ? 2 + Math.random() * 4 : 1 + Math.random() * 2;
+		gameState.particles.push({
+			x,
+			y,
+			vx: Math.cos(angle) * speed,
+			vy: Math.sin(angle) * speed - (type === "burst" ? 2 : 0),
+			life: 1,
+			decay: 0.02 + Math.random() * 0.02,
+			color,
+			size: type === "burst" ? 3 + Math.random() * 4 : 2 + Math.random() * 2,
+			type,
+		});
+	}
+}
+
+function updateParticles(_dt) {
+	for (let i = gameState.particles.length - 1; i >= 0; i--) {
+		const p = gameState.particles[i];
+		p.x += p.vx;
+		p.y += p.vy;
+		p.vy += 0.08; // gravity
+		p.life -= p.decay;
+		if (p.life <= 0) gameState.particles.splice(i, 1);
+	}
+}
+
+function drawParticles() {
+	for (const p of gameState.particles) {
+		ctx.globalAlpha = Math.max(0, p.life);
+		ctx.fillStyle = p.color;
+		ctx.beginPath();
+		ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+		ctx.fill();
+	}
+	ctx.globalAlpha = 1;
+}
+
+// ===== WORDS =====
+class FallingWord {
+	constructor(text, speed) {
+		this.text = text;
+		this.speed = speed;
+		const textW = ctx.measureText(text).width;
+		const margin = 80;
+		this.x =
+			margin +
+			Math.random() * Math.max(20, gameState.canvasW - textW - margin * 2);
+		this.y = -30;
+		this.w = textW + 24;
+		this.h = 36;
+		this.glow = 0;
+		this.shake = 0;
+		this.matched = 0;
+		this.isTarget = false;
+	}
+
+	update(dt) {
+		this.y += this.speed * (60 * dt);
+		if (this.glow > 0) this.glow -= dt * 3;
+		if (this.shake > 0) this.shake -= dt * 5;
+	}
+
+	draw() {
+		const isTarget = this.isTarget;
+		const shakeX = this.shake > 0 ? (Math.random() - 0.5) * 6 : 0;
+		const x = this.x + shakeX;
+		const y = this.y;
+
+		// Glow
+		if (this.glow > 0 || isTarget) {
+			ctx.save();
+			ctx.shadowColor = isTarget ? "#34D399" : "#A78BFA";
+			ctx.shadowBlur = isTarget ? 15 : this.glow * 20;
+			ctx.fillStyle = "#8B5CF6";
+			ctx.globalAlpha = isTarget ? 0.25 : 0.15;
+			ctx.beginPath();
+			ctx.roundRect(x - 4, y - this.h / 2 - 2, this.w + 8, this.h + 4, 12);
+			ctx.fill();
+			ctx.restore();
+		}
+
+		// Word pill
+		ctx.fillStyle = isTarget ? "rgba(52,211,153,0.2)" : "rgba(139,92,246,0.15)";
+		ctx.strokeStyle = isTarget ? "#34D399" : "rgba(167,139,250,0.4)";
+		ctx.lineWidth = 1.5;
+		ctx.beginPath();
+		ctx.roundRect(x - 4, y - this.h / 2 - 2, this.w + 8, this.h + 4, 12);
+		ctx.fill();
+		ctx.stroke();
+
+		// Text
+		ctx.fillStyle = "#F8FAFC";
+		ctx.font = "700 16px Nunito, sans-serif";
+		ctx.textAlign = "left";
+		ctx.textBaseline = "middle";
+		ctx.fillText(this.text, x + 8, y);
+
+		// Matched underline (if partially typed)
+		if (this.matched > 0) {
+			const matchedText = this.text.slice(0, this.matched);
+			const mW = ctx.measureText(matchedText).width;
+			ctx.fillStyle = "#34D399";
+			ctx.fillRect(x + 8, y + 10, mW, 2);
+		}
+
+		// Target indicator
+		if (isTarget) {
+			ctx.fillStyle = "#34D399";
+			ctx.font = "12px Nunito, sans-serif";
+			ctx.textAlign = "center";
+			ctx.fillText("▲", x + this.w / 2, y - this.h / 2 - 8);
+		}
+
+		ctx.globalAlpha = 1;
+	}
+
+	isAtBottom() {
+		return this.y > gameState.canvasH - 80;
+	}
+}
+
+function spawnWord() {
+	const list = getWordList(gameState.level);
+	const text = list[Math.floor(Math.random() * list.length)];
+	const cfg = getLevelConfig(gameState.level);
+	const speed = cfg.speed * (0.8 + Math.random() * 0.4);
+	const word = new FallingWord(text, speed);
+
+	// Pick target: shortest or first available
+	if (!gameState.targetWord) {
+		word.isTarget = true;
+		gameState.targetWord = word;
+		gameState.targetIndex = 0;
+		updateTargetDisplay();
+	}
+
+	gameState.activeWords.push(word);
+	gameState.wordsSpawned++;
+}
+
+function updateTargetDisplay() {
+	const tw = $("target-word");
+	const tt = $("target-typed");
+	if (!gameState.targetWord) {
+		tw.innerHTML = "";
+		tt.innerHTML = "";
+		return;
+	}
+	const word = gameState.targetWord.text;
+	const done = word.slice(0, gameState.targetIndex);
+	const rest = word.slice(gameState.targetIndex);
+	tw.textContent = rest;
+	tt.textContent = done;
+}
+
+// ===== INPUT HANDLING =====
+function handleKey(e) {
+	if (gameState.screen !== "game") return;
+	if (gameState.paused || gameState.gameOver) return;
+	if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+	initAudio();
+
+	const key = e.key.toLowerCase();
+	if (key === " ") {
+		e.preventDefault();
+		skipWord();
+		return;
+	}
+	if (key.length !== 1 || !/[a-z]/.test(key)) return;
+
+	e.preventDefault();
+	gameState.totalKeystrokes++;
+
+	if (!gameState.targetWord) {
+		// No target — try to find a word starting with this letter
+		const match = gameState.activeWords.find(
+			(w) => w.text[0].toLowerCase() === key && !w.isTarget,
+		);
+		if (match) {
+			gameState.targetWord = match;
+			gameState.targetIndex = 1;
+			match.isTarget = true;
+			updateTargetDisplay();
+			gameState.correctKeystrokes++;
+			match.glow = 1;
+			playSound("correct");
+			checkWordComplete();
+		} else {
+			playSound("wrong");
+			gameState.combo = 0;
+			updateCombo();
+		}
+		return;
+	}
+
+	const word = gameState.targetWord.text;
+	const needed = word[gameState.targetIndex]?.toLowerCase();
+
+	if (key === needed) {
+		gameState.targetIndex++;
+		gameState.targetWord.matched = gameState.targetIndex;
+		gameState.correctKeystrokes++;
+		gameState.targetWord.glow = 1;
+		playSound("correct");
+
+		if (gameState.targetIndex >= word.length) {
+			completeWord();
+		} else {
+			updateTargetDisplay();
+		}
+	} else {
+		playSound("wrong");
+		gameState.targetWord.shake = 1;
+		gameState.combo = 0;
+		updateCombo();
+		spawnParticles(
+			gameState.targetWord.x + gameState.targetWord.w / 2,
+			gameState.targetWord.y,
+			"#EF4444",
+			8,
+		);
+	}
+}
+
+function skipWord() {
+	if (!gameState.targetWord) return;
+	gameState.targetWord.isTarget = false;
+	gameState.targetWord = null;
+	gameState.targetIndex = 0;
+	gameState.combo = 0;
+	updateCombo();
+
+	// Find next shortest word as target
+	const sorted = gameState.activeWords
+		.filter((w) => !w.isTarget)
+		.sort((a, b) => a.text.length - b.text.length);
+	if (sorted.length > 0) {
+		sorted[0].isTarget = true;
+		gameState.targetWord = sorted[0];
+		gameState.targetIndex = 0;
+	}
+	updateTargetDisplay();
+}
+
+function completeWord() {
+	const word = gameState.targetWord;
+	spawnParticles(word.x + word.w / 2, word.y, "#34D399", 20);
+
+	// Score calculation
+	const baseScore = word.text.length * 10;
+	const comboBonus = gameState.combo * 5;
+	const levelBonus = gameState.level * 2;
+	const points = baseScore + comboBonus + levelBonus;
+
+	gameState.score += points;
+	gameState.combo++;
+	gameState.wordsTyped++;
+	gameState.wordsCompleted++;
+	if (gameState.combo > gameState.maxCombo)
+		gameState.maxCombo = gameState.combo;
+
+	// Remove word
+	const idx = gameState.activeWords.indexOf(word);
+	if (idx >= 0) gameState.activeWords.splice(idx, 1);
+
+	// Heart recovery at combo multiples
+	if (gameState.combo % 5 === 0 && gameState.health < 5) {
+		gameState.health++;
+		playSound("heart");
+		updateHearts();
+	}
+
+	// Challenge progress
+	if (gameState.challenge) {
+		gameState.challengeProgress++;
+		checkChallenge();
+	}
+
+	// Pick new target
+	gameState.targetWord = null;
+	gameState.targetIndex = 0;
+	const remaining = gameState.activeWords
+		.filter((w) => !w.isTarget)
+		.sort((a, b) => a.text.length - b.text.length);
+	if (remaining.length > 0) {
+		remaining[0].isTarget = true;
+		gameState.targetWord = remaining[0];
+	}
+	updateTargetDisplay();
+	updateHUD();
+	updateCombo();
+	playSound("word");
+
+	// Check level complete
+	checkLevelComplete();
+}
+
+function loseHeart() {
+	gameState.health--;
+	gameState.combo = 0;
+	updateHearts();
+	updateCombo();
+	playSound("gameover");
+	spawnParticles(gameState.canvasW / 2, gameState.canvasH - 100, "#EF4444", 25);
+
+	if (gameState.health <= 0) {
+		endGame(false);
+	}
+}
+
+function checkLevelComplete() {
+	const cfg = getLevelConfig(gameState.level);
+	if (
+		gameState.wordsCompleted >= cfg.words &&
+		gameState.wordsSpawned >= cfg.words
+	) {
+		endGame(true);
+	}
+}
+
+function checkChallenge() {
+	if (!gameState.challenge) return;
+	const c = gameState.challenge;
+	let done = false;
+	if (c === "speed" && gameState.wordsTyped >= 20) done = true;
+	if (c === "combo" && gameState.combo >= 10) done = true;
+	if (
+		c === "accuracy" &&
+		gameState.wordsTyped >= 15 &&
+		gameState.totalKeystrokes > 0 &&
+		gameState.correctKeystrokes / gameState.totalKeystrokes >= 1.0
+	)
+		done = true;
+
+	if (done) {
+		gameState.profile.challenges[c] = true;
+		gameState.profile.totalStars += 50;
+		saveProfile();
+		updateMenuStats();
+	}
+}
+
+function updateHUD() {
+	$("score").textContent = gameState.score;
+	$("level").textContent = gameState.level;
+	const acc =
+		gameState.totalKeystrokes > 0
+			? Math.round(
+					(gameState.correctKeystrokes / gameState.totalKeystrokes) * 100,
+				)
+			: 100;
+	$("accuracy").textContent = `${acc}%`;
+}
+
+function updateCombo() {
+	const el = $("combo-display");
+	$("combo-count").textContent = gameState.combo;
+	el.classList.toggle("active", gameState.combo >= 2);
+	if (gameState.combo >= 2) playSound("combo");
+	// Bonus combo visual on HUD
+	if (gameState.combo >= 5) {
+		el.style.color = "#FBBF24";
+	} else if (gameState.combo >= 3) {
+		el.style.color = "#F472B6";
+	} else {
+		el.style.color = "#FBBF24";
+	}
+}
+
+function updateHearts() {
+	for (let i = 1; i <= 5; i++) {
+		const h = $(`heart-${i}`);
+		h.textContent = i <= gameState.health ? "💜" : "🖤";
+		h.classList.toggle("lost", i > gameState.health);
+		if (i <= gameState.health) h.classList.add("animated");
+		else h.classList.remove("animated");
+		setTimeout(() => h.classList.remove("animated"), 400);
+	}
+}
+
+// ===== GAME FLOW =====
+function startGame(opts = {}) {
+	initAudio();
+	gameState.screen = "game";
+	gameState.score = 0;
+	gameState.combo = 0;
+	gameState.maxCombo = 0;
+	gameState.wordsTyped = 0;
+	gameState.totalKeystrokes = 0;
+	gameState.correctKeystrokes = 0;
+	gameState.activeWords = [];
+	gameState.particles = [];
+	gameState.wordQueue = [];
+	gameState.targetWord = null;
+	gameState.targetIndex = 0;
+	gameState.paused = false;
+	gameState.gameOver = false;
+	gameState.lastSpawn = 0;
+	gameState.wordsSpawned = 0;
+	gameState.wordsCompleted = 0;
+	gameState.challenge = opts.challenge || null;
+	gameState.challengeProgress = 0;
+
+	// Track total time
+	gameState.levelStartTime = performance.now();
+
+	// Determine level
+	if (opts.challenge) {
+		gameState.level = Math.min(gameState.profile.levelsUnlocked, 3);
+	} else if (opts.level) {
+		gameState.level = opts.level;
+	} else {
+		gameState.level = 1;
+	}
+
+	// Health from config
+	gameState.health = getLevelConfig(gameState.level).health;
+
+	// Switch screens
+	for (const s of document.querySelectorAll(".screen"))
+		s.classList.remove("active");
+	$("game-screen").classList.add("active");
+
+	resizeCanvas();
+	initStars();
+	updateHUD();
+	updateHearts();
+	updateCombo();
+	updateTargetDisplay();
+
+	// Show tutorial on first play
+	const hasPlayed = localStorage.getItem("mtp_tutorial_seen");
+	if (!hasPlayed) {
+		showTutorial();
+	} else {
+		requestAnimationFrame(gameLoop);
+	}
+}
+
+let lastFrameTime = 0;
+function gameLoop(timestamp) {
+	if (gameState.screen !== "game") return;
+	if (gameState.paused || gameState.gameOver) {
+		gameState.animationId = requestAnimationFrame(gameLoop);
+		return;
+	}
+
+	const dt = lastFrameTime
+		? Math.min((timestamp - lastFrameTime) / 1000, 0.05)
+		: 0.016;
+	lastFrameTime = timestamp;
+	gameState.frameTime = dt;
+
+	ctx.clearRect(0, 0, gameState.canvasW, gameState.canvasH);
+
+	// Background
+	drawStars(dt);
+
+	// Spawn words
+	const now = timestamp;
+	if (gameState.wordsSpawned < getLevelConfig(gameState.level).words) {
+		if (now - gameState.lastSpawn > getLevelConfig(gameState.level).spawnRate) {
+			spawnWord();
+			gameState.lastSpawn = now;
+		}
+	}
+
+	// Update & draw words
+	for (let i = gameState.activeWords.length - 1; i >= 0; i--) {
+		const w = gameState.activeWords[i];
+		w.update(dt);
+		w.draw();
+
+		if (w.isAtBottom()) {
+			if (w.isTarget) {
+				loseHeart();
+				gameState.targetWord = null;
+				gameState.targetIndex = 0;
+				// Pick a new target
+				const remaining = gameState.activeWords
+					.filter((x) => x !== w && !x.isTarget)
+					.sort((a, b) => a.text.length - b.text.length);
+				if (remaining.length > 0) {
+					remaining[0].isTarget = true;
+					gameState.targetWord = remaining[0];
+				}
+				updateTargetDisplay();
+			}
+			gameState.activeWords.splice(i, 1);
+			updateHUD();
+		}
+	}
+
+	// Particles
+	updateParticles(dt);
+	drawParticles();
+
+	// Floating score text
+	drawFloatingScores(dt);
+
+	gameState.animationId = requestAnimationFrame(gameLoop);
+}
+
+const floatingScores = [];
+function drawFloatingScores(dt) {
+	ctx.textAlign = "center";
+	ctx.font = "700 18px Nunito, sans-serif";
+	for (let i = floatingScores.length - 1; i >= 0; i--) {
+		const fs = floatingScores[i];
+		fs.y -= 40 * dt;
+		fs.life -= dt;
+		ctx.globalAlpha = Math.max(0, fs.life);
+		ctx.fillStyle = fs.color;
+		ctx.fillText(fs.text, fs.x, fs.y);
+	}
+	// Cleanup
+	for (let i = floatingScores.length - 1; i >= 0; i--) {
+		if (floatingScores[i].life <= 0) floatingScores.splice(i, 1);
+	}
+	ctx.globalAlpha = 1;
+}
+
+function _addFloatingScore(text, x, y, color = "#FBBF24") {
+	floatingScores.push({ text, x, y, color, life: 1.2 });
+}
+
+function endGame(won) {
+	gameState.gameOver = true;
+	cancelAnimationFrame(gameState.animationId);
+
+	// Calculate total time
+	const elapsed = Math.round(
+		(performance.now() - gameState.levelStartTime) / 1000,
+	);
+	gameState.profile.totalTime += elapsed;
+	gameState.profile.totalWords += gameState.wordsTyped;
+	gameState.profile.daysPlayed.add(new Date().toDateString());
+
+	// Stars earned
+	const acc =
+		gameState.totalKeystrokes > 0
+			? gameState.correctKeystrokes / gameState.totalKeystrokes
+			: 1;
+	let starsEarned = 0;
+	if (won) {
+		if (acc >= 0.95) starsEarned = 3;
+		else if (acc >= 0.85) starsEarned = 2;
+		else starsEarned = 1;
+
+		// Unlock next level
+		if (gameState.level >= gameState.profile.levelsUnlocked) {
+			gameState.profile.levelsUnlocked = gameState.level + 1;
+		}
+	}
+	gameState.profile.totalStars += starsEarned * 10 + gameState.score;
+	if (gameState.score > gameState.profile.highScore) {
+		gameState.profile.highScore = gameState.score;
+	}
+	saveProfile();
+	updateMenuStats();
+
+	if (won) {
+		playSound("level");
+		$("level-complete-num").textContent = gameState.level;
+		$("level-score").textContent = gameState.score;
+		$("level-words").textContent = gameState.wordsTyped;
+		$("level-combo").textContent = gameState.maxCombo;
+
+		const starsDisp = $("level-overlay").querySelector(".level-stars");
+		starsDisp.textContent =
+			"⭐".repeat(starsEarned) + "☆".repeat(3 - starsEarned);
+
+		$("level-overlay").classList.remove("hidden");
+	} else {
+		playSound("gameover");
+		$("final-score").textContent = gameState.score;
+		$("final-combo").textContent = gameState.maxCombo;
+		$("final-words").textContent = gameState.wordsTyped;
+		$("gameover-emoji").textContent = gameState.score > 100 ? "😅" : "😢";
+		$("gameover-message").textContent =
+			gameState.score > 100
+				? "Good try! Practice makes perfect!"
+				: "The stars got away!";
+		$("gameover-overlay").classList.remove("hidden");
+	}
+}
+
+// ===== PRACTICE MODE =====
+const practiceChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+let practiceIndex = 0;
+
+function startPractice() {
+	gameState.screen = "practice";
+	for (const s of document.querySelectorAll(".screen"))
+		s.classList.remove("active");
+	$("practice-screen").classList.add("active");
+	practiceIndex = 0;
+	shuffleArray(practiceChars);
+	updatePractice();
+}
+
+function updatePractice() {
+	const char = practiceChars[practiceIndex];
+	$("practice-char-display").textContent = char;
+	$("practice-count").textContent = `${practiceIndex + 1} / 26`;
+	$("practice-fill").style.width = `${(practiceIndex / 26) * 100}%`;
+	$("practice-hint").innerHTML = `Press <kbd>${char}</kbd> on your keyboard`;
+}
+
+function handlePracticeKey(e) {
+	if (gameState.screen !== "practice") return;
+	const key = e.key.toUpperCase();
+	if (key === practiceChars[practiceIndex]) {
+		playSound("correct");
+		practiceIndex++;
+		if (practiceIndex >= 26) {
+			playSound("level");
+			gameState.profile.challenges.letters = true;
+			gameState.profile.totalStars += 30;
+			saveProfile();
+			updateMenuStats();
+			// Restart
+			practiceIndex = 0;
+			shuffleArray(practiceChars);
+			updatePractice();
+		} else {
+			updatePractice();
+		}
+	} else if (key.length === 1 && /[A-Z]/.test(key)) {
+		playSound("wrong");
+		$("practice-char-display").style.transform = "scale(1.2)";
+		$("practice-char-display").style.color = "#EF4444";
+		setTimeout(() => {
+			$("practice-char-display").style.transform = "scale(1)";
+			$("practice-char-display").style.color = "";
+		}, 200);
+	}
+}
+
+function shuffleArray(arr) {
+	for (let i = arr.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[arr[i], arr[j]] = [arr[j], arr[i]];
+	}
+}
+
+// ===== CHALLENGES =====
+function showChallenges() {
+	gameState.screen = "challenges";
+	for (const s of document.querySelectorAll(".screen"))
+		s.classList.remove("active");
+	$("challenges-screen").classList.add("active");
+
+	const challenges = [
+		{
+			id: "speed",
+			icon: "⚡",
+			name: "Speedster",
+			desc: "Type 20 words in under 2 minutes",
+			total: 20,
+		},
+		{
+			id: "combo",
+			icon: "🔥",
+			name: "Combo Master",
+			desc: "Get a 10-word combo streak",
+			total: 10,
+		},
+		{
+			id: "accuracy",
+			icon: "🎯",
+			name: "Perfect Aim",
+			desc: "Type 15 words with 100% accuracy",
+			total: 15,
+		},
+		{
+			id: "letters",
+			icon: "🔤",
+			name: "Alphabet Ace",
+			desc: "Complete the letter practice mode",
+			total: 1,
+		},
+	];
+
+	challenges.forEach((c, i) => {
+		const card = $(`challenge-${i + 1}`);
+		const completed = gameState.profile.challenges[c.id];
+		card.classList.toggle("completed", completed);
+		const status = card.querySelector(".challenge-status");
+		const fill = card.querySelector(".challenge-progress-fill");
+		status.textContent = completed ? "✅ Done!" : "Start!";
+		fill.style.width = completed ? "100%" : "0%";
+	});
+}
+
+// ===== PROFILE =====
+function showProfile() {
+	gameState.screen = "profile";
+	for (const s of document.querySelectorAll(".screen"))
+		s.classList.remove("active");
+	$("profile-screen").classList.add("active");
+
+	const p = gameState.profile;
+	$("player-name").value = p.name;
+	$("avatar-preview").textContent = p.avatar;
+	$("profile-stars").textContent = p.totalStars;
+	$("profile-best").textContent = p.highScore;
+	$("profile-words").textContent = p.totalWords;
+	$("profile-time").textContent = formatTime(p.totalTime);
+
+	for (const btn of document.querySelectorAll(".avatar-btn")) {
+		btn.classList.toggle("active", btn.dataset.avatar === p.avatar);
+	}
+}
+
+function formatTime(sec) {
+	if (sec < 60) return `${sec}s`;
+	if (sec < 3600) return `${Math.floor(sec / 60)}m`;
+	return `${Math.floor(sec / 3600)}h ${Math.floor((sec % 3600) / 60)}m`;
+}
+
+// ===== TUTORIAL =====
+let tutorialSlide = 0;
+function showTutorial() {
+	tutorialSlide = 0;
+	$("tutorial-overlay").classList.remove("hidden");
+	updateTutorialSlides();
+}
+
+function updateTutorialSlides() {
+	document.querySelectorAll(".tutorial-slide").forEach((s, i) => {
+		s.classList.toggle("active", i === tutorialSlide);
+	});
+}
+
+function nextTutorial() {
+	tutorialSlide++;
+	if (tutorialSlide >= 3) {
+		$("tutorial-overlay").classList.add("hidden");
+		localStorage.setItem("mtp_tutorial_seen", "1");
+		requestAnimationFrame(gameLoop);
+	} else {
+		updateTutorialSlides();
+	}
+}
+
+// ===== SCREEN MANAGEMENT =====
+function showScreen(name) {
+	gameState.screen = name;
+	for (const s of document.querySelectorAll(".screen"))
+		s.classList.remove("active");
+	$(`${name}-screen`).classList.add("active");
+	if (name === "menu") updateMenuStats();
+}
+
+function _showMenu() {
+	showScreen("menu");
+}
+
+function updateMenuStats() {
+	const p = gameState.profile;
+	$("total-stars").textContent = p.totalStars;
+	$("high-score").textContent = p.highScore;
+	$("days-played").textContent = p.daysPlayed?.size || 0;
+}
+
+function resumeGame() {
+	$("pause-overlay").classList.add("hidden");
+	gameState.paused = false;
+	lastFrameTime = 0;
+}
+
+// ===== CANVAS RESIZE =====
+function resizeCanvas() {
+	const rect = canvas.parentElement.getBoundingClientRect();
+	canvas.width = rect.width * window.devicePixelRatio;
+	canvas.height = rect.height * window.devicePixelRatio;
+	ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+	gameState.canvasW = rect.width;
+	gameState.canvasH = rect.height;
+}
+
+// ===== PWA =====
+let deferredPrompt = null;
+function handleBeforeInstallPrompt(e) {
+	e.preventDefault();
+	deferredPrompt = e;
+	$("install-prompt").classList.remove("hidden");
+}
+
+function installApp() {
+	if (!deferredPrompt) return;
+	deferredPrompt.prompt();
+	deferredPrompt.userChoice.then(() => {
+		$("install-prompt").classList.add("hidden");
+		deferredPrompt = null;
+	});
+}
+
+// ===== EVENT LISTENERS =====
+function bindEvents() {
+	// Menu
+	$("btn-start").addEventListener("click", () => startGame());
+	$("btn-practice").addEventListener("click", () => startPractice());
+	$("btn-challenges").addEventListener("click", () => showChallenges());
+	$("btn-avatars").addEventListener("click", () => showProfile());
+
+	// Profile
+	$("btn-profile-back").addEventListener("click", () => showScreen("menu"));
+	$("btn-save-profile").addEventListener("click", () => {
+		gameState.profile.name = $("player-name").value.trim();
+		saveProfile();
+		showScreen("menu");
+	});
+	for (const btn of document.querySelectorAll(".avatar-btn")) {
+		btn.addEventListener("click", () => {
+			for (const b of document.querySelectorAll(".avatar-btn"))
+				b.classList.remove("active");
+			btn.classList.add("active");
+			gameState.profile.avatar = btn.dataset.avatar;
+			$("avatar-preview").textContent = btn.dataset.avatar;
+		});
+	}
+
+	// Challenges
+	$("btn-challenges-back").addEventListener("click", () => showScreen("menu"));
+	document.querySelectorAll(".challenge-card").forEach((card) => {
+		card.addEventListener("click", () => {
+			const ch = card.dataset.challenge;
+			if (ch === "letters") {
+				startPractice();
+				return;
+			}
+			if (ch === "accuracy" || ch === "combo" || ch === "speed") {
+				startGame({ challenge: ch });
+			}
+		});
+	});
+
+	// Practice
+	$("btn-practice-back").addEventListener("click", () => showScreen("menu"));
+
+	// Game
+	$("btn-pause").addEventListener("click", () => {
+		gameState.paused = true;
+		$("pause-overlay").classList.remove("hidden");
+	});
+	$("btn-resume").addEventListener("click", () => resumeGame());
+	$("btn-quit").addEventListener("click", () => {
+		$("pause-overlay").classList.add("hidden");
+		showScreen("menu");
+	});
+
+	// Level complete
+	$("btn-next-level").addEventListener("click", () => {
+		$("level-overlay").classList.add("hidden");
+		startGame({ level: gameState.level + 1 });
+	});
+
+	// Game over
+	$("btn-retry").addEventListener("click", () => {
+		$("gameover-overlay").classList.add("hidden");
+		startGame({ level: gameState.level });
+	});
+	$("btn-menu").addEventListener("click", () => {
+		$("gameover-overlay").classList.add("hidden");
+		showScreen("menu");
+	});
+
+	// Tutorial
+	for (const b of document.querySelectorAll(".btn-tutorial-next"))
+		b.addEventListener("click", nextTutorial);
+	$("btn-start-game").addEventListener("click", () => {
+		$("tutorial-overlay").classList.add("hidden");
+		localStorage.setItem("mtp_tutorial_seen", "1");
+		requestAnimationFrame(gameLoop);
+	});
+
+	// Keyboard
+	document.addEventListener("keydown", (e) => {
+		if (e.key === "Escape") {
+			if (gameState.screen === "game" && !gameState.gameOver) {
+				if (gameState.paused) resumeGame();
+				else {
+					gameState.paused = true;
+					$("pause-overlay").classList.remove("hidden");
+				}
+			}
+		}
+		handleKey(e);
+		handlePracticeKey(e);
+	});
+
+	// Resize
+	window.addEventListener("resize", () => {
+		if (gameState.screen === "game") resizeCanvas();
+	});
+
+	// PWA
+	window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+	$("install-btn").addEventListener("click", installApp);
+	$("dismiss-install").addEventListener("click", () =>
+		$("install-prompt").classList.add("hidden"),
+	);
+}
+
+// ===== INIT =====
+function init() {
+	updateMenuStats();
+	bindEvents();
+}
+
+document.addEventListener("DOMContentLoaded", init);

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>✨ Magic Type Quest ✨</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#8B5CF6">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Install Prompt -->
+  <div id="install-prompt" class="install-prompt hidden">
+    <span>📱 Add Magic Type Quest to your home screen!</span>
+    <button type="button" id="install-btn" class="btn-install">Add</button>
+    <button type="button" id="dismiss-install" class="btn-dismiss">×</button>
+  </div>
+
+  <!-- Main Menu -->
+  <div id="menu-screen" class="screen active">
+    <div class="stars-bg"></div>
+    <div class="floating-island">
+      <div class="island-emoji">🏰</div>
+    </div>
+    
+    <h1 class="game-title">
+      <span class="letter-bounce">M</span><span class="letter-bounce">a</span><span class="letter-bounce">g</span><span class="letter-bounce">i</span><span class="letter-bounce">c</span>
+      <br>
+      <span class="letter-bounce">T</span><span class="letter-bounce">y</span><span class="letter-bounce">p</span><span class="letter-bounce">e</span>
+      <br>
+      <span class="letter-bounce">Q</span><span class="letter-bounce">u</span><span class="letter-bounce">e</span><span class="letter-bounce">s</span><span class="letter-bounce">t</span>
+      <span class="sparkle">✨</span>
+    </h1>
+    
+    <p class="tagline">Type words to collect stars & save the unicorn kingdom!</p>
+    
+    <div class="menu-buttons">
+      <button type="button" id="btn-start" class="btn btn-primary btn-glow">
+        <span class="btn-icon">🎮</span> Play Now
+      </button>
+      <button type="button" id="btn-practice" class="btn btn-secondary">
+        <span class="btn-icon">🎯</span> Practice Letters
+      </button>
+      <button type="button" id="btn-challenges" class="btn btn-secondary">
+        <span class="btn-icon">🏆</span> Challenges
+      </button>
+      <button type="button" id="btn-avatars" class="btn btn-secondary">
+        <span class="btn-icon">👸</span> My Profile
+      </button>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-pill">
+        <span class="stat-icon">⭐</span>
+        <span id="total-stars">0</span> Stars
+      </div>
+      <div class="stat-pill">
+        <span class="stat-icon">🏅</span>
+        <span id="high-score">0</span> Best
+      </div>
+      <div class="stat-pill">
+        <span class="stat-icon">📅</span>
+        Played <span id="days-played">0</span> days
+      </div>
+    </div>
+  </div>
+
+  <!-- Practice Mode Screen -->
+  <div id="practice-screen" class="screen">
+    <div class="practice-bg"></div>
+    <div class="screen-header">
+      <button type="button" id="btn-practice-back" class="btn-back">← Back</button>
+      <h2>🎯 Practice Letters</h2>
+    </div>
+    <div class="practice-viewport">
+      <div id="practice-char-display" class="practice-char-display">A</div>
+      <div id="practice-hint" class="practice-hint">Press <kbd>A</kbd> on your keyboard</div>
+    </div>
+    <div class="practice-progress">
+      <div class="practice-bar"><div id="practice-fill" class="practice-fill"></div></div>
+      <span id="practice-count">1 / 26</span>
+    </div>
+  </div>
+
+  <!-- Game HUD (overlaid on game) -->
+  <div id="game-screen" class="screen">
+    <canvas id="game-canvas"></canvas>
+    
+    <!-- HUD -->
+    <div class="hud">
+      <div class="hud-left">
+        <div class="hud-score">
+          <span class="hud-icon">⭐</span>
+          <span id="score">0</span>
+        </div>
+        <div class="hud-level">
+          <span class="hud-icon">📈</span>
+          Level <span id="level">1</span>
+        </div>
+      </div>
+      <div class="hud-center">
+        <div class="hud-combo" id="combo-display">Combo: <span id="combo-count">0</span> 🔥</div>
+        <div class="hud-accuracy">Accuracy: <span id="accuracy">100%</span></div>
+      </div>
+      <div class="hud-right">
+        <button type="button" id="btn-pause" class="btn-pause">⏸️</button>
+      </div>
+    </div>
+
+    <!-- Health Bar (hearts at bottom) -->
+    <div class="hearts-bar">
+      <span id="heart-1" class="heart">💜</span>
+      <span id="heart-2" class="heart">💜</span>
+      <span id="heart-3" class="heart">💜</span>
+      <span id="heart-4" class="heart">💜</span>
+      <span id="heart-5" class="heart">💜</span>
+    </div>
+
+    <!-- Target Word Display -->
+    <div id="target-display" class="target-display">
+      <span id="target-word" class="target-word"></span>
+      <span id="target-typed" class="target-typed"></span>
+    </div>
+
+    <!-- Pause Overlay -->
+    <div id="pause-overlay" class="overlay hidden">
+      <div class="overlay-card">
+        <h2>⏸️ Paused</h2>
+        <button type="button" id="btn-resume" class="btn btn-primary">Resume Game</button>
+        <button type="button" id="btn-quit" class="btn btn-danger">Quit to Menu</button>
+      </div>
+    </div>
+
+    <!-- Level Complete Overlay -->
+    <div id="level-overlay" class="overlay hidden">
+      <div class="overlay-card level-card">
+        <div class="level-stars">⭐⭐⭐</div>
+        <h2>Level <span id="level-complete-num">1</span> Complete!</h2>
+        <div class="level-stats">
+          <p>Score: <span id="level-score">0</span></p>
+          <p>Words: <span id="level-words">0</span></p>
+          <p>Best Combo: <span id="level-combo">0</span></p>
+        </div>
+        <button type="button" id="btn-next-level" class="btn btn-primary btn-glow">Next Level →</button>
+      </div>
+    </div>
+
+    <!-- Game Over Overlay -->
+    <div id="gameover-overlay" class="overlay hidden">
+      <div class="overlay-card gameover-card">
+        <div class="gameover-emoji">😢</div>
+        <h2>Game Over</h2>
+        <p class="gameover-message" id="gameover-message">The stars got away!</p>
+        <div class="gameover-stats">
+          <p>⭐ Final Score: <span id="final-score">0</span></p>
+          <p>🔥 Best Combo: <span id="final-combo">0</span></p>
+          <p>📝 Words Typed: <span id="final-words">0</span></p>
+        </div>
+        <div class="gameover-buttons">
+          <button type="button" id="btn-retry" class="btn btn-primary">Try Again</button>
+          <button type="button" id="btn-menu" class="btn btn-secondary">Main Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tutorial Overlay -->
+    <div id="tutorial-overlay" class="overlay tutorial">
+      <div class="tutorial-card">
+        <div class="tutorial-slides">
+          <div class="tutorial-slide active" data-slide="0">
+            <h2>🦄 Welcome to Magic Type Quest!</h2>
+            <p>Words fall from the sky like shooting stars!</p>
+            <p>Type each letter before the star reaches the bottom.</p>
+            <div class="tutorial-dots">
+              <span class="dot active"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
+            <button type="button" class="btn btn-tutorial-next">Next →</button>
+          </div>
+          <div class="tutorial-slide" data-slide="1">
+            <h2>⭐ How to Play</h2>
+            <p>Look at the word highlighted at the top of the screen.</p>
+            <p>Press one key at a time on your keyboard.</p>
+            <p>Correct letters sparkle! Wrong letters shake!</p>
+            <div class="tutorial-dots">
+              <span class="dot"></span>
+              <span class="dot active"></span>
+              <span class="dot"></span>
+            </div>
+            <button type="button" class="btn btn-tutorial-next">Next →</button>
+          </div>
+          <div class="tutorial-slide" data-slide="2">
+            <h2>🎯 Get High Scores!</h2>
+            <p>Chain correct words together for COMBO bonuses!</p>
+            <p>Collect 💜 hearts by typing without mistakes.</p>
+            <p>Press <kbd>Space</kbd> to skip a tricky word!</p>
+            <div class="tutorial-dots">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot active"></span>
+            </div>
+            <button type="button" id="btn-start-game" class="btn btn-primary btn-glow">Start Playing!</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile / Avatars Screen -->
+  <div id="profile-screen" class="screen">
+    <div class="stars-bg"></div>
+    <div class="screen-header">
+      <button type="button" id="btn-profile-back" class="btn-back">← Back</button>
+      <h2>👸 My Profile</h2>
+    </div>
+    <div class="profile-card">
+      <div class="avatar-preview" id="avatar-preview">🦄</div>
+      <input type="text" id="player-name" class="player-name-input" placeholder="Your Name" maxlength="12" value="">
+      <div class="avatar-picker">
+        <button type="button" class="avatar-btn active" data-avatar="🦄">🦄</button>
+        <button type="button" class="avatar-btn" data-avatar="🌈">🌈</button>
+        <button type="button" class="avatar-btn" data-avatar="🧚‍♀️">🧚‍♀️</button>
+        <button type="button" class="avatar-btn" data-avatar="🩰">🩰</button>
+        <button type="button" class="avatar-btn" data-avatar="🦋">🦋</button>
+        <button type="button" class="avatar-btn" data-avatar="🐱">🐱</button>
+        <button type="button" class="avatar-btn" data-avatar="🧜‍♀️">🧜‍♀️</button>
+        <button type="button" class="avatar-btn" data-avatar="🎀">🎀</button>
+      </div>
+      <div class="profile-stats">
+        <div class="profile-stat">
+          <span class="ps-icon">⭐</span>
+          <span class="ps-num" id="profile-stars">0</span>
+          <span class="ps-label">Stars</span>
+        </div>
+        <div class="profile-stat">
+          <span class="ps-icon">🏅</span>
+          <span class="ps-num" id="profile-best">0</span>
+          <span class="ps-label">Best Score</span>
+        </div>
+        <div class="profile-stat">
+          <span class="ps-icon">📝</span>
+          <span class="ps-num" id="profile-words">0</span>
+          <span class="ps-label">Words Typed</span>
+        </div>
+        <div class="profile-stat">
+          <span class="ps-icon">⏱️</span>
+          <span class="ps-num" id="profile-time">0m</span>
+          <span class="ps-label">Time Played</span>
+        </div>
+      </div>
+      <button type="button" id="btn-save-profile" class="btn btn-primary">Save Profile</button>
+    </div>
+  </div>
+
+  <!-- Challenges Screen -->
+  <div id="challenges-screen" class="screen">
+    <div class="stars-bg"></div>
+    <div class="screen-header">
+      <button type="button" id="btn-challenges-back" class="btn-back">← Back</button>
+      <h2>🏆 Daily Challenges</h2>
+    </div>
+    <div class="challenges-grid">
+      <div class="challenge-card" id="challenge-1" data-challenge="speed">
+        <div class="challenge-icon">⚡</div>
+        <h3>Speedster</h3>
+        <p>Type 20 words in under 2 minutes</p>
+        <div class="challenge-progress-bar"><div class="challenge-progress-fill"></div></div>
+        <span class="challenge-status">Start!</span>
+      </div>
+      <div class="challenge-card" id="challenge-2" data-challenge="combo">
+        <div class="challenge-icon">🔥</div>
+        <h3>Combo Master</h3>
+        <p>Get a 10-word combo streak</p>
+        <div class="challenge-progress-bar"><div class="challenge-progress-fill"></div></div>
+        <span class="challenge-status">Start!</span>
+      </div>
+      <div class="challenge-card" id="challenge-3" data-challenge="accuracy">
+        <div class="challenge-icon">🎯</div>
+        <h3>Perfect Aim</h3>
+        <p>Type 15 words with 100% accuracy</p>
+        <div class="challenge-progress-bar"><div class="challenge-progress-fill"></div></div>
+        <span class="challenge-status">Start!</span>
+      </div>
+      <div class="challenge-card" id="challenge-4" data-challenge="letters">
+        <div class="challenge-icon">🔤</div>
+        <h3>Alphabet Ace</h3>
+        <p>Complete the letter practice mode</p>
+        <div class="challenge-progress-bar"><div class="challenge-progress-fill"></div></div>
+        <span class="challenge-status">Start!</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+  <script>
+    // Register service worker for PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
