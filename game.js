@@ -1633,7 +1633,7 @@ function getAdaptiveSpeed() {
 }
 
 function getAdaptiveSpawnRate() {
-	const base = getAdaptiveSpawnRate();
+	const base = getLevelConfig(gameState.level).spawnRate;
 	return base * (1 - gameState.difficultyMod * 0.1);
 }
 
