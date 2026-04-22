@@ -1,0 +1,8 @@
+version: "3.9"
+
+services:
+  magic-type-quest:
+    build: .
+    ports:
+      - "8765:80"
+    restart: unless-stopped
