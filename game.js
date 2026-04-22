@@ -753,9 +753,12 @@ class FallingWord {
 		ctx.fill();
 		ctx.stroke();
 
-		// Text
-		ctx.fillStyle = "#F8FAFC";
-		ctx.font = "700 16px Nunito, sans-serif";
+		// Text - responsive font size
+		const fontSize = Math.max(
+			20,
+			Math.min(32, Math.floor(gameState.canvasW / 30)),
+		);
+		ctx.font = `700 ${fontSize}px Nunito, sans-serif`;
 		ctx.textAlign = "left";
 		ctx.textBaseline = "middle";
 		ctx.fillText(this.text, x + 8, y);
@@ -765,7 +768,7 @@ class FallingWord {
 			const matchedText = this.text.slice(0, this.matched);
 			const mW = ctx.measureText(matchedText).width;
 			ctx.fillStyle = "#34D399";
-			ctx.fillRect(x + 8, y + 10, mW, 2);
+			ctx.fillRect(x + 8, y + fontSize * 0.55, mW, 3);
 		}
 
 		// Target indicator
@@ -917,9 +920,11 @@ function completeWord() {
 	checkAdaptiveDifficulty();
 	updateLevelProgress();
 
-	// Pet reaction
-	if (gameState.combo >= 5) showPetReaction("combo");
-	else showPetReaction("happy");
+	// Pet shows the actual word in its bubble
+	const wordEmoji = getWordEmoji(word.text);
+	if (gameState.combo >= 5)
+		showPetReaction("combo", wordEmoji + " " + word.text);
+	else showPetReaction("happy", wordEmoji + " " + word.text);
 
 	// Score calculation
 	const baseScore = word.text.length * 10;
