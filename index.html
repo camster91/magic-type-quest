@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>✨ Magic Type Quest ✨</title>
+  <title>✨ BloomType ✨</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#8B5CF6">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
@@ -15,7 +15,7 @@
 <body>
   <!-- Install Prompt -->
   <div id="install-prompt" class="install-prompt hidden">
-    <span>📱 Add Magic Type Quest to your home screen!</span>
+    <span>📱 Add BloomType to your home screen!</span>
     <button type="button" id="install-btn" class="btn-install">Add</button>
     <button type="button" id="dismiss-install" class="btn-dismiss">×</button>
   </div>
@@ -36,7 +36,7 @@
       <span class="sparkle">✨</span>
     </h1>
     
-    <p class="tagline">Type words to collect stars & save the unicorn kingdom!</p>
+    <p class="tagline">Type words to grow flowers & save the unicorn kingdom!</p>
     
     <div class="menu-buttons">
       <button type="button" id="btn-start" class="btn btn-primary btn-glow">
@@ -55,7 +55,7 @@
 
     <div class="stats-bar">
       <div class="stat-pill">
-        <span class="stat-icon">⭐</span>
+        <span class="stat-icon">🌸</span>
         <span id="total-stars">0</span> Stars
       </div>
       <div class="stat-pill">
@@ -94,7 +94,7 @@
     <div class="hud">
       <div class="hud-left">
         <div class="hud-score">
-          <span class="hud-icon">⭐</span>
+          <span class="hud-icon">🌸</span>
           <span id="score">0</span>
         </div>
         <div class="hud-level">
@@ -170,7 +170,7 @@
     <!-- Level Complete Overlay -->
     <div id="level-overlay" class="overlay hidden">
       <div class="overlay-card level-card">
-        <div class="level-stars">⭐⭐⭐</div>
+        <div class="level-stars">🌸🌸🌸</div>
         <h2>Level <span id="level-complete-num">1</span> Complete!</h2>
         <div class="level-stats">
           <p>Score: <span id="level-score">0</span></p>
@@ -188,7 +188,7 @@
         <h2>Game Over</h2>
         <p class="gameover-message" id="gameover-message">The stars got away!</p>
         <div class="gameover-stats">
-          <p>⭐ Final Score: <span id="final-score">0</span></p>
+          <p>🌸 Final Score: <span id="final-score">0</span></p>
           <p>🔥 Best Combo: <span id="final-combo">0</span></p>
           <p>📝 Words Typed: <span id="final-words">0</span></p>
         </div>
@@ -204,8 +204,8 @@
       <div class="tutorial-card">
         <div class="tutorial-slides">
           <div class="tutorial-slide active" data-slide="0">
-            <h2>🦄 Welcome to Magic Type Quest!</h2>
-            <p>Words fall from the sky like shooting stars!</p>
+            <h2>🌸 Welcome to BloomType!</h2>
+            <p>Words bloom into flowers as you type them!</p>
             <p>Type each letter before the star reaches the bottom.</p>
             <div class="tutorial-dots">
               <span class="dot active"></span>
@@ -215,7 +215,7 @@
             <button type="button" class="btn btn-tutorial-next">Next →</button>
           </div>
           <div class="tutorial-slide" data-slide="1">
-            <h2>⭐ How to Play</h2>
+            <h2>🌸 How to Play</h2>
             <p>Look at the word highlighted at the top of the screen.</p>
             <p>Press one key at a time on your keyboard.</p>
             <p>Correct letters sparkle! Wrong letters shake!</p>
@@ -265,7 +265,7 @@
       </div>
       <div class="profile-stats">
         <div class="profile-stat">
-          <span class="ps-icon">⭐</span>
+          <span class="ps-icon">🌸</span>
           <span class="ps-num" id="profile-stars">0</span>
           <span class="ps-label">Stars</span>
         </div>

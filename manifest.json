@@ -1,7 +1,7 @@
 {
-	"name": "Magic Type Quest",
-	"short_name": "MagicType",
-	"description": "A fun magical typing game for kids! Type words to collect stars and save the unicorn kingdom.",
+	"name": "BloomType",
+	"short_name": "BloomType",
+	"description": "A beautiful typing game for kids! Type words to collect stars and grow your garden.",
 	"start_url": "/",
 	"display": "standalone",
 	"background_color": "#1E1B4B",

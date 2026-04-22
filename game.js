@@ -1,5 +1,5 @@
 /**
- * ✨ Magic Type Quest ✨
+ * ✨ BloomType ✨
  * A magical typing game for kids - full Canvas game engine
  */
 
@@ -1690,12 +1690,12 @@ function showPetReaction(type, text) {
 	pet.classList.remove("happy", "celebrate", "sad", "shake");
 	void pet.offsetWidth;
 	const reactions = {
-		happy: { emoji: "🐉", msg: "Nice!", class: "happy" },
+		happy: { emoji: "🌻", msg: "Nice!", class: "happy" },
 		combo: { emoji: "🔥", msg: "On fire!", class: "celebrate" },
 		levelup: { emoji: "🎉", msg: "Level up!", class: "celebrate" },
 		miss: { emoji: "😵", msg: "Oops!", class: "sad" },
 		hurt: { emoji: "😢", msg: "Watch out!", class: "sad" },
-		idle: { emoji: "🐉", msg: "", class: "" },
+		idle: { emoji: "🌻", msg: "", class: "" },
 	};
 	const r = reactions[type] || reactions.idle;
 	pet.textContent = r.emoji;
