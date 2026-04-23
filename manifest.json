@@ -1,6 +1,6 @@
 {
-	"name": "BloomType",
-	"short_name": "BloomType",
+	"name": "Bloom Typing",
+	"short_name": "Bloom Typing",
 	"description": "A beautiful typing game for kids! Type words to collect stars and grow your garden.",
 	"start_url": "/",
 	"display": "standalone",

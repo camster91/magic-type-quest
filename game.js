@@ -1,6 +1,6 @@
 /**
- * ✨ BloomType ✨
- * A magical typing game for kids - full Canvas game engine
+ * ✨ Bloom Typing ✨
+ * A beautiful typing game for kids - full Canvas game engine
  */
 
 // ===== AUDIO ENGINE =====
@@ -731,34 +731,42 @@ class FallingWord {
 		const x = this.x + shakeX;
 		const y = this.y;
 
-		// Glow
-		if (this.glow > 0 || isTarget) {
-			ctx.save();
-			ctx.shadowColor = isTarget ? "#34D399" : "#A78BFA";
-			ctx.shadowBlur = isTarget ? 15 : this.glow * 20;
-			ctx.fillStyle = "#8B5CF6";
-			ctx.globalAlpha = isTarget ? 0.25 : 0.15;
-			ctx.beginPath();
-			ctx.roundRect(x - 4, y - this.h / 2 - 2, this.w + 8, this.h + 4, 12);
-			ctx.fill();
-			ctx.restore();
-		}
-
-		// Word pill
-		ctx.fillStyle = isTarget ? "rgba(52,211,153,0.2)" : "rgba(139,92,246,0.15)";
-		ctx.strokeStyle = isTarget ? "#34D399" : "rgba(167,139,250,0.4)";
-		ctx.lineWidth = 1.5;
-		ctx.beginPath();
-		ctx.roundRect(x - 4, y - this.h / 2 - 2, this.w + 8, this.h + 4, 12);
-		ctx.fill();
-		ctx.stroke();
-
-		// Text - responsive font size
+		// Responsive font size
 		const fontSize = Math.max(
 			20,
 			Math.min(32, Math.floor(gameState.canvasW / 30)),
 		);
 		ctx.font = `700 ${fontSize}px Nunito, sans-serif`;
+
+		// Recalculate width to fit actual rendered font
+		const textW = ctx.measureText(this.text).width;
+		const pillW = textW + 28;
+		const pillH = fontSize + 16;
+
+		// Glow
+		if (this.glow > 0 || isTarget) {
+			ctx.save();
+			ctx.shadowColor = isTarget ? "#34D399" : "#A78BFA";
+			ctx.shadowBlur = isTarget ? 15 : this.glow * 20;
+			ctx.fillStyle = isTarget ? "rgba(52,211,153,0.3)" : "rgba(139,92,246,0.3)";
+			ctx.globalAlpha = isTarget ? 0.3 : 0.2;
+			ctx.beginPath();
+			ctx.roundRect(x - 6, y - pillH / 2 - 2, pillW + 12, pillH + 4, 14);
+			ctx.fill();
+			ctx.restore();
+		}
+
+		// Word pill
+		ctx.fillStyle = isTarget ? "rgba(52,211,153,0.25)" : "rgba(139,92,246,0.25)";
+		ctx.strokeStyle = isTarget ? "#34D399" : "rgba(200,180,255,0.6)";
+		ctx.lineWidth = 2;
+		ctx.beginPath();
+		ctx.roundRect(x - 6, y - pillH / 2 - 2, pillW + 12, pillH + 4, 14);
+		ctx.fill();
+		ctx.stroke();
+
+		// Text — white for readability
+		ctx.fillStyle = "#ffffff";
 		ctx.textAlign = "left";
 		ctx.textBaseline = "middle";
 		ctx.fillText(this.text, x + 8, y);
@@ -768,7 +776,7 @@ class FallingWord {
 			const matchedText = this.text.slice(0, this.matched);
 			const mW = ctx.measureText(matchedText).width;
 			ctx.fillStyle = "#34D399";
-			ctx.fillRect(x + 8, y + fontSize * 0.55, mW, 3);
+			ctx.fillRect(x + 8, y + fontSize * 0.55, mW, 4);
 		}
 
 		// Target indicator
@@ -776,7 +784,7 @@ class FallingWord {
 			ctx.fillStyle = "#34D399";
 			ctx.font = "12px Nunito, sans-serif";
 			ctx.textAlign = "center";
-			ctx.fillText("▲", x + this.w / 2, y - this.h / 2 - 8);
+			ctx.fillText("▲", x + pillW / 2, y - pillH / 2 - 10);
 		}
 
 		ctx.globalAlpha = 1;

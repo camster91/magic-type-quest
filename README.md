@@ -1,4 +1,4 @@
-# ✨ Magic Type Quest ✨
+# ✨ Bloom Typing ✨
 
 A beautiful, immersive typing game for kids — built for the web with gorgeous Canvas animations, AI-generated character art, and PWA support.
 
@@ -71,7 +71,7 @@ python3 -m http.server 8080
 ## 🎨 AI Art Generation
 
 The game uses custom AI-generated character art created with Google Gemini Nano Banana 2:
-- Hero unicorn kingdom scene
+- Hero flower garden scene
 - Celebration/confetti victory screen
 
 Generated using the nano-banana-2 skill at resolution 1K for crisp web display.
@@ -118,7 +118,7 @@ Five difficulty tiers:
 ## 🏗️ Architecture
 
 ```
-Magic Type Quest           Size
+Bloom Typing           Size
 ├── index.html       —     12 KB
 ├── styles.css       —     21 KB  (189 balanced braces ✅)
 ├── game.js          —     34 KB  (85/85 parens, 8/8 braces ✅)
@@ -152,4 +152,4 @@ Magic Type Quest           Size
 
 ---
 
-**Built with ❤️** for kids who love magic and learning to type!
+**Built with ❤️** for kids who love flowers and learning to type!

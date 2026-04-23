@@ -1,4 +1,4 @@
-const CACHE_NAME = "magic-type-quest-v1";
+const CACHE_NAME = "bloom-typing-v1";
 const ASSETS = [
 	"/",
 	"/index.html",

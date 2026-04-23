@@ -522,33 +522,7 @@ body {
 
 /* ===== TARGET WORD DISPLAY ===== */
 .target-display {
-	position: absolute;
-	bottom: clamp(0.75rem, 2vh, 1.5rem);
-	left: 50%;
-	transform: translateX(-50%);
-	z-index: 10;
-	background: rgba(0, 0, 0, 0.5);
-	backdrop-filter: blur(15px);
-	border: 1px solid var(--glass-border);
-	border-radius: 20px;
-	padding: clamp(0.5rem, 1.5vh, 1rem) clamp(1rem, 3vw, 2rem);
-	display: flex;
-	align-items: center;
-	gap: 0.15em;
-	font-family: "Fredoka One", cursive;
-	font-size: clamp(1.5rem, 5vw, 3rem);
-	letter-spacing: 0.1em;
-	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-	pointer-events: none;
-}
-
-.target-word {
-	color: var(--text-dim);
-}
-
-.target-typed {
-	color: var(--success);
-	text-shadow: 0 0 8px rgba(52, 211, 153, 0.6);
+	display: none !important;
 }
 
 /* ===== OVERLAYS ===== */
