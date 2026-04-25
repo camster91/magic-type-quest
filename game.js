@@ -588,20 +588,19 @@ const gameState = {
 
 function loadProfile() {
 	try {
-		return (
-			JSON.parse(localStorage.getItem("mtp_profile")) || {
-				name: "",
-				avatar: "🦄",
-				totalStars: 0,
-				highScore: 0,
-				totalWords: 0,
-				totalTime: 0,
-				daysPlayed: new Set(),
-				levelsUnlocked: 1,
-				challenges: {},
-				unlockedAvatars: ["🦄"],
-			}
-		);
+		const raw = JSON.parse(localStorage.getItem("mtp_profile"));
+		if (!raw || typeof raw !== "object") throw new Error("invalid profile");
+		// Restore daysPlayed from array (Set doesn't survive JSON.stringify)
+		if (!(raw.daysPlayed instanceof Set)) {
+			raw.daysPlayed = new Set(
+				Array.isArray(raw.daysPlayed) ? raw.daysPlayed : [],
+			);
+		}
+		// Fallback missing fields for forward compatibility
+		if (!raw.levelsUnlocked) raw.levelsUnlocked = 1;
+		if (!raw.unlockedAvatars) raw.unlockedAvatars = ["🦄"];
+		if (!raw.challenges) raw.challenges = {};
+		return raw;
 	} catch {
 		return {
 			name: "",
@@ -620,7 +619,17 @@ function loadProfile() {
 
 function saveProfile() {
 	try {
-		localStorage.setItem("mtp_profile", JSON.stringify(gameState.profile));
+		const toSave = { ...gameState.profile };
+		// Set does not survive JSON.stringify — convert to array
+		toSave.daysPlayed = Array.from(gameState.profile.daysPlayed);
+		localStorage.setItem("mtp_profile", JSON.stringify(toSave));
+	} catch {}
+}
+
+/** Set tutorial-seen flag safely (works even in Safari private mode) */
+function setTutorialSeen() {
+	try {
+		localStorage.setItem("mtp_tutorial_seen", "1");
 	} catch {}
 }
 
@@ -1073,6 +1082,11 @@ function updateHearts() {
 // ===== GAME FLOW =====
 function startGame(opts = {}) {
 	initAudio();
+	// Prevent duplicate animation loops on restart
+	cancelAnimationFrame(gameState.animationId);
+	gameState.animationId = 0;
+	lastFrameTime = 0;
+
 	gameState.screen = "game";
 	gameState.score = 0;
 	gameState.combo = 0;
@@ -1120,6 +1134,12 @@ function startGame(opts = {}) {
 		s.classList.remove("active");
 	$("game-screen").classList.add("active");
 
+	// Defensively hide overlays that might be stuck from previous session
+	$("tutorial-overlay")?.classList.add("hidden");
+	$("pause-overlay")?.classList.add("hidden");
+	$("level-overlay")?.classList.add("hidden");
+	$("gameover-overlay")?.classList.add("hidden");
+
 	resizeCanvas();
 	initStars();
 	updateHUD();
@@ -1127,8 +1147,13 @@ function startGame(opts = {}) {
 	updateCombo();
 	updateTargetDisplay();
 
-	// Show tutorial on first play
-	const hasPlayed = localStorage.getItem("mtp_tutorial_seen");
+	// Show tutorial on first play only
+	let hasPlayed = false;
+	try {
+		hasPlayed = !!localStorage.getItem("mtp_tutorial_seen");
+	} catch {
+		hasPlayed = true; // Gracefully skip tutorial if localStorage is blocked
+	}
 	if (!hasPlayed) {
 		showTutorial();
 	} else {
@@ -1226,6 +1251,9 @@ function _addFloatingScore(text, x, y, color = "#FBBF24") {
 function endGame(won) {
 	gameState.gameOver = true;
 	cancelAnimationFrame(gameState.animationId);
+
+	// Any completed game = player has seen how to play → skip wizard forever
+	setTutorialSeen();
 
 	// Calculate total time
 	const elapsed = Math.round(
