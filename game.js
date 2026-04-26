@@ -1278,9 +1278,6 @@ function drawFloatingScores(dt) {
 	ctx.globalAlpha = 1;
 }
 
-function _addFloatingScore(text, x, y, color = "#FBBF24") {
-	floatingScores.push({ text, x, y, color, life: 1.2 });
-}
 
 function endGame(won) {
 	if (gameState.gameOver) return;
@@ -1519,9 +1516,6 @@ function showScreen(name) {
 	if (name === "menu") updateMenuStats();
 }
 
-function _showMenu() {
-	showScreen("menu");
-}
 
 function updateMenuStats() {
 	const p = gameState.profile;
