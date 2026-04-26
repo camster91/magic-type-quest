@@ -8,8 +8,15 @@ const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
 
 function initAudio() {
-	if (!audioCtx) audioCtx = new AudioCtx();
-	if (audioCtx.state === "suspended") audioCtx.resume();
+	if (audioCtx) {
+		if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+		return;
+	}
+	try {
+		audioCtx = new AudioCtx();
+	} catch {
+		// Audio blocked — game works silently
+	}
 }
 
 function playSound(type) {
@@ -843,8 +850,12 @@ function handleKey(e) {
 	if (gameState.screen !== "game") return;
 	if (gameState.paused || gameState.gameOver) return;
 	if (e.ctrlKey || e.altKey || e.metaKey) return;
+	// Don't steal keystrokes from form inputs or the browser UI
+	const tag = document.activeElement?.tagName;
+	if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
 
-	initAudio();
+	// Resume audio context after tab suspension — fast no-op when running
+	if (audioCtx?.state === "suspended") audioCtx.resume().catch(() => {});
 
 	const key = e.key.toLowerCase();
 	if (key === " ") {
@@ -1157,14 +1168,16 @@ function startGame(opts = {}) {
 	if (!hasPlayed) {
 		showTutorial();
 	} else {
-		requestAnimationFrame(gameLoop);
+		gameState.animationId = requestAnimationFrame(gameLoop);
 	}
 }
 
 let lastFrameTime = 0;
 function gameLoop(timestamp) {
 	if (gameState.screen !== "game") return;
-	if (gameState.paused || gameState.gameOver) {
+	// Zombie-loop fix: stop scheduling when game is over — only resume for pause
+	if (gameState.gameOver) return;
+	if (gameState.paused) {
 		gameState.animationId = requestAnimationFrame(gameLoop);
 		return;
 	}
@@ -1318,6 +1331,7 @@ const practiceChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 let practiceIndex = 0;
 
 function startPractice() {
+	initAudio();
 	gameState.screen = "practice";
 	for (const s of document.querySelectorAll(".screen"))
 		s.classList.remove("active");
@@ -1337,6 +1351,8 @@ function updatePractice() {
 
 function handlePracticeKey(e) {
 	if (gameState.screen !== "practice") return;
+	const tag = document.activeElement?.tagName;
+	if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
 	const key = e.key.toUpperCase();
 	if (key === practiceChars[practiceIndex]) {
 		playSound("correct");
@@ -1465,8 +1481,8 @@ function nextTutorial() {
 	tutorialSlide++;
 	if (tutorialSlide >= 3) {
 		$("tutorial-overlay").classList.add("hidden");
-		localStorage.setItem("mtp_tutorial_seen", "1");
-		requestAnimationFrame(gameLoop);
+		setTutorialSeen();
+		gameState.animationId = requestAnimationFrame(gameLoop);
 	} else {
 		updateTutorialSlides();
 	}
@@ -1600,8 +1616,8 @@ function bindEvents() {
 		b.addEventListener("click", nextTutorial);
 	$("btn-start-game").addEventListener("click", () => {
 		$("tutorial-overlay").classList.add("hidden");
-		localStorage.setItem("mtp_tutorial_seen", "1");
-		requestAnimationFrame(gameLoop);
+		setTutorialSeen();
+		gameState.animationId = requestAnimationFrame(gameLoop);
 	});
 
 	// Keyboard
