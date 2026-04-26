@@ -575,8 +575,7 @@ const gameState = {
 	activeWords: [],
 	particles: [],
 	stars: [],
-	wordQueue: [],
-	targetWord: null,
+		targetWord: null,
 	targetIndex: 0,
 	paused: false,
 	gameOver: false,
@@ -607,6 +606,7 @@ function loadProfile() {
 		if (!raw.levelsUnlocked) raw.levelsUnlocked = 1;
 		if (!raw.unlockedAvatars) raw.unlockedAvatars = ["🦄"];
 		if (!raw.challenges) raw.challenges = {};
+		if (!raw.achievements) raw.achievements = {};
 		return raw;
 	} catch {
 		return {
@@ -619,6 +619,7 @@ function loadProfile() {
 			daysPlayed: new Set(),
 			levelsUnlocked: 1,
 			challenges: {},
+			achievements: {},
 			unlockedAvatars: ["🦄"],
 		};
 	}
@@ -1113,8 +1114,7 @@ function startGame(opts = {}) {
 	gameState.correctKeystrokes = 0;
 	gameState.activeWords = [];
 	gameState.particles = [];
-	gameState.wordQueue = [];
-	gameState.targetWord = null;
+		gameState.targetWord = null;
 	gameState.targetIndex = 0;
 	gameState.paused = false;
 	gameState.gameOver = false;
@@ -1659,7 +1659,9 @@ function bindEvents() {
 
 	// Resize
 	window.addEventListener("resize", () => {
-		if (gameState.screen === "game") resizeCanvas();
+		if (gameState.screen === "game" || gameState.screen === "practice") {
+			resizeCanvas();
+		}
 	});
 
 	// PWA
@@ -1866,10 +1868,12 @@ const ACHIEVEMENTS = {
 };
 
 function checkAchievements() {
+	const unlocked = gameState.profile.achievements || {};
+	gameState.profile.achievements = unlocked;
 	for (const [key, ach] of Object.entries(ACHIEVEMENTS)) {
-		if (gameState.achievementsUnlocked[key]) continue;
+		if (unlocked[key]) continue;
 		if (ach.check(gameState)) {
-			gameState.achievementsUnlocked[key] = true;
+			unlocked[key] = true;
 			gameState.profile.totalStars += 25;
 			saveProfile();
 			showAchievementToast(ach.title, ach.desc, ach.icon);
