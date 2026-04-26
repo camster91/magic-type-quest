@@ -759,7 +759,7 @@ class FallingWord {
 		ctx.font = `700 ${fontSize}px Nunito, sans-serif`;
 
 		// Recalculate width to fit actual rendered font
-		const textW = ctx.measureText(this.text).width;
+		const textW = this.w - 24; // cached from constructor measure
 		const pillW = textW + 28;
 		const pillH = fontSize + 16;
 
@@ -1532,6 +1532,7 @@ function resumeGame() {
 
 // ===== CANVAS RESIZE =====
 function resizeCanvas() {
+	if (!canvas.parentElement) return;
 	const rect = canvas.parentElement.getBoundingClientRect();
 	canvas.width = rect.width * window.devicePixelRatio;
 	canvas.height = rect.height * window.devicePixelRatio;
@@ -1655,6 +1656,14 @@ function bindEvents() {
 	window.addEventListener("resize", () => {
 		if (gameState.screen === "game" || gameState.screen === "practice") {
 			resizeCanvas();
+		}
+	});
+
+	// Tab visibility — pause game when hidden to save battery
+	document.addEventListener("visibilitychange", () => {
+		if (document.hidden && gameState.screen === "game" && !gameState.paused && !gameState.gameOver) {
+			gameState.paused = true;
+			$("pause-overlay")?.classList.remove("hidden"); // show pause overlay so UI is consistent
 		}
 	});
 
