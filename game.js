@@ -721,11 +721,14 @@ class FallingWord {
 	constructor(text, speed) {
 		this.text = text;
 		this.speed = speed;
+		// Measure with correct font so x-position is accurate (was using stale font)
+		const fontSize = Math.max(20, Math.min(32, Math.floor(gameState.canvasW / 30)));
+		ctx.font = `700 ${fontSize}px Nunito, sans-serif`;
 		const textW = ctx.measureText(text).width;
 		const margin = 80;
-		this.x =
-			margin +
-			Math.random() * Math.max(20, gameState.canvasW - textW - margin * 2);
+		const minX = margin;
+		const maxX = Math.max(margin + 20, gameState.canvasW - textW - margin);
+		this.x = minX + Math.random() * Math.max(1, maxX - minX);
 		this.y = -30;
 		this.w = textW + 24;
 		this.h = 36;
@@ -850,6 +853,8 @@ function handleKey(e) {
 	if (gameState.screen !== "game") return;
 	if (gameState.paused || gameState.gameOver) return;
 	if (e.ctrlKey || e.altKey || e.metaKey) return;
+	// Ignore auto-repeat (holding a key down) — prevents space-spamming
+	if (e.repeat) return;
 	// Don't steal keystrokes from form inputs or the browser UI
 	const tag = document.activeElement?.tagName;
 	if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
@@ -1004,6 +1009,7 @@ function completeWord() {
 }
 
 function loseHeart() {
+	if (gameState.health <= 0 || gameState.gameOver) return;
 	gameState.health--;
 	gameState.combo = 0;
 	gameState.difficultyMod = Math.max(gameState.difficultyMod - 1, -2);
@@ -1140,6 +1146,11 @@ function startGame(opts = {}) {
 	updateDifficultyBadge();
 	updateLevelProgress();
 
+	// Clear any leftover floating scores from previous game
+	floatingScores.splice(0, floatingScores.length);
+	// Clear particles
+	gameState.particles.splice(0, gameState.particles.length);
+
 	// Switch screens
 	for (const s of document.querySelectorAll(".screen"))
 		s.classList.remove("active");
@@ -1235,6 +1246,16 @@ function gameLoop(timestamp) {
 	// Floating score text
 	drawFloatingScores(dt);
 
+	// Deadlock guard: all words spawned AND none left means level is over
+	const cfg = getLevelConfig(gameState.level);
+	if (
+		!gameState.gameOver &&
+		gameState.activeWords.length === 0 &&
+		gameState.wordsSpawned >= cfg.words
+	) {
+		endGame(gameState.wordsCompleted >= cfg.words);
+	}
+
 	gameState.animationId = requestAnimationFrame(gameLoop);
 }
 
@@ -1262,6 +1283,7 @@ function _addFloatingScore(text, x, y, color = "#FBBF24") {
 }
 
 function endGame(won) {
+	if (gameState.gameOver) return;
 	gameState.gameOver = true;
 	cancelAnimationFrame(gameState.animationId);
 
