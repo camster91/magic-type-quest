@@ -7,6 +7,29 @@
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
 
+// Polyfill: roundRect for older Safari (< 16.4) and other legacy browsers
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+	CanvasRenderingContext2D.prototype.roundRect = function (
+		x,
+		y,
+		w,
+		h,
+		r,
+	) {
+		const radius = Math.min(r, w / 2, h / 2);
+		this.moveTo(x + radius, y);
+		this.lineTo(x + w - radius, y);
+		this.arcTo(x + w, y, x + w, y + radius, radius);
+		this.lineTo(x + w, y + h - radius);
+		this.arcTo(x + w, y + h, x + w - radius, y + h, radius);
+		this.lineTo(x + radius, y + h);
+		this.arcTo(x, y + h, x, y + h - radius, radius);
+		this.lineTo(x, y + radius);
+		this.arcTo(x, y, x + radius, y, radius);
+		this.closePath();
+	};
+}
+
 function initAudio() {
 	if (audioCtx) {
 		if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
@@ -1161,6 +1184,9 @@ function startGame(opts = {}) {
 	$("pause-overlay")?.classList.add("hidden");
 	$("level-overlay")?.classList.add("hidden");
 	$("gameover-overlay")?.classList.add("hidden");
+	$("word-popup")?.classList.add("hidden");
+	$("achievement-toast")?.classList.add("hidden");
+	$("powerup-indicator")?.classList.remove("active");
 
 	resizeCanvas();
 	initStars();
