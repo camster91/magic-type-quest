@@ -666,6 +666,18 @@ function setTutorialSeen() {
 
 // ===== DOM ELEMENTS =====
 const $ = (id) => document.getElementById(id);
+
+// Cache frequently-accessed DOM elements for performance
+const _hudScore = $("score");
+const _hudLevel = $("level");
+const _hudAccuracy = $("accuracy");
+const _hudComboCount = $("combo-count");
+const _hudComboDisplay = $("combo-display");
+const _targetWordEl = $("target-word");
+let _petEmoji = null;
+let _petBubble = null;
+const _targetTypedEl = $("target-typed");
+
 const canvas = $("game-canvas");
 const ctx = canvas.getContext("2d");
 
@@ -745,15 +757,20 @@ class FallingWord {
 	constructor(text, speed) {
 		this.text = text;
 		this.speed = speed;
-		// Measure with correct font so x-position is accurate (was using stale font)
+		// Cache font metrics so draw() doesn't recalculate every frame
 		const fontSize = Math.max(20, Math.min(32, Math.floor(gameState.canvasW / 30)));
-		ctx.font = `700 ${fontSize}px Nunito, sans-serif`;
+		this._fontSize = fontSize;
+		this._font = `700 ${fontSize}px Nunito, sans-serif`;
+		ctx.font = this._font;
 		const textW = ctx.measureText(text).width;
 		const margin = 80;
 		const minX = margin;
 		const maxX = Math.max(margin + 20, gameState.canvasW - textW - margin);
 		this.x = minX + Math.random() * Math.max(1, maxX - minX);
 		this.y = -30;
+		this._textW = textW;
+		this._pillW = textW + 28;
+		this._pillH = fontSize + 16;
 		this.w = textW + 24;
 		this.h = 36;
 		this.glow = 0;
@@ -858,18 +875,17 @@ function spawnWord() {
 }
 
 function updateTargetDisplay() {
-	const tw = $("target-word");
-	const tt = $("target-typed");
 	if (!gameState.targetWord) {
-		tw.innerHTML = "";
-		tt.innerHTML = "";
+		_targetWordEl.textContent = "";
+		_targetTypedEl.textContent = "";
 		return;
 	}
 	const word = gameState.targetWord.text;
 	const done = word.slice(0, gameState.targetIndex);
 	const rest = word.slice(gameState.targetIndex);
-	tw.textContent = rest;
-	tt.textContent = done;
+	// textContent is faster than innerHTML and avoids HTML parsing
+	_targetWordEl.textContent = rest;
+	_targetTypedEl.textContent = done;
 }
 
 // ===== INPUT HANDLING =====
@@ -1083,30 +1099,26 @@ function checkChallenge() {
 }
 
 function updateHUD() {
-	$("score").textContent = gameState.score;
-	$("level").textContent = gameState.level;
+	_hudScore.textContent = gameState.score;
+	_hudLevel.textContent = gameState.level;
 	const acc =
 		gameState.totalKeystrokes > 0
 			? Math.round(
 					(gameState.correctKeystrokes / gameState.totalKeystrokes) * 100,
 				)
 			: 100;
-	$("accuracy").textContent = `${acc}%`;
+	_hudAccuracy.textContent = `${acc}%`;
 }
 
 function updateCombo() {
-	const el = $("combo-display");
-	$("combo-count").textContent = gameState.combo;
-	el.classList.toggle("active", gameState.combo >= 2);
+	_hudComboCount.textContent = gameState.combo;
+	const isActive = gameState.combo >= 2;
+	const hasActive = _hudComboDisplay.classList.contains("active");
+	if (isActive !== hasActive) _hudComboDisplay.classList.toggle("active", isActive);
 	if (gameState.combo >= 2) playSound("combo");
-	// Bonus combo visual on HUD
-	if (gameState.combo >= 5) {
-		el.style.color = "#FBBF24";
-	} else if (gameState.combo >= 3) {
-		el.style.color = "#F472B6";
-	} else {
-		el.style.color = "#FBBF24";
-	}
+	// Bonus combo visual on HUD — only set if changed
+	const newColor = gameState.combo >= 5 ? "#FBBF24" : gameState.combo >= 3 ? "#F472B6" : "#FBBF24";
+	if (_hudComboDisplay.style.color !== newColor) _hudComboDisplay.style.color = newColor;
 }
 
 function updateHearts() {
@@ -1533,6 +1545,11 @@ function nextTutorial() {
 	}
 }
 
+function initPetCache() {
+	_petEmoji = $("pet-emoji");
+	_petBubble = $("pet-bubble");
+}
+
 // ===== SCREEN MANAGEMENT =====
 function showScreen(name) {
 	gameState.screen = name;
@@ -1705,6 +1722,7 @@ function bindEvents() {
 function init() {
 	updateMenuStats();
 	bindEvents();
+	initPetCache();
 }
 
 document.addEventListener("DOMContentLoaded", init);
@@ -1748,7 +1766,7 @@ function getAdaptiveSpawnRate() {
 }
 
 function updateDifficultyBadge() {
-	const badge = document.getElementById("difficulty-badge");
+	const badge = $("difficulty-badge");
 	if (!badge) return;
 	const mod = gameState.difficultyMod;
 	let label = "Normal";
@@ -1779,7 +1797,7 @@ function updateDifficultyBadge() {
 }
 
 function showPowerUp(text) {
-	const el = document.getElementById("powerup-indicator");
+	const el = $("powerup-indicator");
 	if (!el) return;
 	el.textContent = text;
 	el.classList.add("active");
@@ -1789,11 +1807,9 @@ function showPowerUp(text) {
 // ===== TYPING PET =====
 function showPetReaction(type, text) {
 	text = text || "";
-	const pet = document.getElementById("pet-emoji");
-	const bubble = document.getElementById("pet-bubble");
-	if (!pet || !bubble) return;
-	pet.classList.remove("happy", "celebrate", "sad", "shake");
-	void pet.offsetWidth;
+	if (!_petEmoji || !_petBubble) return;
+	_petEmoji.classList.remove("happy", "celebrate", "sad", "shake");
+	void _petEmoji.offsetWidth;
 	const reactions = {
 		happy: { emoji: "🌻", msg: "Nice!", class: "happy" },
 		combo: { emoji: "🔥", msg: "On fire!", class: "celebrate" },
@@ -1803,12 +1819,12 @@ function showPetReaction(type, text) {
 		idle: { emoji: "🌻", msg: "", class: "" },
 	};
 	const r = reactions[type] || reactions.idle;
-	pet.textContent = r.emoji;
-	if (r.class) pet.classList.add(r.class);
+	_petEmoji.textContent = r.emoji;
+	if (r.class) _petEmoji.classList.add(r.class);
 	if (r.msg) {
-		bubble.textContent = text || r.msg;
-		bubble.classList.add("visible");
-		setTimeout(() => bubble.classList.remove("visible"), 1500);
+		_petBubble.textContent = text || r.msg;
+		_petBubble.classList.add("visible");
+		setTimeout(() => _petBubble.classList.remove("visible"), 1500);
 	}
 }
 
