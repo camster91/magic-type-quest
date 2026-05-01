@@ -3,7 +3,9 @@ docker-compose.yml
 .dockerignore
 .git
 .gitignore
+node_modules
+dist
+test
 README.md
-game-patch2.py
 *.md
 deploy/
