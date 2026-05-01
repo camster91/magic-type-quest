@@ -1,677 +1,6 @@
-/**
- * ✨ Bloom Typing ✨
- * A beautiful typing game for kids - full Canvas game engine
- */
-
-// ===== AUDIO ENGINE =====
-const AudioCtx = window.AudioContext || window.webkitAudioContext;
-let audioCtx = null;
-
-// Polyfill: roundRect for older Safari (< 16.4) and other legacy browsers
-if (!CanvasRenderingContext2D.prototype.roundRect) {
-	CanvasRenderingContext2D.prototype.roundRect = function (
-		x,
-		y,
-		w,
-		h,
-		r,
-	) {
-		const radius = Math.min(r, w / 2, h / 2);
-		this.moveTo(x + radius, y);
-		this.lineTo(x + w - radius, y);
-		this.arcTo(x + w, y, x + w, y + radius, radius);
-		this.lineTo(x + w, y + h - radius);
-		this.arcTo(x + w, y + h, x + w - radius, y + h, radius);
-		this.lineTo(x + radius, y + h);
-		this.arcTo(x, y + h, x, y + h - radius, radius);
-		this.lineTo(x, y + radius);
-		this.arcTo(x, y, x + radius, y, radius);
-		this.closePath();
-	};
-}
-
-function initAudio() {
-	if (audioCtx) {
-		if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
-		return;
-	}
-	try {
-		audioCtx = new AudioCtx();
-	} catch {
-		// Audio blocked — game works silently
-	}
-}
-
-function playSound(type) {
-	if (!audioCtx) return;
-	const osc = audioCtx.createOscillator();
-	const gain = audioCtx.createGain();
-	osc.connect(gain);
-	gain.connect(audioCtx.destination);
-	const now = audioCtx.currentTime;
-
-	// Helper to clean up nodes after they finish playing
-	const cleanup = (o, g) => {
-		o.onended = () => {
-			g.disconnect();
-			o.disconnect();
-		};
-	};
-
-	switch (type) {
-		case "correct":
-			osc.type = "sine";
-			osc.frequency.setValueAtTime(880, now);
-			osc.frequency.exponentialRampToValueAtTime(1318, now + 0.1);
-			gain.gain.setValueAtTime(0.15, now);
-			gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-			osc.start(now);
-			osc.stop(now + 0.2);
-			cleanup(osc, gain);
-			break;
-		case "wrong":
-			osc.type = "sawtooth";
-			osc.frequency.setValueAtTime(200, now);
-			osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
-			gain.gain.setValueAtTime(0.1, now);
-			gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-			osc.start(now);
-			osc.stop(now + 0.2);
-			cleanup(osc, gain);
-			break;
-		case "word":
-			osc.disconnect(); // Not using the outer ones for this case
-			[659, 784, 1047].forEach((freq, i) => {
-				const o = audioCtx.createOscillator();
-				const g = audioCtx.createGain();
-				o.connect(g);
-				g.connect(audioCtx.destination);
-				o.frequency.setValueAtTime(freq, now + i * 0.1);
-				g.gain.setValueAtTime(0.12, now + i * 0.1);
-				g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.2);
-				o.start(now + i * 0.1);
-				o.stop(now + i * 0.1 + 0.2);
-				cleanup(o, g);
-			});
-			break;
-		case "level":
-			osc.disconnect();
-			[523, 659, 784, 1047, 1318].forEach((freq, i) => {
-				setTimeout(() => {
-					if (!audioCtx) return;
-					const o = audioCtx.createOscillator();
-					const g = audioCtx.createGain();
-					o.connect(g);
-					g.connect(audioCtx.destination);
-					o.frequency.setValueAtTime(freq, audioCtx.currentTime);
-					g.gain.setValueAtTime(0.12, audioCtx.currentTime);
-					g.gain.exponentialRampToValueAtTime(
-						0.001,
-						audioCtx.currentTime + 0.25,
-					);
-					o.start(audioCtx.currentTime);
-					o.stop(audioCtx.currentTime + 0.25);
-					cleanup(o, g);
-				}, i * 120);
-			});
-			break;
-		case "gameover":
-			osc.disconnect();
-			[400, 350, 300, 200].forEach((freq, i) => {
-				setTimeout(() => {
-					if (!audioCtx) return;
-					const o = audioCtx.createOscillator();
-					const g = audioCtx.createGain();
-					o.connect(g);
-					g.connect(audioCtx.destination);
-					o.frequency.setValueAtTime(freq, audioCtx.currentTime);
-					o.type = "sawtooth";
-					g.gain.setValueAtTime(0.1, audioCtx.currentTime);
-					g.gain.exponentialRampToValueAtTime(
-						0.001,
-						audioCtx.currentTime + 0.3,
-					);
-					o.start(audioCtx.currentTime);
-					o.stop(audioCtx.currentTime + 0.3);
-					cleanup(o, g);
-				}, i * 180);
-			});
-			break;
-		case "heart": {
-			osc.type = "sine";
-			osc.frequency.setValueAtTime(523, now);
-			osc.frequency.exponentialRampToValueAtTime(784, now + 0.15);
-			gain.gain.setValueAtTime(0.15, now);
-			gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-			osc.start(now);
-			osc.stop(now + 0.25);
-			cleanup(osc, gain);
-			break;
-		}
-		case "combo": {
-			osc.type = "triangle";
-			const base = 440 + Math.min(Math.max(gameState.combo - 1, 0), 8) * 65;
-			osc.frequency.setValueAtTime(base, now);
-			osc.frequency.exponentialRampToValueAtTime(base * 1.5, now + 0.1);
-			gain.gain.setValueAtTime(0.12, now);
-			gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-			osc.start(now);
-			osc.stop(now + 0.2);
-			cleanup(osc, gain);
-			break;
-		}
-	}
-}
-
-// ===== DATA =====
-const WORD_LISTS = {
-	1: [
-		"cat",
-		"dog",
-		"sun",
-		"hat",
-		"cup",
-		"red",
-		"big",
-		"run",
-		"fun",
-		"bed",
-		"box",
-		"net",
-		"pen",
-		"pig",
-		"van",
-		"zoo",
-		"ant",
-		"bee",
-		"cow",
-		"fox",
-		"owl",
-		"rat",
-		"bat",
-		"bug",
-		"egg",
-		"jam",
-		"leg",
-		"mop",
-		"nut",
-		"pet",
-		"rug",
-		"tag",
-		"web",
-		"yam",
-		"zip",
-	],
-	2: [
-		"cake",
-		"fish",
-		"door",
-		"tree",
-		"bird",
-		"moon",
-		"star",
-		"duck",
-		"frog",
-		"hand",
-		"jump",
-		"king",
-		"lamp",
-		"milk",
-		"nose",
-		"open",
-		"pink",
-		"queen",
-		"rain",
-		"shoe",
-		"toy",
-		"unicorn",
-		"vase",
-		"wall",
-		"yarn",
-		"zebra",
-		"book",
-		"candy",
-		"dance",
-		"eagle",
-		"fairy",
-		"gift",
-		"happy",
-		"ice",
-		"jelly",
-		"kite",
-		"lion",
-		"magic",
-		"nest",
-		"orange",
-		"puppy",
-		"quiet",
-		"rose",
-		"smile",
-		"tiger",
-		"under",
-		"violet",
-		"wolf",
-		"xray",
-		"yellow",
-	],
-	3: [
-		"apple",
-		"beach",
-		"cloud",
-		"dance",
-		"earth",
-		"flame",
-		"garden",
-		"honey",
-		"island",
-		"jewel",
-		"kiwi",
-		"lemon",
-		"melon",
-		"night",
-		"ocean",
-		"pearl",
-		"queen",
-		"robot",
-		"shell",
-		"tulip",
-		"unicorn",
-		"violet",
-		"water",
-		"xray",
-		"yogurt",
-		"zebra",
-		"angel",
-		"butterfly",
-		"castle",
-		"diamond",
-		"emerald",
-		"flower",
-		"glitter",
-		"heaven",
-		"island",
-		"jasmine",
-		"kingdom",
-		"lullaby",
-		"moonlight",
-		"nebula",
-		"orchid",
-		"paradise",
-		"rainbow",
-		"stardust",
-		"treasure",
-		"universe",
-		"velvet",
-		"wonder",
-		"xylophone",
-		"yesterday",
-	],
-	4: [
-		"rainbow",
-		"butterfly",
-		"fireworks",
-		"wonderful",
-		"beautiful",
-		"chocolate",
-		"marshmallow",
-		"sparkling",
-		"glittering",
-		"adventure",
-		"enchanted",
-		"fairyland",
-		"starlight",
-		"moonbeams",
-		"daydreams",
-		"treasure",
-		"kingdom",
-		"friendship",
-		"happiness",
-		"champion",
-		"chocolate",
-		"dandelion",
-		"fantastic",
-		"glistening",
-		"jellybean",
-		"lollypop",
-		"macaroon",
-		"mermaid",
-		"nighttime",
-		"parachute",
-		"quest",
-		"rosebud",
-		"sunshine",
-		"twilight",
-		"underwater",
-		"vacation",
-		"waterfall",
-		"xylophone",
-		"yesterday",
-		"zeppelin",
-		"carousel",
-		"dolphins",
-		"elephant",
-		"football",
-		"gorgeous",
-		"honeybee",
-		"icecream",
-		"juggling",
-		"kangaroo",
-		"laughter",
-	],
-	5: [
-		"fantastical",
-		"marvellous",
-		"butterflies",
-		"marshmallow",
-		"chocolates",
-		"adventures",
-		"wonderland",
-		"glistening",
-		"champignon",
-		"beautifully",
-		"dandelion",
-		"butterscotch",
-		"jellybeans",
-		"lollipops",
-		"macaroons",
-		"mermaids",
-		"nightingale",
-		"pirouettes",
-		"rainbow",
-		"sunflower",
-		"twinkling",
-		"underwater",
-		"volleyball",
-		"wonderful",
-		"xenophobia",
-		"youngsters",
-		"zoological",
-	],
-};
-
-const LEVEL_CONFIG = {
-	1: { words: 10, speed: 0.4, spawnRate: 3500, health: 5 },
-	2: { words: 12, speed: 0.5, spawnRate: 3200, health: 5 },
-	3: { words: 14, speed: 0.6, spawnRate: 3000, health: 5 },
-	4: { words: 15, speed: 0.7, spawnRate: 2800, health: 5 },
-	5: { words: 16, speed: 0.75, spawnRate: 2600, health: 5 },
-	6: { words: 18, speed: 0.85, spawnRate: 2400, health: 5 },
-	7: { words: 20, speed: 0.9, spawnRate: 2200, health: 4 },
-	8: { words: 22, speed: 1.0, spawnRate: 2000, health: 4 },
-	9: { words: 25, speed: 1.1, spawnRate: 1900, health: 4 },
-	10: { words: 30, speed: 1.2, spawnRate: 1700, health: 3 },
-};
-function getLevelConfig(lvl) {
-	if (LEVEL_CONFIG[lvl]) return LEVEL_CONFIG[lvl];
-	return {
-		words: 30 + (lvl - 10) * 2,
-		speed: Math.min(1.2 + (lvl - 10) * 0.08, 2.5),
-		spawnRate: Math.max(1700 - (lvl - 10) * 50, 800),
-		health: 3,
-	};
-}
-function getWordList(lvl) {
-	const key = Math.min(lvl, 5);
-	return WORD_LISTS[key] || WORD_LISTS[1];
-}
-// ===== WORD EMOJIS =====
-const WORD_EMOJIS = {
-	cat: "🐱",
-	dog: "🐶",
-	sun: "☀️",
-	hat: "🧢",
-	cup: "☕",
-	red: "🔴",
-	big: "📏",
-	run: "🏃",
-	fun: "🎉",
-	bed: "🛏️",
-	box: "📦",
-	net: "🕸️",
-	pen: "✏️",
-	pig: "🐷",
-	van: "🚐",
-	zoo: "🦁",
-	ant: "🐜",
-	bee: "🐝",
-	cow: "🐮",
-	fox: "🦊",
-	owl: "🦉",
-	rat: "🐀",
-	bat: "🦇",
-	bug: "🐛",
-	egg: "🥚",
-	jam: "🍓",
-	leg: "🦵",
-	mop: "🧹",
-	nut: "🥜",
-	pet: "🐕",
-	rug: "🧶",
-	tag: "🏷️",
-	web: "🕸️",
-	yam: "🍠",
-	zip: "🤐",
-	cake: "🎂",
-	fish: "🐟",
-	door: "🚪",
-	tree: "🌳",
-	bird: "🐦",
-	moon: "🌙",
-	star: "⭐",
-	duck: "🦆",
-	frog: "🐸",
-	hand: "✋",
-	jump: "🤸",
-	king: "👑",
-	lamp: "💡",
-	milk: "🥛",
-	nose: "👃",
-	open: "📂",
-	pink: "🩷",
-	queen: "👸",
-	rain: "🌧️",
-	shoe: "👟",
-	toy: "🧸",
-	unicorn: "🦄",
-	vase: "🏺",
-	wall: "🧱",
-	yarn: "🧵",
-	zebra: "🦓",
-	book: "📚",
-	candy: "🍬",
-	dance: "💃",
-	eagle: "🦅",
-	fairy: "🧚",
-	gift: "🎁",
-	happy: "😊",
-	ice: "🧊",
-	jelly: "🍇",
-	kite: "🪁",
-	lion: "🦁",
-	magic: "✨",
-	nest: "🪺",
-	orange: "🍊",
-	puppy: "🐶",
-	quiet: "🤫",
-	rose: "🌹",
-	smile: "🙂",
-	tiger: "🐯",
-	under: "⬇️",
-	violet: "🟣",
-	water: "💧",
-	xray: "🩻",
-	yellow: "🟡",
-	apple: "🍎",
-	beach: "🏖️",
-	cloud: "☁️",
-	earth: "🌍",
-	flame: "🔥",
-	garden: "🏡",
-	honey: "🍯",
-	island: "🏝️",
-	jewel: "💎",
-	kiwi: "🥝",
-	lemon: "🍋",
-	melon: "🍈",
-	night: "🌃",
-	ocean: "🌊",
-	pearl: "🦪",
-	robot: "🤖",
-	shell: "🐚",
-	tulip: "🌷",
-	yogurt: "🥛",
-	angel: "😇",
-	butterfly: "🦋",
-	castle: "🏰",
-	diamond: "💎",
-	emerald: "❇️",
-	flower: "🌸",
-	glitter: "✨",
-	heaven: "☁️",
-	jasmine: "🌼",
-	kingdom: "👑",
-	lullaby: "🎵",
-	moonlight: "🌙",
-	nebula: "🌌",
-	orchid: "🌺",
-	paradise: "🏝️",
-	rainbow: "🌈",
-	stardust: "✨",
-	treasure: "💰",
-	universe: "🌌",
-	velvet: "🪵",
-	wonder: "🤩",
-	xylophone: "🎹",
-	yesterday: "📅",
-	fireworks: "🎆",
-	wonderful: "🤩",
-	beautiful: "💐",
-	chocolate: "🍫",
-	marshmallow: "🍡",
-	sparkling: "✨",
-	glittering: "✨",
-	adventure: "🗺️",
-	enchanted: "✨",
-	fairyland: "🧚",
-	starlight: "⭐",
-	moonbeams: "🌙",
-	daydreams: "💭",
-	friendship: "🤝",
-	happiness: "😄",
-	champion: "🏆",
-	dandelion: "🌼",
-	fantastic: "🤩",
-	glistening: "✨",
-	jellybeans: "🍬",
-	lollypop: "🍭",
-	macaroon: "🥐",
-	mermaid: "🧜",
-	nightingale: "🐦",
-	saffron: "🟨",
-	carrot: "🥕",
-	mango: "🥭",
-	peach: "🍑",
-	grape: "🍇",
-	coconut: "🥥",
-	pizza: "🍕",
-	burger: "🍔",
-	donut: "🍩",
-	cookie: "🍪",
-	pancake: "🥞",
-	cereal: "🥣",
-	cheese: "🧀",
-	bread: "🍞",
-	salad: "🥗",
-	soup: "🍲",
-	spaghetti: "🍝",
-	taco: "🌮",
-	sushi: "🍣",
-	noodle: "🍜",
-};
-
-function getWordEmoji(word) {
-	return WORD_EMOJIS[word.toLowerCase()] || "⭐";
-}
-
-// ===== GAME STATE =====
-const gameState = {
-	screen: "menu",
-	level: 1,
-	score: 0,
-	combo: 0,
-	maxCombo: 0,
-	health: 5,
-	wordsTyped: 0,
-	totalKeystrokes: 0,
-	correctKeystrokes: 0,
-	activeWords: [],
-	particles: [],
-	stars: [],
-		targetWord: null,
-	targetIndex: 0,
-	paused: false,
-	gameOver: false,
-	lastSpawn: 0,
-	levelStartTime: 0,
-	wordsSpawned: 0,
-	wordsCompleted: 0,
-	canvasW: 0,
-	canvasH: 0,
-	frameTime: 0,
-	animationId: null,
-	challenge: null,
-	challengeProgress: 0,
-	profile: loadProfile(),
-};
-
-function loadProfile() {
-	try {
-		const raw = JSON.parse(localStorage.getItem("mtp_profile"));
-		if (!raw || typeof raw !== "object") throw new Error("invalid profile");
-		// Restore daysPlayed from array (Set doesn't survive JSON.stringify)
-		if (!(raw.daysPlayed instanceof Set)) {
-			raw.daysPlayed = new Set(
-				Array.isArray(raw.daysPlayed) ? raw.daysPlayed : [],
-			);
-		}
-		// Fallback missing fields for forward compatibility
-		if (!raw.levelsUnlocked) raw.levelsUnlocked = 1;
-		if (!raw.unlockedAvatars) raw.unlockedAvatars = ["🦄"];
-		if (!raw.challenges) raw.challenges = {};
-		if (!raw.achievements) raw.achievements = {};
-		return raw;
-	} catch {
-		return {
-			name: "",
-			avatar: "🦄",
-			totalStars: 0,
-			highScore: 0,
-			totalWords: 0,
-			totalTime: 0,
-			daysPlayed: new Set(),
-			levelsUnlocked: 1,
-			challenges: {},
-			achievements: {},
-			unlockedAvatars: ["🦄"],
-		};
-	}
-}
-
-function saveProfile() {
-	try {
-		const toSave = { ...gameState.profile };
-		// Set does not survive JSON.stringify — convert to array
-		toSave.daysPlayed = Array.from(gameState.profile.daysPlayed);
-		localStorage.setItem("mtp_profile", JSON.stringify(toSave));
-	} catch {}
-}
-
-/** Set tutorial-seen flag safely (works even in Safari private mode) */
-function setTutorialSeen() {
-	try {
-		localStorage.setItem("mtp_tutorial_seen", "1");
-	} catch {}
-}
+import { WORD_LISTS, LEVEL_CONFIG, getLevelConfig, getWordList, WORD_EMOJIS, getWordEmoji } from './data.js';
+import { gameState, loadProfile, saveProfile, setTutorialSeen } from './state.js';
+import { audioCtx, initAudio, speakWord, playSound } from './audio.js';
 
 // ===== DOM ELEMENTS =====
 const $ = (id) => document.getElementById(id);
@@ -872,6 +201,7 @@ function spawnWord() {
 		gameState.targetWord = word;
 		gameState.targetIndex = 0;
 		updateTargetDisplay();
+		speakWord(word.text);
 	}
 
 	gameState.activeWords.push(word);
@@ -985,6 +315,7 @@ function skipWord() {
 		sorted[0].isTarget = true;
 		gameState.targetWord = sorted[0];
 		gameState.targetIndex = 0;
+		speakWord(sorted[0].text);
 	}
 	updateTargetDisplay();
 }
@@ -1042,6 +373,7 @@ function completeWord() {
 	if (remaining.length > 0) {
 		remaining[0].isTarget = true;
 		gameState.targetWord = remaining[0];
+		speakWord(remaining[0].text);
 	}
 	updateTargetDisplay();
 	updateHUD();
@@ -1273,6 +605,7 @@ function gameLoop(timestamp) {
 				if (remaining.length > 0) {
 					remaining[0].isTarget = true;
 					gameState.targetWord = remaining[0];
+					speakWord(remaining[0].text);
 				}
 				updateTargetDisplay();
 			}
@@ -1507,6 +840,7 @@ function showProfile() {
 
 	const p = gameState.profile;
 	$("player-name").value = p.name;
+	$("voice-toggle").checked = p.voiceEnabled !== false;
 	$("avatar-preview").textContent = p.avatar;
 	$("profile-stars").textContent = p.totalStars;
 	$("profile-best").textContent = p.highScore;
@@ -1573,6 +907,7 @@ function updateMenuStats() {
 
 function resumeGame() {
 	$("pause-overlay").classList.add("hidden");
+	canvas.classList.remove("blurred");
 	gameState.paused = false;
 	lastFrameTime = 0;
 }
@@ -1617,6 +952,7 @@ function bindEvents() {
 	$("btn-profile-back").addEventListener("click", () => showScreen("menu"));
 	$("btn-save-profile").addEventListener("click", () => {
 		gameState.profile.name = $("player-name").value.trim();
+		gameState.profile.voiceEnabled = $("voice-toggle").checked;
 		saveProfile();
 		showScreen("menu");
 	});
@@ -1652,6 +988,7 @@ function bindEvents() {
 	$("btn-pause").addEventListener("click", () => {
 		gameState.paused = true;
 		$("pause-overlay").classList.remove("hidden");
+		canvas.classList.add("blurred");
 	});
 	$("btn-resume").addEventListener("click", () => resumeGame());
 	$("btn-quit").addEventListener("click", () => {
@@ -1692,6 +1029,7 @@ function bindEvents() {
 				else {
 					gameState.paused = true;
 					$("pause-overlay").classList.remove("hidden");
+					canvas.classList.add("blurred");
 				}
 			}
 		}
@@ -1711,6 +1049,7 @@ function bindEvents() {
 		if (document.hidden && gameState.screen === "game" && !gameState.paused && !gameState.gameOver) {
 			gameState.paused = true;
 			$("pause-overlay")?.classList.remove("hidden"); // show pause overlay so UI is consistent
+			canvas.classList.add("blurred");
 		}
 	});
 

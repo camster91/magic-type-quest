@@ -1,0 +1,29 @@
+{
+  "name": "magic-type-quest",
+  "version": "1.0.0",
+  "description": "A beautiful, immersive typing game for kids — built for the web with gorgeous Canvas animations, AI-generated character art, and PWA support.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/camster91/magic-type-quest.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/camster91/magic-type-quest/issues"
+  },
+  "homepage": "https://github.com/camster91/magic-type-quest#readme",
+  "devDependencies": {
+    "jsdom": "^29.1.1",
+    "vite": "^8.0.10",
+    "vitest": "^4.1.5"
+  }
+}
