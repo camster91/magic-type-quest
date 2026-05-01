@@ -1,10 +1,10 @@
 const CACHE_NAME = "bloom-typing-v1";
 const ASSETS = [
-	"/",
-	"/index.html",
-	"/styles.css",
-	"/game.js",
-	"/manifest.json",
+	"./",
+	"index.html",
+	"styles.css",
+	"game.js",
+	"manifest.json",
 	"https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap",
 ];
 

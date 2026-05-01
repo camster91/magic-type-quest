@@ -50,6 +50,14 @@ function playSound(type) {
 	gain.connect(audioCtx.destination);
 	const now = audioCtx.currentTime;
 
+	// Helper to clean up nodes after they finish playing
+	const cleanup = (o, g) => {
+		o.onended = () => {
+			g.disconnect();
+			o.disconnect();
+		};
+	};
+
 	switch (type) {
 		case "correct":
 			osc.type = "sine";
@@ -59,6 +67,7 @@ function playSound(type) {
 			gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
 			osc.start(now);
 			osc.stop(now + 0.2);
+			cleanup(osc, gain);
 			break;
 		case "wrong":
 			osc.type = "sawtooth";
@@ -68,9 +77,10 @@ function playSound(type) {
 			gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
 			osc.start(now);
 			osc.stop(now + 0.2);
+			cleanup(osc, gain);
 			break;
 		case "word":
-			osc.type = "sine";
+			osc.disconnect(); // Not using the outer ones for this case
 			[659, 784, 1047].forEach((freq, i) => {
 				const o = audioCtx.createOscillator();
 				const g = audioCtx.createGain();
@@ -81,9 +91,11 @@ function playSound(type) {
 				g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.2);
 				o.start(now + i * 0.1);
 				o.stop(now + i * 0.1 + 0.2);
+				cleanup(o, g);
 			});
 			break;
 		case "level":
+			osc.disconnect();
 			[523, 659, 784, 1047, 1318].forEach((freq, i) => {
 				setTimeout(() => {
 					if (!audioCtx) return;
@@ -99,10 +111,12 @@ function playSound(type) {
 					);
 					o.start(audioCtx.currentTime);
 					o.stop(audioCtx.currentTime + 0.25);
+					cleanup(o, g);
 				}, i * 120);
 			});
 			break;
 		case "gameover":
+			osc.disconnect();
 			[400, 350, 300, 200].forEach((freq, i) => {
 				setTimeout(() => {
 					if (!audioCtx) return;
@@ -119,36 +133,31 @@ function playSound(type) {
 					);
 					o.start(audioCtx.currentTime);
 					o.stop(audioCtx.currentTime + 0.3);
+					cleanup(o, g);
 				}, i * 180);
 			});
 			break;
 		case "heart": {
-			const o = audioCtx.createOscillator();
-			const g = audioCtx.createGain();
-			o.connect(g);
-			g.connect(audioCtx.destination);
-			o.type = "sine";
-			o.frequency.setValueAtTime(523, now);
-			o.frequency.exponentialRampToValueAtTime(784, now + 0.15);
-			g.gain.setValueAtTime(0.15, now);
-			g.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-			o.start(now);
-			o.stop(now + 0.25);
+			osc.type = "sine";
+			osc.frequency.setValueAtTime(523, now);
+			osc.frequency.exponentialRampToValueAtTime(784, now + 0.15);
+			gain.gain.setValueAtTime(0.15, now);
+			gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+			osc.start(now);
+			osc.stop(now + 0.25);
+			cleanup(osc, gain);
 			break;
 		}
 		case "combo": {
-			const c = audioCtx.createOscillator();
-			const cg = audioCtx.createGain();
-			c.connect(cg);
-			cg.connect(audioCtx.destination);
-			c.type = "triangle";
+			osc.type = "triangle";
 			const base = 440 + Math.min(Math.max(gameState.combo - 1, 0), 8) * 65;
-			c.frequency.setValueAtTime(base, now);
-			c.frequency.exponentialRampToValueAtTime(base * 1.5, now + 0.1);
-			cg.gain.setValueAtTime(0.12, now);
-			cg.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-			c.start(now);
-			c.stop(now + 0.2);
+			osc.frequency.setValueAtTime(base, now);
+			osc.frequency.exponentialRampToValueAtTime(base * 1.5, now + 0.1);
+			gain.gain.setValueAtTime(0.12, now);
+			gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+			osc.start(now);
+			osc.stop(now + 0.2);
+			cleanup(osc, gain);
 			break;
 		}
 	}
@@ -791,17 +800,12 @@ class FallingWord {
 		const x = this.x + shakeX;
 		const y = this.y;
 
-		// Responsive font size
-		const fontSize = Math.max(
-			20,
-			Math.min(32, Math.floor(gameState.canvasW / 30)),
-		);
-		ctx.font = `700 ${fontSize}px Nunito, sans-serif`;
+		ctx.font = this._font;
 
-		// Recalculate width to fit actual rendered font
-		const textW = this.w - 24; // cached from constructor measure
-		const pillW = textW + 28;
-		const pillH = fontSize + 16;
+		// Use cached dimensions
+		const fontSize = this._fontSize;
+		const pillW = this._pillW;
+		const pillH = this._pillH;
 
 		// Glow
 		if (this.glow > 0 || isTarget) {
