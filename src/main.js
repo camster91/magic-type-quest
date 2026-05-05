@@ -1066,6 +1066,7 @@ function init() {
 	updateMenuStats();
 	bindEvents();
 	initPetCache();
+	initKeyboard();
 }
 
 document.addEventListener("DOMContentLoaded", init);
@@ -1293,4 +1294,53 @@ function updateLevelProgress() {
 	const pct = cfg.words > 0 ? (gameState.wordsCompleted / cfg.words) * 100 : 0;
 	fill.style.width = String(Math.min(pct, 100)) + "%";
 	wrap.style.display = gameState.screen === "game" ? "block" : "none";
+}
+
+// ===== VIRTUAL KEYBOARD =====
+const _keyboardContainer = document.getElementById("virtual-keyboard-game");
+
+function initKeyboard() {
+	if (!_keyboardContainer) return;
+	const rows = [
+		["Q","W","E","R","T","Y","U","I","O","P"],
+		["A","S","D","F","G","H","J","K","L"],
+		["Z","X","C","V","B","N","M"],
+	];
+	let html = "<div class='keyboard-keys'>";
+	for (const row of rows) {
+		html += "<div class='key-row'>";
+		for (const key of row) {
+			html += `<span class='key' data-key='${key.toLowerCase()}'>${key}</span>`;
+		}
+		html += "</div>";
+	}
+	html += "<div class='key-row'><span class='key space' data-key=' '>Space</span></div>";
+	html += "</div>";
+	_keyboardContainer.innerHTML = html;
+}
+
+function highlightTargetKey(char) {
+	if (!char) {
+		document.querySelectorAll(".key.target").forEach(k => {
+			k.classList.remove("target");
+			const hintEl = k.querySelector(".key-finger-hint");
+			if (hintEl) hintEl.remove();
+		});
+		return;
+	}
+	const lowerChar = char.toLowerCase();
+	document.querySelectorAll(".key.target").forEach(k => k.classList.remove("target"));
+	const keyEl = document.querySelector(`.key[data-key="${lowerChar}"]`);
+	if (keyEl) {
+		keyEl.classList.add("target");
+	}
+}
+
+function showKeyFeedback(key, correct) {
+	const keyEl = document.querySelector(`.key[data-key="${key.toLowerCase()}"]`);
+	if (!keyEl) return;
+	keyEl.classList.add(correct ? "correct" : "wrong");
+	setTimeout(() => {
+		keyEl.classList.remove("correct", "wrong");
+	}, 300);
 }

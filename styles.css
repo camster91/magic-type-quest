@@ -8,6 +8,18 @@
 }
 
 :root {
+	/* Z-index layer system */
+	--z-bg: 0;
+	--z-canvas: 1;
+	--z-hud: 5;
+	--z-target: 6;
+	--z-pet: 7;
+	--z-keyboard: 10;
+	--z-popup: 15;
+	--z-overlay: 20;
+	--z-tutorial: 100;
+
+	/* Colors */
 	--primary: #8b5cf6;
 	--primary-light: #a78bfa;
 	--primary-dark: #7c3aed;
@@ -61,6 +73,17 @@ body {
 	inset: 0;
 	pointer-events: none;
 	overflow: hidden;
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+.stars-bg {
+	background-image: url("/assets/backgrounds/new-theme-bg.png");
+}
+
+.practice-bg {
+	background-image: url("/assets/backgrounds/new-theme-bg.png");
 }
 
 .stars-bg::before {
@@ -383,11 +406,7 @@ body {
 
 /* ===== GAME CANVAS ===== */
 #game-canvas {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	z-index: 1;
+	z-index: var(--z-canvas);
 	transition: filter 0.3s ease;
 }
 
@@ -397,11 +416,7 @@ body {
 
 /* ===== HUD ===== */
 .hud {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	z-index: 10;
+	z-index: var(--z-hud);
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-start;
@@ -526,8 +541,25 @@ body {
 }
 
 /* ===== TARGET WORD DISPLAY ===== */
+/* Show only when game-screen is active and has a target */
+#game-screen:not(.active) .target-display {
+	display: none;
+}
 .target-display {
-	display: none !important;
+	position: fixed;
+	top: 60px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: var(--z-target);
+	background: rgba(0,0,0,0.3);
+	backdrop-filter: blur(8px);
+	border: 1px solid rgba(255,255,255,0.2);
+	border-radius: 50px;
+	padding: 0.5rem 1.5rem;
+	font-family: "Fredoka One", cursive;
+	font-size: 1.5rem;
+	color: #fff;
+	pointer-events: none;
 }
 
 /* ===== OVERLAYS ===== */
@@ -1395,8 +1427,8 @@ body {
 
 /* ===== WORD IMAGE POPUP ===== */
 .word-popup {
-	position: absolute;
-	z-index: 15;
+	z-index: var(--z-popup);
+	position: fixed;
 	left: 50%;
 	top: 40%;
 	transform: translate(-50%, -50%) scale(0.5);
@@ -1444,10 +1476,8 @@ body {
 
 /* ===== ACHIEVEMENT TOAST ===== */
 .achievement-toast {
+	z-index: var(--z-popup);
 	position: fixed;
-	top: clamp(60px, 10vh, 100px);
-	left: 50%;
-	z-index: 200;
 	background: linear-gradient(135deg, var(--primary), var(--primary-dark));
 	border: 1px solid var(--glass-border);
 	border-radius: 50px;
@@ -1563,4 +1593,143 @@ body {
 		font-size: 0.65rem;
 		padding: 0.15rem 0.6rem;
 	}
+}
+
+/* ===== LAYER SYSTEM - ALL GAME ELEMENTS ===== */
+/* Z-index values are defined in :root CSS variables */
+
+#game-canvas { z-index: var(--z-canvas); }
+.hud { z-index: var(--z-hud); }
+.stars-bg, .practice-bg { z-index: var(--z-bg); }
+
+/* Target display and pet elements - between HUD and keyboard */
+#target-display { z-index: var(--z-target); position: fixed; }
+.pet-reaction, .pet-mood-bubble { z-index: var(--z-pet); }
+
+/* Keyboard */
+.keyboard-container, .keyboard-game { z-index: var(--z-keyboard); }
+
+/* Popups - highest game element before overlays */
+.word-popup { z-index: var(--z-popup); position: fixed !important; }
+.achievement-toast { z-index: var(--z-popup); position: fixed !important; }
+
+/* Overlays */
+.overlay { z-index: var(--z-overlay); }
+.tutorial { z-index: var(--z-tutorial); }
+
+/* Screen management - only active screen visible */
+.screen {
+  position: fixed;
+  inset: 0;
+}
+.screen:not(.active) {
+  display: none !important;
+}
+
+/* ===== BUBBLE POSITIONING - Prevent overlap ===== */
+/* Keep bubbles in safe zones away from HUD and keyboard */
+
+#target-display {
+  top: 60px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+.word-popup {
+  top: 35% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+.keyboard-container, .keyboard-game {
+  bottom: 10px !important;
+}
+
+/* Pet elements don't overlap with target display */
+.pet-reaction {
+  bottom: 120px !important;
+  right: 20px !important;
+  left: auto !important;
+}
+
+.pet-mood-bubble {
+  bottom: 200px !important;
+  right: 80px !important;
+  left: auto !important;
+}
+
+/* Achievement toast appears at top */
+.achievement-toast {
+  top: 80px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+/* ===== VIRTUAL KEYBOARD ===== */
+#virtual-keyboard-game {
+  display: none;
+  position: fixed;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 12px 20px;
+  border: 1px solid rgba(255,255,255,0.15);
+  z-index: var(--z-keyboard);
+}
+#game-screen.active ~ #virtual-keyboard-game,
+#game-screen.screen.active #virtual-keyboard-game {
+  display: flex;
+}
+.keyboard-keys {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+.key-row {
+  display: flex;
+  gap: 5px;
+}
+.key {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-family: "Fredoka One", cursive;
+  font-size: 14px;
+  color: #fff;
+  min-width: 36px;
+  text-align: center;
+  transition: all 0.15s;
+}
+.key.target {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  border-color: #a78bfa;
+  box-shadow: 0 0 15px rgba(139,92,246,0.6), 0 0 30px rgba(139,92,246,0.3);
+  transform: scale(1.1);
+  animation: keyPulse 1s infinite;
+}
+.key.correct {
+  background: linear-gradient(135deg, #10b981, #34d399);
+  border-color: #6ee7b7;
+}
+.key.wrong {
+  background: linear-gradient(135deg, #ef4444, #f87171);
+  border-color: #fca5a5;
+  animation: keyShake 0.3s;
+}
+.key.space {
+  min-width: 200px;
+}
+@keyframes keyPulse {
+  0%, 100% { box-shadow: 0 0 15px rgba(139,92,246,0.6); }
+  50% { box-shadow: 0 0 25px rgba(139,92,246,0.8); }
+}
+@keyframes keyShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
 }
