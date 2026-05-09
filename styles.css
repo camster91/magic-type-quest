@@ -232,6 +232,40 @@ body {
 	transform: scale(0.95);
 }
 
+/* ===== FOCUS INDICATORS FOR ACCESSIBILITY ===== */
+.btn:focus-visible,
+.btn-back:focus-visible,
+.btn-pause:focus-visible,
+.btn-install:focus-visible,
+.btn-dismiss:focus-visible,
+.btn-tutorial-next:focus-visible,
+.avatar-btn:focus-visible,
+.challenge-card:focus-visible,
+.player-name-input:focus-visible,
+#voice-toggle:focus-visible,
+.level-select-card.unlocked:focus-visible {
+	outline: 3px solid #fbbf24;
+	outline-offset: 3px;
+	border-radius: 50px;
+}
+
+.btn-back:focus-visible,
+.btn-pause:focus-visible,
+.btn-install:focus-visible,
+.btn-dismiss:focus-visible {
+	border-radius: 50px;
+}
+
+.avatar-btn:focus-visible,
+.challenge-card:focus-visible {
+	border-radius: 12px;
+}
+
+.player-name-input:focus-visible {
+	outline-offset: -1px;
+	border-radius: 8px;
+}
+
 .btn-primary {
 	background: linear-gradient(135deg, var(--primary), var(--primary-light));
 }
@@ -1548,6 +1582,92 @@ body {
 }
 .difficulty-badge.active {
 	opacity: 1;
+}
+
+/* ===== LEVEL SELECT SCREEN ===== */
+.level-select-grid {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+	width: min(90%, 380px);
+	margin: 1rem auto;
+	padding-bottom: 2rem;
+	overflow-y: auto;
+	flex: 1;
+}
+
+.level-select-card {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.75rem 1rem;
+	background: rgba(255, 255, 255, 0.08);
+	border: 1px solid rgba(255, 255, 255, 0.15);
+	border-radius: 14px;
+	cursor: pointer;
+	transition: all 0.2s;
+	backdrop-filter: blur(8px);
+}
+
+.level-select-card.unlocked:hover {
+	background: rgba(255, 255, 255, 0.15);
+	transform: translateX(4px);
+	border-color: rgba(255, 255, 255, 0.3);
+}
+
+.level-select-card.locked {
+	opacity: 0.4;
+	cursor: default;
+}
+
+.level-select-card.next {
+	opacity: 0.6;
+	border-style: dashed;
+}
+
+.level-card-icon {
+	font-size: 1.6rem;
+	flex-shrink: 0;
+	width: 2rem;
+	text-align: center;
+}
+
+.level-card-info {
+	flex: 1;
+	min-width: 0;
+}
+
+.level-card-title {
+	font-weight: 700;
+	font-size: 0.95rem;
+	color: white;
+}
+
+.level-card-desc {
+	font-size: 0.75rem;
+	color: rgba(255, 255, 255, 0.6);
+}
+
+.level-card-stats {
+	font-size: 0.7rem;
+	color: rgba(255, 255, 255, 0.4);
+	margin-top: 2px;
+}
+
+.level-card-status {
+	font-size: 0.9rem;
+	flex-shrink: 0;
+}
+
+@keyframes levelPulse {
+	0%, 100% { box-shadow: 0 0 8px rgba(139, 92, 246, 0.3); }
+	50% { box-shadow: 0 0 16px rgba(139, 92, 246, 0.6); }
+}
+
+.level-select-card.unlocked:focus-visible {
+	outline: 3px solid #fbbf24;
+	outline-offset: 2px;
+	border-radius: 14px;
 }
 
 @media (max-width: 480px) {

@@ -883,6 +883,72 @@ function nextTutorial() {
 	}
 }
 
+// ===== LEVEL SELECT SCREEN =====
+const LEVEL_LABELS = {
+	1: { name: "Easy", icon: "🌱", desc: "Short words, slow pace", color: "#34D399" },
+	2: { name: "Easy", icon: "🌿", desc: "Short words, steady pace", color: "#34D399" },
+	3: { name: "Medium", icon: "🌻", desc: "Medium words", color: "#FBBF24" },
+	4: { name: "Medium", icon: "🌺", desc: "Medium words, faster", color: "#FBBF24" },
+	5: { name: "Medium", icon: "🌹", desc: "Medium-long words", color: "#FBBF24" },
+	6: { name: "Hard", icon: "🔥", desc: "Longer words, faster", color: "#F472B6" },
+	7: { name: "Hard", icon: "⚡", desc: "Long words, fewer hearts", color: "#F472B6" },
+	8: { name: "Expert", icon: "💀", desc: "Long words, fast!", color: "#EF4444" },
+	9: { name: "Expert", icon: "👹", desc: "Very long words", color: "#EF4444" },
+	10: { name: "Master", icon: "👑", desc: "Maximum difficulty!", color: "#A855F7" },
+};
+
+function getDifficultyLabel(level) {
+	return LEVEL_LABELS[level] || { name: "Master", icon: "👑", desc: "Maximum difficulty!", color: "#A855F7" };
+}
+
+function showLevelSelect() {
+	gameState.screen = "level-select";
+	for (const s of document.querySelectorAll(".screen"))
+		s.classList.remove("active");
+	$("level-select-screen").classList.add("active");
+
+	const grid = $("level-select-grid");
+	grid.innerHTML = "";
+	const maxLevel = gameState.profile.levelsUnlocked || 1;
+
+	for (let lvl = 1; lvl <= 10; lvl++) {
+		const cfg = getLevelConfig(Math.min(lvl, 10));
+		const label = getDifficultyLabel(lvl);
+		const unlocked = lvl <= maxLevel;
+		const isFirstLocked = lvl === maxLevel + 1;
+
+		const card = document.createElement("div");
+		card.className = `level-select-card ${unlocked ? "unlocked" : "locked"} ${isFirstLocked ? "next" : ""}`;
+		card.dataset.level = lvl;
+
+		if (unlocked) {
+			card.setAttribute("tabindex", "0");
+			card.setAttribute("role", "button");
+			card.setAttribute("aria-label", `Level ${lvl} — ${label.name}: ${label.desc}`);
+			card.addEventListener("click", () => {
+				startGame({ level: lvl });
+			});
+			card.addEventListener("keydown", (e) => {
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault();
+					startGame({ level: lvl });
+				}
+			});
+		}
+
+		card.innerHTML = `
+			<div class="level-card-icon" style="color:${label.color}">${label.icon}</div>
+			<div class="level-card-info">
+				<div class="level-card-title">Level ${lvl} <span style="color:${label.color};font-size:0.8rem">— ${label.name}</span></div>
+				<div class="level-card-desc">${label.desc}</div>
+				<div class="level-card-stats">${cfg.words} words · ${Math.round(cfg.speed * 100)}% speed</div>
+			</div>
+			<div class="level-card-status">${unlocked ? "▶" : isFirstLocked ? "🔒" : "🔒"}</div>
+		`;
+		grid.appendChild(card);
+	}
+}
+
 function initPetCache() {
 	_petEmoji = $("pet-emoji");
 	_petBubble = $("pet-bubble");
@@ -944,6 +1010,8 @@ function installApp() {
 function bindEvents() {
 	// Menu
 	$("btn-start").addEventListener("click", () => startGame());
+	$("btn-level-select").addEventListener("click", () => showLevelSelect());
+	$("btn-level-back").addEventListener("click", () => showScreen("menu"));
 	$("btn-practice").addEventListener("click", () => startPractice());
 	$("btn-challenges").addEventListener("click", () => showChallenges());
 	$("btn-avatars").addEventListener("click", () => showProfile());
@@ -1137,6 +1205,9 @@ function updateDifficultyBadge() {
 	badge.style.color = color;
 	badge.style.borderColor = color;
 	badge.classList.add("active");
+	// Update HUD level display with difficulty name
+	const lvlLabel = getDifficultyLabel(gameState.level);
+	_hudLevel.textContent = `${gameState.level} · ${lvlLabel.icon}`;
 }
 
 function showPowerUp(text) {

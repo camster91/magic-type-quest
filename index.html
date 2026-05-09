@@ -40,6 +40,9 @@
       <button type="button" id="btn-start" class="btn btn-primary btn-glow">
         <span class="btn-icon">🎮</span> Play Now
       </button>
+      <button type="button" id="btn-level-select" class="btn btn-secondary">
+        <span class="btn-icon">📈</span> Select Level
+      </button>
       <button type="button" id="btn-practice" class="btn btn-secondary">
         <span class="btn-icon">🎯</span> Practice Letters
       </button>
@@ -64,6 +67,18 @@
         <span class="stat-icon">📅</span>
         Played <span id="days-played">0</span> days
       </div>
+    </div>
+  </div>
+
+  <!-- Level Select Screen -->
+  <div id="level-select-screen" class="screen">
+    <div class="stars-bg"></div>
+    <div class="screen-header">
+      <button type="button" id="btn-level-back" class="btn-back">← Back</button>
+      <h2>📈 Select Difficulty</h2>
+    </div>
+    <div class="level-select-grid" id="level-select-grid">
+      <!-- Populated by JS -->
     </div>
   </div>
 
