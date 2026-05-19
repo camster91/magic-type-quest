@@ -1,1346 +1,294 @@
-import { WORD_LISTS, LEVEL_CONFIG, getLevelConfig, getWordList, WORD_EMOJIS, getWordEmoji } from './data.js';
-import { gameState, loadProfile, saveProfile, setTutorialSeen } from './state.js';
-import { audioCtx, initAudio, speakWord, playSound } from './audio.js';
+/**
+ * BloomType - Main Entry Point v2
+ */
+import { LESSON_LEVELS, getLessonByLevel, isLevelUnlocked, getFingerHint } from './lessonLevels.js';
+import { gameState, loadProfile, saveProfile } from './state.js';
+import { init as initEngine, startGame, togglePause, showScreen } from './gameEngine.js';
 
-// ===== DOM ELEMENTS =====
 const $ = (id) => document.getElementById(id);
 
-// Cache frequently-accessed DOM elements for performance
-const _hudScore = $("score");
-const _hudLevel = $("level");
-const _hudAccuracy = $("accuracy");
-const _hudComboCount = $("combo-count");
-const _hudComboDisplay = $("combo-display");
-const _targetWordEl = $("target-word");
-let _petEmoji = null;
-let _petBubble = null;
-const _targetTypedEl = $("target-typed");
-
-const canvas = $("game-canvas");
-const ctx = canvas.getContext("2d");
-
-// ===== STARS BACKGROUND =====
-function initStars() {
-	gameState.stars = [];
-	for (let i = 0; i < 80; i++) {
-		gameState.stars.push({
-			x: Math.random() * gameState.canvasW,
-			y: Math.random() * gameState.canvasH,
-			size: Math.random() * 2 + 0.5,
-			twinkleSpeed: Math.random() * 3 + 1,
-			twinkleOffset: Math.random() * Math.PI * 2,
-		});
-	}
-}
-
-function drawStars(_dt) {
-	const time = performance.now() / 1000;
-	for (const s of gameState.stars) {
-		const alpha =
-			0.3 +
-			0.7 * (0.5 + 0.5 * Math.sin(time * s.twinkleSpeed + s.twinkleOffset));
-		ctx.globalAlpha = alpha;
-		ctx.fillStyle = "#fff";
-		ctx.beginPath();
-		ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-		ctx.fill();
-	}
-	ctx.globalAlpha = 1;
-}
-
-// ===== PARTICLES =====
-function spawnParticles(x, y, color, count = 15, type = "burst") {
-	for (let i = 0; i < count; i++) {
-		const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
-		const speed =
-			type === "burst" ? 2 + Math.random() * 4 : 1 + Math.random() * 2;
-		gameState.particles.push({
-			x,
-			y,
-			vx: Math.cos(angle) * speed,
-			vy: Math.sin(angle) * speed - (type === "burst" ? 2 : 0),
-			life: 1,
-			decay: 0.02 + Math.random() * 0.02,
-			color,
-			size: type === "burst" ? 3 + Math.random() * 4 : 2 + Math.random() * 2,
-			type,
-		});
-	}
-}
-
-function updateParticles(_dt) {
-	for (let i = gameState.particles.length - 1; i >= 0; i--) {
-		const p = gameState.particles[i];
-		p.x += p.vx;
-		p.y += p.vy;
-		p.vy += 0.08; // gravity
-		p.life -= p.decay;
-		if (p.life <= 0) gameState.particles.splice(i, 1);
-	}
-}
-
-function drawParticles() {
-	for (const p of gameState.particles) {
-		ctx.globalAlpha = Math.max(0, p.life);
-		ctx.fillStyle = p.color;
-		ctx.beginPath();
-		ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
-		ctx.fill();
-	}
-	ctx.globalAlpha = 1;
-}
-
-// ===== WORDS =====
-class FallingWord {
-	constructor(text, speed) {
-		this.text = text;
-		this.speed = speed;
-		// Cache font metrics so draw() doesn't recalculate every frame
-		const fontSize = Math.max(20, Math.min(32, Math.floor(gameState.canvasW / 30)));
-		this._fontSize = fontSize;
-		this._font = `700 ${fontSize}px Nunito, sans-serif`;
-		ctx.font = this._font;
-		const textW = ctx.measureText(text).width;
-		const margin = 80;
-		const minX = margin;
-		const maxX = Math.max(margin + 20, gameState.canvasW - textW - margin);
-		this.x = minX + Math.random() * Math.max(1, maxX - minX);
-		this.y = -30;
-		this._textW = textW;
-		this._pillW = textW + 28;
-		this._pillH = fontSize + 16;
-		this.w = textW + 24;
-		this.h = 36;
-		this.glow = 0;
-		this.shake = 0;
-		this.matched = 0;
-		this.isTarget = false;
-	}
-
-	update(dt) {
-		this.y += this.speed * (60 * dt);
-		if (this.glow > 0) this.glow -= dt * 3;
-		if (this.shake > 0) this.shake -= dt * 5;
-	}
-
-	draw() {
-		const isTarget = this.isTarget;
-		const shakeX = this.shake > 0 ? (Math.random() - 0.5) * 6 : 0;
-		const x = this.x + shakeX;
-		const y = this.y;
-
-		ctx.font = this._font;
-
-		// Use cached dimensions
-		const fontSize = this._fontSize;
-		const pillW = this._pillW;
-		const pillH = this._pillH;
-
-		// Glow
-		if (this.glow > 0 || isTarget) {
-			ctx.save();
-			ctx.shadowColor = isTarget ? "#34D399" : "#A78BFA";
-			ctx.shadowBlur = isTarget ? 15 : this.glow * 20;
-			ctx.fillStyle = isTarget ? "rgba(52,211,153,0.3)" : "rgba(139,92,246,0.3)";
-			ctx.globalAlpha = isTarget ? 0.3 : 0.2;
-			ctx.beginPath();
-			ctx.roundRect(x - 6, y - pillH / 2 - 2, pillW + 12, pillH + 4, 14);
-			ctx.fill();
-			ctx.restore();
-		}
-
-		// Word pill
-		ctx.fillStyle = isTarget ? "rgba(52,211,153,0.25)" : "rgba(139,92,246,0.25)";
-		ctx.strokeStyle = isTarget ? "#34D399" : "rgba(200,180,255,0.6)";
-		ctx.lineWidth = 2;
-		ctx.beginPath();
-		ctx.roundRect(x - 6, y - pillH / 2 - 2, pillW + 12, pillH + 4, 14);
-		ctx.fill();
-		ctx.stroke();
-
-		// Text — white for readability
-		ctx.fillStyle = "#ffffff";
-		ctx.textAlign = "left";
-		ctx.textBaseline = "middle";
-		ctx.fillText(this.text, x + 8, y);
-
-		// Matched underline (if partially typed)
-		if (this.matched > 0) {
-			const matchedText = this.text.slice(0, this.matched);
-			const mW = ctx.measureText(matchedText).width;
-			ctx.fillStyle = "#34D399";
-			ctx.fillRect(x + 8, y + fontSize * 0.55, mW, 4);
-		}
-
-		// Target indicator
-		if (isTarget) {
-			ctx.fillStyle = "#34D399";
-			ctx.font = "12px Nunito, sans-serif";
-			ctx.textAlign = "center";
-			ctx.fillText("▲", x + pillW / 2, y - pillH / 2 - 10);
-		}
-
-		ctx.globalAlpha = 1;
-	}
-
-	isAtBottom() {
-		return this.y > gameState.canvasH - 80;
-	}
-}
-
-function spawnWord() {
-	const list = getWordList(gameState.level);
-	const text = list[Math.floor(Math.random() * list.length)];
-	const cfg = getLevelConfig(gameState.level);
-	const speed = getAdaptiveSpeed() * (0.8 + Math.random() * 0.4);
-	const word = new FallingWord(text, speed);
-
-	// Pick target: shortest or first available
-	if (!gameState.targetWord) {
-		word.isTarget = true;
-		gameState.targetWord = word;
-		gameState.targetIndex = 0;
-		updateTargetDisplay();
-		speakWord(word.text);
-	}
-
-	gameState.activeWords.push(word);
-	gameState.wordsSpawned++;
-}
-
-function updateTargetDisplay() {
-	if (!gameState.targetWord) {
-		_targetWordEl.textContent = "";
-		_targetTypedEl.textContent = "";
-		return;
-	}
-	const word = gameState.targetWord.text;
-	const done = word.slice(0, gameState.targetIndex);
-	const rest = word.slice(gameState.targetIndex);
-	// textContent is faster than innerHTML and avoids HTML parsing
-	_targetWordEl.textContent = rest;
-	_targetTypedEl.textContent = done;
-}
-
-// ===== INPUT HANDLING =====
-function handleKey(e) {
-	if (gameState.screen !== "game") return;
-	if (gameState.paused || gameState.gameOver) return;
-	if (e.ctrlKey || e.altKey || e.metaKey) return;
-	// Ignore auto-repeat (holding a key down) — prevents space-spamming
-	if (e.repeat) return;
-	// Don't steal keystrokes from form inputs or the browser UI
-	const tag = document.activeElement?.tagName;
-	if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-
-	// Resume audio context after tab suspension — fast no-op when running
-	if (audioCtx?.state === "suspended") audioCtx.resume().catch(() => {});
-
-	const key = e.key.toLowerCase();
-	if (key === " ") {
-		e.preventDefault();
-		skipWord();
-		return;
-	}
-	if (key.length !== 1 || !/[a-z]/.test(key)) return;
-
-	e.preventDefault();
-	gameState.totalKeystrokes++;
-
-	if (!gameState.targetWord) {
-		// No target — try to find a word starting with this letter
-		const match = gameState.activeWords.find(
-			(w) => w.text[0].toLowerCase() === key && !w.isTarget,
-		);
-		if (match) {
-			gameState.targetWord = match;
-			gameState.targetIndex = 1;
-			match.isTarget = true;
-			updateTargetDisplay();
-			gameState.correctKeystrokes++;
-			match.glow = 1;
-			playSound("correct");
-			checkWordComplete();
-		} else {
-			playSound("wrong");
-			gameState.combo = 0;
-			updateCombo();
-		}
-		return;
-	}
-
-	const word = gameState.targetWord.text;
-	const needed = word[gameState.targetIndex]?.toLowerCase();
-
-	if (key === needed) {
-		gameState.targetIndex++;
-		gameState.targetWord.matched = gameState.targetIndex;
-		gameState.correctKeystrokes++;
-		gameState.targetWord.glow = 1;
-		playSound("correct");
-
-		if (gameState.targetIndex >= word.length) {
-			completeWord();
-		} else {
-			updateTargetDisplay();
-		}
-	} else {
-		playSound("wrong");
-		showPetReaction("miss");
-		gameState.targetWord.shake = 1;
-		gameState.combo = 0;
-		updateCombo();
-		spawnParticles(
-			gameState.targetWord.x + gameState.targetWord.w / 2,
-			gameState.targetWord.y,
-			"#EF4444",
-			8,
-		);
-	}
-}
-
-function skipWord() {
-	if (!gameState.targetWord) return;
-	gameState.targetWord.isTarget = false;
-	gameState.targetWord = null;
-	gameState.targetIndex = 0;
-	gameState.combo = 0;
-	updateCombo();
-
-	// Find next shortest word as target
-	const sorted = gameState.activeWords
-		.filter((w) => !w.isTarget)
-		.sort((a, b) => a.text.length - b.text.length);
-	if (sorted.length > 0) {
-		sorted[0].isTarget = true;
-		gameState.targetWord = sorted[0];
-		gameState.targetIndex = 0;
-		speakWord(sorted[0].text);
-	}
-	updateTargetDisplay();
-}
-
-function completeWord() {
-	const word = gameState.targetWord;
-	spawnParticles(word.x + word.w / 2, word.y, "#34D399", 20);
-	showWordPopup(word.text);
-	gameState.wordTimes.push({ t: performance.now(), word: word.text });
-	checkAdaptiveDifficulty();
-	updateLevelProgress();
-
-	// Pet shows the actual word in its bubble
-	const wordEmoji = getWordEmoji(word.text);
-	if (gameState.combo >= 5)
-		showPetReaction("combo", wordEmoji + " " + word.text);
-	else showPetReaction("happy", wordEmoji + " " + word.text);
-
-	// Score calculation
-	const baseScore = word.text.length * 10;
-	const comboBonus = gameState.combo * 5;
-	const levelBonus = gameState.level * 2;
-	const points = baseScore + comboBonus + levelBonus;
-
-	gameState.score += points;
-	gameState.combo++;
-	gameState.wordsTyped++;
-	gameState.wordsCompleted++;
-	if (gameState.combo > gameState.maxCombo)
-		gameState.maxCombo = gameState.combo;
-
-	// Remove word
-	const idx = gameState.activeWords.indexOf(word);
-	if (idx >= 0) gameState.activeWords.splice(idx, 1);
-
-	// Heart recovery at combo multiples
-	if (gameState.combo % 5 === 0 && gameState.health < 5) {
-		gameState.health++;
-		playSound("heart");
-		updateHearts();
-	}
-
-	// Challenge progress
-	if (gameState.challenge) {
-		gameState.challengeProgress++;
-		checkChallenge();
-	}
-
-	// Pick new target
-	gameState.targetWord = null;
-	gameState.targetIndex = 0;
-	const remaining = gameState.activeWords
-		.filter((w) => !w.isTarget)
-		.sort((a, b) => a.text.length - b.text.length);
-	if (remaining.length > 0) {
-		remaining[0].isTarget = true;
-		gameState.targetWord = remaining[0];
-		speakWord(remaining[0].text);
-	}
-	updateTargetDisplay();
-	updateHUD();
-	updateCombo();
-	playSound("word");
-
-	// Check level complete
-	checkLevelComplete();
-}
-
-function loseHeart() {
-	if (gameState.health <= 0 || gameState.gameOver) return;
-	gameState.health--;
-	gameState.combo = 0;
-	gameState.difficultyMod = Math.max(gameState.difficultyMod - 1, -2);
-	updateHearts();
-	updateCombo();
-	updateDifficultyBadge();
-	screenShake();
-	showPetReaction("hurt");
-	playSound("gameover");
-	spawnParticles(gameState.canvasW / 2, gameState.canvasH - 100, "#EF4444", 25);
-
-	if (gameState.health <= 0) {
-		endGame(false);
-	}
-}
-
-function checkLevelComplete() {
-	const cfg = getLevelConfig(gameState.level);
-	if (
-		gameState.wordsCompleted >= cfg.words &&
-		gameState.wordsSpawned >= cfg.words
-	) {
-		endGame(true);
-	}
-}
-
-function checkChallenge() {
-	if (!gameState.challenge) return;
-	const c = gameState.challenge;
-	let done = false;
-	if (c === "speed" && gameState.wordsTyped >= 20) done = true;
-	if (c === "combo" && gameState.combo >= 10) done = true;
-	if (
-		c === "accuracy" &&
-		gameState.wordsTyped >= 15 &&
-		gameState.totalKeystrokes > 0 &&
-		gameState.correctKeystrokes / gameState.totalKeystrokes >= 1.0
-	)
-		done = true;
-
-	if (done) {
-		gameState.profile.challenges[c] = true;
-		gameState.profile.totalStars += 50;
-		saveProfile();
-		updateMenuStats();
-	}
-}
-
-function updateHUD() {
-	_hudScore.textContent = gameState.score;
-	_hudLevel.textContent = gameState.level;
-	const acc =
-		gameState.totalKeystrokes > 0
-			? Math.round(
-					(gameState.correctKeystrokes / gameState.totalKeystrokes) * 100,
-				)
-			: 100;
-	_hudAccuracy.textContent = `${acc}%`;
-}
-
-function updateCombo() {
-	_hudComboCount.textContent = gameState.combo;
-	const isActive = gameState.combo >= 2;
-	const hasActive = _hudComboDisplay.classList.contains("active");
-	if (isActive !== hasActive) _hudComboDisplay.classList.toggle("active", isActive);
-	if (gameState.combo >= 2) playSound("combo");
-	// Bonus combo visual on HUD — only set if changed
-	const newColor = gameState.combo >= 5 ? "#FBBF24" : gameState.combo >= 3 ? "#F472B6" : "#FBBF24";
-	if (_hudComboDisplay.style.color !== newColor) _hudComboDisplay.style.color = newColor;
-}
-
-function updateHearts() {
-	for (let i = 1; i <= 5; i++) {
-		const h = $(`heart-${i}`);
-		h.textContent = i <= gameState.health ? "💜" : "🖤";
-		h.classList.toggle("lost", i > gameState.health);
-		if (i <= gameState.health) h.classList.add("animated");
-		else h.classList.remove("animated");
-		setTimeout(() => h.classList.remove("animated"), 400);
-	}
-}
-
-// ===== GAME FLOW =====
-function startGame(opts = {}) {
-	initAudio();
-	// Prevent duplicate animation loops on restart
-	cancelAnimationFrame(gameState.animationId);
-	gameState.animationId = 0;
-	lastFrameTime = 0;
-
-	gameState.screen = "game";
-	gameState.score = 0;
-	gameState.combo = 0;
-	gameState.maxCombo = 0;
-	gameState.wordsTyped = 0;
-	gameState.totalKeystrokes = 0;
-	gameState.correctKeystrokes = 0;
-	gameState.activeWords = [];
-	gameState.particles = [];
-		gameState.targetWord = null;
-	gameState.targetIndex = 0;
-	gameState.paused = false;
-	gameState.gameOver = false;
-	gameState.lastSpawn = 0;
-	gameState.wordsSpawned = 0;
-	gameState.wordsCompleted = 0;
-	gameState.challenge = opts.challenge || null;
-	gameState.challengeProgress = 0;
-
-	// Track total time
-	gameState.levelStartTime = performance.now();
-
-	// Determine level
-	if (opts.challenge) {
-		gameState.level = Math.min(gameState.profile.levelsUnlocked, 3);
-	} else if (opts.level) {
-		gameState.level = opts.level;
-	} else {
-		gameState.level = 1;
-	}
-
-	// Health from config
-	gameState.health = getLevelConfig(gameState.level).health;
-	gameState.difficultyMod = 0;
-	gameState.wordTimes = [];
-
-	// Init new features
-	showPetReaction("idle");
-	updateDifficultyBadge();
-	updateLevelProgress();
-
-	// Clear any leftover floating scores from previous game
-	floatingScores.splice(0, floatingScores.length);
-	// Clear particles
-	gameState.particles.splice(0, gameState.particles.length);
-
-	// Switch screens
-	for (const s of document.querySelectorAll(".screen"))
-		s.classList.remove("active");
-	$("game-screen").classList.add("active");
-
-	// Defensively hide overlays that might be stuck from previous session
-	$("tutorial-overlay")?.classList.add("hidden");
-	$("pause-overlay")?.classList.add("hidden");
-	$("level-overlay")?.classList.add("hidden");
-	$("gameover-overlay")?.classList.add("hidden");
-	$("word-popup")?.classList.add("hidden");
-	$("achievement-toast")?.classList.add("hidden");
-	$("powerup-indicator")?.classList.remove("active");
-
-	resizeCanvas();
-	initStars();
-	updateHUD();
-	updateHearts();
-	updateCombo();
-	updateTargetDisplay();
-
-	// Show tutorial on first play only
-	let hasPlayed = false;
-	try {
-		hasPlayed = !!localStorage.getItem("mtp_tutorial_seen");
-	} catch {
-		hasPlayed = true; // Gracefully skip tutorial if localStorage is blocked
-	}
-	if (!hasPlayed) {
-		showTutorial();
-	} else {
-		gameState.animationId = requestAnimationFrame(gameLoop);
-	}
-}
-
-let lastFrameTime = 0;
-function gameLoop(timestamp) {
-	if (gameState.screen !== "game") return;
-	// Zombie-loop fix: stop scheduling when game is over — only resume for pause
-	if (gameState.gameOver) return;
-	if (gameState.paused) {
-		gameState.animationId = requestAnimationFrame(gameLoop);
-		return;
-	}
-
-	const dt = lastFrameTime
-		? Math.min((timestamp - lastFrameTime) / 1000, 0.05)
-		: 0.016;
-	lastFrameTime = timestamp;
-	gameState.frameTime = dt;
-
-	ctx.clearRect(0, 0, gameState.canvasW, gameState.canvasH);
-
-	// Background
-	drawStars(dt);
-
-	// Spawn words
-	const now = timestamp;
-	if (gameState.wordsSpawned < getLevelConfig(gameState.level).words) {
-		if (now - gameState.lastSpawn > getAdaptiveSpawnRate()) {
-			spawnWord();
-			gameState.lastSpawn = now;
-		}
-	}
-
-	// Update & draw words
-	for (let i = gameState.activeWords.length - 1; i >= 0; i--) {
-		const w = gameState.activeWords[i];
-		w.update(dt);
-		w.draw();
-
-		if (w.isAtBottom()) {
-			if (w.isTarget) {
-				loseHeart();
-				gameState.targetWord = null;
-				gameState.targetIndex = 0;
-				// Pick a new target
-				const remaining = gameState.activeWords
-					.filter((x) => x !== w && !x.isTarget)
-					.sort((a, b) => a.text.length - b.text.length);
-				if (remaining.length > 0) {
-					remaining[0].isTarget = true;
-					gameState.targetWord = remaining[0];
-					speakWord(remaining[0].text);
-				}
-				updateTargetDisplay();
-			}
-			gameState.activeWords.splice(i, 1);
-			updateHUD();
-		}
-	}
-
-	// Particles
-	updateParticles(dt);
-	drawParticles();
-
-	// Floating score text
-	drawFloatingScores(dt);
-
-	// Deadlock guard: all words spawned AND none left means level is over
-	const cfg = getLevelConfig(gameState.level);
-	if (
-		!gameState.gameOver &&
-		gameState.activeWords.length === 0 &&
-		gameState.wordsSpawned >= cfg.words
-	) {
-		endGame(gameState.wordsCompleted >= cfg.words);
-	}
-
-	gameState.animationId = requestAnimationFrame(gameLoop);
-}
-
-const floatingScores = [];
-function drawFloatingScores(dt) {
-	ctx.textAlign = "center";
-	ctx.font = "700 18px Nunito, sans-serif";
-	for (let i = floatingScores.length - 1; i >= 0; i--) {
-		const fs = floatingScores[i];
-		fs.y -= 40 * dt;
-		fs.life -= dt;
-		ctx.globalAlpha = Math.max(0, fs.life);
-		ctx.fillStyle = fs.color;
-		ctx.fillText(fs.text, fs.x, fs.y);
-	}
-	// Cleanup
-	for (let i = floatingScores.length - 1; i >= 0; i--) {
-		if (floatingScores[i].life <= 0) floatingScores.splice(i, 1);
-	}
-	ctx.globalAlpha = 1;
-}
-
-
-function endGame(won) {
-	if (gameState.gameOver) return;
-	gameState.gameOver = true;
-	cancelAnimationFrame(gameState.animationId);
-
-	// Any completed game = player has seen how to play → skip wizard forever
-	setTutorialSeen();
-
-	// Calculate total time
-	const elapsed = Math.round(
-		(performance.now() - gameState.levelStartTime) / 1000,
-	);
-	gameState.profile.totalTime += elapsed;
-	gameState.profile.totalWords += gameState.wordsTyped;
-	gameState.profile.daysPlayed.add(new Date().toDateString());
-
-	// Stars earned
-	const acc =
-		gameState.totalKeystrokes > 0
-			? gameState.correctKeystrokes / gameState.totalKeystrokes
-			: 1;
-	let starsEarned = 0;
-	if (won) {
-		if (acc >= 0.95) starsEarned = 3;
-		else if (acc >= 0.85) starsEarned = 2;
-		else starsEarned = 1;
-
-		// Unlock next level
-		if (gameState.level >= gameState.profile.levelsUnlocked) {
-			gameState.profile.levelsUnlocked = gameState.level + 1;
-		}
-	}
-	checkAchievements();
-	gameState.profile.totalStars += starsEarned * 10 + gameState.score;
-	if (gameState.score > gameState.profile.highScore) {
-		gameState.profile.highScore = gameState.score;
-	}
-	saveProfile();
-	updateMenuStats();
-
-	if (won) {
-		playSound("level");
-		$("level-complete-num").textContent = gameState.level;
-		$("level-score").textContent = gameState.score;
-		$("level-words").textContent = gameState.wordsTyped;
-		$("level-combo").textContent = gameState.maxCombo;
-
-		const starsDisp = $("level-overlay").querySelector(".level-stars");
-		starsDisp.textContent =
-			"⭐".repeat(starsEarned) + "☆".repeat(3 - starsEarned);
-
-		$("level-overlay").classList.remove("hidden");
-	} else {
-		playSound("gameover");
-		$("final-score").textContent = gameState.score;
-		$("final-combo").textContent = gameState.maxCombo;
-		$("final-words").textContent = gameState.wordsTyped;
-		$("gameover-emoji").textContent = gameState.score > 100 ? "😅" : "😢";
-		$("gameover-message").textContent =
-			gameState.score > 100
-				? "Good try! Practice makes perfect!"
-				: "The stars got away!";
-		$("gameover-overlay").classList.remove("hidden");
-	}
-}
-
 // ===== PRACTICE MODE =====
-const practiceChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 let practiceIndex = 0;
+const practiceLetters = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
-function startPractice() {
-	initAudio();
-	gameState.screen = "practice";
-	for (const s of document.querySelectorAll(".screen"))
-		s.classList.remove("active");
-	$("practice-screen").classList.add("active");
-	practiceIndex = 0;
-	shuffleArray(practiceChars);
-	updatePractice();
-}
-
-function updatePractice() {
-	const char = practiceChars[practiceIndex];
-	$("practice-char-display").textContent = char;
-	$("practice-count").textContent = `${practiceIndex + 1} / 26`;
-	$("practice-fill").style.width = `${(practiceIndex / 26) * 100}%`;
-	$("practice-hint").innerHTML = `Press <kbd>${char}</kbd> on your keyboard`;
+function updatePracticeDisplay() {
+  const char = practiceLetters[practiceIndex].toUpperCase();
+  $('practice-char-display').textContent = char;
+  $('practice-hint').innerHTML = `Press <kbd>${char}</kbd> on your keyboard`;
+  $('practice-count').textContent = `${practiceIndex + 1} / 26`;
+  $('practice-fill').style.width = `${(practiceIndex / 26) * 100}%`;
+  
+  const hint = getFingerHint(char.toLowerCase());
+  $('practice-finger-hint').textContent = hint ? `Use your ${hint.label}` : '';
 }
 
 function handlePracticeKey(e) {
-	if (gameState.screen !== "practice") return;
-	const tag = document.activeElement?.tagName;
-	if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-	const key = e.key.toUpperCase();
-	if (key === practiceChars[practiceIndex]) {
-		playSound("correct");
-		practiceIndex++;
-		if (practiceIndex >= 26) {
-			playSound("level");
-			gameState.profile.challenges.letters = true;
-			gameState.profile.totalStars += 30;
-			saveProfile();
-			updateMenuStats();
-			// Restart
-			practiceIndex = 0;
-			shuffleArray(practiceChars);
-			updatePractice();
-		} else {
-			updatePractice();
-		}
-	} else if (key.length === 1 && /[A-Z]/.test(key)) {
-		playSound("wrong");
-		$("practice-char-display").style.transform = "scale(1.2)";
-		$("practice-char-display").style.color = "#EF4444";
-		setTimeout(() => {
-			$("practice-char-display").style.transform = "scale(1)";
-			$("practice-char-display").style.color = "";
-		}, 200);
-	}
-}
-
-function shuffleArray(arr) {
-	for (let i = arr.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
-		[arr[i], arr[j]] = [arr[j], arr[i]];
-	}
-}
-
-// ===== CHALLENGES =====
-function showChallenges() {
-	gameState.screen = "challenges";
-	for (const s of document.querySelectorAll(".screen"))
-		s.classList.remove("active");
-	$("challenges-screen").classList.add("active");
-
-	const challenges = [
-		{
-			id: "speed",
-			icon: "⚡",
-			name: "Speedster",
-			desc: "Type 20 words in under 2 minutes",
-			total: 20,
-		},
-		{
-			id: "combo",
-			icon: "🔥",
-			name: "Combo Master",
-			desc: "Get a 10-word combo streak",
-			total: 10,
-		},
-		{
-			id: "accuracy",
-			icon: "🎯",
-			name: "Perfect Aim",
-			desc: "Type 15 words with 100% accuracy",
-			total: 15,
-		},
-		{
-			id: "letters",
-			icon: "🔤",
-			name: "Alphabet Ace",
-			desc: "Complete the letter practice mode",
-			total: 1,
-		},
-	];
-
-	challenges.forEach((c, i) => {
-		const card = $(`challenge-${i + 1}`);
-		const completed = gameState.profile.challenges[c.id];
-		card.classList.toggle("completed", completed);
-		const status = card.querySelector(".challenge-status");
-		const fill = card.querySelector(".challenge-progress-fill");
-		status.textContent = completed ? "✅ Done!" : "Start!";
-		fill.style.width = completed ? "100%" : "0%";
-	});
-}
-
-// ===== PROFILE =====
-function showProfile() {
-	gameState.screen = "profile";
-	for (const s of document.querySelectorAll(".screen"))
-		s.classList.remove("active");
-	$("profile-screen").classList.add("active");
-
-	const p = gameState.profile;
-	$("player-name").value = p.name;
-	$("voice-toggle").checked = p.voiceEnabled !== false;
-	$("avatar-preview").textContent = p.avatar;
-	$("profile-stars").textContent = p.totalStars;
-	$("profile-best").textContent = p.highScore;
-	$("profile-words").textContent = p.totalWords;
-	$("profile-time").textContent = formatTime(p.totalTime);
-
-	for (const btn of document.querySelectorAll(".avatar-btn")) {
-		btn.classList.toggle("active", btn.dataset.avatar === p.avatar);
-	}
-}
-
-function formatTime(sec) {
-	if (sec < 60) return `${sec}s`;
-	if (sec < 3600) return `${Math.floor(sec / 60)}m`;
-	return `${Math.floor(sec / 3600)}h ${Math.floor((sec % 3600) / 60)}m`;
+  if (gameState.screen !== 'practice') return;
+  if (e.repeat) return;
+  
+  const expected = practiceLetters[practiceIndex];
+  const key = e.key.toLowerCase();
+  
+  if (key === expected) {
+    practiceIndex++;
+    if (practiceIndex >= 26) {
+      practiceIndex = 0;
+      showAchievement('Alphabet Master', 'All 26 letters!', '🔤');
+    }
+    updatePracticeDisplay();
+  } else if (key.length === 1 && /[a-z]/.test(key)) {
+    // Wrong letter
+    const display = $('practice-char-display');
+    display.classList.add('shake');
+    setTimeout(() => display.classList.remove('shake'), 300);
+  }
 }
 
 // ===== TUTORIAL =====
 let tutorialSlide = 0;
+
 function showTutorial() {
-	tutorialSlide = 0;
-	$("tutorial-overlay").classList.remove("hidden");
-	updateTutorialSlides();
+  tutorialSlide = 0;
+  const overlay = $('tutorial-overlay');
+  overlay.classList.remove('hidden');
+  showTutorialSlide(0);
 }
 
-function updateTutorialSlides() {
-	document.querySelectorAll(".tutorial-slide").forEach((s, i) => {
-		s.classList.toggle("active", i === tutorialSlide);
-	});
+function showTutorialSlide(n) {
+  document.querySelectorAll('.tutorial-slide').forEach(s => s.classList.remove('active'));
+  const slide = document.querySelector(`.tutorial-slide[data-slide="${n}"]`);
+  if (slide) slide.classList.add('active');
+  
+  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === n));
 }
 
-function nextTutorial() {
-	tutorialSlide++;
-	if (tutorialSlide >= 3) {
-		$("tutorial-overlay").classList.add("hidden");
-		setTutorialSeen();
-		gameState.animationId = requestAnimationFrame(gameLoop);
-	} else {
-		updateTutorialSlides();
-	}
+function nextTutorialSlide() {
+  tutorialSlide++;
+  if (tutorialSlide >= 3) {
+    $('tutorial-overlay').classList.add('hidden');
+    startGame(1);
+    return;
+  }
+  showTutorialSlide(tutorialSlide);
 }
 
-function initPetCache() {
-	_petEmoji = $("pet-emoji");
-	_petBubble = $("pet-bubble");
-}
-
-// ===== SCREEN MANAGEMENT =====
-function showScreen(name) {
-	gameState.screen = name;
-	for (const s of document.querySelectorAll(".screen"))
-		s.classList.remove("active");
-	$(`${name}-screen`).classList.add("active");
-	if (name === "menu") updateMenuStats();
-}
-
-
-function updateMenuStats() {
-	const p = gameState.profile;
-	$("total-stars").textContent = p.totalStars;
-	$("high-score").textContent = p.highScore;
-	$("days-played").textContent = p.daysPlayed?.size || 0;
-}
-
-function resumeGame() {
-	$("pause-overlay").classList.add("hidden");
-	canvas.classList.remove("blurred");
-	gameState.paused = false;
-	lastFrameTime = 0;
-}
-
-// ===== CANVAS RESIZE =====
-function resizeCanvas() {
-	if (!canvas.parentElement) return;
-	const rect = canvas.parentElement.getBoundingClientRect();
-	canvas.width = rect.width * window.devicePixelRatio;
-	canvas.height = rect.height * window.devicePixelRatio;
-	ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-	gameState.canvasW = rect.width;
-	gameState.canvasH = rect.height;
-}
-
-// ===== PWA =====
-let deferredPrompt = null;
-function handleBeforeInstallPrompt(e) {
-	e.preventDefault();
-	deferredPrompt = e;
-	$("install-prompt").classList.remove("hidden");
-}
-
-function installApp() {
-	if (!deferredPrompt) return;
-	deferredPrompt.prompt();
-	deferredPrompt.userChoice.then(() => {
-		$("install-prompt").classList.add("hidden");
-		deferredPrompt = null;
-	});
-}
-
-// ===== EVENT LISTENERS =====
-function bindEvents() {
-	// Menu
-	$("btn-start").addEventListener("click", () => startGame());
-	$("btn-practice").addEventListener("click", () => startPractice());
-	$("btn-challenges").addEventListener("click", () => showChallenges());
-	$("btn-avatars").addEventListener("click", () => showProfile());
-
-	// Profile
-	$("btn-profile-back").addEventListener("click", () => showScreen("menu"));
-	$("btn-save-profile").addEventListener("click", () => {
-		gameState.profile.name = $("player-name").value.trim();
-		gameState.profile.voiceEnabled = $("voice-toggle").checked;
-		saveProfile();
-		showScreen("menu");
-	});
-	for (const btn of document.querySelectorAll(".avatar-btn")) {
-		btn.addEventListener("click", () => {
-			for (const b of document.querySelectorAll(".avatar-btn"))
-				b.classList.remove("active");
-			btn.classList.add("active");
-			gameState.profile.avatar = btn.dataset.avatar;
-			$("avatar-preview").textContent = btn.dataset.avatar;
-		});
-	}
-
-	// Challenges
-	$("btn-challenges-back").addEventListener("click", () => showScreen("menu"));
-	document.querySelectorAll(".challenge-card").forEach((card) => {
-		card.addEventListener("click", () => {
-			const ch = card.dataset.challenge;
-			if (ch === "letters") {
-				startPractice();
-				return;
-			}
-			if (ch === "accuracy" || ch === "combo" || ch === "speed") {
-				startGame({ challenge: ch });
-			}
-		});
-	});
-
-	// Practice
-	$("btn-practice-back").addEventListener("click", () => showScreen("menu"));
-
-	// Game
-	$("btn-pause").addEventListener("click", () => {
-		gameState.paused = true;
-		$("pause-overlay").classList.remove("hidden");
-		canvas.classList.add("blurred");
-	});
-	$("btn-resume").addEventListener("click", () => resumeGame());
-	$("btn-quit").addEventListener("click", () => {
-		$("pause-overlay").classList.add("hidden");
-		showScreen("menu");
-	});
-
-	// Level complete
-	$("btn-next-level").addEventListener("click", () => {
-		$("level-overlay").classList.add("hidden");
-		startGame({ level: gameState.level + 1 });
-	});
-
-	// Game over
-	$("btn-retry").addEventListener("click", () => {
-		$("gameover-overlay").classList.add("hidden");
-		startGame({ level: gameState.level });
-	});
-	$("btn-menu").addEventListener("click", () => {
-		$("gameover-overlay").classList.add("hidden");
-		showScreen("menu");
-	});
-
-	// Tutorial
-	for (const b of document.querySelectorAll(".btn-tutorial-next"))
-		b.addEventListener("click", nextTutorial);
-	$("btn-start-game").addEventListener("click", () => {
-		$("tutorial-overlay").classList.add("hidden");
-		setTutorialSeen();
-		gameState.animationId = requestAnimationFrame(gameLoop);
-	});
-
-	// Keyboard
-	document.addEventListener("keydown", (e) => {
-		if (e.key === "Escape") {
-			if (gameState.screen === "game" && !gameState.gameOver) {
-				if (gameState.paused) resumeGame();
-				else {
-					gameState.paused = true;
-					$("pause-overlay").classList.remove("hidden");
-					canvas.classList.add("blurred");
-				}
-			}
-		}
-		handleKey(e);
-		handlePracticeKey(e);
-	});
-
-	// Resize
-	window.addEventListener("resize", () => {
-		if (gameState.screen === "game" || gameState.screen === "practice") {
-			resizeCanvas();
-		}
-	});
-
-	// Tab visibility — pause game when hidden to save battery
-	document.addEventListener("visibilitychange", () => {
-		if (document.hidden && gameState.screen === "game" && !gameState.paused && !gameState.gameOver) {
-			gameState.paused = true;
-			$("pause-overlay")?.classList.remove("hidden"); // show pause overlay so UI is consistent
-			canvas.classList.add("blurred");
-		}
-	});
-
-	// PWA
-	window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-	$("install-btn").addEventListener("click", installApp);
-	$("dismiss-install").addEventListener("click", () =>
-		$("install-prompt").classList.add("hidden"),
-	);
-}
-
-// ===== INIT =====
-function init() {
-	updateMenuStats();
-	bindEvents();
-	initPetCache();
-	initKeyboard();
-}
-
-document.addEventListener("DOMContentLoaded", init);
-
-// ===== ADAPTIVE DIFFICULTY ENGINE =====
-function checkAdaptiveDifficulty() {
-	const now = performance.now();
-	const windowMs = 15000;
-	const history = gameState.wordTimes.filter((t) => now - t.t < windowMs);
-	gameState.wordTimes = history;
-	if (history.length < 5) return;
-	const avgAccuracy =
-		gameState.totalKeystrokes > 0
-			? gameState.correctKeystrokes / gameState.totalKeystrokes
-			: 1;
-	const wpm = history.length / (windowMs / 60000);
-	const oldMod = gameState.difficultyMod;
-	if (avgAccuracy > 0.85 && wpm > 15) {
-		gameState.difficultyMod = Math.min(oldMod + 1, 3);
-	} else if (avgAccuracy < 0.6 && wpm < 10 && oldMod > -2) {
-		gameState.difficultyMod = Math.max(oldMod - 1, -2);
-	}
-	if (oldMod !== gameState.difficultyMod) {
-		updateDifficultyBadge();
-		showPowerUp(
-			gameState.difficultyMod > oldMod
-				? "⚡ Speeding up!"
-				: "🐢 Slowing down...",
-		);
-	}
-}
-
-function getAdaptiveSpeed() {
-	const base = getLevelConfig(gameState.level).speed;
-	return base * (1 + gameState.difficultyMod * 0.15);
-}
-
-function getAdaptiveSpawnRate() {
-	const base = getLevelConfig(gameState.level).spawnRate;
-	return base * (1 - gameState.difficultyMod * 0.1);
-}
-
-function updateDifficultyBadge() {
-	const badge = $("difficulty-badge");
-	if (!badge) return;
-	const mod = gameState.difficultyMod;
-	let label = "Normal";
-	let color = "var(--text-dim)";
-	if (mod <= -2) {
-		label = "Easy 😌";
-		color = "#34D399";
-	} else if (mod === -1) {
-		label = "Gentle 🙂";
-		color = "#A78BFA";
-	} else if (mod === 0) {
-		label = "Normal 😊";
-		color = "var(--text-dim)";
-	} else if (mod === 1) {
-		label = "Challenging 😤";
-		color = "#FBBF24";
-	} else if (mod === 2) {
-		label = "Hard 🔥";
-		color = "#F472B6";
-	} else if (mod >= 3) {
-		label = "EXTREME! 💀";
-		color = "#EF4444";
-	}
-	badge.textContent = "Level " + gameState.level + " — " + label;
-	badge.style.color = color;
-	badge.style.borderColor = color;
-	badge.classList.add("active");
-}
-
-function showPowerUp(text) {
-	const el = $("powerup-indicator");
-	if (!el) return;
-	el.textContent = text;
-	el.classList.add("active");
-	setTimeout(() => el.classList.remove("active"), 2000);
-}
-
-// ===== TYPING PET =====
-function showPetReaction(type, text) {
-	text = text || "";
-	if (!_petEmoji || !_petBubble) return;
-	_petEmoji.classList.remove("happy", "celebrate", "sad", "shake");
-	void _petEmoji.offsetWidth;
-	const reactions = {
-		happy: { emoji: "🌻", msg: "Nice!", class: "happy" },
-		combo: { emoji: "🔥", msg: "On fire!", class: "celebrate" },
-		levelup: { emoji: "🎉", msg: "Level up!", class: "celebrate" },
-		miss: { emoji: "😵", msg: "Oops!", class: "sad" },
-		hurt: { emoji: "😢", msg: "Watch out!", class: "sad" },
-		idle: { emoji: "🌻", msg: "", class: "" },
-	};
-	const r = reactions[type] || reactions.idle;
-	_petEmoji.textContent = r.emoji;
-	if (r.class) _petEmoji.classList.add(r.class);
-	if (r.msg) {
-		_petBubble.textContent = text || r.msg;
-		_petBubble.classList.add("visible");
-		setTimeout(() => _petBubble.classList.remove("visible"), 1500);
-	}
-}
-
-// ===== SCREEN SHAKE =====
-function screenShake() {
-	const game = document.getElementById("game-screen");
-	if (!game) return;
-	game.classList.remove("shake-screen");
-	void game.offsetWidth;
-	game.classList.add("shake-screen");
-	setTimeout(() => game.classList.remove("shake-screen"), 400);
+// ===== ACHIEVEMENT HELPER =====
+function showAchievement(title, desc, icon) {
+  $('toast-icon').textContent = icon;
+  $('toast-title').textContent = title;
+  $('toast-desc').textContent = desc;
+  const toast = $('achievement-toast');
+  toast.classList.remove('hidden');
+  setTimeout(() => toast.classList.add('hidden'), 3000);
 }
 
 // ===== WORD POPUP =====
 function showWordPopup(word) {
-	const popup = document.getElementById("word-popup");
-	const emoji = document.getElementById("word-popup-emoji");
-	const text = document.getElementById("word-popup-text");
-	if (!popup || !emoji || !text) return;
-	const em = WORD_EMOJIS[word.toLowerCase()] || "⭐";
-	emoji.textContent = em;
-	text.textContent = word;
-	popup.classList.remove("hidden");
-	void popup.offsetWidth;
-	popup.classList.add("visible");
-	setTimeout(() => {
-		popup.classList.remove("visible");
-		setTimeout(() => popup.classList.add("hidden"), 350);
-	}, 1200);
+  const emojis = { flower: '🌸', cat: '🐱', dog: '🐶', sun: '☀️', star: '⭐', moon: '🌙', tree: '🌳', bird: '🐦' };
+  const emoji = emojis[word.toLowerCase()] || '✨';
+  $('word-popup-emoji').textContent = emoji;
+  $('word-popup-text').textContent = word;
+  $('word-popup').classList.remove('hidden');
+  setTimeout(() => $('word-popup').classList.add('hidden'), 1000);
 }
 
-// ===== ACHIEVEMENTS =====
-const ACHIEVEMENTS = {
-	first_word: {
-		title: "First Word!",
-		desc: "Type your very first word",
-		icon: "🎯",
-		check(s) {
-			return s.wordsTyped >= 1;
-		},
-	},
-	combo_starter: {
-		title: "Combo Starter",
-		desc: "Get a 5-word combo streak",
-		icon: "🔥",
-		check(s) {
-			return s.maxCombo >= 5;
-		},
-	},
-	combo_master: {
-		title: "Combo Master",
-		desc: "Get a 10-word combo streak",
-		icon: "⚡",
-		check(s) {
-			return s.maxCombo >= 10;
-		},
-	},
-	combo_champion: {
-		title: "Combo Champion",
-		desc: "Get a 20-word combo streak!",
-		icon: "🏆",
-		check(s) {
-			return s.maxCombo >= 20;
-		},
-	},
-	word_warrior: {
-		title: "Word Warrior",
-		desc: "Type 50 total words in the game",
-		icon: "⚔️",
-		check(s) {
-			return s.wordsTyped >= 50;
-		},
-	},
-	accuracy_ace: {
-		title: "Accuracy Ace",
-		desc: "Type 20 words with 95%+ accuracy",
-		icon: "⭐",
-		check(s) {
-			return (
-				s.totalKeystrokes > 0 &&
-				s.correctKeystrokes / s.totalKeystrokes >= 0.95 &&
-				s.wordsTyped >= 20
-			);
-		},
-	},
-};
+// ===== LEVEL CARDS =====
+function renderLevelCards() {
+  const container = $('level-cards');
+  if (!container) return;
 
-function checkAchievements() {
-	const unlocked = gameState.profile.achievements || {};
-	gameState.profile.achievements = unlocked;
-	for (const [key, ach] of Object.entries(ACHIEVEMENTS)) {
-		if (unlocked[key]) continue;
-		if (ach.check(gameState)) {
-			unlocked[key] = true;
-			gameState.profile.totalStars += 25;
-			saveProfile();
-			showAchievementToast(ach.title, ach.desc, ach.icon);
-		}
-	}
+  const completed = gameState.profile?.completedLevels || [];
+  const levelImages = {
+    1: 'home-row.png', 2: 'top-row.png', 3: 'bottom-row.png',
+    4: 'home-row.png', 5: 'capitals.png', 6: 'numbers.png',
+    7: 'master.png', 8: 'master.png', 9: 'master.png', 10: 'master.png'
+  };
+
+  container.innerHTML = Object.values(LESSON_LEVELS).map(lev => {
+    const unlocked = isLevelUnlocked(lev.id, gameState.profile);
+    const done = completed.includes(lev.id);
+    const status = done ? 'completed' : !unlocked ? 'locked' : 'play';
+    const imgName = levelImages[lev.id] || 'home-row.png';
+    
+    return `
+      <div class="level-card ${status}" data-level="${lev.id}">
+        <img class="level-card-img" src="/assets/levels/${imgName}" alt="${lev.name}" 
+             onerror="this.style.display='none'">
+        <div class="level-card-name">${lev.name}</div>
+        <div class="level-card-sub">${lev.subtitle}</div>
+        <div class="level-card-meta">${lev.estimatedTime}</div>
+        ${status === 'locked' ? '<div class="level-lock">🔒</div>' : ''}
+        ${done ? '<div class="level-check">✅</div>' : ''}
+      </div>
+    `;
+  }).join('');
+
+  container.querySelectorAll('.level-card.play').forEach(card => {
+    card.addEventListener('click', () => {
+      const level = parseInt(card.dataset.level);
+      showScreen('game');
+      startGame(level);
+    });
+  });
 }
 
-function showAchievementToast(title, desc, icon) {
-	const toast = document.getElementById("achievement-toast");
-	if (!toast) return;
-	document.getElementById("toast-title").textContent = title;
-	document.getElementById("toast-desc").textContent = desc;
-	document.getElementById("toast-icon").textContent = icon;
-	toast.classList.remove("hidden");
-	void toast.offsetWidth;
-	toast.classList.add("visible");
-	setTimeout(() => {
-		toast.classList.remove("visible");
-		setTimeout(() => toast.classList.add("hidden"), 500);
-	}, 3000);
+// ===== UPDATE MENU STATS =====
+function updateMenuStats() {
+  $('menu-stars') && ($('menu-stars').textContent = gameState.profile?.totalStars || 0);
+  $('menu-best') && ($('menu-best').textContent = gameState.profile?.highScore || 0);
+  $('menu-words') && ($('menu-words').textContent = gameState.profile?.totalWords || 0);
 }
 
-// ===== LEVEL PROGRESS =====
-function updateLevelProgress() {
-	const fill = document.getElementById("level-progress-fill");
-	const wrap = document.getElementById("level-progress-wrap");
-	if (!fill || !wrap) return;
-	const cfg = getLevelConfig(gameState.level);
-	const pct = cfg.words > 0 ? (gameState.wordsCompleted / cfg.words) * 100 : 0;
-	fill.style.width = String(Math.min(pct, 100)) + "%";
-	wrap.style.display = gameState.screen === "game" ? "block" : "none";
+// ===== PROFILE =====
+function loadProfileScreen() {
+  const p = gameState.profile || {};
+  $('avatar-preview') && ($('avatar-preview').textContent = p.avatar || '🌸');
+  $('player-name') && ($('player-name').value = p.name || '');
+  $('profile-stars') && ($('profile-stars').textContent = p.totalStars || 0);
+  $('profile-best') && ($('profile-best').textContent = p.highScore || 0);
+  $('profile-words') && ($('profile-words').textContent = p.totalWords || 0);
+  $('profile-achievements') && ($('profile-achievements').textContent = (p.achievements?.length) || 0);
+  $('voice-toggle') && ($('voice-toggle').checked = p.voiceEnabled !== false);
+
+  document.querySelectorAll('.avatar-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.avatar === (p.avatar || '🌸'));
+  });
 }
 
-// ===== VIRTUAL KEYBOARD =====
-const _keyboardContainer = document.getElementById("virtual-keyboard-game");
-
-function initKeyboard() {
-	if (!_keyboardContainer) return;
-	const rows = [
-		["Q","W","E","R","T","Y","U","I","O","P"],
-		["A","S","D","F","G","H","J","K","L"],
-		["Z","X","C","V","B","N","M"],
-	];
-	let html = "<div class='keyboard-keys'>";
-	for (const row of rows) {
-		html += "<div class='key-row'>";
-		for (const key of row) {
-			html += `<span class='key' data-key='${key.toLowerCase()}'>${key}</span>`;
-		}
-		html += "</div>";
-	}
-	html += "<div class='key-row'><span class='key space' data-key=' '>Space</span></div>";
-	html += "</div>";
-	_keyboardContainer.innerHTML = html;
+function saveProfileScreen() {
+  const p = gameState.profile;
+  p.name = $('player-name')?.value?.trim() || 'Player';
+  p.avatar = document.querySelector('.avatar-btn.active')?.dataset?.avatar || '🌸';
+  p.voiceEnabled = $('voice-toggle')?.checked !== false;
+  saveProfile();
+  updateMenuStats();
 }
 
-function highlightTargetKey(char) {
-	if (!char) {
-		document.querySelectorAll(".key.target").forEach(k => {
-			k.classList.remove("target");
-			const hintEl = k.querySelector(".key-finger-hint");
-			if (hintEl) hintEl.remove();
-		});
-		return;
-	}
-	const lowerChar = char.toLowerCase();
-	document.querySelectorAll(".key.target").forEach(k => k.classList.remove("target"));
-	const keyEl = document.querySelector(`.key[data-key="${lowerChar}"]`);
-	if (keyEl) {
-		keyEl.classList.add("target");
-	}
+// ===== EVENT BINDINGS =====
+function bindEvents() {
+  // Menu
+  $('btn-start')?.addEventListener('click', () => {
+    const tutorialSeen = gameState.profile?.tutorialSeen;
+    if (!tutorialSeen) {
+      gameState.profile.tutorialSeen = true;
+      saveProfile();
+      showScreen('game');
+      showTutorial();
+    } else {
+      showScreen('game');
+      startGame(1);
+    }
+  });
+  
+  $('btn-lesson-select')?.addEventListener('click', () => {
+    showScreen('lesson-select');
+    renderLevelCards();
+    updateMenuStats();
+  });
+  
+  $('btn-practice')?.addEventListener('click', () => {
+    showScreen('practice');
+    practiceIndex = 0;
+    updatePracticeDisplay();
+  });
+  
+  $('btn-profile')?.addEventListener('click', () => {
+    showScreen('profile');
+    loadProfileScreen();
+  });
+
+  // Back buttons
+  $('btn-lesson-back')?.addEventListener('click', () => showScreen('menu'));
+  $('btn-practice-back')?.addEventListener('click', () => showScreen('menu'));
+  $('btn-profile-back')?.addEventListener('click', () => showScreen('menu'));
+
+  // Profile
+  $('btn-save-profile')?.addEventListener('click', () => {
+    saveProfileScreen();
+    showScreen('menu');
+  });
+  
+  // Avatar picker
+  document.querySelectorAll('.avatar-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      $('avatar-preview').textContent = btn.dataset.avatar;
+    });
+  });
+
+  // Game overlays
+  $('btn-pause')?.addEventListener('click', togglePause);
+  $('btn-resume')?.addEventListener('click', togglePause);
+  $('btn-quit')?.addEventListener('click', () => {
+    togglePause();
+    showScreen('menu');
+    updateMenuStats();
+  });
+
+  $('btn-next-level')?.addEventListener('click', () => {
+    $('level-overlay').classList.add('hidden');
+    if (gameState.level >= 10) {
+      // Final level complete - go to menu
+      showScreen('menu');
+      updateMenuStats();
+    } else {
+      showScreen('game');
+      startGame(gameState.level + 1);
+    }
+  });
+
+  $('btn-replay')?.addEventListener('click', () => {
+    $('level-overlay').classList.add('hidden');
+    showScreen('game');
+    startGame(gameState.level);
+  });
+
+  $('btn-level-menu')?.addEventListener('click', () => {
+    $('level-overlay').classList.add('hidden');
+    showScreen('lesson-select');
+    renderLevelCards();
+  });
+
+  $('btn-retry')?.addEventListener('click', () => {
+    $('gameover-overlay').classList.add('hidden');
+    showScreen('game');
+    startGame(gameState.level);
+  });
+
+  $('btn-menu')?.addEventListener('click', () => {
+    $('gameover-overlay').classList.add('hidden');
+    showScreen('menu');
+    updateMenuStats();
+  });
+
+  // Tutorial
+  document.querySelectorAll('.btn-tutorial-next').forEach(btn => {
+    btn.addEventListener('click', nextTutorialSlide);
+  });
+  
+  // Finger guide close
+  $('btn-close-finger-guide')?.addEventListener('click', () => {
+    $('finger-guide')?.classList.add('hidden');
+  });
+  
+  $('btn-start-game')?.addEventListener('click', () => {
+    $('tutorial-overlay').classList.add('hidden');
+    startGame(1);
+  });
+
+  // Keyboard handler
+  document.addEventListener('keydown', (e) => {
+    if (gameState.screen === 'practice') handlePracticeKey(e);
+  });
 }
 
-function showKeyFeedback(key, correct) {
-	const keyEl = document.querySelector(`.key[data-key="${key.toLowerCase()}"]`);
-	if (!keyEl) return;
-	keyEl.classList.add(correct ? "correct" : "wrong");
-	setTimeout(() => {
-		keyEl.classList.remove("correct", "wrong");
-	}, 300);
+// ===== INIT =====
+function init() {
+  loadProfile();
+  bindEvents();
+  initEngine();
+  updateMenuStats();
 }
+
+init();

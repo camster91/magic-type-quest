@@ -3,344 +3,351 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>✨ Bloom Typing ✨</title>
-  <link rel="manifest" href="manifest.json">
+  <title>🌸 BloomType - Garden Typing Adventure</title>
+  <link rel="icon" type="image/png" href="/assets/icon-192.png">
   <meta name="theme-color" content="#8B5CF6">
-  <link rel="apple-touch-icon" href="assets/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Install Prompt -->
-  <div id="install-prompt" class="install-prompt hidden">
-    <span>📱 Add Bloom Typing to your home screen!</span>
-    <button type="button" id="install-btn" class="btn-install">Add</button>
-    <button type="button" id="dismiss-install" class="btn-dismiss">×</button>
+
+<!-- ===== MAIN MENU ===== -->
+<div id="menu-screen" class="screen active">
+  <div class="menu-bg"></div>
+  <div class="floating-island">
+    <div class="island-emoji">🏰</div>
   </div>
 
-  <!-- Main Menu -->
-  <div id="menu-screen" class="screen active">
-    <div class="stars-bg"></div>
-    <div class="floating-island">
-      <div class="island-emoji">🏰</div>
-    </div>
-    
-    <h1 class="game-title">
-      <span class="letter-bounce">B</span><span class="letter-bounce">l</span><span class="letter-bounce">o</span><span class="letter-bounce">o</span><span class="letter-bounce">m</span>
-      <br>
-      <span class="letter-bounce">T</span><span class="letter-bounce">y</span><span class="letter-bounce">p</span><span class="letter-bounce">i</span><span class="letter-bounce">n</span><span class="letter-bounce">g</span>
-      <span class="sparkle">✨</span>
-    </h1>
-    
-    <p class="tagline">Type words, grow flowers, and fill your garden with stars!</p>
-    
-    <div class="menu-buttons">
-      <button type="button" id="btn-start" class="btn btn-primary btn-glow">
-        <span class="btn-icon">🎮</span> Play Now
-      </button>
-      <button type="button" id="btn-practice" class="btn btn-secondary">
-        <span class="btn-icon">🎯</span> Practice Letters
-      </button>
-      <button type="button" id="btn-challenges" class="btn btn-secondary">
-        <span class="btn-icon">🏆</span> Challenges
-      </button>
-      <button type="button" id="btn-avatars" class="btn btn-secondary">
-        <span class="btn-icon">👸</span> My Profile
-      </button>
-    </div>
+  <h1 class="game-title">
+    <span class="letter-bounce bounce-1">B</span><span class="letter-bounce bounce-2">l</span><span class="letter-bounce bounce-3">o</span><span class="letter-bounce bounce-4">o</span><span class="letter-bounce bounce-5">m</span>
+    <span class="title-gap"></span>
+    <span class="letter-bounce bounce-6">T</span><span class="letter-bounce bounce-7">y</span><span class="letter-bounce bounce-8">p</span><span class="letter-bounce bounce-9">e</span>
+    <span class="sparkle">✨</span>
+  </h1>
 
-    <div class="stats-bar">
-      <div class="stat-pill">
-        <span class="stat-icon">🌸</span>
-        <span id="total-stars">0</span> Stars
+  <p class="tagline">Type words, grow flowers, and fill your garden with stars!</p>
+
+  <div class="menu-buttons">
+    <button type="button" id="btn-start" class="btn btn-primary btn-lg">
+      <span class="btn-icon">🎮</span> Play Now
+    </button>
+    <button type="button" id="btn-lesson-select" class="btn btn-secondary">
+      <span class="btn-icon">📚</span> Choose Lesson
+    </button>
+    <button type="button" id="btn-practice" class="btn btn-secondary">
+      <span class="btn-icon">🎯</span> Practice Letters
+    </button>
+    <button type="button" id="btn-profile" class="btn btn-secondary">
+      <span class="btn-icon">👤</span> My Profile
+    </button>
+    <a href="./parents.html" class="btn btn-secondary" style="text-decoration:none">
+      <span class="btn-icon">📖</span> For Parents
+    </a>
+    <a href="./teacher.html" class="btn btn-secondary" style="text-decoration:none">
+      <span class="btn-icon">📊</span> Progress
+    </a>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-pill">
+      <span class="stat-icon">🌸</span>
+      <span id="menu-stars">0</span> Stars
+    </div>
+    <div class="stat-pill">
+      <span class="stat-icon">🏅</span>
+      <span id="menu-best">0</span> Best
+    </div>
+    <div class="stat-pill">
+      <span class="stat-icon">📝</span>
+      <span id="menu-words">0</span> Words
+    </div>
+  </div>
+</div>
+
+<!-- ===== LESSON SELECT ===== -->
+<div id="lesson-select-screen" class="screen">
+  <div class="menu-bg"></div>
+  <div class="screen-header">
+    <button type="button" id="btn-lesson-back" class="btn-back">← Back</button>
+    <h2>📚 Choose Your Lesson</h2>
+  </div>
+  <div id="level-cards" class="level-grid"></div>
+</div>
+
+<!-- ===== PRACTICE MODE ===== -->
+<div id="practice-screen" class="screen">
+  <div class="menu-bg"></div>
+  <div class="screen-header">
+    <button type="button" id="btn-practice-back" class="btn-back">← Back</button>
+    <h2>🎯 Practice Letters</h2>
+  </div>
+  <div class="practice-viewport">
+    <div id="practice-char-display" class="practice-char-display">A</div>
+    <div id="practice-hint" class="practice-hint">Press <kbd>A</kbd> on your keyboard</div>
+    <div id="practice-finger-hint" class="practice-finger-hint">Use your LEFT PINKY</div>
+  </div>
+  <div class="practice-progress">
+    <div class="practice-bar"><div id="practice-fill" class="practice-fill"></div></div>
+    <span id="practice-count">1 / 26</span>
+  </div>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div id="game-screen" class="screen">
+  <canvas id="game-canvas"></canvas>
+
+  <!-- HUD -->
+  <div class="hud">
+    <div class="hud-left">
+      <div class="hud-score">🌸 <span id="score">0</span></div>
+      <div class="hud-level">Lv <span id="level">1</span></div>
+      <div class="hud-wpm">⚡ <span id="wpm">0</span> WPM</div>
+    </div>
+    <div class="hud-center">
+      <div class="hud-combo" id="combo-display">🔥 x<span id="combo-count">0</span></div>
+      <div id="shift-hint" class="shift-hint hidden">Hold SHIFT!</div>
+    </div>
+    <div class="hud-right">
+      <div class="hud-hearts">
+        <span id="heart-1" class="heart">❤</span>
+        <span id="heart-2" class="heart">❤</span>
+        <span id="heart-3" class="heart">❤</span>
+        <span id="heart-4" class="heart">❤</span>
+        <span id="heart-5" class="heart">❤</span>
       </div>
-      <div class="stat-pill">
-        <span class="stat-icon">🏅</span>
-        <span id="high-score">0</span> Best
+      <button type="button" id="btn-pause" class="btn-icon-only">⏸</button>
+    </div>
+  </div>
+
+  <!-- Difficulty Badge -->
+  <div id="difficulty-badge" class="difficulty-badge">Level 1</div>
+
+  <!-- Pet -->
+  <div class="pet-container">
+    <div class="pet-wrap">
+      <img id="pet-img" class="pet-face" src="/assets/pets/flower.png" alt="pet">
+    </div>
+    <div id="pet-bubble" class="pet-bubble">Type the word!</div>
+  </div>
+
+  <!-- Word Popup -->
+  <div id="word-popup" class="word-popup hidden">
+    <div class="word-popup-emoji" id="word-popup-emoji">✨</div>
+    <div class="word-popup-text" id="word-popup-text"></div>
+  </div>
+
+  <!-- Level Progress Bar -->
+  <div class="level-progress-wrap">
+    <div class="level-progress-fill" id="level-progress-fill" style="width:0%"></div>
+  </div>
+
+  <!-- Compact Keyboard -->
+  <div class="virtual-keyboard" id="virtual-keyboard-game">
+    <div class="kb-row">
+      <span class="key" data-key="q">Q</span>
+      <span class="key" data-key="w">W</span>
+      <span class="key" data-key="e">E</span>
+      <span class="key" data-key="r">R</span>
+      <span class="key" data-key="t">T</span>
+      <span class="key" data-key="y">Y</span>
+      <span class="key" data-key="u">U</span>
+      <span class="key" data-key="i">I</span>
+      <span class="key" data-key="o">O</span>
+      <span class="key" data-key="p">P</span>
+    </div>
+    <div class="kb-row">
+      <span class="key" data-key="a">A</span>
+      <span class="key" data-key="s">S</span>
+      <span class="key" data-key="d">D</span>
+      <span class="key" data-key="f">F</span>
+      <span class="key" data-key="g">G</span>
+      <span class="key" data-key="h">H</span>
+      <span class="key" data-key="j">J</span>
+      <span class="key" data-key="k">K</span>
+      <span class="key" data-key="l">L</span>
+    </div>
+    <div class="kb-row">
+      <span class="key key-wide" data-key="z">Z</span>
+      <span class="key" data-key="x">X</span>
+      <span class="key" data-key="c">C</span>
+      <span class="key" data-key="v">V</span>
+      <span class="key" data-key="b">B</span>
+      <span class="key" data-key="n">N</span>
+      <span class="key" data-key="m">M</span>
+    </div>
+    <div class="kb-row kb-space-row">
+      <span class="key key-space" data-key=" ">SPACE</span>
+    </div>
+  </div>
+
+  <!-- Achievement Toast -->
+  <div id="achievement-toast" class="achievement-toast hidden">
+    <div class="toast-icon" id="toast-icon">🏆</div>
+    <div class="toast-text">
+      <div class="toast-title" id="toast-title">Achievement Unlocked!</div>
+      <div class="toast-desc" id="toast-desc"></div>
+    </div>
+  </div>
+
+  <!-- Pause Overlay -->
+  <div id="pause-overlay" class="overlay hidden">
+    <div class="overlay-card">
+      <h2>⏸️ Paused</h2>
+      <button type="button" id="btn-resume" class="btn btn-primary">▶ Resume</button>
+      <button type="button" id="btn-quit" class="btn btn-danger">🏠 Quit to Menu</button>
+    </div>
+  </div>
+
+  <!-- Level Complete Overlay -->
+  <div id="level-overlay" class="overlay hidden">
+    <div class="overlay-card level-complete-card">
+      <div class="level-stars">🌸🌸🌸</div>
+      <h2>Level <span id="level-complete-num">1</span> Complete!</h2>
+      <div class="level-stats">
+        <p>Score: <span id="level-score">0</span></p>
+        <p>Words: <span id="level-words">0</span></p>
+        <p>Best Combo: <span id="level-combo">0</span></p>
       </div>
-      <div class="stat-pill">
-        <span class="stat-icon">📅</span>
-        Played <span id="days-played">0</span> days
+      <button type="button" id="btn-next-level" class="btn btn-primary">Next Level →</button>
+      <button type="button" id="btn-replay" class="btn btn-secondary">Replay</button>
+      <button type="button" id="btn-level-menu" class="btn btn-secondary">📚 All Lessons</button>
+    </div>
+  </div>
+
+  <!-- Game Over Overlay -->
+  <div id="gameover-overlay" class="overlay hidden">
+    <div class="overlay-card gameover-card">
+      <div class="gameover-emoji">😢</div>
+      <h2>Game Over</h2>
+      <p class="gameover-message">The stars got away! Keep trying!</p>
+      <div class="gameover-stats">
+        <p>🌸 Final Score: <span id="final-score">0</span></p>
+        <p>🔥 Best Combo: <span id="final-combo">0</span></p>
+        <p>📝 Words Typed: <span id="final-words">0</span></p>
+      </div>
+      <div class="gameover-buttons">
+        <button type="button" id="btn-retry" class="btn btn-primary">Try Again</button>
+        <button type="button" id="btn-menu" class="btn btn-secondary">Main Menu</button>
       </div>
     </div>
   </div>
 
-  <!-- Practice Mode Screen -->
-  <div id="practice-screen" class="screen">
-    <div class="practice-bg"></div>
-    <div class="screen-header">
-      <button type="button" id="btn-practice-back" class="btn-back">← Back</button>
-      <h2>🎯 Practice Letters</h2>
-    </div>
-    <div class="practice-viewport">
-      <div id="practice-char-display" class="practice-char-display">A</div>
-      <div id="practice-hint" class="practice-hint">Press <kbd>A</kbd> on your keyboard</div>
-    </div>
-    <div class="practice-progress">
-      <div class="practice-bar"><div id="practice-fill" class="practice-fill"></div></div>
-      <span id="practice-count">1 / 26</span>
+  <!-- Finger Guide Overlay -->
+  <div id="finger-guide" class="finger-guide hidden">
+    <div class="finger-guide-card">
+      <h3>👐 Home Row Position</h3>
+      <div class="finger-hands">
+        <div class="hand left-hand">
+          <div class="finger pinky active">A</div>
+          <div class="finger ring active">S</div>
+          <div class="finger middle active">D</div>
+          <div class="finger index active">F</div>
+        </div>
+        <div class="hand-gap"></div>
+        <div class="hand right-hand">
+          <div class="finger index active">J</div>
+          <div class="finger middle active">K</div>
+          <div class="finger ring active">L</div>
+          <div class="finger pinky active">;</div>
+        </div>
+      </div>
+      <p class="finger-guide-text">Rest your fingers here! 🏠</p>
+      <button type="button" id="btn-close-finger-guide" class="btn btn-primary">Got it! ✨</button>
     </div>
   </div>
 
-  <!-- Game HUD (overlaid on game) -->
-  <div id="game-screen" class="screen">
-    <canvas id="game-canvas"></canvas>
-    
-    <!-- HUD -->
-    <div class="hud">
-      <div class="hud-left">
-        <div class="hud-score">
-          <span class="hud-icon">🌸</span>
-          <span id="score">0</span>
-        </div>
-        <div class="hud-level">
-          <span class="hud-icon">📈</span>
-          Level <span id="level">1</span>
-        </div>
-      </div>
-      <div class="hud-center">
-        <div class="hud-combo" id="combo-display">Combo: <span id="combo-count">0</span> 🔥</div>
-        <div class="hud-accuracy">Accuracy: <span id="accuracy">100%</span></div>
-      </div>
-      <div class="hud-right">
-        <button type="button" id="btn-pause" class="btn-pause">⏸️</button>
-      </div>
-    </div>
-
-    <!-- Difficulty Badge -->
-    <div id="difficulty-badge" class="difficulty-badge active">Level 1 — Easy</div>
-
-    <!-- Power-Up Indicator -->
-    <div id="powerup-indicator" class="powerup-indicator">⚡ Speeding up!</div>
-
-    <!-- Typing Pet -->
-    <div id="typing-pet" class="typing-pet">
-      <div class="pet-emoji" id="pet-emoji">🐉</div>
-      <div class="pet-bubble" id="pet-bubble"></div>
-    </div>
-
-    <!-- Virtual Keyboard -->
-    <div id="virtual-keyboard-game"></div>
-
-    <!-- Word Image Popup -->
-    <div id="word-popup" class="word-popup hidden">
-      <div class="word-popup-emoji" id="word-popup-emoji">✨</div>
-      <div class="word-popup-text" id="word-popup-text"></div>
-    </div>
-
-    <!-- Achievement Toast -->
-    <div id="achievement-toast" class="achievement-toast hidden">
-      <div class="toast-icon" id="toast-icon">🏆</div>
-      <div class="toast-text">
-        <div class="toast-title" id="toast-title">Achievement Unlocked!</div>
-        <div class="toast-desc" id="toast-desc">Combo Starter</div>
-      </div>
-    </div>
-
-    <!-- Level Progress Bar -->
-    <div class="level-progress-wrap" id="level-progress-wrap">
-      <div class="level-progress-fill" id="level-progress-fill"></div>
-    </div>
-
-    <!-- Health Bar (hearts at bottom) -->
-    <div class="hearts-bar">
-      <span id="heart-1" class="heart">💜</span>
-      <span id="heart-2" class="heart">💜</span>
-      <span id="heart-3" class="heart">💜</span>
-      <span id="heart-4" class="heart">💜</span>
-      <span id="heart-5" class="heart">💜</span>
-    </div>
-
-    <!-- Target Word Display -->
-    <div id="target-display" class="target-display">
-      <span id="target-word" class="target-word"></span>
-      <span id="target-typed" class="target-typed"></span>
-    </div>
-
-    <!-- Pause Overlay -->
-    <div id="pause-overlay" class="overlay hidden">
-      <div class="overlay-card">
-        <h2>⏸️ Paused</h2>
-        <button type="button" id="btn-resume" class="btn btn-primary">Resume Game</button>
-        <button type="button" id="btn-quit" class="btn btn-danger">Quit to Menu</button>
-      </div>
-    </div>
-
-    <!-- Level Complete Overlay -->
-    <div id="level-overlay" class="overlay hidden">
-      <div class="overlay-card level-card">
-        <div class="level-stars">🌸🌸🌸</div>
-        <h2>Level <span id="level-complete-num">1</span> Complete!</h2>
-        <div class="level-stats">
-          <p>Score: <span id="level-score">0</span></p>
-          <p>Words: <span id="level-words">0</span></p>
-          <p>Best Combo: <span id="level-combo">0</span></p>
-        </div>
-        <button type="button" id="btn-next-level" class="btn btn-primary btn-glow">Next Level →</button>
-      </div>
-    </div>
-
-    <!-- Game Over Overlay -->
-    <div id="gameover-overlay" class="overlay hidden">
-      <div class="overlay-card gameover-card">
-        <div class="gameover-emoji">😢</div>
-        <h2>Game Over</h2>
-        <p class="gameover-message" id="gameover-message">The stars got away!</p>
-        <div class="gameover-stats">
-          <p>🌸 Final Score: <span id="final-score">0</span></p>
-          <p>🔥 Best Combo: <span id="final-combo">0</span></p>
-          <p>📝 Words Typed: <span id="final-words">0</span></p>
-        </div>
-        <div class="gameover-buttons">
-          <button type="button" id="btn-retry" class="btn btn-primary">Try Again</button>
-          <button type="button" id="btn-menu" class="btn btn-secondary">Main Menu</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tutorial Overlay -->
-    <div id="tutorial-overlay" class="overlay tutorial">
-      <div class="tutorial-card">
-        <div class="tutorial-slides">
-          <div class="tutorial-slide active" data-slide="0">
-            <h2>🌸 Welcome to Bloom Typing!</h2>
-            <p>Words bloom into flowers as you type them!</p>
-            <p>Type each letter before the star reaches the bottom.</p>
-            <div class="tutorial-dots">
-              <span class="dot active"></span>
-              <span class="dot"></span>
-              <span class="dot"></span>
-            </div>
-            <button type="button" class="btn btn-tutorial-next">Next →</button>
+  <!-- Tutorial Overlay -->
+  <div id="tutorial-overlay" class="overlay tutorial hidden">
+    <div class="tutorial-card">
+      <div class="tutorial-slides">
+        <div class="tutorial-slide active" data-slide="0">
+          <div class="tutorial-emoji">🌸</div>
+          <h2>Welcome to BloomType!</h2>
+          <p>Words bloom into flowers as you type them!</p>
+          <p>Type each letter before the word reaches the bottom.</p>
+          <div class="tutorial-dots">
+            <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
           </div>
-          <div class="tutorial-slide" data-slide="1">
-            <h2>🌸 How to Play</h2>
-            <p>Look at the word highlighted at the top of the screen.</p>
-            <p>Press one key at a time on your keyboard.</p>
-            <p>Correct letters sparkle! Wrong letters shake!</p>
-            <div class="tutorial-dots">
-              <span class="dot"></span>
-              <span class="dot active"></span>
-              <span class="dot"></span>
-            </div>
-            <button type="button" class="btn btn-tutorial-next">Next →</button>
+          <button type="button" class="btn btn-tutorial-next">Next →</button>
+        </div>
+        <div class="tutorial-slide" data-slide="1">
+          <div class="tutorial-emoji">⌨️</div>
+          <h2>How to Play</h2>
+          <p>Look at the word at the top of the screen.</p>
+          <p>Press ONE key at a time on your keyboard.</p>
+          <p>Watch the keyboard light up to show you which finger to use!</p>
+          <div class="tutorial-dots">
+            <span class="dot"></span><span class="dot active"></span><span class="dot"></span>
           </div>
-          <div class="tutorial-slide" data-slide="2">
-            <h2>🎯 Get High Scores!</h2>
-            <p>Chain correct words together for COMBO bonuses!</p>
-            <p>Collect 💜 hearts by typing without mistakes.</p>
-            <p>Press <kbd>Space</kbd> to skip a tricky word!</p>
-            <div class="tutorial-dots">
-              <span class="dot"></span>
-              <span class="dot"></span>
-              <span class="dot active"></span>
-            </div>
-            <button type="button" id="btn-start-game" class="btn btn-primary btn-glow">Start Playing!</button>
+          <button type="button" class="btn btn-tutorial-next">Next →</button>
+        </div>
+        <div class="tutorial-slide" data-slide="2">
+          <div class="tutorial-emoji">🎯</div>
+          <h2>Get High Scores!</h2>
+          <p>Chain words for COMBO bonuses! 🔥</p>
+          <p>Each word plants a flower in your garden! 🌺</p>
+          <p>Press <kbd>Space</kbd> to skip a tricky word.</p>
+          <div class="tutorial-dots">
+            <span class="dot"></span><span class="dot"></span><span class="dot active"></span>
           </div>
+          <button type="button" id="btn-start-game" class="btn btn-primary btn-lg btn-glow">Begin! 🌸</button>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Profile / Avatars Screen -->
-  <div id="profile-screen" class="screen">
-    <div class="stars-bg"></div>
-    <div class="screen-header">
-      <button type="button" id="btn-profile-back" class="btn-back">← Back</button>
-      <h2>👸 My Profile</h2>
-    </div>
-    <div class="profile-card">
-      <div class="avatar-preview" id="avatar-preview">🦄</div>
-      <input type="text" id="player-name" class="player-name-input" placeholder="Your Name" maxlength="12" value="">
-      <div class="avatar-picker">
-        <button type="button" class="avatar-btn active" data-avatar="🦄">🦄</button>
-        <button type="button" class="avatar-btn" data-avatar="🌈">🌈</button>
-        <button type="button" class="avatar-btn" data-avatar="🧚‍♀️">🧚‍♀️</button>
-        <button type="button" class="avatar-btn" data-avatar="🩰">🩰</button>
-        <button type="button" class="avatar-btn" data-avatar="🦋">🦋</button>
-        <button type="button" class="avatar-btn" data-avatar="🐱">🐱</button>
-        <button type="button" class="avatar-btn" data-avatar="🧜‍♀️">🧜‍♀️</button>
-        <button type="button" class="avatar-btn" data-avatar="🎀">🎀</button>
-      </div>
-      <div class="profile-stats">
-        <div class="profile-stat">
-          <span class="ps-icon">🌸</span>
-          <span class="ps-num" id="profile-stars">0</span>
-          <span class="ps-label">Stars</span>
-        </div>
-        <div class="profile-stat">
-          <span class="ps-icon">🏅</span>
-          <span class="ps-num" id="profile-best">0</span>
-          <span class="ps-label">Best Score</span>
-        </div>
-        <div class="profile-stat">
-          <span class="ps-icon">📝</span>
-          <span class="ps-num" id="profile-words">0</span>
-          <span class="ps-label">Words Typed</span>
-        </div>
-        <div class="profile-stat">
-          <span class="ps-icon">⏱️</span>
-          <span class="ps-num" id="profile-time">0m</span>
-          <span class="ps-label">Time Played</span>
-        </div>
-      </div>
-      <div class="profile-settings" style="margin: 1.5rem 0; text-align: center;">
-        <label style="font-size: 1.2rem; cursor: pointer; color: white;">
-          <input type="checkbox" id="voice-toggle" style="transform: scale(1.5); margin-right: 10px;"> 
-          🗣️ Voice Narration
-        </label>
-      </div>
-      <button type="button" id="btn-save-profile" class="btn btn-primary">Save Profile</button>
-    </div>
+<!-- ===== PROFILE SCREEN ===== -->
+<div id="profile-screen" class="screen">
+  <div class="menu-bg"></div>
+  <div class="screen-header">
+    <button type="button" id="btn-profile-back" class="btn-back">← Back</button>
+    <h2>👤 My Profile</h2>
   </div>
-
-  <!-- Challenges Screen -->
-  <div id="challenges-screen" class="screen">
-    <div class="stars-bg"></div>
-    <div class="screen-header">
-      <button type="button" id="btn-challenges-back" class="btn-back">← Back</button>
-      <h2>🏆 Daily Challenges</h2>
+  <div class="profile-card">
+    <div class="avatar-preview" id="avatar-preview">🌸</div>
+    <input type="text" id="player-name" class="player-name-input" placeholder="Your Name" maxlength="12">
+    <div class="avatar-picker">
+      <button type="button" class="avatar-btn active" data-avatar="🌸">🌸</button>
+      <button type="button" class="avatar-btn" data-avatar="🌻">🌻</button>
+      <button type="button" class="avatar-btn" data-avatar="🐉">🐉</button>
+      <button type="button" class="avatar-btn" data-avatar="🐱">🐱</button>
+      <button type="button" class="avatar-btn" data-avatar="🐰">🐰</button>
+      <button type="button" class="avatar-btn" data-avatar="🦊">🦊</button>
+      <button type="button" class="avatar-btn" data-avatar="🐼">🐼</button>
+      <button type="button" class="avatar-btn" data-avatar="🤖">🤖</button>
     </div>
-    <div class="challenges-grid">
-      <div class="challenge-card" id="challenge-1" data-challenge="speed">
-        <div class="challenge-icon">⚡</div>
-        <h3>Speedster</h3>
-        <p>Type 20 words in under 2 minutes</p>
-        <div class="challenge-progress-bar"><div class="challenge-progress-fill"></div></div>
-        <span class="challenge-status">Start!</span>
+    <div class="profile-stats">
+      <div class="profile-stat">
+        <span class="ps-icon">🌸</span>
+        <span class="ps-num" id="profile-stars">0</span>
+        <span class="ps-label">Stars</span>
       </div>
-      <div class="challenge-card" id="challenge-2" data-challenge="combo">
-        <div class="challenge-icon">🔥</div>
-        <h3>Combo Master</h3>
-        <p>Get a 10-word combo streak</p>
-        <div class="challenge-progress-bar"><div class="challenge-progress-fill"></div></div>
-        <span class="challenge-status">Start!</span>
+      <div class="profile-stat">
+        <span class="ps-icon">🏅</span>
+        <span class="ps-num" id="profile-best">0</span>
+        <span class="ps-label">Best Score</span>
       </div>
-      <div class="challenge-card" id="challenge-3" data-challenge="accuracy">
-        <div class="challenge-icon">🎯</div>
-        <h3>Perfect Aim</h3>
-        <p>Type 15 words with 100% accuracy</p>
-        <div class="challenge-progress-bar"><div class="challenge-progress-fill"></div></div>
-        <span class="challenge-status">Start!</span>
+      <div class="profile-stat">
+        <span class="ps-icon">📝</span>
+        <span class="ps-num" id="profile-words">0</span>
+        <span class="ps-label">Words</span>
       </div>
-      <div class="challenge-card" id="challenge-4" data-challenge="letters">
-        <div class="challenge-icon">🔤</div>
-        <h3>Alphabet Ace</h3>
-        <p>Complete the letter practice mode</p>
-        <div class="challenge-progress-bar"><div class="challenge-progress-fill"></div></div>
-        <span class="challenge-status">Start!</span>
+      <div class="profile-stat">
+        <span class="ps-icon">🏆</span>
+        <span class="ps-num" id="profile-achievements">0</span>
+        <span class="ps-label">Achvmts</span>
       </div>
     </div>
+    <label class="toggle-label">
+      <input type="checkbox" id="voice-toggle"> 🗣 Voice Narration
+    </label>
+    <button type="button" id="btn-save-profile" class="btn btn-primary">Save Profile</button>
   </div>
+</div>
 
-  <script type="module" src="/src/main.js"></script>
-  <script>
-    // Register service worker for PWA
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
-    }
-  </script>
+<script type="module" src="/src/main.js"></script>
 </body>
 </html>
