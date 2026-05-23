@@ -138,6 +138,9 @@ button:active { transform: scale(0.97); }
 .level-check { position: absolute; top: 6px; right: 6px; font-size: 1.1rem; }
 
 /* ===== PRACTICE MODE ===== */
+#practice-screen {
+  padding-bottom: 140px; /* Make room for fixed virtual keyboard */
+}
 .practice-viewport { text-align: center; margin: 2rem 0; }
 .practice-char-display { font-family: 'Fredoka One', cursive; font-size: 8rem; color: var(--text); text-shadow: 0 0 40px rgba(139,92,246,0.5); line-height: 1.1; }
 .practice-hint { font-size: 1.1rem; color: var(--text-dim); margin-top: 1rem; }
@@ -147,6 +150,28 @@ button:active { transform: scale(0.97); }
 .practice-bar { width: 200px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
 .practice-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.3s; border-radius: 4px; }
 #practice-count { font-size: 0.9rem; color: var(--text-dim); font-weight: 700; }
+
+.practice-stats {
+  display: flex;
+  gap: 30px;
+  margin-top: 20px;
+  margin-bottom: 140px; /* Room for fixed virtual keyboard */
+}
+
+.practice-stat {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.8rem;
+  color: white;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.practice-stat span {
+  color: var(--success);
+  font-size: 2.2rem;
+}
 
 /* ===== GAME SCREEN ===== */
 #game-canvas { position: fixed; inset: 0; z-index: var(--z-canvas); }

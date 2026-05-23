@@ -1,43 +1,141 @@
 /**
  * BloomType - Main Entry Point v2
  */
-import { LESSON_LEVELS, getLessonByLevel, isLevelUnlocked, getFingerHint } from './lessonLevels.js';
+import { LESSON_LEVELS, getLessonByLevel, getFingerHint, getLessonWordsForPractice } from './lessonLevels.js';
 import { gameState, loadProfile, saveProfile } from './state.js';
-import { init as initEngine, startGame, togglePause, showScreen } from './gameEngine.js';
+import { init as initEngine, startGame, togglePause, showScreen, showKeyFeedback, highlightTargetKey } from './gameEngine.js';
 
 const $ = (id) => document.getElementById(id);
 
 // ===== PRACTICE MODE =====
-let practiceIndex = 0;
-const practiceLetters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+let practiceLesson = null;
+let currentPracticeWord = '';
+let currentWordIndex = 0; // The index of the character being typed in currentPracticeWord
+let practiceInterval = null;
+
+function startPractice(lessonId) {
+  practiceLesson = getLessonByLevel(lessonId);
+  if (!practiceLesson) {
+    console.error("Lesson not found for practice mode:", lessonId);
+    showScreen('menu');
+    return;
+  }
+  
+  gameState.screen = 'practice';
+  gameState.practiceLessonId = lessonId;
+  gameState.currentPracticeWords = getLessonWordsForPractice(practiceLesson);
+  gameState.practiceWordIndex = 0;
+  gameState.practiceKeystrokes = 0;
+  gameState.practiceCorrectKeystrokes = 0;
+  gameState.practiceErrors = 0;
+  gameState.practiceStartTime = performance.now();
+  gameState.practiceWPM = 0;
+  gameState.practiceAccuracy = 0;
+
+  currentPracticeWord = gameState.currentPracticeWords[gameState.practiceWordIndex];
+  currentWordIndex = 0;
+  
+  updatePracticeDisplay();
+  
+  // Start WPM/accuracy interval
+  if (practiceInterval) clearInterval(practiceInterval);
+  practiceInterval = setInterval(updatePracticeStats, 1000); // Update every second
+}
 
 function updatePracticeDisplay() {
-  const char = practiceLetters[practiceIndex].toUpperCase();
-  $('practice-char-display').textContent = char;
-  $('practice-hint').innerHTML = `Press <kbd>${char}</kbd> on your keyboard`;
-  $('practice-count').textContent = `${practiceIndex + 1} / 26`;
-  $('practice-fill').style.width = `${(practiceIndex / 26) * 100}%`;
+  const displayEl = $('practice-char-display');
+  const hintEl = $('practice-hint');
+  const fingerHintEl = $('practice-finger-hint');
+  const progressFillEl = $('practice-fill');
+  const progressCountEl = $('practice-count');
+  const wpmEl = $('practice-wpm');
+  const accuracyEl = $('practice-accuracy');
+
+  if (!displayEl || !hintEl || !fingerHintEl || !progressFillEl || !progressCountEl || !wpmEl || !accuracyEl) return;
+
+  // Display the full word, with the current character highlighted
+  let displayText = '';
+  for (let i = 0; i < currentPracticeWord.length; i++) {
+    if (i === currentWordIndex) {
+      displayText += `<span class="current-char">${currentPracticeWord[i]}</span>`;
+    } else {
+      displayText += currentPracticeWord[i];
+    }
+  }
+  displayEl.innerHTML = displayText;
+
+  hintEl.innerHTML = `Type: <kbd>${currentPracticeWord}</kbd>`;
+
+  const nextChar = currentPracticeWord[currentWordIndex];
+  const fingerHint = getFingerHint(nextChar);
+  fingerHintEl.textContent = fingerHint ? `Use your ${fingerHint.label}` : '';
   
-  const hint = getFingerHint(char.toLowerCase());
-  $('practice-finger-hint').textContent = hint ? `Use your ${hint.label}` : '';
+  const totalWords = gameState.currentPracticeWords.length;
+  const wordsCompleted = gameState.practiceWordIndex;
+  progressCountEl.textContent = `${wordsCompleted + 1} / ${totalWords}`;
+  progressFillEl.style.width = `${((wordsCompleted + (currentWordIndex / currentPracticeWord.length)) / totalWords) * 100}%`;
+
+  wpmEl.textContent = gameState.practiceWPM;
+  accuracyEl.textContent = gameState.practiceAccuracy + '%';
+
+  highlightTargetKey(nextChar);
+}
+
+function updatePracticeStats() {
+  const elapsedSeconds = (performance.now() - gameState.practiceStartTime) / 1000;
+  if (elapsedSeconds < 1) return;
+
+  // WPM = (correct characters / 5) / minutes
+  const practiceElapsedMinutes = elapsedSeconds / 60;
+  gameState.practiceWPM = Math.round((gameState.practiceCorrectKeystrokes / 5) / practiceElapsedMinutes);
+  
+  // Accuracy
+  gameState.practiceAccuracy = gameState.practiceKeystrokes > 0 
+    ? Math.round((gameState.practiceCorrectKeystrokes / gameState.practiceKeystrokes) * 100) 
+    : 100;
+
+  updatePracticeDisplay();
 }
 
 function handlePracticeKey(e) {
   if (gameState.screen !== 'practice') return;
   if (e.repeat) return;
   
-  const expected = practiceLetters[practiceIndex];
-  const key = e.key.toLowerCase();
-  
-  if (key === expected) {
-    practiceIndex++;
-    if (practiceIndex >= 26) {
-      practiceIndex = 0;
-      showAchievement('Alphabet Master', 'All 26 letters!', '🔤');
+  const pressedKey = e.key;
+  const expectedChar = currentPracticeWord[currentWordIndex];
+
+  gameState.practiceKeystrokes++;
+
+  if (pressedKey === expectedChar) {
+    gameState.practiceCorrectKeystrokes++;
+    currentWordIndex++;
+    showKeyFeedback(pressedKey, true);
+
+    if (currentWordIndex >= currentPracticeWord.length) {
+      // Word complete
+      gameState.practiceWordIndex++;
+      if (gameState.practiceWordIndex >= gameState.currentPracticeWords.length) {
+        // Lesson complete
+        clearInterval(practiceInterval);
+        showAchievement('Practice Master', `Lesson ${practiceLesson.name} Complete!`, '🎯');
+        // Reset and go back to menu after a delay
+        setTimeout(() => {
+          showScreen('menu');
+          // Optionally save practice stats to profile
+          // gameState.profile.practiceStats[practiceLesson.id] = { wpm: gameState.practiceWPM, accuracy: gameState.practiceAccuracy };
+          // saveProfile();
+        }, 3000);
+      } else {
+        currentPracticeWord = gameState.currentPracticeWords[gameState.practiceWordIndex];
+        currentWordIndex = 0;
+        showAchievement('Word Typed!', `You typed "${currentPracticeWord}"!`, '✅');
+      }
     }
     updatePracticeDisplay();
-  } else if (key.length === 1 && /[a-z]/.test(key)) {
-    // Wrong letter
+  } else if (pressedKey.length === 1) { // Only count single character wrong keys
+    gameState.practiceErrors++;
+    showKeyFeedback(pressedKey, false);
+    // Optionally shake the word display
     const display = $('practice-char-display');
     display.classList.add('shake');
     setTimeout(() => display.classList.remove('shake'), 300);
@@ -188,8 +286,7 @@ function bindEvents() {
   
   $('btn-practice')?.addEventListener('click', () => {
     showScreen('practice');
-    practiceIndex = 0;
-    updatePracticeDisplay();
+    startPractice(1); // Start with lesson 1
   });
   
   $('btn-profile')?.addEventListener('click', () => {

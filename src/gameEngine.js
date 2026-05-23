@@ -611,7 +611,7 @@ function updateKeyboardHighlight() {
 }
 
 // ===== KEYBOARD HIGHLIGHT =====
-function highlightTargetKey(char) {
+export function highlightTargetKey(char) {
   document.querySelectorAll('.key').forEach(k => k.classList.remove('target'));
   
   if (!char) return;
@@ -638,7 +638,7 @@ function showFingerHint(text, color) {
   }
 }
 
-function showKeyFeedback(key, correct) {
+export function showKeyFeedback(key, correct) {
   const keyEl = document.querySelector(`.key[data-key="${key}"]`);
   if (keyEl) {
     keyEl.classList.add(correct ? 'correct' : 'wrong');

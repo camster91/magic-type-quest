@@ -432,6 +432,34 @@ export function getLessonByLevel(level) {
   return LESSON_LEVELS[level] || LESSON_LEVELS[1];
 }
 
+// Get words or practice patterns for a lesson in practice mode
+export function getLessonWordsForPractice(lesson, count = 100) {
+  if (!lesson) return [];
+  
+  // Prioritize practice patterns if they exist
+  if (lesson.practicePatterns && lesson.practicePatterns.length > 0) {
+    // Shuffle and repeat patterns to reach count if needed
+    let patterns = [...lesson.practicePatterns];
+    while (patterns.length < count) {
+      patterns = patterns.concat(lesson.practicePatterns);
+    }
+    return patterns.slice(0, count);
+  } else if (lesson.words && lesson.words.length > 0) {
+    // Fallback to words if no patterns
+    let words = [...lesson.words];
+    while (words.length < count) {
+      words = words.concat(lesson.words);
+    }
+    // Shuffle and take requested count
+    for (let i = words.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [words[i], words[j]] = [words[j], words[i]];
+    }
+    return words.slice(0, count);
+  }
+  return [];
+}
+
 // Get finger hint for a key
 export function getFingerHint(key) {
   if (!key || typeof key !== 'string') return null;

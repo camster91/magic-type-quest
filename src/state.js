@@ -30,6 +30,17 @@ export const defaultState = {
   keyAccuracy: {}, // { 'a': { correct: 10, wrong: 2 }, ... }
   levelWPM: 0,
   levelAccuracy: 0,
+  // Practice Mode state
+  practiceLessonId: 1,
+  currentPracticeWords: [],
+  practiceWordIndex: 0,
+  practiceKeystrokes: 0,
+  practiceCorrectKeystrokes: 0,
+  practiceErrors: 0,
+  practiceStartTime: 0,
+  practiceWPM: 0,
+  practiceAccuracy: 0,
+  
   profile: {
     name: 'Player',
     avatar: '🌸',
