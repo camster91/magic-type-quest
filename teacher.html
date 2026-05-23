@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BloomType — Teacher Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&family=Fredoka+One&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0d2e; --text: #f0e6ff; --text-dim: #a78bfa;
+      --primary: #8B5CF6; --primary-light: #A78BFA; --accent: #EC4899;
+      --success: #34D399; --danger: #EF4444; --warning: #FBBF24;
+      --glass: rgba(255,255,255,0.08); --glass-border: rgba(255,255,255,0.12);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text);
+      min-height: 100vh; padding: 20px;
+    }
+    h1 { font-family: 'Fredoka One', cursive; font-size: 2rem; margin-bottom: 8px; }
+    .subtitle { color: var(--text-dim); margin-bottom: 24px; }
+    
+    .toolbar {
+      display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;
+      align-items: center;
+    }
+    .btn {
+      padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer;
+      font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-light); }
+    .btn-export { background: var(--success); color: #0f0d2e; }
+    .btn-danger { background: var(--danger); color: white; }
+    
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px; margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--glass); border: 1px solid var(--glass-border);
+      border-radius: 12px; padding: 16px; text-align: center;
+    }
+    .stat-value { font-family: 'Fredoka One', cursive; font-size: 2rem; color: var(--accent); }
+    .stat-label { font-size: 0.8rem; color: var(--text-dim); margin-top: 4px; }
+    
+    .table-wrap {
+      background: var(--glass); border: 1px solid var(--glass-border);
+      border-radius: 12px; overflow: hidden; margin-bottom: 24px;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th { background: rgba(139,92,246,0.2); padding: 12px 16px; text-align: left; font-weight: 700; }
+    td { padding: 10px 16px; border-top: 1px solid var(--glass-border); }
+    tr:hover td { background: rgba(255,255,255,0.04); }
+    .badge { padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+    .badge-green { background: rgba(52,211,153,0.2); color: var(--success); }
+    .badge-yellow { background: rgba(251,191,36,0.2); color: var(--warning); }
+    .badge-red { background: rgba(239,68,68,0.2); color: var(--danger); }
+    
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); }
+    .empty-state h2 { font-family: 'Fredoka One', cursive; margin-bottom: 12px; color: var(--text); }
+    
+    .key-heat {
+      display: flex; flex-wrap: wrap; gap: 4px; max-width: 300px;
+    }
+    .key-stat {
+      width: 28px; height: 28px; border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 700;
+    }
+    .input-code {
+      background: var(--glass); border: 1px solid var(--glass-border);
+      border-radius: 8px; padding: 10px 14px; color: var(--text);
+      font-family: 'Nunito', sans-serif; font-size: 0.9rem; width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌸 BloomType Teacher Dashboard</h1>
+  <p class="subtitle">Track typing progress for your classroom. Data is stored locally on this device.</p>
+  
+  <div class="toolbar">
+    <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh Data</button>
+    <button class="btn btn-export" onclick="exportCSV()">📊 Export CSV</button>
+    <button class="btn btn-danger" onclick="clearAllData()">🗑 Clear All</button>
+  </div>
+  
+  <div id="stats-grid" class="stats-grid"></div>
+  
+  <div class="table-wrap">
+    <table id="student-table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Level Reached</th>
+          <th>Total Words</th>
+          <th>High Score</th>
+          <th>Stars</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="student-body"></tbody>
+    </table>
+  </div>
+  
+  <div id="empty-state" class="empty-state" style="display:none">
+    <h2>No student data yet</h2>
+    <p>Students will appear here after they play BloomType on this browser.</p>
+    <p>Share this app with your class and their progress will show up automatically! 🌸</p>
+  </div>
+
+  <script>
+    function getAllStudentData() {
+      const students = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('bloomtype_profile_')) {
+          try {
+            const data = JSON.parse(localStorage.getItem(key));
+            data._key = key;
+            students.push(data);
+          } catch (e) {}
+        }
+      }
+      return students.sort((a, b) => (b.totalStars || 0) - (a.totalStars || 0));
+    }
+    
+    function refreshData() {
+      const students = getAllStudentData();
+      const tbody = document.getElementById('student-body');
+      const stats = document.getElementById('stats-grid');
+      const empty = document.getElementById('empty-state');
+      
+      if (students.length === 0) {
+        tbody.innerHTML = '';
+        stats.innerHTML = '';
+        empty.style.display = '';
+        return;
+      }
+      
+      empty.style.display = 'none';
+      
+      // Stats
+      const totalStars = students.reduce((s, st) => s + (st.totalStars || 0), 0);
+      const totalWords = students.reduce((s, st) => s + (st.totalWords || 0), 0);
+      const avgLevel = students.reduce((s, st) => s + (st.completedLevels?.length || 0), 0) / students.length;
+      const activeToday = students.filter(st => {
+        if (!st.lastPlayed) return false;
+        return new Date(st.lastPlayed).toDateString() === new Date().toDateString();
+      }).length;
+      
+      stats.innerHTML = `
+        <div class="stat-card"><div class="stat-value">${students.length}</div><div class="stat-label">Students</div></div>
+        <div class="stat-card"><div class="stat-value">${totalStars}</div><div class="stat-label">Total Stars</div></div>
+        <div class="stat-card"><div class="stat-value">${totalWords}</div><div class="stat-label">Words Typed</div></div>
+        <div class="stat-card"><div class="stat-value">${avgLevel.toFixed(1)}</div><div class="stat-label">Avg Level</div></div>
+        <div class="stat-card"><div class="stat-value">${activeToday}</div><div class="stat-label">Active Today</div></div>
+      `;
+      
+      // Table
+      tbody.innerHTML = students.map(st => {
+        const level = st.completedLevels?.length || 0;
+        const status = level >= 10 ? 'Completed!' : level >= 5 ? 'On Track' : level > 0 ? 'Getting Started' : 'Not Started';
+        const badgeClass = level >= 10 ? 'badge-green' : level >= 5 ? 'badge-yellow' : 'badge-red';
+        
+        return `
+          <tr>
+            <td><strong>${st.name || 'Anonymous'}</strong></td>
+            <td>Level ${level}</td>
+            <td>${st.totalWords || 0}</td>
+            <td>${st.highScore || 0}</td>
+            <td>${st.totalStars || 0} ⭐</td>
+            <td><span class="badge ${badgeClass}">${status}</span></td>
+            <td><button class="btn btn-danger" style="padding:4px 10px;font-size:0.75rem" onclick="deleteStudent('${st._key}')">Delete</button></td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    function exportCSV() {
+      const students = getAllStudentData();
+      if (students.length === 0) { alert('No data to export'); return; }
+      
+      const headers = ['Name', 'Level Reached', 'Total Words', 'High Score', 'Total Stars', 'Completed Levels', 'Last Played'];
+      const rows = students.map(st => [
+        st.name || 'Anonymous',
+        st.completedLevels?.length || 0,
+        st.totalWords || 0,
+        st.highScore || 0,
+        st.totalStars || 0,
+        (st.completedLevels || []).join(';'),
+        st.lastPlayed || 'Never'
+      ]);
+      
+      const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `bloomtype-class-report-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    
+    function deleteStudent(key) {
+      if (!confirm('Delete this student\'s data?')) return;
+      localStorage.removeItem(key);
+      refreshData();
+    }
+    
+    function clearAllData() {
+      if (!confirm('⚠️ Delete ALL student data? This cannot be undone!')) return;
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('bloomtype_')) keys.push(key);
+      }
+      keys.forEach(k => localStorage.removeItem(k));
+      refreshData();
+    }
+    
+    refreshData();
+  </script>
+</body>
+</html>
