@@ -639,7 +639,7 @@ function showFingerHint(text, color) {
 }
 
 export function showKeyFeedback(key, correct) {
-  const keyEl = document.querySelector(`.key[data-key="${key}"]`);
+  const keyEl = document.querySelector(`.key[data-key="${key.toLowerCase()}"]`);
   if (keyEl) {
     keyEl.classList.add(correct ? 'correct' : 'wrong');
     setTimeout(() => keyEl.classList.remove('correct', 'wrong'), 300);

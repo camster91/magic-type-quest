@@ -464,9 +464,18 @@ export function getLessonWordsForPractice(lesson, count = 100) {
 export function getFingerHint(key) {
   if (!key || typeof key !== 'string') return null;
   const lowerKey = key.toLowerCase();
+  // First pass: exact match (for capital levels like Level 5)
   for (const level of Object.values(LESSON_LEVELS)) {
-    if (!level.fingerLabels) continue;
-    if (level.fingerLabels[lowerKey]) {
+    if (level.fingerLabels && level.fingerLabels[key]) {
+      return {
+        label: level.fingerLabels[key],
+        color: level.fingerColors?.[key] || "#8B5CF6"
+      };
+    }
+  }
+  // Second pass: lowercase fallback
+  for (const level of Object.values(LESSON_LEVELS)) {
+    if (level.fingerLabels && level.fingerLabels[lowerKey]) {
       return {
         label: level.fingerLabels[lowerKey],
         color: level.fingerColors?.[lowerKey] || "#8B5CF6"

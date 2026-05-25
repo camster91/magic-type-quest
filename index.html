@@ -6,6 +6,7 @@
   <title>🌸 BloomType - Garden Typing Adventure</title>
   <link rel="icon" type="image/png" href="/assets/icon-192.png">
   <meta name="theme-color" content="#8B5CF6">
+  <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -391,5 +392,10 @@
 </div>
 
 <script type="module" src="/src/main.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
+</script>
 </body>
 </html>
