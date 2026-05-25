@@ -8,7 +8,7 @@ Pixar/Disney cartoon style, bright and child-friendly.
 from PIL import Image, ImageDraw, ImageFilter, ImageChops
 import math, os
 
-OUT_DIR = "/home/camst/magic-type-quest/public/assets"
+OUT_DIR = "/Users/biancabienaime/magic-type-quest/public/assets"
 os.makedirs(OUT_DIR + "/guides", exist_ok=True)
 os.makedirs(OUT_DIR + "/particles", exist_ok=True)
 
