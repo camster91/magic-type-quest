@@ -1,4 +1,4 @@
-// ===== UNIFIED LESSON-GAME LEVELS =====
+import { ALL_WORDS, ALL_SENTENCES } from './words.js';
 // Each game level IS a typing lesson
 // Progressive curriculum that teaches proper touch typing
 
@@ -427,9 +427,21 @@ export const LESSON_LEVELS = {
   },
 };
 
-// Get lesson by game level
+// Get lesson by game level — injects expanded word bank dynamically
 export function getLessonByLevel(level) {
-  return LESSON_LEVELS[level] || LESSON_LEVELS[1];
+  const base = LESSON_LEVELS[level] || LESSON_LEVELS[1];
+  const expanded = ALL_WORDS[level];
+  const sentences = ALL_SENTENCES[level];
+  
+  // Merge expanded words (if available) into base lesson
+  if (expanded && expanded.length > 0) {
+    return {
+      ...base,
+      words: expanded,
+      sentences: sentences || [],
+    };
+  }
+  return base;
 }
 
 // Get words or practice patterns for a lesson in practice mode
