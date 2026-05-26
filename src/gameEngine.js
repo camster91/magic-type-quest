@@ -463,18 +463,25 @@ function completeWord() {
     showPetReaction('happy');
   }
   
-  // Plant flower in garden
+  // Plant flower in garden (session + persistent)
   const types = ['flower', 'sunflower', 'daisy', 'tulip', 'rose'];
   const flowerType = types[Math.floor(Math.random() * types.length)];
   const groundY = gameState.canvasH - 175;
   const flowerX = Math.max(60, Math.min(gameState.canvasW - 60, word.x));
-  gameState.garden.push({
+  const flowerData = {
     type: flowerType,
     x: flowerX,
     y: groundY,
     scale: 0.5 + Math.random() * 0.5,
     bloomProgress: 1,
-  });
+    plantedAt: new Date().toISOString(),
+    level: gameState.level,
+    word: word.text,
+  };
+  gameState.garden.push(flowerData);
+  if (!gameState.profile.garden) gameState.profile.garden = [];
+  gameState.profile.garden.push(flowerData);
+  saveProfile();
   
   // Remove word
   const idx = gameState.activeWords.indexOf(word);

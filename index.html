@@ -43,6 +43,9 @@
     <button type="button" id="btn-profile" class="btn btn-secondary">
       <span class="btn-icon">👤</span> My Profile
     </button>
+    <button type="button" id="btn-garden" class="btn btn-secondary">
+      <span class="btn-icon">🌺</span> My Garden
+    </button>
     <a href="./parents.html" class="btn btn-secondary" style="text-decoration:none">
       <span class="btn-icon">📖</span> For Parents
     </a>
@@ -434,6 +437,21 @@
       <input type="checkbox" id="voice-toggle"> 🗣 Voice Narration
     </label>
     <button type="button" id="btn-save-profile" class="btn btn-primary">Save Profile</button>
+  </div>
+</div>
+
+<!-- ===== GARDEN SCREEN ===== -->
+<div id="garden-screen" class="screen">
+  <div class="menu-bg"></div>
+  <div class="screen-header">
+    <button type="button" id="btn-garden-back" class="btn-back">← Back</button>
+    <h2>🌺 My Garden</h2>
+  </div>
+  <div class="garden-stats" id="garden-stats">
+    <span>🌸 <span id="garden-count">0</span> flowers planted</span>
+  </div>
+  <div class="garden-grid" id="garden-grid">
+    <!-- Populated by JS -->
   </div>
 </div>
 

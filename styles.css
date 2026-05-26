@@ -619,6 +619,26 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .achievement-item .ach-title { font-size: 0.72rem; font-weight: 700; line-height: 1.2; }
 .achievement-item .ach-desc { font-size: 0.6rem; color: var(--text-dim); margin-top: 2px; }
 
+/* ===== GARDEN SCREEN ===== */
+.garden-stats { font-size: 0.9rem; color: var(--text-dim); margin: 8px 0 14px; }
+.garden-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 10px; width: min(420px, 92vw); max-height: 55vh; overflow-y: auto; padding: 4px;
+}
+.garden-empty { text-align: center; padding: 40px 20px; color: var(--text-dim); }
+.garden-empty-emoji { font-size: 3rem; margin-bottom: 10px; }
+.garden-empty-hint { font-size: 0.8rem; opacity: 0.6; }
+.garden-item {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: 10px 6px; border-radius: 12px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  transition: transform 0.2s ease;
+}
+.garden-item:hover { transform: scale(1.06); }
+.garden-flower { font-size: 2.2rem; margin-bottom: 4px; }
+.garden-word { font-size: 0.7rem; font-weight: 700; color: var(--text); }
+.garden-meta { font-size: 0.6rem; color: var(--text-dim); margin-top: 2px; }
+
 /* ===== DAILY QUESTS ===== */
 .daily-quests {
   width: min(320px, 92vw); margin-top: 12px;

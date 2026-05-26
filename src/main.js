@@ -328,6 +328,48 @@ function saveProfileScreen() {
   updateMenuStats();
 }
 
+// ===== GARDEN SCREEN =====
+const FLOWER_EMOJIS = {
+  flower: '🌸', sunflower: '🌻', daisy: '🌼', tulip: '🌷', rose: '🌹'
+};
+
+function loadGardenScreen() {
+  const p = gameState.profile || {};
+  const garden = p.garden || [];
+  const countEl = document.getElementById('garden-count');
+  if (countEl) countEl.textContent = garden.length;
+
+  const grid = document.getElementById('garden-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  if (garden.length === 0) {
+    grid.innerHTML = `
+      <div class="garden-empty">
+        <div class="garden-empty-emoji">🌱</div>
+        <p>Your garden is empty!</p>
+        <p class="garden-empty-hint">Play levels to plant flowers here.</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Show most recent first, limit to 200 for performance
+  const visible = garden.slice(-200).reverse();
+  for (const f of visible) {
+    const item = document.createElement('div');
+    item.className = 'garden-item';
+    const emoji = FLOWER_EMOJIS[f.type] || '🌸';
+    const date = f.plantedAt ? new Date(f.plantedAt).toLocaleDateString() : '';
+    item.innerHTML = `
+      <div class="garden-flower">${emoji}</div>
+      <div class="garden-word">${f.word || '?'}</div>
+      <div class="garden-meta">Lv.${f.level || '?'} ${date}</div>
+    `;
+    grid.appendChild(item);
+  }
+}
+
 // ===== EVENT BINDINGS =====
 function bindEvents() {
   // Menu
@@ -360,10 +402,16 @@ function bindEvents() {
     loadProfileScreen();
   });
 
+  $('btn-garden')?.addEventListener('click', () => {
+    showScreen('garden');
+    loadGardenScreen();
+  });
+
   // Back buttons
   $('btn-lesson-back')?.addEventListener('click', () => showScreen('menu'));
   $('btn-practice-back')?.addEventListener('click', () => showScreen('menu'));
   $('btn-profile-back')?.addEventListener('click', () => showScreen('menu'));
+  $('btn-garden-back')?.addEventListener('click', () => showScreen('menu'));
 
   // Profile
   $('btn-save-profile')?.addEventListener('click', () => {
