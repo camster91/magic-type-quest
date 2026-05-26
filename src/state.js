@@ -1,6 +1,7 @@
 /**
  * BloomType - Game State Management
  */
+import { syncToClass } from './classroom.js';
 
 // ===== DEFAULT STATE =====
 export const defaultState = {
@@ -54,6 +55,9 @@ export const defaultState = {
     petEvolution: 1, // 1=sprout, 2=bud, 3=bloom
     seenEvolutions: [], // Track which evolutions the player has seen
     garden: [], // Persistent flower collection across sessions
+    classCode: null, // Classroom code for teacher dashboard
+    uuid: null, // Stable identifier for class sync
+    keySR: {}, // Spaced repetition state for weak keys
   },
 };
 
@@ -97,11 +101,19 @@ export function saveProfile() {
       };
     }
     
+    // Ensure uuid for class sync
+    if (!p.uuid) p.uuid = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    
     // Save to app key
     localStorage.setItem('bloomtype-profile', JSON.stringify(p));
     // Also save to teacher-readable key
     const name = (p.name || 'Anonymous').replace(/[^a-zA-Z0-9]/g, '_');
     localStorage.setItem(`bloomtype_profile_${name}`, JSON.stringify(p));
+    
+    // Sync to class if joined
+    if (p.classCode) {
+      syncToClass(p);
+    }
   } catch (e) {
     console.warn('Failed to save profile:', e);
   }

@@ -434,6 +434,20 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .toggle-label { font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--text-dim); }
 .toggle-label input { transform: scale(1.2); accent-color: var(--primary); }
 
+/* ===== CLASS CODE ===== */
+.profile-class-section {
+  width: 100%; max-width: 420px; margin: 8px 0;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.profile-label { font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.profile-input {
+  background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px;
+  padding: 10px 14px; color: var(--text); font-size: 0.95rem; font-weight: 700;
+  text-align: center; width: 100%; outline: none; font-family: 'Nunito', sans-serif;
+}
+.profile-input:focus { border-color: var(--primary-light); }
+.profile-hint { font-size: 0.72rem; color: var(--text-dim); opacity: 0.7; text-align: center; }
+
 /* Score Popup Animation */
 @keyframes scoreFloat {
   0% { opacity: 1; transform: translate(-50%, 0) scale(1); }

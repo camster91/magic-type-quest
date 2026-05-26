@@ -83,8 +83,11 @@
   <p class="subtitle">Track typing progress for your classroom. Data is stored locally on this device.</p>
   
   <div class="toolbar">
-    <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh Data</button>
+    <input type="text" id="class-code-input" class="input-code" placeholder="Class code (e.g. ABC123)" maxlength="10">
+    <button class="btn btn-primary" onclick="loadClass()">🔍 Load Class</button>
+    <button class="btn btn-primary" onclick="refreshData()">🔄 All Students</button>
     <button class="btn btn-export" onclick="exportCSV()">📊 Export CSV</button>
+    <button class="btn btn-export" onclick="exportJSON()">📋 Export JSON</button>
     <button class="btn btn-danger" onclick="clearAllData()">🗑 Clear All</button>
   </div>
   
@@ -221,6 +224,88 @@
       }
       keys.forEach(k => localStorage.removeItem(k));
       refreshData();
+    }
+    
+    function getClassData(code) {
+      if (!code) return null;
+      const key = 'bloomtype-class-' + code.toUpperCase().trim().replace(/\s+/g,'');
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      try { return JSON.parse(raw); } catch(e) { return null; }
+    }
+    
+    function loadClass() {
+      const code = document.getElementById('class-code-input').value;
+      if (!code) { alert('Enter a class code'); return; }
+      const data = getClassData(code);
+      const tbody = document.getElementById('student-body');
+      const stats = document.getElementById('stats-grid');
+      const empty = document.getElementById('empty-state');
+      
+      if (!data || Object.keys(data).length === 0) {
+        tbody.innerHTML = '';
+        stats.innerHTML = '';
+        empty.innerHTML = `
+          <h2>No class data found</h2>
+          <p>No students have joined class <strong>${code}</strong> yet.</p>
+          <p>Share the code with students and have them enter it in their profile. 🌸</p>
+        `;
+        empty.style.display = '';
+        return;
+      }
+      
+      empty.style.display = 'none';
+      const students = Object.values(data);
+      const totalStars = students.reduce((s, st) => s + (st.totalStars || 0), 0);
+      const totalWords = students.reduce((s, st) => s + (st.totalWords || 0), 0);
+      const avgLevel = students.reduce((s, st) => s + (st.completedLevels?.length || 0), 0) / students.length;
+      
+      stats.innerHTML = `
+        <div class="stat-card"><div class="stat-value">${students.length}</div><div class="stat-label">Students</div></div>
+        <div class="stat-card"><div class="stat-value">${totalStars}</div><div class="stat-label">Total Stars</div></div>
+        <div class="stat-card"><div class="stat-value">${totalWords}</div><div class="stat-label">Words Typed</div></div>
+        <div class="stat-card"><div class="stat-value">${avgLevel.toFixed(1)}</div><div class="stat-label">Avg Level</div></div>
+      `;
+      
+      tbody.innerHTML = students.map(st => {
+        const level = st.completedLevels?.length || 0;
+        const status = level >= 10 ? 'Completed!' : level >= 5 ? 'On Track' : level > 0 ? 'Getting Started' : 'Not Started';
+        const badgeClass = level >= 10 ? 'badge-green' : level >= 5 ? 'badge-yellow' : 'badge-red';
+        return `
+          <tr>
+            <td><strong>${st.name || 'Anonymous'}</strong> ${st.avatar || ''}</td>
+            <td>Level ${level}</td>
+            <td>${st.totalWords || 0}</td>
+            <td>${st.highScore || 0}</td>
+            <td>${st.totalStars || 0} ⭐</td>
+            <td><span class="badge ${badgeClass}">${status}</span></td>
+            <td>-</td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    function exportJSON() {
+      const students = getAllStudentData();
+      if (students.length === 0) { alert('No data to export'); return; }
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        students: students.map(st => ({
+          name: st.name || 'Anonymous',
+          level: st.completedLevels?.length || 0,
+          words: st.totalWords || 0,
+          score: st.highScore || 0,
+          stars: st.totalStars || 0,
+          lastPlayed: st.lastPlayed || 'Never'
+        }))
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `bloomtype-export-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
     }
     
     refreshData();

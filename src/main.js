@@ -9,6 +9,7 @@ import { getAchievementStats, getAllAchievements } from './achievements.js';
 import { getTodaysQuests, getQuestCompletion } from './quests.js';
 import { getWeakKeys, buildDrillLesson } from './drills.js';
 import { getDueKeys } from './spacedRep.js';
+import { joinClass } from './classroom.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -342,6 +343,8 @@ function saveProfileScreen() {
   p.name = $('player-name')?.value?.trim() || 'Player';
   p.avatar = document.querySelector('.avatar-btn.active')?.dataset?.avatar || '🌸';
   p.voiceEnabled = $('voice-toggle')?.checked !== false;
+  const code = $('class-code')?.value?.trim();
+  if (code) joinClass(p, code);
   saveProfile();
   updateMenuStats();
 }
