@@ -580,6 +580,45 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 
 #game-screen.active ~ .pet-container, #game-screen.active .pet-container { display: none; }
 
+/* ===== ACHIEVEMENTS ===== */
+.profile-achievements-section { width: 100%; max-width: 420px; margin: 14px 0; }
+.achievements-header {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.9rem; font-weight: 700; margin-bottom: 10px; color: var(--text);
+}
+.achievements-categories {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.achievements-categories .cat-pill {
+  display: flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700;
+  background: var(--glass); border: 1px solid var(--glass-border);
+}
+.achievements-categories .cat-pill .cat-bar {
+  width: 30px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.15); overflow: hidden;
+}
+.achievements-categories .cat-pill .cat-bar-inner {
+  height: 100%; border-radius: 2px; transition: width 0.3s ease;
+}
+.achievements-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px;
+  max-height: 260px; overflow-y: auto; padding-right: 4px;
+}
+.achievement-item {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: 10px 6px; border-radius: 12px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  transition: all 0.2s ease; opacity: 0.45;
+}
+.achievement-item.unlocked {
+  opacity: 1;
+  background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(236,72,153,0.1));
+  border-color: rgba(139,92,246,0.3);
+}
+.achievement-item .ach-icon { font-size: 1.6rem; margin-bottom: 4px; }
+.achievement-item .ach-title { font-size: 0.72rem; font-weight: 700; line-height: 1.2; }
+.achievement-item .ach-desc { font-size: 0.6rem; color: var(--text-dim); margin-top: 2px; }
+
 /* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

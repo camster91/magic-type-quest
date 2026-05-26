@@ -5,6 +5,7 @@ import { LESSON_LEVELS, getLessonByLevel, getFingerHint, getLessonWordsForPracti
 import { gameState, loadProfile, saveProfile } from './state.js';
 import { init as initEngine, startGame, togglePause, showScreen, showKeyFeedback, highlightTargetKey } from './gameEngine.js';
 import { MENU_TAGLINES, say, PET_NAME_DEFAULT } from './story.js';
+import { getAchievementStats, getAllAchievements } from './achievements.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -258,6 +259,42 @@ function loadProfileScreen() {
   document.querySelectorAll('.avatar-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.avatar === (p.avatar || '🌸'));
   });
+
+  // Render achievements
+  const stats = getAchievementStats(p);
+  const countEl = document.getElementById('achievements-count');
+  if (countEl) countEl.textContent = `${stats.unlocked} / ${stats.total}`;
+
+  const catContainer = document.getElementById('achievements-categories');
+  if (catContainer) {
+    catContainer.innerHTML = '';
+    for (const [key, cat] of Object.entries(stats.byCategory)) {
+      const pill = document.createElement('div');
+      pill.className = 'cat-pill';
+      pill.innerHTML = `
+        <span>${cat.icon} ${cat.label}</span>
+        <div class="cat-bar"><div class="cat-bar-inner" style="width:${cat.pct}%;background:${cat.color}"></div></div>
+        <span>${cat.unlocked}/${cat.total}</span>
+      `;
+      catContainer.appendChild(pill);
+    }
+  }
+
+  const grid = document.getElementById('achievements-grid');
+  if (grid) {
+    grid.innerHTML = '';
+    const all = getAllAchievements(p);
+    for (const ach of all) {
+      const item = document.createElement('div');
+      item.className = `achievement-item ${ach.unlocked ? 'unlocked' : ''}`;
+      item.innerHTML = `
+        <div class="ach-icon">${ach.unlocked ? ach.icon : '🔒'}</div>
+        <div class="ach-title">${ach.title}</div>
+        <div class="ach-desc">${ach.desc}</div>
+      `;
+      grid.appendChild(item);
+    }
+  }
 }
 
 function saveProfileScreen() {

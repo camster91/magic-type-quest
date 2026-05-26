@@ -5,6 +5,7 @@
 import { LESSON_LEVELS, getLessonByLevel, getFingerHint } from './lessonLevels.js';
 import { gameState, loadProfile, saveProfile } from './state.js';
 import { say, getChapter, getEvolutionStage, PET_NAME_DEFAULT } from './story.js';
+import { checkAchievements as checkAchievementsNew } from './achievements.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -1203,17 +1204,10 @@ function showNextAchievement() {
 function checkAchievements() {
   if (!gameState.profile.achievements) gameState.profile.achievements = [];
   
-  if (gameState.maxCombo >= 5 && !gameState.profile.achievements.includes('combo5')) {
-    gameState.profile.achievements.push('combo5');
-    achievementQueue.push({ title: 'Combo Master', desc: '5x combo streak!', icon: '🔥' });
-  }
-  if (gameState.wordsTyped >= 20 && !gameState.profile.achievements.includes('words20')) {
-    gameState.profile.achievements.push('words20');
-    achievementQueue.push({ title: 'Word Collector', desc: '20 words typed!', icon: '📝' });
-  }
-  if (gameState.score >= 500 && !gameState.profile.achievements.includes('score500')) {
-    gameState.profile.achievements.push('score500');
-    achievementQueue.push({ title: 'Star Earner', desc: '500 points!', icon: '⭐' });
+  const newlyUnlocked = checkAchievementsNew(gameState.profile, gameState);
+  
+  for (const ach of newlyUnlocked) {
+    achievementQueue.push({ title: ach.title, desc: ach.desc, icon: ach.icon });
   }
   
   if (achievementQueue.length > 0) {
