@@ -360,6 +360,10 @@ function bindEvents() {
     startGame(gameState.level);
   });
 
+  $('btn-evolution-continue')?.addEventListener('click', () => {
+    $('evolution-overlay')?.classList.add('hidden');
+  });
+
   $('btn-menu')?.addEventListener('click', () => {
     $('gameover-overlay').classList.add('hidden');
     showScreen('menu');

@@ -551,6 +551,33 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 }
 .chapter-tap-hint { margin-top: 18px; font-size: 0.8rem; color: rgba(255,255,255,0.4); }
 
+/* ===== EVOLUTION OVERLAY ===== */
+.evolution-overlay { z-index: 23; }
+.evolution-card { text-align: center; max-width: 460px; }
+.evolution-badge {
+  display: inline-block; padding: 6px 18px; border-radius: 999px;
+  background: linear-gradient(135deg, var(--warning), var(--accent));
+  color: #fff; font-weight: 800; font-size: 0.85rem;
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.evolution-stage { font-size: 5rem; margin: 8px 0; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+#evolution-title { font-size: 1.7rem; margin-bottom: 6px; }
+#evolution-desc { font-size: 1.05rem; color: var(--text-dim); margin-bottom: 14px; }
+.evolution-pet-line {
+  font-style: italic; color: var(--accent-light); font-size: 0.95rem;
+  border-left: 3px solid var(--accent); padding-left: 12px; text-align: left; margin-bottom: 20px;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.06); opacity: 0.9; }
+}
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 #game-screen.active ~ .pet-container, #game-screen.active .pet-container { display: none; }
 
 /* ===== SCROLLBAR ===== */

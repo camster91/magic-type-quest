@@ -1101,10 +1101,15 @@ function levelComplete() {
   if (!gameState.profile.completedLevels) {
     gameState.profile.completedLevels = [];
   }
-  if (!gameState.profile.completedLevels.includes(gameState.level)) {
+  const wasFirstCompletion = !gameState.profile.completedLevels.includes(gameState.level);
+  if (wasFirstCompletion) {
     gameState.profile.completedLevels.push(gameState.level);
   }
   gameState.profile.totalStars += 10;
+  
+  // Check pet evolution
+  const newStage = checkEvolution();
+  
   saveProfile();
   
   // Show celebration
@@ -1112,6 +1117,62 @@ function levelComplete() {
   showPetReaction('celebrate', 'Level Complete! 🌟');
   spawnConfetti(gameState.canvasW/2, gameState.canvasH/2, 50);
   spawnParticles(gameState.canvasW/2, gameState.canvasH/2, 30);
+  
+  // Show evolution overlay if unlocked
+  if (newStage && wasFirstCompletion) {
+    setTimeout(() => showEvolutionOverlay(newStage), 800);
+  }
+}
+
+function checkEvolution() {
+  const completed = gameState.profile.completedLevels?.length || 0;
+  let newStage = null;
+  
+  // Stage 2 at level 3 completion, Stage 3 at level 7 completion
+  if (completed >= 7 && gameState.profile.petEvolution < 3) {
+    gameState.profile.petEvolution = 3;
+    if (!gameState.profile.seenEvolutions?.includes(3)) {
+      if (!gameState.profile.seenEvolutions) gameState.profile.seenEvolutions = [];
+      gameState.profile.seenEvolutions.push(3);
+      newStage = 3;
+    }
+  } else if (completed >= 3 && gameState.profile.petEvolution < 2) {
+    gameState.profile.petEvolution = 2;
+    if (!gameState.profile.seenEvolutions?.includes(2)) {
+      if (!gameState.profile.seenEvolutions) gameState.profile.seenEvolutions = [];
+      gameState.profile.seenEvolutions.push(2);
+      newStage = 2;
+    }
+  }
+  return newStage;
+}
+
+function showEvolutionOverlay(stage) {
+  const overlay = document.getElementById('evolution-overlay');
+  if (!overlay) return;
+  
+  const stageData = {
+    2: { emoji: '🌿', title: 'Bloom is Growing!', desc: 'Your typing helped Bloom sprout new leaves!', line: '"I feel stronger! Let\'s type even faster!" — Bloom' },
+    3: { emoji: '👑', title: 'Legend Bloom!', desc: 'Bloom has fully bloomed! A true typing legend!', line: '"We\'re UNSTOPPABLE together!" — Bloom' }
+  };
+  
+  const data = stageData[stage];
+  if (!data) return;
+  
+  const imgEl = document.getElementById('evolution-stage-img');
+  const titleEl = document.getElementById('evolution-title');
+  const descEl = document.getElementById('evolution-desc');
+  const lineEl = document.getElementById('evolution-pet-line');
+  
+  if (imgEl) imgEl.textContent = data.emoji;
+  if (titleEl) titleEl.textContent = data.title;
+  if (descEl) descEl.textContent = data.desc;
+  if (lineEl) lineEl.textContent = data.line;
+  
+  overlay.classList.remove('hidden');
+  
+  // Extra confetti for evolution
+  spawnConfetti(gameState.canvasW/2, gameState.canvasH/2, 80);
 }
 
 // ===== ACHIEVEMENT SYSTEM =====
