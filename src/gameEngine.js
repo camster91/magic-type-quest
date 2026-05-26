@@ -7,7 +7,7 @@ import { gameState, loadProfile, saveProfile } from './state.js';
 import { say, getChapter, getEvolutionStage, PET_NAME_DEFAULT } from './story.js';
 import { checkAchievements as checkAchievementsNew } from './achievements.js';
 import { evaluateQuests } from './quests.js';
-import { playAmbient, stopAmbient, audioCtx } from './audio.js';
+import { playAmbient, stopAmbient, audioCtx, initAudio } from './audio.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -1256,6 +1256,7 @@ function spawnConfetti(x, y, count) {
 // ===== START GAME =====
 export function startGame(level = 1) {
   initAudio();
+  playAmbient();
   
   const lesson = getLessonByLevel(level);
   

@@ -4,6 +4,7 @@
 import { LESSON_LEVELS, getLessonByLevel, getFingerHint, getLessonWordsForPractice, isLevelUnlocked } from './lessonLevels.js';
 import { gameState, loadProfile, saveProfile } from './state.js';
 import { init as initEngine, startGame, togglePause, showScreen, showKeyFeedback, highlightTargetKey } from './gameEngine.js';
+import { stopAmbient } from './audio.js';
 import { MENU_TAGLINES, say, PET_NAME_DEFAULT } from './story.js';
 import { getAchievementStats, getAllAchievements } from './achievements.js';
 import { getTodaysQuests, getQuestCompletion } from './quests.js';
