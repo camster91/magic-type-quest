@@ -193,10 +193,26 @@ function updateWords(deltaTime) {
   // Spawn new words
   const lesson = getLessonByLevel(gameState.level);
   const now = performance.now();
+  const adaptiveSpawnRate = lesson.spawnRate / gameState.adaptiveSpeed;
+  
   if (gameState.wordsSpawned < lesson.wordsPerLevel && 
-      now - gameState.lastSpawn > lesson.spawnRate) {
+      now - gameState.lastSpawn > adaptiveSpawnRate) {
     spawnWord();
     gameState.lastSpawn = now;
+  }
+
+  // Adaptive difficulty check every 5 seconds
+  if (now - gameState.lastAdaptiveCheck > 5000) {
+    gameState.lastAdaptiveCheck = now;
+    const total = gameState.totalKeystrokes;
+    const accuracy = total > 0 ? (gameState.correctKeystrokes / total) * 100 : 100;
+    const wpm = gameState.levelWPM;
+    
+    if (accuracy < 70 && wpm < 10) {
+      gameState.adaptiveSpeed = Math.max(0.5, gameState.adaptiveSpeed - 0.15);
+    } else if (accuracy > 85 && wpm > 20) {
+      gameState.adaptiveSpeed = Math.min(1.5, gameState.adaptiveSpeed + 0.1);
+    }
   }
 
   // Update existing words
@@ -241,7 +257,7 @@ function spawnWord() {
   const words = lesson.words;
   const text = words[Math.floor(Math.random() * words.length)];
   
-  const word = new Word(text, lesson.speed);
+  const word = new Word(text, lesson.speed * gameState.adaptiveSpeed);
   // Set font BEFORE measuring so pills fit words
   ctx.font = '700 26px Nunito, sans-serif';
   word.width = ctx.measureText(text).width + 40;
@@ -1285,6 +1301,8 @@ export function startGame(level = 1) {
   gameState.levelAccuracy = 0;
   gameState.levelComplete = false;
   gameState.skipsUsed = 0;
+  gameState.adaptiveSpeed = 1.0; // Multiplier applied to base lesson speed
+  gameState.lastAdaptiveCheck = 0;
   achievementQueue = [];
   achievementShowing = false;
   
