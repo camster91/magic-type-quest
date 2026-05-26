@@ -619,6 +619,32 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .achievement-item .ach-title { font-size: 0.72rem; font-weight: 700; line-height: 1.2; }
 .achievement-item .ach-desc { font-size: 0.6rem; color: var(--text-dim); margin-top: 2px; }
 
+/* ===== DAILY QUESTS ===== */
+.daily-quests {
+  width: min(320px, 92vw); margin-top: 12px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: var(--radius); padding: 12px 14px;
+}
+.quests-header {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.85rem; font-weight: 700; margin-bottom: 8px;
+}
+.streak-badge { font-size: 0.75rem; color: var(--warning); }
+.quests-list { display: flex; flex-direction: column; gap: 6px; }
+.quest-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px; border-radius: 10px;
+  background: rgba(255,255,255,0.05); font-size: 0.78rem;
+  transition: all 0.2s ease;
+}
+.quest-item.completed {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+.quest-item .quest-icon { font-size: 1rem; }
+.quest-item .quest-text { flex: 1; }
+.quest-item .quest-check { color: var(--success); font-weight: 800; }
+
 /* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

@@ -6,6 +6,7 @@ import { LESSON_LEVELS, getLessonByLevel, getFingerHint } from './lessonLevels.j
 import { gameState, loadProfile, saveProfile } from './state.js';
 import { say, getChapter, getEvolutionStage, PET_NAME_DEFAULT } from './story.js';
 import { checkAchievements as checkAchievementsNew } from './achievements.js';
+import { evaluateQuests } from './quests.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -491,6 +492,8 @@ function completeWord() {
 
 function skipWord() {
   if (!gameState.targetWord) return;
+  
+  gameState.skipsUsed = (gameState.skipsUsed || 0) + 1;
   
   const idx = gameState.activeWords.indexOf(gameState.targetWord);
   if (idx >= 0) gameState.activeWords.splice(idx, 1);
@@ -1113,6 +1116,18 @@ function levelComplete() {
   
   saveProfile();
   
+  // Evaluate daily quests
+  gameState.levelComplete = true;
+  const newlyCompletedQuests = evaluateQuests(gameState.profile, gameState);
+  for (const q of newlyCompletedQuests) {
+    // Show mini toast for quest completion (reuses achievement toast element)
+    achievementQueue.push({ title: '📅 Quest Done!', desc: q.desc, icon: q.icon });
+  }
+  if (newlyCompletedQuests.length > 0) {
+    showNextAchievement();
+    saveProfile();
+  }
+
   // Show celebration
   showLevelComplete();
   showPetReaction('celebrate', 'Level Complete! 🌟');
@@ -1267,6 +1282,8 @@ export function startGame(level = 1) {
   gameState.keyAccuracy = {};
   gameState.levelWPM = 0;
   gameState.levelAccuracy = 0;
+  gameState.levelComplete = false;
+  gameState.skipsUsed = 0;
   achievementQueue = [];
   achievementShowing = false;
   

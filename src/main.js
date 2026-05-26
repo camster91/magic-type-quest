@@ -6,6 +6,7 @@ import { gameState, loadProfile, saveProfile } from './state.js';
 import { init as initEngine, startGame, togglePause, showScreen, showKeyFeedback, highlightTargetKey } from './gameEngine.js';
 import { MENU_TAGLINES, say, PET_NAME_DEFAULT } from './story.js';
 import { getAchievementStats, getAllAchievements } from './achievements.js';
+import { getTodaysQuests, getQuestCompletion } from './quests.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -243,6 +244,27 @@ function updateMenuStats() {
     const idx = Math.floor(Math.random() * MENU_TAGLINES.length);
     tagline.textContent = MENU_TAGLINES[idx];
   }
+  // Render daily quests
+  const quests = getTodaysQuests(gameState.profile);
+  const streak = gameState.profile.streak || 0;
+  const streakEl = document.getElementById('quest-streak');
+  if (streakEl) streakEl.textContent = streak > 0 ? `🔥 ${streak}` : '';
+  const list = document.getElementById('quests-list');
+  if (list) {
+    list.innerHTML = '';
+    for (const q of quests) {
+      const item = document.createElement('div');
+      item.className = `quest-item ${q.completed ? 'completed' : ''}`;
+      item.innerHTML = `
+        <span class="quest-icon">${q.completed ? '✅' : q.icon}</span>
+        <span class="quest-text">${q.desc}</span>
+        <span class="quest-check">${q.completed ? '✓' : ''}</span>
+      `;
+      list.appendChild(item);
+    }
+  }
+  const container = document.getElementById('daily-quests');
+  if (container) container.style.display = quests.length > 0 ? 'block' : 'none';
 }
 
 // ===== PROFILE =====

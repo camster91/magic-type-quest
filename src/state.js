@@ -30,6 +30,8 @@ export const defaultState = {
   keyAccuracy: {}, // { 'a': { correct: 10, wrong: 2 }, ... }
   levelWPM: 0,
   levelAccuracy: 0,
+  levelComplete: false,
+  skipsUsed: 0,
   // Practice Mode state
   practiceLessonId: 1,
   currentPracticeWords: [],
