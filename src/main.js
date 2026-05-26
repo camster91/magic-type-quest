@@ -1,7 +1,7 @@
 /**
  * BloomType - Main Entry Point v2
  */
-import { LESSON_LEVELS, getLessonByLevel, getFingerHint, getLessonWordsForPractice } from './lessonLevels.js';
+import { LESSON_LEVELS, getLessonByLevel, getFingerHint, getLessonWordsForPractice, isLevelUnlocked } from './lessonLevels.js';
 import { gameState, loadProfile, saveProfile } from './state.js';
 import { init as initEngine, startGame, togglePause, showScreen, showKeyFeedback, highlightTargetKey } from './gameEngine.js';
 

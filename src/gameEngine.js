@@ -771,6 +771,7 @@ const bgLayers = {
 function loadBgImages() {
   const loadImg = (src) => {
     const img = new Image();
+    img.onerror = () => { img._broken = true; };
     img.src = src;
     return img;
   };
@@ -780,51 +781,38 @@ function loadBgImages() {
   bgLayers.grass.img = loadImg('/assets/pro/bg/grass.png');
 }
 
+function drawBgLayer(layer, w, h, time, heightScale) {
+  const img = layer.img;
+  if (!img || !img.complete || img._broken || img.naturalWidth === 0) return;
+  const layerH = h * heightScale;
+  const layerW = (img.width / img.height) * layerH;
+  const offsetX = (time * layer.scroll * 20) % layerW;
+
+  for (let x = -offsetX; x < w; x += layerW) {
+    ctx.drawImage(img, x, h - layerH, layerW, layerH);
+  }
+}
+
 function drawGarden() {
   const w = gameState.canvasW;
   const h = gameState.canvasH;
   const groundY = h - 175;
   const time = performance.now() / 1000;
-  
-  // Fallback gradient if images not loaded
-  if (!bgLayers.sky.img || !bgLayers.sky.img.complete) {
+
+  if (!bgLayers.sky.img || !bgLayers.sky.img.complete || bgLayers.sky.img._broken) {
     drawFallbackBackground(w, h, groundY);
     return;
   }
-  
-  // Layer 1: Sky (slowest, subtle drift)
+
   drawBgLayer(bgLayers.sky, w, h, time, 0.3);
-  
-  // Layer 2: Stars (code-drawn on top of sky)
   drawStars(groundY);
-  
-  // Layer 3: Trees (mid parallax)
   drawBgLayer(bgLayers.trees, w, h, time, 0.5);
-  
-  // Layer 4: Hills
   drawBgLayer(bgLayers.hills, w, h, time, 0.8);
-  
-  // Layer 5: Grass (fastest, closest)
   drawBgLayer(bgLayers.grass, w, h, time, 1.0);
-  
-  // Draw flowers on top of grass
+
   if (gameState.garden.length > 30) gameState.garden = gameState.garden.slice(-30);
   for (const flower of gameState.garden) {
     drawFlowerImage(flower, groundY);
-  }
-}
-
-function drawBgLayer(layer, w, h, time, heightScale) {
-  if (!layer.img || !layer.img.complete) return;
-  
-  const img = layer.img;
-  const layerH = h * heightScale;
-  const layerW = (img.width / img.height) * layerH;
-  const offsetX = (time * layer.scroll * 20) % layerW;
-  
-  // Draw twice for seamless scrolling
-  for (let x = -offsetX; x < w; x += layerW) {
-    ctx.drawImage(img, x, h - layerH, layerW, layerH);
   }
 }
 
