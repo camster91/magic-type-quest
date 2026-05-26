@@ -311,28 +311,56 @@ function handleKey(e) {
     return;
   }
 
+  processKeystroke(e.key, e.shiftKey);
+}
+
+/** Mobile virtual keyboard input handler. */
+function handleMobileInput(e) {
+  if (gameState.screen !== 'game' || gameState.paused || gameState.gameOver) return;
+  
+  const input = e.target;
+  const data = e.data;
+  
+  if (e.inputType === 'deleteContentBackward') {
+    // On mobile, backspace = skip word (no undo in this game)
+    skipWord();
+    input.value = '';
+    return;
+  }
+  
+  if (!data || data.length !== 1) {
+    input.value = '';
+    return;
+  }
+  
+  // Process the character
+  processKeystroke(data, false);
+  
+  // Clear so next char is fresh
+  input.value = '';
+}
+
+/** Core keystroke processing — shared by desktop and mobile. */
+function processKeystroke(rawKey, isShift) {
   const lesson = currentLesson();
   const requiresShift = lesson.requiresShift || false;
   
-  // Determine what key was pressed
-  let pressedKey = e.key;
-  const isShift = e.shiftKey;
+  let pressedKey = rawKey;
   
   // For shift-required levels (capitals), require shift + letter
   if (requiresShift) {
-    if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
+    if (rawKey.length === 1 && /[a-zA-Z]/.test(rawKey)) {
       if (!isShift) {
-        // Typed lowercase letter when uppercase required
         onWrongKeystroke(pressedKey.toLowerCase());
         showShiftHint();
         return;
       }
-      pressedKey = e.key.toUpperCase();
+      pressedKey = rawKey.toUpperCase();
     }
   } else {
     // Normal levels — lowercase only
-    if (e.key.length !== 1 || !/[a-z0-9]/.test(e.key)) return;
-    pressedKey = e.key.toLowerCase();
+    if (rawKey.length !== 1 || !/[a-z0-9]/.test(rawKey)) return;
+    pressedKey = rawKey.toLowerCase();
   }
 
   gameState.totalKeystrokes++;
@@ -1368,6 +1396,10 @@ export function startGame(level = 1) {
   
   // Start loop
   animationId = requestAnimationFrame(gameLoop);
+  
+  // Focus mobile input for virtual keyboard (iOS/Android tablets)
+  const mobileInput = document.getElementById('mobile-input');
+  if (mobileInput) mobileInput.focus();
 }
 
 export function startDrillMode(drillLesson) {
@@ -1432,6 +1464,10 @@ export function startDrillMode(drillLesson) {
   updateLessonInfo();
   
   animationId = requestAnimationFrame(gameLoop);
+  
+  // Focus mobile input for virtual keyboard (iOS/Android tablets)
+  const mobileInput = document.getElementById('mobile-input');
+  if (mobileInput) mobileInput.focus();
 }
 
 function preloadImages() {
@@ -1546,8 +1582,24 @@ export function init() {
   loadFlowerImages();
   // Expose for testing
   window.gameState = gameState;
-  // Event handlers bound by main.js - only register keyboard here
+  // Desktop keyboard
   document.addEventListener('keydown', handleKey);
+  // Mobile virtual keyboard
+  const mobileInput = document.getElementById('mobile-input');
+  if (mobileInput) {
+    mobileInput.addEventListener('input', handleMobileInput);
+    mobileInput.addEventListener('blur', () => {
+      if (gameState.screen === 'game' && !gameState.gameOver && !gameState.paused) {
+        setTimeout(() => mobileInput.focus(), 50);
+      }
+    });
+  }
+  // Visual viewport resize for mobile keyboard
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      if (gameState.screen === 'game') resizeCanvas();
+    });
+  }
   window.addEventListener('resize', resizeCanvas);
 }
 
