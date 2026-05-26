@@ -9,6 +9,7 @@ import { checkAchievements as checkAchievementsNew } from './achievements.js';
 import { evaluateQuests } from './quests.js';
 import { playAmbient, stopAmbient, audioCtx, initAudio } from './audio.js';
 import { getWeakKeys } from './drills.js';
+import { recordKeyPractice } from './spacedRep.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -394,6 +395,9 @@ function onCorrectKeystroke(key) {
   if (!gameState.keyAccuracy[k]) gameState.keyAccuracy[k] = { correct: 0, wrong: 0 };
   gameState.keyAccuracy[k].correct++;
   
+  // Spaced repetition tracking
+  recordKeyPractice(gameState.profile, k, true);
+  
   sounds.correct();
   showKeyFeedback(key, true);
   highlightTargetKey(gameState.targetWord?.text?.[gameState.targetIndex]);
@@ -405,6 +409,9 @@ function onWrongKeystroke(key) {
   const k = key.toLowerCase();
   if (!gameState.keyAccuracy[k]) gameState.keyAccuracy[k] = { correct: 0, wrong: 0 };
   gameState.keyAccuracy[k].wrong++;
+  
+  // Spaced repetition tracking
+  recordKeyPractice(gameState.profile, k, false);
   
   sounds.wrong();
   showKeyFeedback(key, false);

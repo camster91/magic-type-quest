@@ -619,6 +619,18 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .achievement-item .ach-title { font-size: 0.72rem; font-weight: 700; line-height: 1.2; }
 .achievement-item .ach-desc { font-size: 0.6rem; color: var(--text-dim); margin-top: 2px; }
 
+/* ===== SPACED REPETITION REVIEW ===== */
+.review-keys { width: 100%; max-width: 420px; margin: 12px 0; display: none; }
+.review-header { font-size: 0.85rem; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+.review-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.review-key {
+  display: inline-block; padding: 6px 12px; border-radius: 20px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  font-size: 0.8rem; font-weight: 700; color: var(--accent);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.review-key:hover { transform: scale(1.1); box-shadow: 0 0 10px rgba(236,72,153,0.3); }
+
 /* ===== GARDEN SCREEN ===== */
 .garden-stats { font-size: 0.9rem; color: var(--text-dim); margin: 8px 0 14px; }
 .garden-grid {

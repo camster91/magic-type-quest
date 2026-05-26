@@ -8,6 +8,7 @@ import { MENU_TAGLINES, say, PET_NAME_DEFAULT } from './story.js';
 import { getAchievementStats, getAllAchievements } from './achievements.js';
 import { getTodaysQuests, getQuestCompletion } from './quests.js';
 import { getWeakKeys, buildDrillLesson } from './drills.js';
+import { getDueKeys } from './spacedRep.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -316,6 +317,22 @@ function loadProfileScreen() {
         <div class="ach-desc">${ach.desc}</div>
       `;
       grid.appendChild(item);
+    }
+  }
+
+  // Render spaced-repetition review section
+  const reviewContainer = document.getElementById('review-keys');
+  if (reviewContainer) {
+    const due = getDueKeys(p, 6);
+    if (due.length > 0) {
+      reviewContainer.innerHTML = `
+        <div class="review-header">🔄 Keys to Review</div>
+        <div class="review-list">${due.map(k => `<span class="review-key">${k.toUpperCase()}</span>`).join('')}</div>
+      `;
+      reviewContainer.style.display = 'block';
+    } else {
+      reviewContainer.innerHTML = '';
+      reviewContainer.style.display = 'none';
     }
   }
 }
