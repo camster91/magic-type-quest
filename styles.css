@@ -533,6 +533,24 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
   .floating-island { top: 3%; right: 3%; }
   .island-emoji { font-size: 2.5rem; }
 }
+
+/* ===== CHAPTER INTRO ===== */
+.chapter-intro-overlay { z-index: 22; }
+.chapter-card { text-align: center; max-width: 480px; }
+.chapter-badge {
+  display: inline-block; padding: 4px 14px; border-radius: 999px;
+  background: var(--success); color: #0f2a1f; font-weight: 800; font-size: 0.75rem;
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
+}
+.chapter-title { font-size: 1.8rem; margin-bottom: 4px; }
+.chapter-subtitle { font-size: 1rem; color: var(--primary-light); margin-bottom: 14px; }
+.chapter-intro-text { font-size: 1.05rem; line-height: 1.5; color: var(--text-dim); margin-bottom: 16px; }
+.chapter-pet-line {
+  font-style: italic; color: var(--accent-light); font-size: 0.95rem;
+  border-left: 3px solid var(--accent); padding-left: 12px; text-align: left;
+}
+.chapter-tap-hint { margin-top: 18px; font-size: 0.8rem; color: rgba(255,255,255,0.4); }
+
 #game-screen.active ~ .pet-container, #game-screen.active .pet-container { display: none; }
 
 /* ===== SCROLLBAR ===== */

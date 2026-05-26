@@ -4,6 +4,7 @@
 import { LESSON_LEVELS, getLessonByLevel, getFingerHint, getLessonWordsForPractice, isLevelUnlocked } from './lessonLevels.js';
 import { gameState, loadProfile, saveProfile } from './state.js';
 import { init as initEngine, startGame, togglePause, showScreen, showKeyFeedback, highlightTargetKey } from './gameEngine.js';
+import { MENU_TAGLINES, say, PET_NAME_DEFAULT } from './story.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -235,6 +236,12 @@ function updateMenuStats() {
   $('menu-stars') && ($('menu-stars').textContent = gameState.profile?.totalStars || 0);
   $('menu-best') && ($('menu-best').textContent = gameState.profile?.highScore || 0);
   $('menu-words') && ($('menu-words').textContent = gameState.profile?.totalWords || 0);
+  // Rotate tagline
+  const tagline = document.querySelector('.tagline');
+  if (tagline && MENU_TAGLINES.length > 0) {
+    const idx = Math.floor(Math.random() * MENU_TAGLINES.length);
+    tagline.textContent = MENU_TAGLINES[idx];
+  }
 }
 
 // ===== PROFILE =====

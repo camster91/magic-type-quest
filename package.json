@@ -21,11 +21,10 @@
   },
   "homepage": "https://github.com/camster91/magic-type-quest#readme",
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "jsdom": "^29.1.1",
+    "playwright": "^1.60.0",
     "vite": "^8.0.11",
     "vitest": "^4.1.5"
-  },
-  "dependencies": {
-    "playwright": "^1.59.1"
   }
 }

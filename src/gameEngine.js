@@ -4,6 +4,7 @@
  */
 import { LESSON_LEVELS, getLessonByLevel, getFingerHint } from './lessonLevels.js';
 import { gameState, loadProfile, saveProfile } from './state.js';
+import { say, getChapter, getEvolutionStage, PET_NAME_DEFAULT } from './story.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -711,19 +712,23 @@ function setPetImage() {
 
 function showPetReaction(type, text = '') {
   const bubbleEl = document.getElementById('pet-bubble');
+  const evolution = getEvolutionStage(gameState.level || 1);
   
   // Set pet animation frame
   switch(type) {
     case 'happy':
+    case 'correct':
       setPetFrame('happy');
       break;
     case 'fire':
       setPetFrame('fire');
       break;
     case 'hurt':
+    case 'wrong':
       setPetFrame('hurt');
       break;
     case 'celebrate':
+    case 'levelComplete':
       setPetFrame('celebrate');
       break;
     default:
@@ -732,31 +737,43 @@ function showPetReaction(type, text = '') {
   
   if (!bubbleEl) return;
   
-  switch(type) {
-    case 'happy':
-      bubbleEl.textContent = text || 'Nice!';
-      break;
-    case 'fire':
-      bubbleEl.textContent = text || 'On fire!';
-      break;
-    case 'hurt':
-      bubbleEl.textContent = 'Oh no!';
-      break;
-    case 'celebrate':
-      bubbleEl.textContent = text || 'Yay! 🎉';
-      break;
-    default:
-      bubbleEl.textContent = 'Type the word!';
+  // Use story personality lines if no custom text provided
+  if (!text) {
+    switch(type) {
+      case 'happy':
+      case 'correct':
+        text = say('correct');
+        break;
+      case 'fire':
+        text = say('combo5');
+        break;
+      case 'hurt':
+      case 'wrong':
+        text = say('wrong');
+        break;
+      case 'celebrate':
+      case 'levelComplete':
+        text = say('levelComplete');
+        break;
+      case 'encouragement':
+        text = say('encouragement');
+        break;
+      case 'idle':
+      default:
+        text = say('idle');
+    }
   }
+  
+  bubbleEl.textContent = text || `${PET_NAME_DEFAULT} says: Type!`;
   
   if (bubbleEl.textContent) {
     bubbleEl.classList.add('visible');
-    setTimeout(() => bubbleEl.classList.remove('visible'), 1800);
+    setTimeout(() => bubbleEl.classList.remove('visible'), 2200);
   }
   
   setTimeout(() => {
     setPetFrame('idle');
-  }, 1800);
+  }, 2200);
 }
 
 // ===== GARDEN SYSTEM =====
@@ -1201,6 +1218,24 @@ export function startGame(level = 1) {
   // Show game screen
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('game-screen').classList.add('active');
+  
+  // Show chapter intro overlay for non-replayed levels
+  const chapter = getChapter(level);
+  const chapterOverlay = document.getElementById('chapter-intro');
+  if (chapterOverlay && chapter && !gameState.profile?.completedLevels?.includes(level)) {
+    const titleEl = chapterOverlay.querySelector('.chapter-title');
+    const subtitleEl = chapterOverlay.querySelector('.chapter-subtitle');
+    const introEl = chapterOverlay.querySelector('.chapter-intro-text');
+    const petLineEl = chapterOverlay.querySelector('.chapter-pet-line');
+    if (titleEl) titleEl.textContent = chapter.title;
+    if (subtitleEl) subtitleEl.textContent = chapter.subtitle;
+    if (introEl) introEl.textContent = chapter.intro;
+    if (petLineEl) petLineEl.textContent = `"${chapter.petLine}" — ${PET_NAME_DEFAULT}`;
+    chapterOverlay.classList.remove('hidden');
+    // Auto-dismiss after 4s or on click
+    setTimeout(() => chapterOverlay.classList.add('hidden'), 4500);
+    chapterOverlay.addEventListener('click', () => chapterOverlay.classList.add('hidden'), { once: true });
+  }
   
   // Show finger guide on level 1 for first-time players
   if (level === 1 && !gameState.profile?.seenFingerGuide) {
