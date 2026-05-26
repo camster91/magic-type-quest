@@ -2,6 +2,7 @@
  * BloomType - Game State Management
  */
 import { syncToClass } from './classroom.js';
+import { syncProfile, logSession } from './sync.js';
 
 // ===== DEFAULT STATE =====
 export const defaultState = {
@@ -113,6 +114,21 @@ export function saveProfile() {
     // Sync to class if joined
     if (p.classCode) {
       syncToClass(p);
+    }
+    
+    // Fire-and-forget cloud sync (offline-first — never blocks)
+    syncProfile(p).catch(() => {});
+    if (gameState.levelWPM > 0) {
+      logSession(p, {
+        level: gameState.level,
+        score: gameState.score,
+        wpm: gameState.levelWPM,
+        accuracy: gameState.levelAccuracy,
+        wordsTyped: gameState.wordsTyped,
+        wordsCompleted: gameState.wordsCompleted,
+        maxCombo: gameState.maxCombo,
+        skipsUsed: gameState.skipsUsed,
+      }).catch(() => {});
     }
   } catch (e) {
     console.warn('Failed to save profile:', e);
