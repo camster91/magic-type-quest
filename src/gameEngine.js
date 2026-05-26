@@ -8,6 +8,7 @@ import { say, getChapter, getEvolutionStage, PET_NAME_DEFAULT } from './story.js
 import { checkAchievements as checkAchievementsNew } from './achievements.js';
 import { evaluateQuests } from './quests.js';
 import { playAmbient, stopAmbient, audioCtx, initAudio } from './audio.js';
+import { getWeakKeys } from './drills.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -18,6 +19,12 @@ const COLORS = {
   danger: '#EF4444',
   warning: '#FBBF24',
 };
+
+// ===== LESSON RESOLVER =====
+function currentLesson() {
+  if (gameState.drillLesson) return gameState.drillLesson;
+  return getLessonByLevel(gameState.level);
+}
 
 // ===== AUDIO SYSTEM =====
 // NOTE: initAudio is imported from audio.js — do NOT duplicate here
@@ -191,7 +198,7 @@ function gameLoop(timestamp) {
 
 function updateWords(deltaTime) {
   // Spawn new words
-  const lesson = getLessonByLevel(gameState.level);
+  const lesson = currentLesson();
   const now = performance.now();
   const adaptiveSpawnRate = lesson.spawnRate / gameState.adaptiveSpeed;
   
@@ -253,7 +260,7 @@ function drawWords() {
 }
 
 function spawnWord() {
-  const lesson = getLessonByLevel(gameState.level);
+  const lesson = currentLesson();
   const words = lesson.words;
   const text = words[Math.floor(Math.random() * words.length)];
   
@@ -303,7 +310,7 @@ function handleKey(e) {
     return;
   }
 
-  const lesson = getLessonByLevel(gameState.level);
+  const lesson = currentLesson();
   const requiresShift = lesson.requiresShift || false;
   
   // Determine what key was pressed
@@ -541,6 +548,7 @@ function gameOver() {
   gameState.gameOver = true;
   cancelAnimationFrame(animationId);
   stopAmbient();
+  gameState.drillLesson = null;
   saveProfile();
   showGameOver();
 }
@@ -582,7 +590,7 @@ function updateCombo() {
 }
 
 function updateHearts() {
-  const lesson = getLessonByLevel(gameState.level);
+  const lesson = currentLesson();
   const maxHearts = lesson.health || 5;
   for (let i = 1; i <= 5; i++) {
     const heart = document.getElementById(`heart-${i}`);
@@ -599,7 +607,7 @@ function updateHearts() {
 function updateProgressBar() {
   const fillEl = document.getElementById('level-progress-fill');
   if (!fillEl) return;
-  const lesson = getLessonByLevel(gameState.level);
+  const lesson = currentLesson();
   const pct = lesson.wordsPerLevel > 0 
     ? (gameState.wordsCompleted / lesson.wordsPerLevel) * 100 
     : 0;
@@ -1098,7 +1106,7 @@ function drawParticles() {
 
 // ===== LEVEL MANAGEMENT =====
 function checkLevelComplete() {
-  const lesson = getLessonByLevel(gameState.level);
+  const lesson = currentLesson();
   // Level is done when all words have been spawned and none remain active
   if (gameState.wordsSpawned >= lesson.wordsPerLevel && 
       gameState.activeWords.length === 0 &&
@@ -1355,6 +1363,70 @@ export function startGame(level = 1) {
   animationId = requestAnimationFrame(gameLoop);
 }
 
+export function startDrillMode(drillLesson) {
+  initAudio();
+  playAmbient();
+  gameState.screen = 'game';
+  gameState.level = 'drill';
+  gameState.score = 0;
+  gameState.combo = 0;
+  gameState.maxCombo = 0;
+  gameState.wordsTyped = 0;
+  gameState.wordsCompleted = 0;
+  gameState.wordsSpawned = 0;
+  gameState.totalKeystrokes = 0;
+  gameState.correctKeystrokes = 0;
+  gameState.health = drillLesson.health || 5;
+  gameState.activeWords = [];
+  gameState.targetWord = null;
+  gameState.targetIndex = 0;
+  gameState.gameOver = false;
+  gameState.paused = false;
+  gameState.lastSpawn = 0;
+  gameState.lastFrameTime = 0;
+  gameState.garden = [];
+  gameState.levelStartTime = performance.now();
+  gameState.levelWPM = 0;
+  gameState.levelAccuracy = 0;
+  gameState.levelComplete = false;
+  gameState.skipsUsed = 0;
+  gameState.adaptiveSpeed = 1.0;
+  gameState.lastAdaptiveCheck = 0;
+  achievementQueue = [];
+  achievementShowing = false;
+  
+  // Override getLessonByLevel temporarily for drill
+  const originalGetLesson = getLessonByLevel;
+  window._originalGetLesson = originalGetLesson;
+  
+  // Patch getLessonByLevel to return drill lesson for 'drill'
+  // We do this by setting gameState.level to a string that the patched function checks
+  
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('game-screen').classList.add('active');
+  
+  resizeCanvas();
+  setPetImage();
+  preloadImages();
+  
+  // Force first word with drill lesson data
+  const text = drillLesson.words[Math.floor(Math.random() * drillLesson.words.length)];
+  const word = new Word(text, drillLesson.speed);
+  ctx.font = '700 26px Nunito, sans-serif';
+  word.width = ctx.measureText(text).width + 40;
+  word.x = 80 + Math.random() * (gameState.canvasW - 200);
+  word.y = 100 + Math.random() * 100;
+  gameState.activeWords.push(word);
+  gameState.wordsSpawned++;
+  
+  updateHUD();
+  updateHearts();
+  updateTargetDisplay();
+  updateLessonInfo();
+  
+  animationId = requestAnimationFrame(gameLoop);
+}
+
 function preloadImages() {
   const images = [];
   
@@ -1398,6 +1470,14 @@ function showGameOver() {
   if (combo) combo.textContent = gameState.maxCombo;
   if (words) words.textContent = gameState.wordsTyped;
   if (overlay) overlay.classList.remove('hidden');
+  
+  // Show drill button if there are weak keys
+  const drillBtn = document.getElementById('btn-drill');
+  if (drillBtn) {
+    const weakKeys = getWeakKeys(gameState.keyAccuracy, 3);
+    drillBtn.classList.toggle('hidden', weakKeys.length === 0);
+  }
+  
   showPetReaction('hurt', 'Game Over...');
 }
 
@@ -1441,7 +1521,7 @@ function speakWord(word) {
 
 // ===== INIT =====
 function updateLessonInfo() {
-  const lesson = getLessonByLevel(gameState.level);
+  const lesson = currentLesson();
   const infoEl = document.getElementById('lesson-info');
   if (infoEl) {
     infoEl.textContent = lesson.subtitle;

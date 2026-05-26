@@ -3,10 +3,11 @@
  */
 import { LESSON_LEVELS, getLessonByLevel, getFingerHint, getLessonWordsForPractice, isLevelUnlocked } from './lessonLevels.js';
 import { gameState, loadProfile, saveProfile } from './state.js';
-import { init as initEngine, startGame, togglePause, showScreen, showKeyFeedback, highlightTargetKey } from './gameEngine.js';
+import { init as initEngine, startGame, togglePause, showScreen, showKeyFeedback, highlightTargetKey, startDrillMode } from './gameEngine.js';
 import { MENU_TAGLINES, say, PET_NAME_DEFAULT } from './story.js';
 import { getAchievementStats, getAllAchievements } from './achievements.js';
 import { getTodaysQuests, getQuestCompletion } from './quests.js';
+import { getWeakKeys, buildDrillLesson } from './drills.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -464,6 +465,17 @@ function bindEvents() {
     $('gameover-overlay').classList.add('hidden');
     showScreen('game');
     startGame(gameState.level);
+  });
+
+  $('btn-drill')?.addEventListener('click', () => {
+    const weakKeys = getWeakKeys(gameState.keyAccuracy, 3);
+    if (weakKeys.length === 0) return;
+    const drillLesson = buildDrillLesson(weakKeys, gameState.profile);
+    if (!drillLesson) return;
+    gameState.drillLesson = drillLesson;
+    $('gameover-overlay').classList.add('hidden');
+    showScreen('game');
+    startDrillMode(drillLesson);
   });
 
   $('btn-evolution-continue')?.addEventListener('click', () => {
