@@ -38,6 +38,46 @@ export function initAudio() {
 	}
 }
 
+// ===== AMBIENT MUSIC =====
+let ambientNodes = [];
+let ambientGain = null;
+
+export function playAmbient() {
+	if (!audioCtx) return;
+	stopAmbient();
+	try {
+		ambientGain = audioCtx.createGain();
+		ambientGain.gain.value = 0.03;
+		ambientGain.connect(audioCtx.destination);
+
+		// Two softly detuned sine drones
+		const freqs = [220, 330]; // A3 and E4 (fifth)
+		for (const f of freqs) {
+			const osc = audioCtx.createOscillator();
+			osc.type = 'sine';
+			osc.frequency.value = f + (Math.random() - 0.5) * 2;
+			const g = audioCtx.createGain();
+			g.gain.value = 0.5;
+			osc.connect(g);
+			g.connect(ambientGain);
+			osc.start();
+			ambientNodes.push(osc, g);
+		}
+	} catch {}
+}
+
+export function stopAmbient() {
+	for (const n of ambientNodes) {
+		try { n.stop ? n.stop() : n.disconnect(); } catch {}
+	}
+	ambientNodes = [];
+	ambientGain = null;
+}
+
+export function setAmbientVolume(vol) {
+	if (ambientGain) ambientGain.gain.value = vol;
+}
+
 export function speakWord(text) {
 	if (!("speechSynthesis" in window)) return;
 	if (gameState.profile.voiceEnabled === false) return;

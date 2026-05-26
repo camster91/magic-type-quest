@@ -7,6 +7,7 @@ import { gameState, loadProfile, saveProfile } from './state.js';
 import { say, getChapter, getEvolutionStage, PET_NAME_DEFAULT } from './story.js';
 import { checkAchievements as checkAchievementsNew } from './achievements.js';
 import { evaluateQuests } from './quests.js';
+import { playAmbient, stopAmbient, audioCtx } from './audio.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -19,16 +20,7 @@ const COLORS = {
 };
 
 // ===== AUDIO SYSTEM =====
-let audioCtx = null;
-
-function initAudio() {
-  if (audioCtx) return;
-  try {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  } catch (e) {
-    console.warn('Audio not available');
-  }
-}
+// NOTE: initAudio is imported from audio.js — do NOT duplicate here
 
 function playTone(frequency, duration, type = 'sine') {
   if (!audioCtx) return;
@@ -532,6 +524,7 @@ function loseHealth() {
 function gameOver() {
   gameState.gameOver = true;
   cancelAnimationFrame(animationId);
+  stopAmbient();
   saveProfile();
   showGameOver();
 }
