@@ -150,13 +150,17 @@ let lastFrameTime = 0;
 function resizeCanvas() {
   if (!canvas.parentElement) return;
   const rect = canvas.parentElement.getBoundingClientRect();
-  canvas.width = rect.width * window.devicePixelRatio;
-  canvas.height = rect.height * window.devicePixelRatio;
-  canvas.style.width = rect.width + 'px';
-  canvas.style.height = rect.height + 'px';
+  // Use visual viewport height on mobile (accounts for virtual keyboard)
+  const vh = window.visualViewport ? window.visualViewport.height : rect.height;
+  const vw = window.visualViewport ? window.visualViewport.width : rect.width;
+  
+  canvas.width = vw * window.devicePixelRatio;
+  canvas.height = vh * window.devicePixelRatio;
+  canvas.style.width = vw + 'px';
+  canvas.style.height = vh + 'px';
   ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
-  gameState.canvasW = rect.width;
-  gameState.canvasH = rect.height;
+  gameState.canvasW = vw;
+  gameState.canvasH = vh;
 }
 
 // ===== GAME LOOP =====

@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 export default defineConfig({
-  base: '/magic-type-quest/',
+  base: '/',
   build: {
     rollupOptions: {
       input: {
