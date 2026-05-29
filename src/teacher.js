@@ -8,6 +8,17 @@ import { fetchClassRoster } from './sync.js';
 
 const $ = (id) => document.getElementById(id);
 
+/** Basic HTML escaping for security. */
+export function escapeHTML(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 let currentMode = 'local';
 let currentClassCode = '';
 
@@ -138,8 +149,8 @@ function renderRoster(students, isCloud) {
     const level = Array.isArray(cl) ? cl.length : 0;
     const status = level >= 10 ? 'Completed!' : level >= 5 ? 'On Track' : level > 0 ? 'Getting Started' : 'Not Started';
     const badgeClass = level >= 10 ? 'badge-green' : level >= 5 ? 'badge-yellow' : 'badge-red';
-    const avatar = st.avatar || '🌸';
-    const name = st.name || 'Anonymous';
+    const avatar = escapeHTML(st.avatar || '🌸');
+    const name = escapeHTML(st.name || 'Anonymous');
     const words = st.total_words ?? st.totalWords ?? 0;
     const score = st.high_score ?? st.highScore ?? 0;
     const stars = st.total_stars ?? st.totalStars ?? 0;
@@ -167,7 +178,8 @@ function showEmpty(msg) {
   if (stats) stats.innerHTML = '';
   if (alerts) alerts.classList.add('hidden');
   if (empty) {
-    empty.innerHTML = `<h2>No data yet</h2><p>${msg}</p><p>Students will appear here after they play BloomType. 🌸</p>`;
+    empty.innerHTML = `<h2>No data yet</h2><p class="empty-msg"></p><p>Students will appear here after they play BloomType. 🌸</p>`;
+    empty.querySelector('.empty-msg').textContent = msg;
     empty.classList.remove('hidden');
   }
 }
@@ -243,4 +255,6 @@ function clearAllData() {
 }
 
 // Init
-document.addEventListener('DOMContentLoaded', init);
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', init);
+}
