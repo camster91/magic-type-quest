@@ -173,7 +173,7 @@
         <span id="heart-4" class="heart">❤</span>
         <span id="heart-5" class="heart">❤</span>
       </div>
-      <button type="button" id="btn-pause" class="btn-icon-only">⏸</button>
+      <button type="button" id="btn-pause" class="btn-icon-only" aria-label="Pause Game" title="Pause Game (Esc)">⏸</button>
     </div>
   </div>
 
@@ -251,7 +251,7 @@
   <div id="pause-overlay" class="overlay hidden">
     <div class="overlay-card">
       <h2>⏸️ Paused</h2>
-      <button type="button" id="btn-resume" class="btn btn-primary">▶ Resume</button>
+      <button type="button" id="btn-resume" class="btn btn-primary">▶ Resume <span class="btn-shortcut">(Esc)</span></button>
       <button type="button" id="btn-quit" class="btn btn-danger">🏠 Quit to Menu</button>
     </div>
   </div>
@@ -391,14 +391,14 @@
     <div class="avatar-preview" id="avatar-preview">🌸</div>
     <input type="text" id="player-name" class="player-name-input" placeholder="Your Name" maxlength="12">
     <div class="avatar-picker">
-      <button type="button" class="avatar-btn active" data-avatar="🌸">🌸</button>
-      <button type="button" class="avatar-btn" data-avatar="🌻">🌻</button>
-      <button type="button" class="avatar-btn" data-avatar="🐉">🐉</button>
-      <button type="button" class="avatar-btn" data-avatar="🐱">🐱</button>
-      <button type="button" class="avatar-btn" data-avatar="🐰">🐰</button>
-      <button type="button" class="avatar-btn" data-avatar="🦊">🦊</button>
-      <button type="button" class="avatar-btn" data-avatar="🐼">🐼</button>
-      <button type="button" class="avatar-btn" data-avatar="🤖">🤖</button>
+      <button type="button" class="avatar-btn active" data-avatar="🌸" aria-label="Select Flower Avatar">🌸</button>
+      <button type="button" class="avatar-btn" data-avatar="🌻" aria-label="Select Sunflower Avatar">🌻</button>
+      <button type="button" class="avatar-btn" data-avatar="🐉" aria-label="Select Dragon Avatar">🐉</button>
+      <button type="button" class="avatar-btn" data-avatar="🐱" aria-label="Select Cat Avatar">🐱</button>
+      <button type="button" class="avatar-btn" data-avatar="🐰" aria-label="Select Bunny Avatar">🐰</button>
+      <button type="button" class="avatar-btn" data-avatar="🦊" aria-label="Select Fox Avatar">🦊</button>
+      <button type="button" class="avatar-btn" data-avatar="🐼" aria-label="Select Panda Avatar">🐼</button>
+      <button type="button" class="avatar-btn" data-avatar="🤖" aria-label="Select Robot Avatar">🤖</button>
     </div>
     <div class="profile-stats">
       <div class="profile-stat">

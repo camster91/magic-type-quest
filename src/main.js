@@ -215,15 +215,15 @@ function renderLevelCards() {
     const imgName = levelImages[lev.id] || 'home-row.png';
     
     return `
-      <div class="level-card ${status}" data-level="${lev.id}">
-        <img class="level-card-img" src="/assets/levels/${imgName}" alt="${lev.name}" 
+      <button type="button" class="level-card ${status}" data-level="${lev.id}" ${status === 'locked' ? 'disabled' : ''} aria-label="${lev.name}: ${lev.subtitle}">
+        <img class="level-card-img" src="/assets/levels/${imgName}" alt="" aria-hidden="true"
              onerror="this.style.display='none'">
         <div class="level-card-name">${lev.name}</div>
         <div class="level-card-sub">${lev.subtitle}</div>
         <div class="level-card-meta">${lev.estimatedTime}</div>
-        ${status === 'locked' ? '<div class="level-lock">🔒</div>' : ''}
-        ${done ? '<div class="level-check">✅</div>' : ''}
-      </div>
+        ${status === 'locked' ? '<div class="level-lock" aria-hidden="true">🔒</div>' : ''}
+        ${done ? '<div class="level-check" aria-hidden="true">✅</div>' : ''}
+      </button>
     `;
   }).join('');
 
