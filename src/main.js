@@ -10,6 +10,7 @@ import { getTodaysQuests, getQuestCompletion } from './quests.js';
 import { getWeakKeys, buildDrillLesson } from './drills.js';
 import { getDueKeys } from './spacedRep.js';
 import { joinClass } from './classroom.js';
+import { escapeHTML } from './utils.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -384,7 +385,7 @@ function loadGardenScreen() {
     const date = f.plantedAt ? new Date(f.plantedAt).toLocaleDateString() : '';
     item.innerHTML = `
       <div class="garden-flower">${emoji}</div>
-      <div class="garden-word">${f.word || '?'}</div>
+      <div class="garden-word">${escapeHTML(f.word || '?')}</div>
       <div class="garden-meta">Lv.${f.level || '?'} ${date}</div>
     `;
     grid.appendChild(item);
