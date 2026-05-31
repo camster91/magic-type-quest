@@ -1,6 +1,6 @@
-## 2025-05-14 - Stored XSS via localStorage Sync Data
-**Vulnerability:** User-controlled data (student names, avatars, and garden words) fetched from `localStorage` (which mirrors cloud sync data) was injected into the DOM using `.innerHTML` without sanitization. This allowed persistent execution of malicious scripts (Stored XSS) every time the Teacher Dashboard or Garden screen was viewed.
+# 🛡️ Sentinel's Journal: Critical Security Learnings
 
-**Learning:** The application follows an "offline-first" sync pattern where classroom data is often sourced from local storage. Because this data is intended to be "synced" from other users (students), it must be treated as untrusted, even if it appears to be "local."
-
-**Prevention:** Always use a sanitization utility like `escapeHTML` when rendering strings that could have originated from user input. Prefer `textContent` over `innerHTML` for simple text, but when template literals are necessary for complex HTML structures, ensure every interpolated variable is escaped.
+## 2025-05-23 - Stored XSS via Offline-First Sync
+**Vulnerability:** Stored Cross-Site Scripting (XSS) via `localStorage` data sync.
+**Learning:** The application's "offline-first" sync pattern mirrored `localStorage` data to a shared cloud database (Supabase). This created a vulnerability where data from one user's `localStorage` (like student names or garden words) could be rendered unescaped in another user's view (like the Teacher Dashboard), leading to Stored XSS. `localStorage` should always be treated as untrusted user input.
+**Prevention:** Use the shared `escapeHTML` utility in `src/utils.js` for all user-provided data rendered via `innerHTML`. For numeric statistics, cast values to `Number` to prevent malicious string injection in aggregations.
