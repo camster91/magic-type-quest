@@ -774,7 +774,12 @@ function getPetImage() {
 
 function setPetImage() {
   const petImg = document.getElementById('pet-img');
-  if (petImg) petImg.src = getPetImage();
+  if (petImg) {
+    petImg.src = getPetImage();
+    const avatar = gameState.profile?.avatar || '🌸';
+    const names = { '🌸': 'Flower', '🌻': 'Sunflower', '🐉': 'Dragon', '🐱': 'Cat', '🤖': 'Robot', '🐰': 'Bunny', '🐼': 'Panda', '🦊': 'Fox' };
+    petImg.alt = (names[avatar] || 'Flower') + ' Pet';
+  }
 }
 
 function showPetReaction(type, text = '') {

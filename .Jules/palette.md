@@ -1,3 +1,5 @@
-## 2025-05-14 - [Accessibility Micro-UX in Games]
-**Learning:** Highly visual or "playful" interfaces often neglect accessibility by using icon-only buttons (like emojis for avatars) or placeholder-only inputs. These can be easily addressed using a `.sr-only` utility class and `aria-label` attributes to maintain the visual aesthetic while providing a semantic layer for screen readers.
-**Action:** Always scan for interactive elements that lack text alternatives and implement `.sr-only` labels or ARIA attributes as a standard part of the "polish" phase.
+# Palette's UX Journal
+
+## 2026-05-30 - [Accessible Game UI Foundations]
+**Learning:** Icon-only buttons and interactive game elements (like level cards) are often overlooked in accessibility. Using semantic <button> elements instead of <div>s and providing clear aria-labels ensures the game is navigable by keyboard and screen readers. Clear keyboard shortcut hints (like "Esc" for pause) reduce cognitive load for players.
+**Action:** Always prefer semantic <button> elements for interactive UI components. Ensure all icon-only buttons have descriptive aria-labels and provide visible keyboard shortcut hints where applicable.
