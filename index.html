@@ -173,7 +173,7 @@
         <span id="heart-4" class="heart">❤</span>
         <span id="heart-5" class="heart">❤</span>
       </div>
-      <button type="button" id="btn-pause" class="btn-icon-only">⏸</button>
+      <button type="button" id="btn-pause" class="btn-icon-only" aria-label="Pause game">⏸</button>
     </div>
   </div>
 
@@ -389,16 +389,17 @@
   </div>
   <div class="profile-card">
     <div class="avatar-preview" id="avatar-preview">🌸</div>
+    <label for="player-name" class="sr-only">Your Name</label>
     <input type="text" id="player-name" class="player-name-input" placeholder="Your Name" maxlength="12">
     <div class="avatar-picker">
-      <button type="button" class="avatar-btn active" data-avatar="🌸">🌸</button>
-      <button type="button" class="avatar-btn" data-avatar="🌻">🌻</button>
-      <button type="button" class="avatar-btn" data-avatar="🐉">🐉</button>
-      <button type="button" class="avatar-btn" data-avatar="🐱">🐱</button>
-      <button type="button" class="avatar-btn" data-avatar="🐰">🐰</button>
-      <button type="button" class="avatar-btn" data-avatar="🦊">🦊</button>
-      <button type="button" class="avatar-btn" data-avatar="🐼">🐼</button>
-      <button type="button" class="avatar-btn" data-avatar="🤖">🤖</button>
+      <button type="button" class="avatar-btn active" data-avatar="🌸" aria-label="Flower avatar">🌸</button>
+      <button type="button" class="avatar-btn" data-avatar="🌻" aria-label="Sunflower avatar">🌻</button>
+      <button type="button" class="avatar-btn" data-avatar="🐉" aria-label="Dragon avatar">🐉</button>
+      <button type="button" class="avatar-btn" data-avatar="🐱" aria-label="Cat avatar">🐱</button>
+      <button type="button" class="avatar-btn" data-avatar="🐰" aria-label="Bunny avatar">🐰</button>
+      <button type="button" class="avatar-btn" data-avatar="🦊" aria-label="Fox avatar">🦊</button>
+      <button type="button" class="avatar-btn" data-avatar="🐼" aria-label="Panda avatar">🐼</button>
+      <button type="button" class="avatar-btn" data-avatar="🤖" aria-label="Robot avatar">🤖</button>
     </div>
     <div class="profile-stats">
       <div class="profile-stat">
@@ -438,7 +439,7 @@
     <div id="review-keys" class="review-keys"></div>
 
     <div class="profile-class-section">
-      <label class="profile-label">Class Code</label>
+      <label for="class-code" class="profile-label">Class Code</label>
       <input type="text" id="class-code" class="profile-input" placeholder="Enter code (e.g. ABC123)" maxlength="10">
       <p class="profile-hint">Ask your teacher for a class code to share your progress.</p>
     </div>

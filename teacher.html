@@ -96,6 +96,18 @@
     .badge-yellow { background: rgba(251,191,36,0.2); color: var(--warning); }
     .badge-red { background: rgba(239,68,68,0.2); color: var(--danger); }
 
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+
     /* Empty state */
     .empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); }
     .empty-state h2 { font-family: 'Fredoka One', cursive; margin-bottom: 12px; color: var(--text); }
@@ -111,6 +123,7 @@
   </div>
 
   <div class="toolbar">
+    <label for="class-code-input" class="sr-only">Class Code</label>
     <input type="text" id="class-code-input" class="input-code" placeholder="Class code (e.g. ABC123)" maxlength="10">
     <button class="btn btn-primary" id="btn-load-class">🔍 Load Class</button>
     <button class="btn btn-primary" id="btn-all-students">🔄 All Students</button>
