@@ -951,17 +951,25 @@ function drawStars(groundY) {
       });
     }
   }
+
+  // ⚡ Optimization: Set fillStyle once and use globalAlpha to avoid string parsing.
+  // ⚡ Optimization: Removed shadowBlur as it's extremely expensive in loops.
+  ctx.save();
+  ctx.fillStyle = '#ffffc8';
+  const canvasW = gameState.canvasW;
+
   for (const star of stars) {
     star.twinkle += star.speed;
-    const alpha = 0.3 + Math.sin(star.twinkle) * 0.3;
-    ctx.fillStyle = `rgba(255,255,200,${alpha})`;
-    ctx.shadowColor = 'rgba(255,255,200,0.5)';
-    ctx.shadowBlur = star.size * 2;
+
+    // ⚡ Optimization: Viewport culling
+    if (star.x < 0 || star.x > canvasW) continue;
+
+    ctx.globalAlpha = 0.3 + Math.sin(star.twinkle) * 0.3;
     ctx.beginPath();
     ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
     ctx.fill();
-    ctx.shadowBlur = 0;
   }
+  ctx.restore();
 }
 
 // ===== ANIMATED PET SYSTEM =====
@@ -1074,19 +1082,30 @@ function drawTexturedParticles() {
     ctx.globalAlpha = Math.max(0, p.life);
     const size = p.size * p.life * 2;
     
+    // ⚡ Optimization: Avoid save/restore/translate/rotate if no rotation is needed
+    const needsTransform = (p.rotation !== undefined && p.rotation !== 0);
+
     if (p.type === 'confetti') {
       ctx.fillStyle = p.color;
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rotation || 0);
-      ctx.fillRect(-size / 2, -size / 4, size, size / 2);
-      ctx.restore();
+      if (needsTransform) {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation);
+        ctx.fillRect(-size / 2, -size / 4, size, size / 2);
+        ctx.restore();
+      } else {
+        ctx.fillRect(p.x - size / 2, p.y - size / 4, size, size / 2);
+      }
     } else {
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rotation || 0);
-      ctx.drawImage(particleTexture, -size/2, -size/2, size, size);
-      ctx.restore();
+      if (needsTransform) {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation);
+        ctx.drawImage(particleTexture, -size/2, -size/2, size, size);
+        ctx.restore();
+      } else {
+        ctx.drawImage(particleTexture, p.x - size/2, p.y - size/2, size, size);
+      }
     }
   }
   ctx.globalAlpha = 1;
@@ -1128,17 +1147,25 @@ function drawParticles() {
   for (const p of particles) {
     ctx.globalAlpha = Math.max(0, p.life);
     ctx.fillStyle = p.color;
-    ctx.save();
+
+    // ⚡ Optimization: Avoid save/restore/translate/rotate if no rotation is needed
+    const needsTransform = (p.type === 'confetti' && p.rotation !== undefined && p.rotation !== 0);
+
     if (p.type === 'confetti') {
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rotation);
-      ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+      if (needsTransform) {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation);
+        ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+        ctx.restore();
+      } else {
+        ctx.fillRect(p.x - p.size / 2, p.y - p.size / 4, p.size, p.size / 2);
+      }
     } else {
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
       ctx.fill();
     }
-    ctx.restore();
   }
   ctx.globalAlpha = 1;
 }
