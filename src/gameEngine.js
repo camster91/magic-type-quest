@@ -89,16 +89,23 @@ class Word {
     const shakeX = this.shake > 0 ? (Math.random() - 0.5) * 6 : 0;
     const x = this.x + shakeX;
     
-    // Glow effect for target
+    // Glow effect for target - ⚡ Optimization: Avoid expensive shadowBlur
     if (this.glow > 0 || this.isTarget) {
       ctx.save();
-      ctx.shadowColor = this.isTarget ? COLORS.success : COLORS.primary;
-      ctx.shadowBlur = this.isTarget ? 40 : this.glow * 25;
-      ctx.fillStyle = this.isTarget ? 'rgba(52, 211, 153, 0.5)' : 'rgba(139, 92, 246, 0.4)';
-      ctx.globalAlpha = this.isTarget ? 0.6 : 0.3;
+      ctx.fillStyle = this.isTarget ? COLORS.success : COLORS.primary;
+
+      // Outer glow layer
+      ctx.globalAlpha = this.isTarget ? 0.25 : this.glow * 0.15;
+      ctx.beginPath();
+      ctx.roundRect(x - 14, this.y - this.height/2 - 10, this.width + 28, this.height + 20, 22);
+      ctx.fill();
+
+      // Inner glow layer
+      ctx.globalAlpha = this.isTarget ? 0.45 : this.glow * 0.25;
       ctx.beginPath();
       ctx.roundRect(x - 8, this.y - this.height/2 - 4, this.width + 16, this.height + 8, 16);
       ctx.fill();
+
       ctx.restore();
     }
 
