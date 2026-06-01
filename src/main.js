@@ -80,7 +80,15 @@ function updatePracticeDisplay() {
   const totalWords = gameState.currentPracticeWords.length;
   const wordsCompleted = gameState.practiceWordIndex;
   progressCountEl.textContent = `${wordsCompleted + 1} / ${totalWords}`;
-  progressFillEl.style.width = `${((wordsCompleted + (currentWordIndex / currentPracticeWord.length)) / totalWords) * 100}%`;
+  const pct = ((wordsCompleted + (currentWordIndex / currentPracticeWord.length)) / totalWords) * 100;
+  progressFillEl.style.width = `${pct}%`;
+
+  // Accessibility: Update ARIA attributes on practice bar
+  const progressWrap = document.querySelector('.practice-bar');
+  if (progressWrap) {
+    progressWrap.setAttribute('aria-valuenow', Math.round(pct));
+    progressWrap.setAttribute('aria-valuetext', `${wordsCompleted + 1} of ${totalWords} words`);
+  }
 
   wpmEl.textContent = gameState.practiceWPM;
   accuracyEl.textContent = gameState.practiceAccuracy + '%';
