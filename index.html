@@ -4,13 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>🌸 BloomType - Garden Typing Adventure</title>
-  <link rel="icon" type="image/png" href="/magic-type-quest/assets/icon-192-GqYnNIga.png">
+  <link rel="icon" type="image/png" href="/assets/icon-192.png">
   <meta name="theme-color" content="#8B5CF6">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https:; media-src 'self';">
+  <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/magic-type-quest/assets/main-D9xADVsT.js"></script>
-  <link rel="stylesheet" crossorigin href="/magic-type-quest/assets/main-BixGrx5v.css">
+  <script type="module" crossorigin src="/assets/main-C7RdjICs.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/utils-D1nKtxFV.js">
+  <link rel="stylesheet" crossorigin href="/assets/main-DxtAU7gj.css">
 </head>
 <body>
 
@@ -43,6 +46,9 @@
     <button type="button" id="btn-profile" class="btn btn-secondary">
       <span class="btn-icon">👤</span> My Profile
     </button>
+    <button type="button" id="btn-garden" class="btn btn-secondary">
+      <span class="btn-icon">🌺</span> My Garden
+    </button>
     <a href="./parents.html" class="btn btn-secondary" style="text-decoration:none">
       <span class="btn-icon">📖</span> For Parents
     </a>
@@ -65,14 +71,23 @@
       <span id="menu-words">0</span> Words
     </div>
   </div>
+
+  <!-- Daily Quests -->
+  <div class="daily-quests" id="daily-quests">
+    <div class="quests-header">
+      <span>📅 Daily Quests</span>
+      <span class="streak-badge" id="quest-streak">🔥 0</span>
+    </div>
+    <div class="quests-list" id="quests-list"></div>
+  </div>
 </div>
 
-<!-- ===== LESSON SELECT ===== -->
+  <!-- ===== LESSON SELECT ===== -->
 <div id="lesson-select-screen" class="screen">
   <div class="menu-bg"></div>
   <div class="screen-header">
     <button type="button" id="btn-lesson-back" class="btn-back">← Back</button>
-    <h2>📚 Choose Your Lesson</h2>
+    <h2>📚 Pick Your Adventure!</h2>
   </div>
   <div id="level-cards" class="level-grid"></div>
 </div>
@@ -82,7 +97,7 @@
   <div class="menu-bg"></div>
   <div class="screen-header">
     <button type="button" id="btn-practice-back" class="btn-back">← Back</button>
-    <h2>🎯 Practice Letters</h2>
+    <h2>🎯 Practice Power!</h2>
   </div>
   <div class="practice-viewport">
     <div id="practice-char-display" class="practice-char-display">A</div>
@@ -100,39 +115,39 @@
 
   <div class="virtual-keyboard" id="virtual-keyboard-practice">
     <div class="kb-row">
-      <span class="key" data-key="q">Q</span>
-      <span class="key" data-key="w">W</span>
-      <span class="key" data-key="e">E</span>
-      <span class="key" data-key="r">R</span>
-      <span class="key" data-key="t">T</span>
-      <span class="key" data-key="y">Y</span>
-      <span class="key" data-key="u">U</span>
-      <span class="key" data-key="i">I</span>
-      <span class="key" data-key="o">O</span>
-      <span class="key" data-key="p">P</span>
+      <span class="key" tabindex="0" data-key="q">Q</span>
+      <span class="key" tabindex="0" data-key="w">W</span>
+      <span class="key" tabindex="0" data-key="e">E</span>
+      <span class="key" tabindex="0" data-key="r">R</span>
+      <span class="key" tabindex="0" data-key="t">T</span>
+      <span class="key" tabindex="0" data-key="y">Y</span>
+      <span class="key" tabindex="0" data-key="u">U</span>
+      <span class="key" tabindex="0" data-key="i">I</span>
+      <span class="key" tabindex="0" data-key="o">O</span>
+      <span class="key" tabindex="0" data-key="p">P</span>
     </div>
     <div class="kb-row">
-      <span class="key" data-key="a">A</span>
-      <span class="key" data-key="s">S</span>
-      <span class="key" data-key="d">D</span>
-      <span class="key" data-key="f">F</span>
-      <span class="key" data-key="g">G</span>
-      <span class="key" data-key="h">H</span>
-      <span class="key" data-key="j">J</span>
-      <span class="key" data-key="k">K</span>
-      <span class="key" data-key="l">L</span>
+      <span class="key" tabindex="0" data-key="a">A</span>
+      <span class="key" tabindex="0" data-key="s">S</span>
+      <span class="key" tabindex="0" data-key="d">D</span>
+      <span class="key" tabindex="0" data-key="f">F</span>
+      <span class="key" tabindex="0" data-key="g">G</span>
+      <span class="key" tabindex="0" data-key="h">H</span>
+      <span class="key" tabindex="0" data-key="j">J</span>
+      <span class="key" tabindex="0" data-key="k">K</span>
+      <span class="key" tabindex="0" data-key="l">L</span>
     </div>
     <div class="kb-row">
-      <span class="key key-wide" data-key="z">Z</span>
-      <span class="key" data-key="x">X</span>
-      <span class="key" data-key="c">C</span>
-      <span class="key" data-key="v">V</span>
-      <span class="key" data-key="b">B</span>
-      <span class="key" data-key="n">N</span>
-      <span class="key" data-key="m">M</span>
+      <span class="key key-wide" tabindex="0" data-key="z">Z</span>
+      <span class="key" tabindex="0" data-key="x">X</span>
+      <span class="key" tabindex="0" data-key="c">C</span>
+      <span class="key" tabindex="0" data-key="v">V</span>
+      <span class="key" tabindex="0" data-key="b">B</span>
+      <span class="key" tabindex="0" data-key="n">N</span>
+      <span class="key" tabindex="0" data-key="m">M</span>
     </div>
     <div class="kb-row kb-space-row">
-      <span class="key key-space" data-key=" ">SPACE</span>
+      <span class="key key-space" tabindex="0" data-key=" ">SPACE</span>
     </div>
   </div>
 </div>
@@ -140,6 +155,7 @@
 <!-- ===== GAME SCREEN ===== -->
 <div id="game-screen" class="screen">
   <canvas id="game-canvas"></canvas>
+  <input type="text" id="mobile-input" inputmode="text" autocapitalize="off" autocomplete="off" spellcheck="false" aria-hidden="true" style="position:fixed;bottom:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1;">
 
   <!-- HUD -->
   <div class="hud">
@@ -160,7 +176,7 @@
         <span id="heart-4" class="heart">❤</span>
         <span id="heart-5" class="heart">❤</span>
       </div>
-      <button type="button" id="btn-pause" class="btn-icon-only">⏸</button>
+      <button type="button" id="btn-pause" class="btn-icon-only" aria-label="Pause Game" title="Pause Game (Esc)">⏸</button>
     </div>
   </div>
 
@@ -170,7 +186,7 @@
   <!-- Pet -->
   <div class="pet-container">
     <div class="pet-wrap">
-      <img id="pet-img" class="pet-face" src="/magic-type-quest/assets/pets/flower.png" alt="pet">
+      <img id="pet-img" class="pet-face" src="/assets/pets/flower.png" alt="pet">
     </div>
     <div id="pet-bubble" class="pet-bubble">Type the word!</div>
   </div>
@@ -189,39 +205,39 @@
   <!-- Compact Keyboard -->
   <div class="virtual-keyboard" id="virtual-keyboard-game">
     <div class="kb-row">
-      <span class="key" data-key="q">Q</span>
-      <span class="key" data-key="w">W</span>
-      <span class="key" data-key="e">E</span>
-      <span class="key" data-key="r">R</span>
-      <span class="key" data-key="t">T</span>
-      <span class="key" data-key="y">Y</span>
-      <span class="key" data-key="u">U</span>
-      <span class="key" data-key="i">I</span>
-      <span class="key" data-key="o">O</span>
-      <span class="key" data-key="p">P</span>
+      <span class="key" tabindex="0" data-key="q">Q</span>
+      <span class="key" tabindex="0" data-key="w">W</span>
+      <span class="key" tabindex="0" data-key="e">E</span>
+      <span class="key" tabindex="0" data-key="r">R</span>
+      <span class="key" tabindex="0" data-key="t">T</span>
+      <span class="key" tabindex="0" data-key="y">Y</span>
+      <span class="key" tabindex="0" data-key="u">U</span>
+      <span class="key" tabindex="0" data-key="i">I</span>
+      <span class="key" tabindex="0" data-key="o">O</span>
+      <span class="key" tabindex="0" data-key="p">P</span>
     </div>
     <div class="kb-row">
-      <span class="key" data-key="a">A</span>
-      <span class="key" data-key="s">S</span>
-      <span class="key" data-key="d">D</span>
-      <span class="key" data-key="f">F</span>
-      <span class="key" data-key="g">G</span>
-      <span class="key" data-key="h">H</span>
-      <span class="key" data-key="j">J</span>
-      <span class="key" data-key="k">K</span>
-      <span class="key" data-key="l">L</span>
+      <span class="key" tabindex="0" data-key="a">A</span>
+      <span class="key" tabindex="0" data-key="s">S</span>
+      <span class="key" tabindex="0" data-key="d">D</span>
+      <span class="key" tabindex="0" data-key="f">F</span>
+      <span class="key" tabindex="0" data-key="g">G</span>
+      <span class="key" tabindex="0" data-key="h">H</span>
+      <span class="key" tabindex="0" data-key="j">J</span>
+      <span class="key" tabindex="0" data-key="k">K</span>
+      <span class="key" tabindex="0" data-key="l">L</span>
     </div>
     <div class="kb-row">
-      <span class="key key-wide" data-key="z">Z</span>
-      <span class="key" data-key="x">X</span>
-      <span class="key" data-key="c">C</span>
-      <span class="key" data-key="v">V</span>
-      <span class="key" data-key="b">B</span>
-      <span class="key" data-key="n">N</span>
-      <span class="key" data-key="m">M</span>
+      <span class="key key-wide" tabindex="0" data-key="z">Z</span>
+      <span class="key" tabindex="0" data-key="x">X</span>
+      <span class="key" tabindex="0" data-key="c">C</span>
+      <span class="key" tabindex="0" data-key="v">V</span>
+      <span class="key" tabindex="0" data-key="b">B</span>
+      <span class="key" tabindex="0" data-key="n">N</span>
+      <span class="key" tabindex="0" data-key="m">M</span>
     </div>
     <div class="kb-row kb-space-row">
-      <span class="key key-space" data-key=" ">SPACE</span>
+      <span class="key key-space" tabindex="0" data-key=" ">SPACE</span>
     </div>
   </div>
 
@@ -238,8 +254,32 @@
   <div id="pause-overlay" class="overlay hidden">
     <div class="overlay-card">
       <h2>⏸️ Paused</h2>
-      <button type="button" id="btn-resume" class="btn btn-primary">▶ Resume</button>
+      <button type="button" id="btn-resume" class="btn btn-primary">▶ Resume <span class="btn-shortcut">(Esc)</span></button>
       <button type="button" id="btn-quit" class="btn btn-danger">🏠 Quit to Menu</button>
+    </div>
+  </div>
+
+  <!-- Chapter Intro Overlay -->
+  <div id="chapter-intro" class="overlay hidden chapter-intro-overlay">
+    <div class="overlay-card chapter-card">
+      <div class="chapter-badge">New Chapter</div>
+      <h2 class="chapter-title">The Garden Awakens</h2>
+      <p class="chapter-subtitle">Home Row Garden</p>
+      <p class="chapter-intro-text">Bloom has been sleeping all winter. Wake them up by typing home row letters!</p>
+      <p class="chapter-pet-line">"First letters of the season! Let's wake this garden up!" — Bloom</p>
+      <div class="chapter-tap-hint">(tap to start)</div>
+    </div>
+  </div>
+
+  <!-- Pet Evolution Overlay -->
+  <div id="evolution-overlay" class="overlay hidden evolution-overlay">
+    <div class="overlay-card evolution-card">
+      <div class="evolution-badge">🌟 Evolution!</div>
+      <div class="evolution-stage" id="evolution-stage-img">🌱</div>
+      <h2 id="evolution-title">Baby Bloom!</h2>
+      <p id="evolution-desc">Your typing has helped Bloom grow!</p>
+      <p class="evolution-pet-line" id="evolution-pet-line">"I'm getting stronger thanks to you!"</p>
+      <button type="button" id="btn-evolution-continue" class="btn btn-primary btn-lg">Continue →</button>
     </div>
   </div>
 
@@ -263,8 +303,8 @@
   <div id="gameover-overlay" class="overlay hidden">
     <div class="overlay-card gameover-card">
       <div class="gameover-emoji">😢</div>
-      <h2>Game Over</h2>
-      <p class="gameover-message">The stars got away! Keep trying!</p>
+      <h2>Almost!</h2>
+      <p class="gameover-message">The words snuck past us! Bloom believes in you — try again!</p>
       <div class="gameover-stats">
         <p>🌸 Final Score: <span id="final-score">0</span></p>
         <p>🔥 Best Combo: <span id="final-combo">0</span></p>
@@ -272,6 +312,7 @@
       </div>
       <div class="gameover-buttons">
         <button type="button" id="btn-retry" class="btn btn-primary">Try Again</button>
+        <button type="button" id="btn-drill" class="btn btn-accent hidden">🎯 Drill Weak Keys</button>
         <button type="button" id="btn-menu" class="btn btn-secondary">Main Menu</button>
       </div>
     </div>
@@ -353,14 +394,14 @@
     <div class="avatar-preview" id="avatar-preview">🌸</div>
     <input type="text" id="player-name" class="player-name-input" placeholder="Your Name" maxlength="12">
     <div class="avatar-picker">
-      <button type="button" class="avatar-btn active" data-avatar="🌸">🌸</button>
-      <button type="button" class="avatar-btn" data-avatar="🌻">🌻</button>
-      <button type="button" class="avatar-btn" data-avatar="🐉">🐉</button>
-      <button type="button" class="avatar-btn" data-avatar="🐱">🐱</button>
-      <button type="button" class="avatar-btn" data-avatar="🐰">🐰</button>
-      <button type="button" class="avatar-btn" data-avatar="🦊">🦊</button>
-      <button type="button" class="avatar-btn" data-avatar="🐼">🐼</button>
-      <button type="button" class="avatar-btn" data-avatar="🤖">🤖</button>
+      <button type="button" class="avatar-btn active" data-avatar="🌸" aria-label="Select Flower Avatar">🌸</button>
+      <button type="button" class="avatar-btn" data-avatar="🌻" aria-label="Select Sunflower Avatar">🌻</button>
+      <button type="button" class="avatar-btn" data-avatar="🐉" aria-label="Select Dragon Avatar">🐉</button>
+      <button type="button" class="avatar-btn" data-avatar="🐱" aria-label="Select Cat Avatar">🐱</button>
+      <button type="button" class="avatar-btn" data-avatar="🐰" aria-label="Select Bunny Avatar">🐰</button>
+      <button type="button" class="avatar-btn" data-avatar="🦊" aria-label="Select Fox Avatar">🦊</button>
+      <button type="button" class="avatar-btn" data-avatar="🐼" aria-label="Select Panda Avatar">🐼</button>
+      <button type="button" class="avatar-btn" data-avatar="🤖" aria-label="Select Robot Avatar">🤖</button>
     </div>
     <div class="profile-stats">
       <div class="profile-stat">
@@ -384,6 +425,27 @@
         <span class="ps-label">Achvmts</span>
       </div>
     </div>
+    <div class="profile-achievements-section">
+      <div class="achievements-header">
+        <span>🏆 Achievements</span>
+        <span id="achievements-count">0 / 18</span>
+      </div>
+      <div class="achievements-categories" id="achievements-categories">
+        <!-- Populated by JS -->
+      </div>
+      <div class="achievements-grid" id="achievements-grid">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <div id="review-keys" class="review-keys"></div>
+
+    <div class="profile-class-section">
+      <label class="profile-label">Class Code</label>
+      <input type="text" id="class-code" class="profile-input" placeholder="Enter code (e.g. ABC123)" maxlength="10">
+      <p class="profile-hint">Ask your teacher for a class code to share your progress.</p>
+    </div>
+
     <label class="toggle-label">
       <input type="checkbox" id="voice-toggle"> 🗣 Voice Narration
     </label>
@@ -391,5 +453,25 @@
   </div>
 </div>
 
+<!-- ===== GARDEN SCREEN ===== -->
+<div id="garden-screen" class="screen">
+  <div class="menu-bg"></div>
+  <div class="screen-header">
+    <button type="button" id="btn-garden-back" class="btn-back">← Back</button>
+    <h2>🌺 My Garden</h2>
+  </div>
+  <div class="garden-stats" id="garden-stats">
+    <span>🌸 <span id="garden-count">0</span> flowers planted</span>
+  </div>
+  <div class="garden-grid" id="garden-grid">
+    <!-- Populated by JS -->
+  </div>
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
+</script>
 </body>
 </html>
