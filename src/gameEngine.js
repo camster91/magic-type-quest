@@ -89,17 +89,20 @@ class Word {
     const shakeX = this.shake > 0 ? (Math.random() - 0.5) * 6 : 0;
     const x = this.x + shakeX;
     
-    // Glow effect for target
+    // ⚡ Optimization: Multi-layered glow instead of expensive shadowBlur
     if (this.glow > 0 || this.isTarget) {
-      ctx.save();
-      ctx.shadowColor = this.isTarget ? COLORS.success : COLORS.primary;
-      ctx.shadowBlur = this.isTarget ? 40 : this.glow * 25;
-      ctx.fillStyle = this.isTarget ? 'rgba(52, 211, 153, 0.5)' : 'rgba(139, 92, 246, 0.4)';
-      ctx.globalAlpha = this.isTarget ? 0.6 : 0.3;
-      ctx.beginPath();
-      ctx.roundRect(x - 8, this.y - this.height/2 - 4, this.width + 16, this.height + 8, 16);
-      ctx.fill();
-      ctx.restore();
+      const color = this.isTarget ? COLORS.success : COLORS.primary;
+      const alphaBase = this.isTarget ? 0.4 : this.glow * 0.3;
+
+      for (let i = 1; i <= 3; i++) {
+        ctx.globalAlpha = alphaBase / i;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        const padding = i * 4;
+        ctx.roundRect(x - 8 - padding, this.y - this.height/2 - 4 - padding, this.width + 16 + padding * 2, this.height + 8 + padding * 2, 16 + padding);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1.0;
     }
 
     // Background pill
@@ -113,9 +116,6 @@ class Word {
 
     // Text
     ctx.fillStyle = '#ffffff';
-    ctx.font = '700 26px Nunito, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
     ctx.fillText(this.text, x + 10, this.y);
 
     // Typed progress underline
@@ -132,6 +132,9 @@ class Word {
       ctx.font = '14px Nunito';
       ctx.textAlign = 'center';
       ctx.fillText('▶', x + this.width / 2, this.y - this.height/2 - 12);
+      // Reset shared state for next word in loop
+      ctx.font = '700 26px Nunito, sans-serif';
+      ctx.textAlign = 'left';
     }
   }
 
@@ -259,6 +262,10 @@ function updateWords(deltaTime) {
 }
 
 function drawWords() {
+  // ⚡ Optimization: Set shared text state once before word loop
+  ctx.font = '700 26px Nunito, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
   for (const word of gameState.activeWords) {
     word.draw(ctx);
   }
@@ -1044,11 +1051,11 @@ function loadFlowerImages() {
 }
 
 function drawFlowerImage(flower, groundY) {
-  const types = ['bud', 'sprout', 'bud'];
-  const imgName = types[Math.floor(Math.random() * types.length)];
+  // ⚡ Optimization: Use stable property for variation to avoid per-frame Math.random() and flickering
+  const imgName = (Math.abs(Math.floor(flower.x)) % 2 === 0) ? 'bud' : 'sprout';
   const img = flowerImages[imgName];
   
-  if (!img || !img.complete) {
+  if (!img || !img.complete || img.naturalWidth === 0) {
     // Fallback to code-drawn
     drawFlowerFromGround(flower, groundY);
     return;
@@ -1069,6 +1076,52 @@ function drawFlowerImage(flower, groundY) {
   ctx.rotate(sway * Math.PI / 180);
   
   ctx.drawImage(img, -size/2, -size/2, size, size);
+  ctx.restore();
+}
+
+/** Fallback renderer for flowers when images fail to load. */
+function drawFlowerFromGround(flower, groundY) {
+  const x = flower.x;
+  const scale = flower.scale * flower.bloomProgress;
+  if (scale <= 0.01) return;
+
+  ctx.save();
+  ctx.translate(x, groundY);
+  ctx.scale(scale, scale);
+
+  // Stem
+  ctx.strokeStyle = '#2d6a4f';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.quadraticCurveTo(5, -20, 0, -40);
+  ctx.stroke();
+
+  // Leaves
+  ctx.fillStyle = '#40916c';
+  ctx.beginPath();
+  ctx.ellipse(-5, -20, 10, 5, -Math.PI / 4, 0, Math.PI * 2);
+  ctx.ellipse(5, -25, 10, 5, Math.PI / 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Petals
+  const petalColor = flower.type === 'sunflower' ? '#ffb703' :
+                    flower.type === 'rose' ? '#c9184a' :
+                    flower.type === 'daisy' ? '#ffffff' : '#ff4d6d';
+  ctx.fillStyle = petalColor;
+  for (let i = 0; i < 6; i++) {
+    ctx.beginPath();
+    ctx.rotate(Math.PI / 3);
+    ctx.ellipse(0, -40, 12, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Center
+  ctx.fillStyle = flower.type === 'daisy' ? '#ffb703' : '#800f2f';
+  ctx.beginPath();
+  ctx.arc(0, -40, 6, 0, Math.PI * 2);
+  ctx.fill();
+
   ctx.restore();
 }
 
