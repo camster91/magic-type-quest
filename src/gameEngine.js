@@ -756,20 +756,13 @@ function showScorePopup(points, x, y) {
 }
 
 // ===== PET REACTIONS =====
-const PET_IMAGES = {
-  '🌸': 'assets/pets/flower.png',
-  '🌻': 'assets/pets/sunflower.png',
-  '🐉': 'assets/pets/dragon.png',
-  '🐱': 'assets/pets/cat.png',
-  '🤖': 'assets/pets/robot.png',
-  '🐰': 'assets/pets/bunny.png',
-  '🐼': 'assets/pets/panda.png',
-  '🦊': 'assets/pets/fox.png',
-};
+import { PET_EMOJI_TO_NAME, getPetPath, PET_STATES, PET_NAME_LIST } from './assets.js';
 
-function getPetImage() {
+let petCurrentState = 'idle';
+
+function getPetImage(state = petCurrentState) {
   const avatar = gameState.profile?.avatar || '🌸';
-  return PET_IMAGES[avatar] || PET_IMAGES['🌸'];
+  return getPetPath(avatar, state);
 }
 
 function setPetImage() {
@@ -777,7 +770,7 @@ function setPetImage() {
   if (petImg) {
     petImg.src = getPetImage();
     const avatar = gameState.profile?.avatar || '🌸';
-    const names = { '🌸': 'Flower', '🌻': 'Sunflower', '🐉': 'Dragon', '🐱': 'Cat', '🤖': 'Robot', '🐰': 'Bunny', '🐼': 'Panda', '🦊': 'Fox' };
+    const names = { '🌸': 'Flower', '🌻': 'Sunflower', '🐉': 'Dragon', '🐱': 'Cat', '🤖': 'Robot', '🐰': 'Bunny', '🐼': 'Panda', '🦊': 'Fox', '🦉': 'Owl', '🐶': 'Puppy' };
     petImg.alt = (names[avatar] || 'Flower') + ' Pet';
   }
 }
@@ -785,27 +778,36 @@ function setPetImage() {
 function showPetReaction(type, text = '') {
   const bubbleEl = document.getElementById('pet-bubble');
   const evolution = getEvolutionStage(gameState.level || 1);
-  
-  // Set pet animation frame
+
+  // Map reaction type -> pet state
+  let newState = 'idle';
   switch(type) {
     case 'happy':
     case 'correct':
-      setPetFrame('happy');
+      newState = 'happy';
       break;
     case 'fire':
-      setPetFrame('fire');
+      newState = 'fire';
       break;
     case 'hurt':
     case 'wrong':
-      setPetFrame('hurt');
+      newState = 'hurt';
       break;
     case 'celebrate':
     case 'levelComplete':
-      setPetFrame('celebrate');
+      newState = 'celebrate';
       break;
+    case 'idle':
     default:
-      setPetFrame('idle');
+      newState = 'idle';
   }
+
+  // Update state and refresh DOM image (menu avatar)
+  petCurrentState = newState;
+  setPetImage();
+
+  // Set pet animation frame (in-canvas pet)
+  setPetFrame(newState);
   
   if (!bubbleEl) return;
   
@@ -864,10 +866,13 @@ function loadBgImages() {
     img.src = src;
     return img;
   };
-  bgLayers.sky.img = loadImg('/assets/pro/bg/sky.png');
-  bgLayers.trees.img = loadImg('/assets/pro/bg/trees.png');
-  bgLayers.hills.img = loadImg('/assets/pro/bg/hills.png');
-  bgLayers.grass.img = loadImg('/assets/pro/bg/grass.png');
+  // New parallax layer pack: 3 layers per scene (sky / mid / foreground).
+  // Map engine's 4 layers (sky/trees/hills/grass) to the 3 new layers
+  // (sky/mid/foreground) and re-use 'mid' for both trees and hills.
+  bgLayers.sky.img = loadImg('/assets/backgrounds-new/magical_garden-sky.png');
+  bgLayers.trees.img = loadImg('/assets/backgrounds-new/magical_garden-mid.png');
+  bgLayers.hills.img = loadImg('/assets/backgrounds-new/magical_garden-foreground.png');
+  bgLayers.grass.img = loadImg('/assets/backgrounds-new/magical_garden-foreground.png');
 }
 
 function drawBgLayer(layer, w, h, time, heightScale) {
@@ -978,21 +983,25 @@ function drawStars(groundY) {
 }
 
 // ===== ANIMATED PET SYSTEM =====
+// petFrames[s] holds the Image for the player's currently-selected pet in state s
+// Loaded on demand when a state change is requested.
 const petFrames = {
   idle: null, happy: null, hurt: null, celebrate: null, fire: null,
 };
 
+function loadPetState(state) {
+  if (petFrames[state] && petFrames[state].complete) return petFrames[state];
+  const img = new Image();
+  img.onload = () => { petFrames[state] = img; };
+  img.onerror = () => { img._broken = true; };
+  img.src = getPetImage(state);
+  petFrames[state] = img; // assign immediately so concurrent calls don't re-create
+  return img;
+}
+
 function loadPetImages() {
-  const loadImg = (src) => {
-    const img = new Image();
-    img.src = src;
-    return img;
-  };
-  petFrames.idle = loadImg('/assets/pro/pet/idle.png');
-  petFrames.happy = loadImg('/assets/pro/pet/happy.png');
-  petFrames.hurt = loadImg('/assets/pro/pet/hurt.png');
-  petFrames.celebrate = loadImg('/assets/pro/pet/celebrate.png');
-  petFrames.fire = loadImg('/assets/pro/pet/fire.png');
+  // Preload idle for the initial render; other states load on demand
+  loadPetState('idle');
 }
 
 let petCurrentFrame = 'idle';
@@ -1022,10 +1031,23 @@ function drawPet() {
 }
 
 function setPetFrame(frame) {
-  if (petFrames[frame]) {
-    petCurrentFrame = frame;
-    petFrameTimer = 0;
+  // Always trigger a load for the new state (covers pet changes too)
+  loadPetState(frame);
+  petCurrentFrame = frame;
+  petFrameTimer = 0;
+}
+
+// Called when the player picks a new avatar. Invalidate cached pet images
+// and refresh both the DOM avatar and the canvas in-canvas pet.
+function onAvatarChanged() {
+  // Clear cached images so the next state change fetches the new pet
+  for (const state of ['idle', 'happy', 'hurt', 'celebrate', 'fire']) {
+    petFrames[state] = null;
   }
+  // Refresh the menu DOM avatar
+  setPetImage();
+  // Preload idle for the new pet
+  loadPetState(petCurrentState);
 }
 
 // ===== IMAGE-BASED FLOWERS =====

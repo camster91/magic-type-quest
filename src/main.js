@@ -341,6 +341,7 @@ function loadProfileScreen() {
 
 function saveProfileScreen() {
   const p = gameState.profile;
+  const oldAvatar = p.avatar;
   p.name = $('player-name')?.value?.trim() || 'Player';
   p.avatar = document.querySelector('.avatar-btn.active')?.dataset?.avatar || '🌸';
   p.voiceEnabled = $('voice-toggle')?.checked !== false;
@@ -348,6 +349,10 @@ function saveProfileScreen() {
   if (code) joinClass(p, code);
   saveProfile();
   updateMenuStats();
+  // If the avatar changed, invalidate pet image cache and reload for current state
+  if (oldAvatar !== p.avatar && typeof onAvatarChanged === 'function') {
+    onAvatarChanged();
+  }
 }
 
 // ===== GARDEN SCREEN =====
