@@ -435,7 +435,9 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
   display: flex; flex-direction: column; align-items: center; gap: 12px;
   width: 300px; padding: 0 16px;
 }
-.avatar-preview { font-size: 3.5rem; display: block; }
+.avatar-preview { font-size: 3.5rem; display: block; min-height: 100px; line-height: 0; }
+.avatar-preview img { width: 96px; height: 96px; object-fit: contain; display: block; margin: 0 auto; }
+.avatar-preview-emoji { font-size: 3.5rem; }
 .avatar-picker { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; }
 .avatar-btn {
   font-size: 1.4rem; background: var(--glass); border: 2px solid transparent;

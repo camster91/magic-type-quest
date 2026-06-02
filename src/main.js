@@ -272,9 +272,16 @@ function updateMenuStats() {
 }
 
 // ===== PROFILE =====
+import { getPetPath } from './assets.js';
+
 function loadProfileScreen() {
   const p = gameState.profile || {};
-  $('avatar-preview') && ($('avatar-preview').textContent = p.avatar || '🌸');
+  const avatar = p.avatar || '🌸';
+  // Update both the kawaii image and the emoji fallback
+  const img = $('avatar-preview-img');
+  if (img) img.src = getPetPath(avatar, 'idle');
+  const emoji = $('avatar-preview-emoji');
+  if (emoji) emoji.textContent = avatar;
   $('player-name') && ($('player-name').value = p.name || '');
   $('profile-stars') && ($('profile-stars').textContent = p.totalStars || 0);
   $('profile-best') && ($('profile-best').textContent = p.highScore || 0);
@@ -451,7 +458,12 @@ function bindEvents() {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      $('avatar-preview').textContent = btn.dataset.avatar;
+      // Update both the kawaii image preview and the emoji fallback
+      const avatar = btn.dataset.avatar;
+      const img = $('avatar-preview-img');
+      if (img) img.src = getPetPath(avatar, 'idle');
+      const emoji = $('avatar-preview-emoji');
+      if (emoji) emoji.textContent = avatar;
     });
   });
 
