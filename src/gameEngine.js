@@ -21,6 +21,15 @@ const COLORS = {
   warning: '#FBBF24',
 };
 
+// ===== TOUCH DETECTION =====
+function isTouchDevice() {
+  return (
+    ('ontouchstart' in window) ||
+    (navigator.maxTouchPoints > 0) ||
+    (navigator.msMaxTouchPoints > 0)
+  );
+}
+
 // ===== LESSON RESOLVER =====
 function currentLesson() {
   if (gameState.drillLesson) return gameState.drillLesson;
@@ -299,8 +308,11 @@ function handleKey(e) {
   if (gameState.screen !== 'game' || gameState.paused || gameState.gameOver) return;
   if (e.repeat) return;
   
-  const tag = document.activeElement?.tagName;
-  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  // Bail only on real text fields — #mobile-input is a hidden virtual-keyboard
+  // sink on touch devices and must NOT block desktop keyboard input.
+  const active = document.activeElement;
+  const activeId = active?.id;
+  if (activeId !== 'mobile-input' && (active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA')) return;
 
   // Pause with Escape
   if (e.key === 'Escape') {
@@ -1433,9 +1445,10 @@ export function startGame(level = 1) {
   // Start loop
   animationId = requestAnimationFrame(gameLoop);
   
-  // Focus mobile input for virtual keyboard (iOS/Android tablets)
+  // Focus mobile input for virtual keyboard (touch devices only — on desktop
+  // it would steal keyboard focus from the real game handler).
   const mobileInput = document.getElementById('mobile-input');
-  if (mobileInput) mobileInput.focus();
+  if (mobileInput && isTouchDevice()) mobileInput.focus();
 }
 
 export function startDrillMode(drillLesson) {
@@ -1501,9 +1514,9 @@ export function startDrillMode(drillLesson) {
   
   animationId = requestAnimationFrame(gameLoop);
   
-  // Focus mobile input for virtual keyboard (iOS/Android tablets)
+  // Focus mobile input for virtual keyboard (touch devices only)
   const mobileInput = document.getElementById('mobile-input');
-  if (mobileInput) mobileInput.focus();
+  if (mobileInput && isTouchDevice()) mobileInput.focus();
 }
 
 function preloadImages() {
