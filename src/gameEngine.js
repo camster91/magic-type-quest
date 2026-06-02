@@ -1047,27 +1047,41 @@ function drawFlowerImage(flower, groundY) {
   const types = ['bud', 'sprout', 'bud'];
   const imgName = types[Math.floor(Math.random() * types.length)];
   const img = flowerImages[imgName];
-  
+
+  const scale = flower.scale * flower.bloomProgress;
+  if (scale <= 0.01) return;
+
   if (!img || !img.complete) {
-    // Fallback to code-drawn
-    drawFlowerFromGround(flower, groundY);
+    // Canvas-drawn fallback (no external image)
+    const x = flower.x;
+    const size = 60 * scale;
+    ctx.save();
+    ctx.translate(x, groundY - size * 0.5);
+    ctx.fillStyle = '#ff7ab6';
+    ctx.beginPath();
+    ctx.arc(0, 0, size * 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#2d6a4f';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.3);
+    ctx.lineTo(0, size * 0.8);
+    ctx.stroke();
+    ctx.restore();
     return;
   }
-  
+
   const x = flower.x;
-  const scale = flower.scale * flower.bloomProgress;
   const size = 60 * scale;
-  
-  if (scale <= 0.01) return;
-  
+
   ctx.save();
   ctx.translate(x, groundY - size * 0.8);
   ctx.scale(scale, scale);
-  
+
   // Gentle sway
   const sway = Math.sin(performance.now() / 800 + flower.x) * 3;
   ctx.rotate(sway * Math.PI / 180);
-  
+
   ctx.drawImage(img, -size/2, -size/2, size, size);
   ctx.restore();
 }
