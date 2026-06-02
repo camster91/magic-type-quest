@@ -57,6 +57,7 @@ function updatePracticeDisplay() {
   const progressCountEl = $('practice-count');
   const wpmEl = $('practice-wpm');
   const accuracyEl = $('practice-accuracy');
+  const progressWrapEl = document.querySelector('.practice-bar');
 
   if (!displayEl || !hintEl || !fingerHintEl || !progressFillEl || !progressCountEl || !wpmEl || !accuracyEl) return;
 
@@ -79,8 +80,16 @@ function updatePracticeDisplay() {
   
   const totalWords = gameState.currentPracticeWords.length;
   const wordsCompleted = gameState.practiceWordIndex;
+  const rawPct = ((wordsCompleted + (currentWordIndex / currentPracticeWord.length)) / totalWords) * 100;
+  const clampedPct = Math.round(Math.min(rawPct, 100));
+
   progressCountEl.textContent = `${wordsCompleted + 1} / ${totalWords}`;
-  progressFillEl.style.width = `${((wordsCompleted + (currentWordIndex / currentPracticeWord.length)) / totalWords) * 100}%`;
+  progressFillEl.style.width = clampedPct + '%';
+
+  if (progressWrapEl) {
+    progressWrapEl.setAttribute('aria-valuenow', clampedPct);
+    progressWrapEl.setAttribute('aria-valuetext', `Word ${wordsCompleted + 1} of ${totalWords}, ${clampedPct}% complete`);
+  }
 
   wpmEl.textContent = gameState.practiceWPM;
   accuracyEl.textContent = gameState.practiceAccuracy + '%';
