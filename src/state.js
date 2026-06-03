@@ -24,6 +24,7 @@ export const defaultState = {
   paused: false,
   lastSpawn: 0,
   lastFrameTime: 0,
+  currentTime: 0,
   canvasW: 800,
   canvasH: 600,
   garden: [],

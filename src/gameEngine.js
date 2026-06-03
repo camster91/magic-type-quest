@@ -73,6 +73,8 @@ class Word {
     this.y = -50;
     this.isTarget = false;
     this.matched = 0;
+    this.lastMatched = -1;
+    this.typedWidth = 0;
     this.glow = 0;
     this.shake = 0;
     this.width = 0;
@@ -92,12 +94,15 @@ class Word {
     // Glow effect for target
     if (this.glow > 0 || this.isTarget) {
       ctx.save();
-      ctx.shadowColor = this.isTarget ? COLORS.success : COLORS.primary;
-      ctx.shadowBlur = this.isTarget ? 40 : this.glow * 25;
+      // ⚡ Optimization: Replaced expensive shadowBlur with layered semi-transparent rectangles
       ctx.fillStyle = this.isTarget ? 'rgba(52, 211, 153, 0.5)' : 'rgba(139, 92, 246, 0.4)';
-      ctx.globalAlpha = this.isTarget ? 0.6 : 0.3;
+      ctx.globalAlpha = this.isTarget ? 0.4 : this.glow * 0.3;
       ctx.beginPath();
-      ctx.roundRect(x - 8, this.y - this.height/2 - 4, this.width + 16, this.height + 8, 16);
+      ctx.roundRect(x - 12, this.y - this.height/2 - 8, this.width + 24, this.height + 16, 20);
+      ctx.fill();
+      ctx.globalAlpha = this.isTarget ? 0.2 : this.glow * 0.15;
+      ctx.beginPath();
+      ctx.roundRect(x - 16, this.y - this.height/2 - 12, this.width + 32, this.height + 24, 24);
       ctx.fill();
       ctx.restore();
     }
@@ -113,17 +118,19 @@ class Word {
 
     // Text
     ctx.fillStyle = '#ffffff';
-    ctx.font = '700 26px Nunito, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
+    // ⚡ Optimization: ctx.font, textAlign, and textBaseline hoisted to drawWords loop
     ctx.fillText(this.text, x + 10, this.y);
 
     // Typed progress underline
     if (this.matched > 0) {
-      const typedText = this.text.slice(0, this.matched);
-      const typedWidth = ctx.measureText(typedText).width;
+      // ⚡ Optimization: Cache typed text width to avoid redundant measureText calls
+      if (this.matched !== this.lastMatched) {
+        const typedText = this.text.slice(0, this.matched);
+        this.typedWidth = ctx.measureText(typedText).width;
+        this.lastMatched = this.matched;
+      }
       ctx.fillStyle = COLORS.success;
-      ctx.fillRect(x + 10, this.y + 12, typedWidth, 5);
+      ctx.fillRect(x + 10, this.y + 12, this.typedWidth, 5);
     }
 
     // Target indicator arrow
@@ -177,6 +184,7 @@ function gameLoop(timestamp) {
 
   const deltaTime = lastFrameTime ? Math.min((timestamp - lastFrameTime) / 1000, 0.05) : 0.016;
   lastFrameTime = timestamp;
+  gameState.currentTime = timestamp;
 
   // Clear canvas
   ctx.clearRect(0, 0, gameState.canvasW, gameState.canvasH);
@@ -204,7 +212,7 @@ function gameLoop(timestamp) {
 function updateWords(deltaTime) {
   // Spawn new words
   const lesson = currentLesson();
-  const now = performance.now();
+  const now = gameState.currentTime;
   const adaptiveSpawnRate = lesson.spawnRate / gameState.adaptiveSpeed;
   
   if (gameState.wordsSpawned < lesson.wordsPerLevel && 
@@ -259,6 +267,11 @@ function updateWords(deltaTime) {
 }
 
 function drawWords() {
+  // ⚡ Optimization: Set common context properties once before the loop
+  ctx.font = '700 26px Nunito, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+
   for (const word of gameState.activeWords) {
     word.draw(ctx);
   }
@@ -462,7 +475,7 @@ function onWrongKeystroke(key) {
 
 function updateWPM() {
   if (!gameState.levelStartTime) return;
-  const elapsedMin = (performance.now() - gameState.levelStartTime) / 60000;
+  const elapsedMin = (gameState.currentTime - gameState.levelStartTime) / 60000;
   if (elapsedMin < 0.01) return;
   
   // WPM = (characters / 5) / minutes
@@ -886,7 +899,7 @@ function drawGarden() {
   const w = gameState.canvasW;
   const h = gameState.canvasH;
   const groundY = h - 175;
-  const time = performance.now() / 1000;
+  const time = gameState.currentTime / 1000;
 
   if (!bgLayers.sky.img || !bgLayers.sky.img.complete || bgLayers.sky.img._broken) {
     drawFallbackBackground(w, h, groundY);
@@ -1009,7 +1022,7 @@ function drawPet() {
   const baseY = gameState.canvasH - 260;
   
   // Idle breathing animation
-  petBounceY = Math.sin(performance.now() / 500) * 3;
+  petBounceY = Math.sin(gameState.currentTime / 500) * 3;
   
   ctx.drawImage(img, x, baseY + petBounceY, w, h);
   
@@ -1045,7 +1058,9 @@ function loadFlowerImages() {
 
 function drawFlowerImage(flower, groundY) {
   const types = ['bud', 'sprout', 'bud'];
-  const imgName = types[Math.floor(Math.random() * types.length)];
+  // ⚡ Optimization: Stable image selection based on flower position to avoid flickering and Math.random()
+  const imgIdx = Math.floor(Math.abs(flower.x * 1000) % types.length);
+  const imgName = types[imgIdx];
   const img = flowerImages[imgName];
   
   if (!img || !img.complete) {
@@ -1065,7 +1080,7 @@ function drawFlowerImage(flower, groundY) {
   ctx.scale(scale, scale);
   
   // Gentle sway
-  const sway = Math.sin(performance.now() / 800 + flower.x) * 3;
+  const sway = Math.sin(gameState.currentTime / 800 + flower.x) * 3;
   ctx.rotate(sway * Math.PI / 180);
   
   ctx.drawImage(img, -size/2, -size/2, size, size);
@@ -1374,7 +1389,7 @@ export function startGame(level = 1) {
   gameState.lastSpawn = 0;
   gameState.lastFrameTime = 0;
   gameState.garden = [];
-  gameState.levelStartTime = performance.now();
+  gameState.levelStartTime = performance.now(); // Initial value before gameLoop starts
   gameState.keyAccuracy = {};
   gameState.levelWPM = 0;
   gameState.levelAccuracy = 0;
@@ -1460,7 +1475,7 @@ export function startDrillMode(drillLesson) {
   gameState.lastSpawn = 0;
   gameState.lastFrameTime = 0;
   gameState.garden = [];
-  gameState.levelStartTime = performance.now();
+  gameState.levelStartTime = performance.now(); // Initial value
   gameState.levelWPM = 0;
   gameState.levelAccuracy = 0;
   gameState.levelComplete = false;
