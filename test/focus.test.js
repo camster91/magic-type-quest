@@ -115,4 +115,14 @@ describe('Focus mechanic — formula (independent verification)', () => {
     const focusBonus = Math.round(baseScore * (focusMultiplier - 0.5));
     expect(baseScore + focusBonus).toBe(50);
   });
+
+describe('Background parallax asset paths (regression)', () => {
+  it('loadBgImages uses /assets/backgrounds/ (not the removed -new suffix)', () => {
+    const engineSrc = readFileSync(enginePath, 'utf-8');
+    expect(engineSrc).toMatch(/loadImg\(['"]\/assets\/backgrounds\/magical_garden-sky\.png['"]\)/);
+    // Negative check: the broken -new suffix must not be referenced
+    expect(engineSrc).not.toMatch(/backgrounds-new\/magical_garden/);
+  });
 });
+
+

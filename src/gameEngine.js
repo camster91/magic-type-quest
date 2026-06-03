@@ -915,12 +915,13 @@ function loadBgImages() {
     return img;
   };
   // New parallax layer pack: 3 layers per scene (sky / mid / foreground).
-  // Map engine's 4 layers (sky/trees/hills/grass) to the 3 new layers
-  // (sky/mid/foreground) and re-use 'mid' for both trees and hills.
-  bgLayers.sky.img = loadImg('/assets/backgrounds-new/magical_garden-sky.png');
-  bgLayers.trees.img = loadImg('/assets/backgrounds-new/magical_garden-mid.png');
-  bgLayers.hills.img = loadImg('/assets/backgrounds-new/magical_garden-foreground.png');
-  bgLayers.grass.img = loadImg('/assets/backgrounds-new/magical_garden-foreground.png');
+  // New parallax layer pack: 3 layers per scene (sky / mid / foreground).
+  // Files were merged into the existing /backgrounds/ directory during cleanup,
+  // so we read from there now (no -new suffix).
+  bgLayers.sky.img = loadImg('/assets/backgrounds/magical_garden-sky.png');
+  bgLayers.trees.img = loadImg('/assets/backgrounds/magical_garden-mid.png');
+  bgLayers.hills.img = loadImg('/assets/backgrounds/magical_garden-foreground.png');
+  bgLayers.grass.img = loadImg('/assets/backgrounds/magical_garden-foreground.png');
 }
 
 function drawBgLayer(layer, w, h, time, heightScale) {
