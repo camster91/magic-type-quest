@@ -240,6 +240,7 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 }
 .hud-icon { margin-right: 3px; }
 .hud-wpm { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 10px; padding: 4px 10px; font-size: 0.75rem; font-weight: 700; color: var(--warning); }
+.hud-focus { font-size: 0.9rem; font-weight: 700; transition: color 0.3s; }
 
 .shift-hint { background: rgba(239,68,68,0.9); color: white; font-weight: 800; font-size: 0.85rem; padding: 4px 12px; border-radius: 8px; animation: popIn 0.3s; opacity: 1; visibility: visible; transition: opacity 0.25s ease, visibility 0.25s ease; }
 .shift-hint.hidden { opacity: 0; visibility: hidden; }

@@ -77,12 +77,26 @@ class Word {
     this.shake = 0;
     this.width = 0;
     this.height = 36;
+    // Focus mechanic: 100 at spawn, decays to 0 as the word falls.
+    // Higher focus at completion = higher score multiplier.
+    this.focus = 100;
   }
 
   update(deltaTime) {
     this.y += this.speed * 60 * deltaTime;
     if (this.glow > 0) this.glow -= deltaTime * 3;
     if (this.shake > 0) this.shake -= deltaTime * 5;
+    // Focus decays as the word falls. The groundY is ~220px from bottom;
+    // once y crosses that, the word is "missed" and focus is 0.
+    const groundY = gameState.canvasH - 220;
+    if (groundY > 0) {
+      this.focus = Math.max(0, Math.min(100, 100 * (1 - this.y / groundY)));
+    }
+  }
+
+  /** Multiplier applied to base score on completion. 1.0 at full focus, 0.5 at half. */
+  getScoreMultiplier() {
+    return 0.5 + (this.focus / 100) * 0.5; // 0.5x to 1.0x
   }
 
   draw(ctx) {
@@ -102,9 +116,20 @@ class Word {
       ctx.restore();
     }
 
-    // Background pill
-    ctx.fillStyle = this.isTarget ? 'rgba(52, 211, 153, 0.35)' : 'rgba(139, 92, 246, 0.35)';
-    ctx.strokeStyle = this.isTarget ? COLORS.success : 'rgba(200, 180, 255, 0.8)';
+    // Background pill — color reflects focus (green = high, orange = mid, red = low)
+    // isTarget always wins (green) so the active word stays readable.
+    let pillFill, pillStroke;
+    if (this.isTarget) {
+      pillFill = 'rgba(52, 211, 153, 0.35)';
+      pillStroke = COLORS.success;
+    } else {
+      // Hue shifts: focus 100 -> green (120), focus 50 -> yellow (60), focus 0 -> red (0)
+      const hue = Math.round((this.focus / 100) * 120);
+      pillFill = `hsla(${hue}, 70%, 50%, 0.30)`;
+      pillStroke = `hsla(${hue}, 70%, 70%, 0.8)`;
+    }
+    ctx.fillStyle = pillFill;
+    ctx.strokeStyle = pillStroke;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.roundRect(x - 8, this.y - this.height/2 - 4, this.width + 16, this.height + 8, 16);
@@ -485,15 +510,25 @@ function completeWord() {
   sounds.word();
   spawnParticles(word.x + word.width/2, word.y, 15);
   
-  // Score
+  // Score — base × focus multiplier (0.5x to 1.0x) × (1 + combo/10)
+  const focusMultiplier = word.getScoreMultiplier();
   const baseScore = word.text.length * 10;
+  const focusBonus = Math.round(baseScore * (focusMultiplier - 0.5));
   const comboBonus = gameState.combo * 5;
   const levelBonus = gameState.level * 2;
-  const totalPoints = baseScore + comboBonus + levelBonus;
+  const totalPoints = baseScore + focusBonus + comboBonus + levelBonus;
   gameState.score += totalPoints;
+  gameState.totalFocusBonus = (gameState.totalFocusBonus || 0) + focusBonus;
+  gameState.lastFocus = Math.round(word.focus);
   
-  // Show score popup
+  // Show score popup (with focus indicator if bonus was earned)
   showScorePopup(totalPoints, word.x + word.width/2, word.y);
+  if (focusBonus > 0) {
+    setTimeout(() => showScorePopup(
+      `+${focusBonus} focus`,
+      word.x + word.width/2, word.y - 40
+    ), 200);
+  }
   
   // Show word popup
   showWordPopup(word.text);
@@ -606,6 +641,19 @@ function updateHUD() {
       ? Math.round((gameState.correctKeystrokes / gameState.totalKeystrokes) * 100) 
       : 100;
     accuracyEl.textContent = accuracy + '%';
+  }
+  
+  // Focus mechanic: show the last focus score (the multiplier indicator)
+  const focusScoreEl = document.getElementById('focus-score');
+  if (focusScoreEl) {
+    const lastFocus = gameState.lastFocus;
+    focusScoreEl.textContent = (typeof lastFocus === 'number') ? lastFocus : 100;
+    // Color the focus score green for high, red for low
+    const focusDisplay = document.getElementById('focus-display');
+    if (focusDisplay && typeof lastFocus === 'number') {
+      const hue = Math.round((lastFocus / 100) * 120);
+      focusDisplay.style.color = `hsl(${hue}, 80%, 45%)`;
+    }
   }
   
   updateCombo();
