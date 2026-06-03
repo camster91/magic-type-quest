@@ -108,8 +108,8 @@ function renderRoster(students, isCloud) {
   
   stats.innerHTML = `
     <div class="stat-card"><div class="stat-value">${students.length}</div><div class="stat-label">Students</div></div>
-    <div class="stat-card"><div class="stat-value">${totalStars}</div><div class="stat-label">Total Stars</div></div>
-    <div class="stat-card"><div class="stat-value">${totalWords}</div><div class="stat-label">Words Typed</div></div>
+    <div class="stat-card"><div class="stat-value">${escapeHTML(totalStars)}</div><div class="stat-label">Total Stars</div></div>
+    <div class="stat-card"><div class="stat-value">${escapeHTML(totalWords)}</div><div class="stat-label">Words Typed</div></div>
     <div class="stat-card"><div class="stat-value">${avgLevel.toFixed(1)}</div><div class="stat-label">Avg Level</div></div>
     <div class="stat-card"><div class="stat-value">${activeToday}</div><div class="stat-label">Active Today</div></div>
   `;
@@ -141,9 +141,10 @@ function renderRoster(students, isCloud) {
     const badgeClass = level >= 10 ? 'badge-green' : level >= 5 ? 'badge-yellow' : 'badge-red';
     const avatar = escapeHTML(st.avatar || '🌸');
     const name = escapeHTML(st.name || 'Anonymous');
-    const words = st.total_words ?? st.totalWords ?? 0;
-    const score = st.high_score ?? st.highScore ?? 0;
-    const stars = st.total_stars ?? st.totalStars ?? 0;
+    // Numeric fields from localStorage/Cloud are untrusted and must be escaped
+    const words = escapeHTML(st.total_words ?? st.totalWords ?? 0);
+    const score = escapeHTML(st.high_score ?? st.highScore ?? 0);
+    const stars = escapeHTML(st.total_stars ?? st.totalStars ?? 0);
     
     return `
       <tr>
