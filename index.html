@@ -61,10 +61,19 @@
     </div>
   </div>
 
-  <!-- Secondary: Daily Moment as the 60s quick path. Smaller, no animation. -->
-  <button type="button" id="btn-daily-moment" class="btn-daily-secondary btn-daily-moment" aria-label="Start a 60-second Daily Moment">
-    <span class="btn-icon">⚡</span> 60-second Daily Moment
-  </button>
+  <!-- Secondary: Daily Moment as the 60s quick path. Hidden by default.
+       Surfaces as a streak warning (amber + pulse) when isStreakAtRisk is true:
+       streak >= 2 AND lastDailyMoment > 20h ago. T25. -->
+  <div id="daily-moment-warning" class="daily-moment-warning" hidden>
+    <button type="button" id="btn-daily-moment" class="btn-daily-moment" aria-label="Start a 60-second Daily Moment to keep your streak">
+      <span class="btn-icon">⚡</span>
+      <span class="btn-text">
+        <span class="btn-title">60-second Daily Moment</span>
+        <span class="btn-subtitle" id="btn-daily-moment-subtitle">60s · low stress</span>
+      </span>
+    </button>
+    <span class="btn-streak-count" id="btn-daily-moment-streak" aria-hidden="true"></span>
+  </div>
 
   <!-- SINGLE primary CTA. The biggest, brightest thing on the screen. -->
   <button type="button" id="btn-start" class="btn-cta-primary" aria-label="Start typing to plant flowers">

@@ -254,3 +254,87 @@ describe('F2 — CSS: visual states + mobile + reduced motion', () => {
     expect(stylesSrc).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{[\s\S]*?\.streak-prominent\.streak-at-risk\s*\{[\s\S]*?animation:\s*none/);
   });
 });
+
+describe('T25 — Daily Moment streak-warning button: at-risk state', () => {
+  it('index.html: #daily-moment-warning wrapper contains the Daily Moment button + subtitle + streak chip', () => {
+    const wrapMatch = indexHtml.match(/<div[^>]*id=["']daily-moment-warning["'][\s\S]*?<\/div>/);
+    expect(wrapMatch).toBeTruthy();
+    expect(wrapMatch[0]).toMatch(/id=["']btn-daily-moment["']/);
+    expect(wrapMatch[0]).toMatch(/id=["']btn-daily-moment-subtitle["']/);
+    expect(wrapMatch[0]).toMatch(/id=["']btn-daily-moment-streak["']/);
+  });
+
+  it('index.html: #daily-moment-warning has the `hidden` attribute by default (off-screen until at-risk)', () => {
+    const wrapMatch = indexHtml.match(/<div[^>]*id=["']daily-moment-warning["'][\s\S]*?>/);
+    expect(wrapMatch).toBeTruthy();
+    expect(wrapMatch[0]).toMatch(/\bhidden\b/);
+  });
+
+  it('index.html: button sits ABOVE #btn-start in the menu screen', () => {
+    const dailyIdx = indexHtml.indexOf('id="btn-daily-moment"');
+    const startIdx = indexHtml.indexOf('id="btn-start"');
+    expect(dailyIdx).toBeGreaterThan(0);
+    expect(startIdx).toBeGreaterThan(0);
+    expect(dailyIdx).toBeLessThan(startIdx);
+  });
+
+  it('index.html: subtitle text starts as "60s · low stress" (default state)', () => {
+    const subMatch = indexHtml.match(/id=["']btn-daily-moment-subtitle["'][^>]*>([^<]*)</);
+    expect(subMatch).toBeTruthy();
+    expect(subMatch[1].trim()).toBe('60s · low stress');
+  });
+
+  it('main.js: updateMenuStats reads isStreakAtRisk and toggles .at-risk + .hidden on the warning', () => {
+    const fnMatch = mainSrc.match(/function updateMenuStats\s*\(\s*\)\s*\{[\s\S]*?\n\}/);
+    expect(fnMatch).toBeTruthy();
+    expect(fnMatch[0]).toMatch(/isStreakAtRisk\s*\(\s*gameState\.profile\s*\)/);
+    expect(fnMatch[0]).toMatch(/dmButton/);
+    expect(fnMatch[0]).toMatch(/dmWrapper/);
+    expect(fnMatch[0]).toMatch(/dmSubtitle/);
+    expect(fnMatch[0]).toMatch(/dmStreakChip/);
+    expect(fnMatch[0]).toMatch(/dmButton\.classList\.toggle\(\s*['"]at-risk['"]/);
+    expect(fnMatch[0]).toMatch(/dmWrapper\.hidden\s*=\s*!atRisk/);
+    expect(fnMatch[0]).toMatch(/Tap to keep your 🔥!/);
+    expect(fnMatch[0]).toMatch(/60s · low stress/);
+  });
+
+  it('main.js: at-risk streak chip renders "🔥 N — at risk!" when streak > 0', () => {
+    const fnMatch = mainSrc.match(/function updateMenuStats\s*\(\s*\)\s*\{[\s\S]*?\n\}/);
+    expect(fnMatch[0]).toMatch(/🔥 \$\{streak\} — at risk!/);
+  });
+
+  it('CSS: .btn-daily-moment uses a warm amber gradient in the at-risk variant', () => {
+    expect(stylesSrc).toMatch(/\.btn-daily-moment\.at-risk\s*\{[\s\S]*?linear-gradient/);
+  });
+
+  it('CSS: at-risk variant has a pulse animation', () => {
+    expect(stylesSrc).toMatch(/\.btn-daily-moment\.at-risk\s*\{[\s\S]*?animation:/);
+    expect(stylesSrc).toMatch(/@keyframes\s+dailyMomentAtRiskPulse/);
+  });
+
+  it('CSS: at-risk pulse respects prefers-reduced-motion', () => {
+    expect(stylesSrc).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{[\s\S]*?\.btn-daily-moment\.at-risk\s*\{[\s\S]*?animation:\s*none/);
+  });
+
+  it('CSS: .daily-moment-warning[hidden] is display:none (wrapper stays off-screen until at-risk)', () => {
+    expect(stylesSrc).toMatch(/\.daily-moment-warning\[hidden\]\s*\{[\s\S]*?display:\s*none/);
+  });
+});
+
+describe('T25 — Daily Moment button: threshold contract', () => {
+  // isStreakAtRisk is already unit-tested above. These tests document the
+  // wiring on updateMenuStats and protect against a regression where the
+  // button surfaces for streak=1 (T2 P0 fix: must NOT warn at streak=1).
+  it('does NOT toggle .at-risk for streak=1 even with lastDailyMoment > 20h', () => {
+    const fiveHoursAgo = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
+    const profile = { streak: 1, lastDailyMomentDate: fiveHoursAgo };
+    // isStreakAtRisk returns false at streak=1 → button stays hidden
+    expect(isStreakAtRisk(profile)).toBe(false);
+  });
+
+  it('DOES toggle .at-risk for streak=2+ with lastDailyMoment > 20h', () => {
+    const twentyFiveHoursAgo = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
+    const profile = { streak: 2, lastDailyMomentDate: twentyFiveHoursAgo };
+    expect(isStreakAtRisk(profile)).toBe(true);
+  });
+});

@@ -293,6 +293,18 @@ function updateMenuStats() {
       if (isStreakAtRisk(gameState.profile)) streakCard.classList.add('streak-at-risk');
     }
   }
+  // T25: streak warning on the Daily Moment button. Surfaces only when
+  // isStreakAtRisk is true (streak >= 2 AND last Daily Moment > 20h ago).
+  // Hidden for brand-new players and for kids who already played today.
+  const dmWrapper = document.getElementById('daily-moment-warning');
+  const dmButton = document.getElementById('btn-daily-moment');
+  const dmSubtitle = document.getElementById('btn-daily-moment-subtitle');
+  const dmStreakChip = document.getElementById('btn-daily-moment-streak');
+  const atRisk = isStreakAtRisk(gameState.profile);
+  if (dmWrapper) dmWrapper.hidden = !atRisk;
+  if (dmButton) dmButton.classList.toggle('at-risk', atRisk);
+  if (dmSubtitle) dmSubtitle.textContent = atRisk ? 'Tap to keep your 🔥!' : '60s · low stress';
+  if (dmStreakChip) dmStreakChip.textContent = atRisk && streak > 0 ? `🔥 ${streak} — at risk!` : '';
   const list = document.getElementById('quests-list');
   if (list) {
     list.innerHTML = '';
