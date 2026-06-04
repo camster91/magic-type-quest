@@ -222,6 +222,20 @@ function gameLoop(timestamp) {
   // Clear canvas
   ctx.clearRect(0, 0, gameState.canvasW, gameState.canvasH);
 
+  // T19: in T15 overlay mode, the canvas is a quiet gradient backdrop.
+  // No mushrooms, no forest, no vines, no falling particles. The word
+  // (HTML overlay) and the pet (HTML overlay) are the only focal points.
+  // The canvas still exists for animation continuity but draws nothing
+  // that competes with them.
+  if (typeof window !== 'undefined' && window.__bloomtypeT15Overlay) {
+    drawQuietGradient();
+    updateWords(deltaTime);
+    // No drawWords (overlay), no drawPet (HTML pet), no particles.
+    checkLevelComplete();
+    animationId = requestAnimationFrame(gameLoop);
+    return;
+  }
+
   // Draw garden (parallax background + flowers)
   drawGarden();
 
@@ -240,6 +254,19 @@ function gameLoop(timestamp) {
   checkLevelComplete();
 
   animationId = requestAnimationFrame(gameLoop);
+}
+
+/** T19: flat dark gradient as the gameplay backdrop. The word (HTML) and
+ *  pet (HTML) sit on top; nothing on the canvas competes with them. */
+function drawQuietGradient() {
+  const w = gameState.canvasW;
+  const h = gameState.canvasH;
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, '#1e1b4b');     // --bg-1
+  grad.addColorStop(0.55, '#312e81');  // mid: indigo
+  grad.addColorStop(1, '#0f0a3d');     // deep bottom
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
 }
 
 function updateWords(deltaTime) {

@@ -577,14 +577,14 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 }
 .hud-left, .hud-center, .hud-right { display: flex; align-items: center; gap: 8px; }
 .hud-score, .hud-level {
-  background: var(--card); border: 1px solid var(--card-border);
-  border-radius: 10px; padding: 4px 10px; font-size: 0.85rem; font-weight: 700;
+  display: none; /* T19: strip noise — word + pet are the only focal points */
 }
 .hud-wpm { display: none; }
 .hud-hearts { display: none; }
 .hud-focus { display: none; }
 .hud-combo { color: var(--warning); opacity: 0; transition: opacity 0.3s; }
 .hud-combo.active { opacity: 1; color: var(--accent); border-color: var(--accent-light); }
+.difficulty-badge { display: none; } /* T19: redundant with the word */
 
 /* T15 word-target display — ONE word, large, centered, finger-zone color. */
 .target-word {
@@ -599,7 +599,12 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
   text-align: center;
   pointer-events: none;
   white-space: nowrap;
-  padding: 0 8px;
+  padding: 18px 36px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(30,27,75,0.55) 0%, rgba(49,46,129,0.35) 100%);
+  border: 1px solid rgba(139,92,246,0.25);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 0 60px rgba(139,92,246,0.18);
+  backdrop-filter: blur(6px);
 }
 .target-word .tw-char {
   display: inline-block;
@@ -758,6 +763,36 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .key[data-finger="lm"]::after, .key[data-finger="rm"]::after { background: #EAB308; color: #1e1b4b; }
 .key[data-finger="li"]::after, .key[data-finger="ri"]::after { background: #22C55E; }
 .key.target::after { opacity: 1; transform: translateX(-50%) translateY(-2px); }
+
+/* T19: permanent finger-zone dot on EVERY key that has a data-finger.
+   Sits at the bottom of the key, colored by finger. The home-row anchor
+   keys (F, J) get the largest dot. Visible always — the kid never has to
+   guess which finger a key belongs to. */
+.key[data-finger]::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  transform: translateX(-50%);
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+  pointer-events: none;
+  box-shadow: 0 0 4px currentColor;
+}
+.key[data-finger="lp"]::before, .key[data-finger="rp"]::before { color: #EF4444; }
+.key[data-finger="lr"]::before, .key[data-finger="rr"]::before { color: #F97316; }
+.key[data-finger="lm"]::before, .key[data-finger="rm"]::before { color: #EAB308; }
+.key[data-finger="li"]::before, .key[data-finger="ri"]::before { color: #22C55E; }
+/* F and J — home row anchors — get a larger, more prominent dot */
+.key[data-key="f"]::before, .key[data-key="j"]::before {
+  width: 7px; height: 7px;
+  opacity: 0.85;
+  bottom: 4px;
+  box-shadow: 0 0 6px currentColor;
+}
+/* Keys without data-finger (just SPACE) get nothing */
 @keyframes keyPulse { 0%,100%{transform:scale(1.05)} 50%{transform:scale(1.18)} }
 @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)} }
 
@@ -851,8 +886,15 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .btn-daily-moment { display: none; }
 
 /* ===== PET CONTAINER (game screen) ===== */
-.pet-container { position: fixed; bottom: 175px; left: 60px; z-index: var(--z-pet); text-align: center; }
-.pet-wrap { width: 90px; height: 90px; border-radius: 50%; overflow: hidden; background: linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 100%); box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 0 20px rgba(30,27,75,0.8); display: inline-block; animation: petBreathe 3s ease-in-out infinite; }
+.pet-container { position: fixed; bottom: 175px; left: 32px; z-index: var(--z-pet); text-align: center; }
+.pet-wrap {
+  width: 110px; height: 110px; border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 100%);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.45), 0 0 32px rgba(139,92,246,0.35), inset 0 0 20px rgba(30,27,75,0.8);
+  display: inline-block;
+  animation: petBreathe 3s ease-in-out infinite;
+}
 .pet-face { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.2s; }
 .pet-face.bounce { animation: petBounce 0.4s; }
 .pet-face.shake { animation: petShake 0.3s; }
