@@ -3,7 +3,7 @@
  */
 import { LESSON_LEVELS, getLessonByLevel, getFingerHint, getLessonWordsForPractice, isLevelUnlocked } from './lessonLevels.js';
 import { gameState, loadProfile, saveProfile } from './state.js';
-import { init as initEngine, startGame, togglePause, showScreen, showKeyFeedback, highlightTargetKey, startDrillMode } from './gameEngine.js';
+import { init as initEngine, startGame, togglePause, showScreen, showKeyFeedback, highlightTargetKey, startDrillMode, startDailyMoment } from './gameEngine.js';
 import { MENU_TAGLINES, say, PET_NAME_DEFAULT } from './story.js';
 import { getAchievementStats, getAllAchievements } from './achievements.js';
 import { getTodaysQuests, getQuestCompletion } from './quests.js';
@@ -407,6 +407,10 @@ function loadGardenScreen() {
 // ===== EVENT BINDINGS =====
 function bindEvents() {
   // Menu
+  $('btn-daily-moment')?.addEventListener('click', () => {
+    startDailyMoment();
+  });
+
   $('btn-start')?.addEventListener('click', () => {
     const tutorialSeen = gameState.profile?.tutorialSeen;
     if (!tutorialSeen) {
@@ -553,6 +557,10 @@ function init() {
   bindEvents();
   initEngine();
   updateMenuStats();
+  // F1: let gameEngine's endDailyMoment refresh the menu's stats
+  // (streak counter, lastDailyMomentDate label, quest progress) without
+  // having to import updateMenuStats from this module.
+  window.__refreshMenuStats = updateMenuStats;
 }
 
 init();

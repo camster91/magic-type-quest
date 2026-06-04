@@ -45,8 +45,12 @@ button:active { transform: scale(0.97); }
 button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { outline: 2px solid var(--primary-light); outline-offset: 2px; }
 
 /* ===== SCREENS ===== */
-.screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; visibility: hidden; pointer-events: none; transform: scale(0.96) translateY(12px); transition: opacity 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1), visibility 0.35s; z-index: 0; }
+.screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; visibility: hidden; pointer-events: none; transform: scale(0.96) translateY(12px); transition: opacity 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1), visibility 0.35s; z-index: 0; overflow-y: auto; }
 .screen.active { opacity: 1; visibility: visible; pointer-events: auto; transform: scale(1) translateY(0); z-index: 1; }
+/* F1: when the menu content exceeds the viewport, fall back to top-aligned scroll */
+@media (max-height: 720px) {
+  .screen { justify-content: flex-start; padding: 16px 0; }
+}
 
 /* ===== BACKGROUNDS ===== */
 .menu-bg {
@@ -124,6 +128,42 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 
 .menu-buttons { display: flex; flex-direction: column; gap: 12px; width: 280px; margin-bottom: 2rem; }
 .menu-buttons .btn { width: 100%; text-align: center; padding: 14px 24px; font-size: 1.05rem; }
+
+/* ===== DAILY MOMENT (F1) — top-of-menu entry point ===== */
+.btn-daily-moment {
+  background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 60%, #EC4899 100%);
+  color: #1E1B4B;
+  font-weight: 800;
+  font-size: 1.1rem;
+  padding: 14px 24px;
+  border: 2px solid rgba(255,255,255,0.55);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(251, 191, 36, 0.35);
+  animation: dailyMomentPulse 2.4s ease-in-out infinite;
+  position: relative;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.btn-daily-moment:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(236, 72, 153, 0.45);
+}
+.btn-daily-moment:active { transform: scale(0.98); }
+.btn-daily-moment .btn-daily-moment-sub {
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.8;
+  margin-left: 6px;
+  letter-spacing: 0.02em;
+}
+@keyframes dailyMomentPulse {
+  0%, 100% { box-shadow: 0 6px 20px rgba(251, 191, 36, 0.35); }
+  50%      { box-shadow: 0 6px 28px rgba(236, 72, 153, 0.55); }
+}
 
 @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.02)} }
 

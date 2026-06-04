@@ -551,6 +551,13 @@ function completeWord() {
   } else {
     showPetReaction('happy');
   }
+
+  // F1 Daily Moment: end the session if wordsTarget is hit
+  if (gameState.dailyMoment?.active &&
+      gameState.wordsCompleted >= (gameState.dailyMoment.wordsTarget || 12)) {
+    // defer to the next tick so this completeWord() finishes cleanly
+    setTimeout(() => endDailyMoment({ reason: 'wordsTarget' }), 0);
+  }
   
   // Plant flower in garden (session + persistent)
   const types = ['flower', 'sunflower', 'daisy', 'tulip', 'rose'];
@@ -605,6 +612,19 @@ function skipWord() {
 }
 
 function loseHealth() {
+  // F1 Daily Moment: no game-over, no health loss. Words just disappear.
+  if (gameState.dailyMoment?.active) {
+    if (gameState.targetWord) {
+      const idx = gameState.activeWords.indexOf(gameState.targetWord);
+      if (idx >= 0) gameState.activeWords.splice(idx, 1);
+      gameState.targetWord = null;
+      gameState.targetIndex = 0;
+      updateTargetDisplay();
+      updateKeyboardHighlight();
+    }
+    return;
+  }
+
   gameState.health--;
   gameState.combo = 0;
   sounds.heart();
@@ -612,7 +632,7 @@ function loseHealth() {
   showPetReaction('hurt');
   updateHearts();
   updateCombo();
-  
+
   if (gameState.health <= 0) {
     gameOver();
   }
@@ -1433,11 +1453,188 @@ function spawnConfetti(x, y, count) {
   }
 }
 
+// ===== DAILY MOMENT (F1) =====
+// Soft 60s typing session. No game-over, no hearts, no level score — just
+// streak/quest progress and a gentle "session complete" landing. Reuses
+// the existing game engine: words fall, focus mechanic, completeWord.
+let dailyMomentTimerId = null;
+let dailyMomentCountdownId = null;
+
+export function startDailyMoment() {
+  initAudio();
+  playAmbient();
+
+  // Use the player's current level (or level 1 if they've never played)
+  const level = (gameState.profile?.completedLevels?.length
+    ? Math.max(1, ...gameState.profile.completedLevels)
+    : 1);
+  const lesson = getLessonByLevel(level);
+
+  // Reset the same fields startGame resets, but with a daily-moment flag.
+  gameState.screen = 'game';
+  gameState.level = level;
+  gameState.score = 0;
+  gameState.combo = 0;
+  gameState.maxCombo = 0;
+  gameState.wordsTyped = 0;
+  gameState.wordsCompleted = 0;
+  gameState.wordsSpawned = 0;
+  gameState.totalKeystrokes = 0;
+  gameState.correctKeystrokes = 0;
+  gameState.health = 999; // sentinel: never drain to 0 during daily moment
+  gameState.activeWords = [];
+  gameState.targetWord = null;
+  gameState.targetIndex = 0;
+  gameState.gameOver = false;
+  gameState.paused = false;
+  gameState.lastSpawn = 0;
+  gameState.lastFrameTime = 0;
+  gameState.garden = [];
+  gameState.levelStartTime = performance.now();
+  gameState.keyAccuracy = {};
+  gameState.levelWPM = 0;
+  gameState.levelAccuracy = 0;
+  gameState.levelComplete = false;
+  gameState.skipsUsed = 0;
+  gameState.adaptiveSpeed = 1.0;
+  gameState.lastAdaptiveCheck = 0;
+
+  // Activate daily-moment mode (consulted by loseHealth + completeWord)
+  gameState.dailyMoment = {
+    active: true,
+    startTime: performance.now(),
+    durationMs: 60_000,
+    wordsTarget: 12,
+    lessonSpeed: lesson?.speed || 0.4,
+    lessonWords: (lesson?.words || []).slice(),
+  };
+  achievementQueue = [];
+  achievementShowing = false;
+
+  // Show game screen
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('game-screen').classList.add('active');
+
+  // Show a soft chapter-style intro card (no level badge)
+  const chapterOverlay = document.getElementById('chapter-intro');
+  if (chapterOverlay) {
+    const titleEl = chapterOverlay.querySelector('.chapter-title');
+    const subtitleEl = chapterOverlay.querySelector('.chapter-subtitle');
+    const introEl = chapterOverlay.querySelector('.chapter-intro-text');
+    const petLineEl = chapterOverlay.querySelector('.chapter-pet-line');
+    if (titleEl) titleEl.textContent = 'Daily Moment';
+    if (subtitleEl) subtitleEl.textContent = '60 seconds of focused typing';
+    if (introEl) introEl.textContent = 'No pressure. Type what you can. We will cheer you on!';
+    if (petLineEl) petLineEl.textContent = '"I will be right here with you." — Bloom';
+    chapterOverlay.classList.remove('hidden');
+    const dismiss = () => chapterOverlay.classList.add('hidden');
+    setTimeout(dismiss, 3500);
+    chapterOverlay.addEventListener('click', dismiss, { once: true });
+  }
+
+  resizeCanvas();
+  setPetImage();
+  preloadImages();
+  spawnWord();
+  updateHUD();
+  updateHearts();
+  updateTargetDisplay();
+  updateLessonInfo();
+
+  // Hide level-complete / gameover overlays if they were open
+  document.getElementById('level-overlay')?.classList.add('hidden');
+  document.getElementById('gameover-overlay')?.classList.add('hidden');
+
+  // Replace the level badge with a soft "Daily Moment" label
+  const badge = document.getElementById('difficulty-badge');
+  if (badge) badge.textContent = '⚡ Daily Moment';
+
+  animationId = requestAnimationFrame(gameLoop);
+
+  // Mobile input for soft keyboard (same as startGame)
+  const mobileInput = document.getElementById('mobile-input');
+  if (mobileInput && ('ontouchstart' in window || navigator.maxTouchPoints > 0)) {
+    mobileInput.focus();
+  }
+
+  // End the session after the duration, regardless of progress
+  if (dailyMomentTimerId) clearTimeout(dailyMomentTimerId);
+  dailyMomentTimerId = setTimeout(() => endDailyMoment({ reason: 'timeUp' }), 60_000);
+
+  // Tick the HUD countdown once per second
+  if (dailyMomentCountdownId) clearInterval(dailyMomentCountdownId);
+  dailyMomentCountdownId = setInterval(updateDailyMomentHUD, 250);
+  updateDailyMomentHUD();
+}
+
+function updateDailyMomentHUD() {
+  if (!gameState.dailyMoment?.active) return;
+  const elapsed = performance.now() - gameState.dailyMoment.startTime;
+  const remaining = Math.max(0, gameState.dailyMoment.durationMs - elapsed);
+  const seconds = Math.ceil(remaining / 1000);
+  const wpmEl = document.getElementById('wpm');
+  // Reuse the WPM slot to show time + words so we don't add new HUD chrome
+  if (wpmEl) wpmEl.textContent = `${seconds}s · ${gameState.wordsCompleted}/${gameState.dailyMoment.wordsTarget}`;
+}
+
+export function endDailyMoment({ reason } = {}) {
+  if (!gameState.dailyMoment?.active) return;
+
+  // Clear timers
+  if (dailyMomentTimerId) { clearTimeout(dailyMomentTimerId); dailyMomentTimerId = null; }
+  if (dailyMomentCountdownId) { clearInterval(dailyMomentCountdownId); dailyMomentCountdownId = null; }
+
+  // Capture stats
+  const wordsCompleted = gameState.wordsCompleted;
+  const elapsedMs = performance.now() - (gameState.dailyMoment.startTime || performance.now());
+  const elapsedMin = Math.max(elapsedMs / 60_000, 1 / 60);
+  const wpm = Math.round((gameState.correctKeystrokes / 5) / elapsedMin);
+  const accuracy = gameState.totalKeystrokes > 0
+    ? Math.round((gameState.correctKeystrokes / gameState.totalKeystrokes) * 100)
+    : 100;
+
+  // Persist + bump streak if today
+  gameState.profile.lastDailyMomentDate = new Date().toISOString();
+  // Bump daily-quest progress for the type_words quest (if it exists)
+  try {
+    evaluateQuests(gameState.profile, { ...gameState, screen: 'game', level: gameState.level });
+  } catch {}
+  saveProfile();
+
+  // Soft landing: stop the loop, route back to menu, show a toast
+  cancelAnimationFrame(animationId);
+  stopAmbient();
+  gameState.dailyMoment.active = false;
+  gameState.gameOver = true; // suppress the normal level/gameover overlays
+
+  // Hide the chapter intro if it was still up
+  document.getElementById('chapter-intro')?.classList.add('hidden');
+
+  // Toast: "Daily Moment complete — N words, X% accuracy!"
+  const toast = document.getElementById('achievement-toast');
+  if (toast) {
+    document.getElementById('toast-icon').textContent = '⚡';
+    document.getElementById('toast-title').textContent = 'Daily Moment complete!';
+    document.getElementById('toast-desc').textContent =
+      `${wordsCompleted} word${wordsCompleted === 1 ? '' : 's'} · ${wpm} WPM · ${accuracy}% accuracy`;
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), 4000);
+  }
+
+  // Play a gentle completion sound (reuse "word" arpeggio at lower gain)
+  sounds.word();
+
+  // Return to menu
+  showScreen('menu');
+  // The menu's updateMenuStats is in main.js; use a global tick if available
+  if (typeof window.__refreshMenuStats === 'function') window.__refreshMenuStats();
+}
+
 // ===== START GAME =====
 export function startGame(level = 1) {
   initAudio();
   playAmbient();
-  
+
   const lesson = getLessonByLevel(level);
   
   gameState.screen = 'game';
