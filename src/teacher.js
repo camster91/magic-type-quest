@@ -85,7 +85,7 @@ function getAllLocalStudents() {
   return students.sort((a, b) => (b.totalStars || 0) - (a.totalStars || 0));
 }
 
-function renderRoster(students, isCloud) {
+export function renderRoster(students, isCloud) {
   const tbody = $('student-body');
   const stats = $('stats-grid');
   const empty = $('empty-state');
@@ -93,9 +93,9 @@ function renderRoster(students, isCloud) {
   
   empty.classList.add('hidden');
   
-  // Stats
-  const totalStars = students.reduce((s, st) => s + (st.total_stars ?? st.totalStars ?? 0), 0);
-  const totalWords = students.reduce((s, st) => s + (st.total_words ?? st.totalWords ?? 0), 0);
+  // Stats - sanitize inputs if they come from untrusted JSON
+  const totalStars = students.reduce((s, st) => s + (Number(st.total_stars ?? st.totalStars) || 0), 0);
+  const totalWords = students.reduce((s, st) => s + (Number(st.total_words ?? st.totalWords) || 0), 0);
   const avgLevel = students.reduce((s, st) => {
     const cl = st.completed_levels ?? st.completedLevels ?? [];
     return s + (Array.isArray(cl) ? cl.length : 0);
@@ -107,11 +107,11 @@ function renderRoster(students, isCloud) {
   }).length;
   
   stats.innerHTML = `
-    <div class="stat-card"><div class="stat-value">${students.length}</div><div class="stat-label">Students</div></div>
-    <div class="stat-card"><div class="stat-value">${totalStars}</div><div class="stat-label">Total Stars</div></div>
-    <div class="stat-card"><div class="stat-value">${totalWords}</div><div class="stat-label">Words Typed</div></div>
-    <div class="stat-card"><div class="stat-value">${avgLevel.toFixed(1)}</div><div class="stat-label">Avg Level</div></div>
-    <div class="stat-card"><div class="stat-value">${activeToday}</div><div class="stat-label">Active Today</div></div>
+    <div class="stat-card"><div class="stat-value">${escapeHTML(students.length)}</div><div class="stat-label">Students</div></div>
+    <div class="stat-card"><div class="stat-value">${escapeHTML(totalStars)}</div><div class="stat-label">Total Stars</div></div>
+    <div class="stat-card"><div class="stat-value">${escapeHTML(totalWords)}</div><div class="stat-label">Words Typed</div></div>
+    <div class="stat-card"><div class="stat-value">${escapeHTML(avgLevel.toFixed(1))}</div><div class="stat-label">Avg Level</div></div>
+    <div class="stat-card"><div class="stat-value">${escapeHTML(activeToday)}</div><div class="stat-label">Active Today</div></div>
   `;
   
   // Red-flag alerts
@@ -141,14 +141,14 @@ function renderRoster(students, isCloud) {
     const badgeClass = level >= 10 ? 'badge-green' : level >= 5 ? 'badge-yellow' : 'badge-red';
     const avatar = escapeHTML(st.avatar || '🌸');
     const name = escapeHTML(st.name || 'Anonymous');
-    const words = st.total_words ?? st.totalWords ?? 0;
-    const score = st.high_score ?? st.highScore ?? 0;
-    const stars = st.total_stars ?? st.totalStars ?? 0;
+    const words = escapeHTML(st.total_words ?? st.totalWords ?? 0);
+    const score = escapeHTML(st.high_score ?? st.highScore ?? 0);
+    const stars = escapeHTML(st.total_stars ?? st.totalStars ?? 0);
     
     return `
       <tr>
         <td><span class="student-avatar">${avatar}</span> <strong>${name}</strong></td>
-        <td>Level ${level}</td>
+        <td>Level ${escapeHTML(level)}</td>
         <td>${words}</td>
         <td>${score}</td>
         <td>${stars} ⭐</td>
