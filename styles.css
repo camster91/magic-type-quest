@@ -495,7 +495,9 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
   text-align: center; transition: all 0.2s;
   position: relative; overflow: hidden;
   display: flex; flex-direction: column; align-items: center; gap: 6px;
-  min-height: 130px;
+  /* T28: tall enough to fit art (64) + title (1) + 2-line sub (1.82em) + unlock hint.
+     Was 130px — too tight when the unlock hint was added; hint got clipped. */
+  min-height: 156px;
 }
 .level-card.play { cursor: pointer; }
 .level-card.play:hover { transform: translateY(-3px); border-color: var(--primary-light); box-shadow: 0 6px 18px rgba(139,92,246,0.25); }
