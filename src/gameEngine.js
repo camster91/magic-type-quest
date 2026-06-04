@@ -124,6 +124,25 @@ class Word {
       const typedWidth = ctx.measureText(typedText).width;
       ctx.fillStyle = COLORS.success;
       ctx.fillRect(x + 10, this.y + 12, typedWidth, 5);
+
+      // Pulse for active character
+      if (this.isTarget && this.matched < this.text.length) {
+        const char = this.text[this.matched];
+        const charWidth = ctx.measureText(char).width;
+        const pulse = (Math.sin(performance.now() / 150) + 1) / 2;
+        ctx.globalAlpha = 0.3 + pulse * 0.7;
+        ctx.fillRect(x + 10 + typedWidth, this.y + 12, charWidth, 5);
+        ctx.globalAlpha = 1.0;
+      }
+    } else if (this.isTarget && this.text.length > 0) {
+      // Pulse first character if none matched yet
+      const char = this.text[0];
+      const charWidth = ctx.measureText(char).width;
+      const pulse = (Math.sin(performance.now() / 150) + 1) / 2;
+      ctx.fillStyle = COLORS.success;
+      ctx.globalAlpha = 0.3 + pulse * 0.7;
+      ctx.fillRect(x + 10, this.y + 12, charWidth, 5);
+      ctx.globalAlpha = 1.0;
     }
 
     // Target indicator arrow
@@ -645,12 +664,15 @@ function updateHearts() {
 
 function updateProgressBar() {
   const fillEl = document.getElementById('level-progress-fill');
+  const wrapEl = document.getElementById('level-progress-wrap');
   if (!fillEl) return;
   const lesson = currentLesson();
   const pct = lesson.wordsPerLevel > 0 
     ? (gameState.wordsCompleted / lesson.wordsPerLevel) * 100 
     : 0;
-  fillEl.style.width = Math.min(pct, 100) + '%';
+  const finalPct = Math.min(pct, 100);
+  fillEl.style.width = finalPct + '%';
+  if (wrapEl) wrapEl.setAttribute('aria-valuenow', Math.round(finalPct));
 }
 
 function updateTargetDisplay() {
