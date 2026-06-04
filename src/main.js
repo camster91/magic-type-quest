@@ -14,6 +14,11 @@ import { escapeHTML } from './utils.js';
 
 const $ = (id) => document.getElementById(id);
 
+// ===== T15: one-word-centered pedagogy mode =====
+// When this flag is on, gameplay uses the HTML .target-word overlay
+// instead of canvas-falling words. No timer, no lives, no falling.
+window.__bloomtypeT15Overlay = true;
+
 // ===== PRACTICE MODE =====
 let practiceLesson = null;
 let currentPracticeWord = '';
@@ -214,14 +219,16 @@ function renderLevelCards() {
     const done = completed.includes(lev.id);
     const status = done ? 'completed' : !unlocked ? 'locked' : 'play';
     const imgName = levelImages[lev.id] || 'home-row.png';
+    // T15: build a "what this teaches" 1-line subtitle from the description.
+    const teaches = (lev.description || lev.subtitle || '').split(/[!?.]/)[0].trim();
+    const shortTeaches = teaches.length > 60 ? teaches.slice(0, 58) + '…' : teaches;
     
     return `
-      <button type="button" class="level-card ${status}" data-level="${lev.id}" ${status === 'locked' ? 'disabled' : ''} aria-label="${lev.name}: ${lev.subtitle}">
+      <button type="button" class="level-card ${status}" data-level="${lev.id}" ${status === 'locked' ? 'disabled' : ''} aria-label="${lev.name}: ${shortTeaches}">
         <img class="level-card-img" src="/assets/levels/${imgName}" alt="" aria-hidden="true"
              onerror="this.style.display='none'">
         <div class="level-card-name">${lev.name}</div>
-        <div class="level-card-sub">${lev.subtitle}</div>
-        <div class="level-card-meta">${lev.estimatedTime}</div>
+        <div class="level-card-sub">${shortTeaches}</div>
         ${status === 'locked' ? '<div class="level-lock" aria-hidden="true">🔒</div>' : ''}
         ${done ? '<div class="level-check" aria-hidden="true">✅</div>' : ''}
       </button>
@@ -242,6 +249,14 @@ function updateMenuStats() {
   $('menu-stars') && ($('menu-stars').textContent = gameState.profile?.totalStars || 0);
   $('menu-best') && ($('menu-best').textContent = gameState.profile?.highScore || 0);
   $('menu-words') && ($('menu-words').textContent = gameState.profile?.totalWords || 0);
+  // T17: hide the bottom stats row when all values are 0 — a brand-new
+  // player shouldn't see three zeroes under a "Type to plant" button.
+  // The stats reappear as soon as the kid has any progress.
+  const totalStats = (gameState.profile?.totalStars || 0)
+                   + (gameState.profile?.highScore || 0)
+                   + (gameState.profile?.totalWords || 0);
+  const menuBottom = document.querySelector('#menu-screen .menu-bottom');
+  if (menuBottom) menuBottom.classList.toggle('menu-bottom-empty', totalStats === 0);
   // Rotate tagline
   const tagline = document.querySelector('.tagline');
   if (tagline && MENU_TAGLINES.length > 0) {
@@ -283,12 +298,98 @@ function updateMenuStats() {
       list.appendChild(item);
     }
   }
+  // T17: daily-quests panel is intentionally hidden on the home screen.
+  // The streak-prominent chip + .progress-card are the only quest
+  // surfaces — one primary action, one focal point. The panel still
+  // renders its DOM and gets updated so it's ready for any future
+  // re-introduction (e.g. a dedicated quests screen), but it does not
+  // appear on the home.
   const container = document.getElementById('daily-quests');
-  if (container) container.style.display = quests.length > 0 ? 'block' : 'none';
+  if (container) container.style.display = 'none';
 
   // F3: pet hero on the home screen. Runs after streak/quest state above so
   // the at-risk and post-Daily-Moment signals are already known.
   updateHomePet();
+
+  // T15: progress card on the home screen (level, next-up, mini-keyboard).
+  updateHomeProgressCard();
+}
+
+// ===== T15: HOME PROGRESS CARD =====
+// Populates the level badge, "next up" preview, progress fill, and the
+// mini-keyboard that highlights mastered keys. Drives off profile state.
+const HOME_ROW_KEYS = ['a','s','d','f','g','h','j','k','l'];
+const TOP_ROW_KEYS = ['q','w','e','r','t','y','u','i','o','p'];
+const BOTTOM_ROW_KEYS = ['z','x','c','v','b','n','m'];
+const LEVEL_INFO = [
+  { id: 1, name: 'Home Row',   keys: HOME_ROW_KEYS },
+  { id: 2, name: 'Top Row',    keys: TOP_ROW_KEYS },
+  { id: 3, name: 'Bottom Row', keys: BOTTOM_ROW_KEYS },
+  { id: 4, name: 'All Letters', keys: [...HOME_ROW_KEYS, ...TOP_ROW_KEYS, ...BOTTOM_ROW_KEYS] },
+  { id: 5, name: 'Capitals',   keys: null },
+  { id: 6, name: 'Numbers',    keys: null },
+];
+
+function getCurrentLevelInfo() {
+  const completed = gameState.profile?.completedLevels || [];
+  let current = 1;
+  for (const lv of [1,2,3,4,5,6]) {
+    if (completed.includes(lv)) current = lv + 1;
+  }
+  if (current > 6) current = 6;
+  return LEVEL_INFO.find(l => l.id === current) || LEVEL_INFO[0];
+}
+
+function updateHomeProgressCard() {
+  const badge = document.getElementById('menu-level-badge');
+  const next = document.getElementById('menu-level-next');
+  const fill = document.getElementById('menu-level-fill');
+  const mini = document.getElementById('menu-keyboard-mini');
+  if (!badge || !mini) return;
+
+  const level = getCurrentLevelInfo();
+  const completed = gameState.profile?.completedLevels || [];
+  const isComplete = completed.includes(level.id);
+  const masteredSet = new Set();
+  // Everything in levels 1..level.id-1 is mastered
+  for (let i = 1; i < level.id; i++) {
+    const prev = LEVEL_INFO.find(l => l.id === i);
+    if (prev?.keys) for (const k of prev.keys) masteredSet.add(k);
+  }
+
+  badge.textContent = `Level ${level.id} · ${level.name}`;
+  if (next) {
+    if (isComplete) {
+      next.textContent = `Level ${level.id} cleared — try the next!`;
+    } else if (level.id >= 5) {
+      next.textContent = `Keep going to become a Typing Master!`;
+    } else {
+      next.textContent = `Master the ${level.name.toLowerCase()} to unlock Lv ${level.id + 1}`;
+    }
+  }
+  if (fill) {
+    // Progress: % of completed levels out of 6
+    const pct = (completed.length / 6) * 100;
+    fill.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+  }
+
+  // Mini-keyboard: show the active level's keys (or all if no specific keys)
+  mini.innerHTML = '';
+  const keys = level.keys || (isComplete ? [] : [...HOME_ROW_KEYS, ...TOP_ROW_KEYS, ...BOTTOM_ROW_KEYS]);
+  for (const k of keys) {
+    const span = document.createElement('span');
+    span.className = 'km-key' + (masteredSet.has(k) ? ' mastered' : ' learning');
+    span.textContent = k.toUpperCase();
+    span.setAttribute('aria-label', k.toUpperCase() + (masteredSet.has(k) ? ' mastered' : ' learning'));
+    mini.appendChild(span);
+  }
+  if (keys.length === 0) {
+    const span = document.createElement('span');
+    span.className = 'km-key';
+    span.style.cssText = 'width:auto;padding:2px 8px;font-size:0.7rem';
+    span.textContent = '🏆 All levels cleared!';
+    mini.appendChild(span);
+  }
 }
 
 // ===== F3: HOME PET HERO =====

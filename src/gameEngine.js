@@ -83,6 +83,16 @@ class Word {
   }
 
   update(deltaTime) {
+    // T15: in overlay mode, the word doesn't fall — it sits centered
+    // while the kid types. No timer pressure, no missed-word penalty.
+    if (typeof window !== 'undefined' && window.__bloomtypeT15Overlay) {
+      // Park the word above the canvas so its isAtBottom() never fires
+      this.y = -200;
+      this.speed = 0;
+      if (this.glow > 0) this.glow -= deltaTime * 3;
+      if (this.shake > 0) this.shake -= deltaTime * 5;
+      return;
+    }
     this.y += this.speed * 60 * deltaTime;
     if (this.glow > 0) this.glow -= deltaTime * 3;
     if (this.shake > 0) this.shake -= deltaTime * 5;
@@ -100,6 +110,12 @@ class Word {
   }
 
   draw(ctx) {
+    // T15: in overlay mode, the HTML .target-word shows the current word.
+    // The canvas still tracks the word for game logic (completion, focus,
+    // pet reactions) but we don't paint it on the canvas.
+    if (typeof window !== 'undefined' && window.__bloomtypeT15Overlay) {
+      return;
+    }
     const shakeX = this.shake > 0 ? (Math.random() - 0.5) * 6 : 0;
     const x = this.x + shakeX;
     
@@ -227,12 +243,13 @@ function gameLoop(timestamp) {
 }
 
 function updateWords(deltaTime) {
-  // Spawn new words
+  // Spawn new words — T15: cap at 1 active word for the "one word at a time" pedagogy.
   const lesson = currentLesson();
   const now = performance.now();
   const adaptiveSpawnRate = lesson.spawnRate / gameState.adaptiveSpeed;
-  
-  if (gameState.wordsSpawned < lesson.wordsPerLevel && 
+
+  if (gameState.activeWords.length < 1 &&
+      gameState.wordsSpawned < lesson.wordsPerLevel &&
       now - gameState.lastSpawn > adaptiveSpawnRate) {
     spawnWord();
     gameState.lastSpawn = now;
@@ -724,20 +741,51 @@ function updateProgressBar() {
 function updateTargetDisplay() {
   const targetWord = document.getElementById('target-word');
   const targetTyped = document.getElementById('target-typed');
-  
-  if (!targetWord || !targetTyped) return;
-  
+  const fingerHint = document.getElementById('finger-hint');
+  const fingerHintText = document.getElementById('finger-hint-text');
+  const fingerHintArrow = document.getElementById('finger-hint-arrow');
+
+  if (!targetWord) return;
+
   if (gameState.targetWord) {
-    targetWord.textContent = gameState.targetWord.text;
-    targetTyped.textContent = gameState.targetWord.text.slice(0, gameState.targetIndex);
+    // T15: render the word as spans with per-character state (typed/next/finger-zone)
+    const word = gameState.targetWord.text || '';
+    const typed = gameState.targetIndex || 0;
+    const lower = word.toLowerCase();
+    let html = '';
+    for (let i = 0; i < word.length; i++) {
+      const ch = word[i];
+      const lowerCh = lower[i];
+      const isTyped = i < typed;
+      const isNext = i === typed;
+      // Finger zone: left if a/s/d/f/g/q/w/e/r/t/z/x/c/v/b, right otherwise
+      const isLeft = 'asdfgqwertzxcvb'.includes(lowerCh);
+      const zoneClass = isNext ? (isLeft ? 'finger-left' : 'finger-right') : '';
+      const stateClass = isTyped ? 'typed' : (isNext ? 'next' : '');
+      html += `<span class="tw-char ${stateClass} ${zoneClass}">${ch}</span>`;
+    }
+    targetWord.innerHTML = html;
+
+    if (targetTyped) targetTyped.textContent = word.slice(0, typed);
+
+    // Finger hint under the word
+    if (fingerHint && fingerHintText) {
+      const nextCh = lower[typed];
+      const isLeft = 'asdfgqwertzxcvb'.includes(nextCh);
+      if (nextCh) {
+        const hint = getFingerHint(nextCh);
+        const label = hint ? hint.label : (isLeft ? 'left hand' : 'right hand');
+        fingerHintText.textContent = `Use your ${label}`;
+        if (fingerHintArrow) fingerHintArrow.textContent = isLeft ? '👈' : '👉';
+        fingerHint.classList.remove('hidden');
+      } else {
+        fingerHint.classList.add('hidden');
+      }
+    }
   } else {
-    // Force clear both elements
-    targetWord.innerHTML = '\u00A0';
-    targetTyped.innerHTML = '\u00A0';
-    requestAnimationFrame(() => {
-      targetWord.innerHTML = '';
-      targetTyped.innerHTML = '';
-    });
+    targetWord.innerHTML = '';
+    if (targetTyped) targetTyped.textContent = '';
+    if (fingerHint) fingerHint.classList.add('hidden');
   }
 }
 

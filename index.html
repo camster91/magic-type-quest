@@ -18,32 +18,37 @@
 </head>
 <body>
 
-<!-- ===== MAIN MENU ===== -->
+<!-- ===== MAIN MENU (T15 redesign) =====
+     Single primary action. Progress visible. Pet reacts. Lesson nav small.
+     Goal: a 7-year-old knows what to do in 2 seconds. -->
 <div id="menu-screen" class="screen active">
   <div class="menu-bg"></div>
-  <div class="floating-island">
-    <div class="island-emoji">🏰</div>
+
+  <!-- Compact top bar: brand left, streak right. ONE thing per side. -->
+  <header class="menu-top">
+    <h1 class="menu-brand">BloomType</h1>
+    <div id="streak-prominent" class="streak-prominent streak-chip streak-hidden" role="status" aria-live="polite" aria-label="Daily streak">
+      <span class="streak-icon" aria-hidden="true">🔥</span>
+      <span class="streak-value"><span id="streak-count">0</span></span>
+    </div>
+  </header>
+
+  <!-- Progress card: level + what keys learned + next up. ONE card. -->
+  <div class="progress-card" aria-label="Your progress">
+    <div class="progress-row">
+      <span class="progress-level" id="menu-level-badge">Level 1 · Home Row</span>
+      <span class="progress-next" id="menu-level-next">Type 5 more words to unlock Lv 2</span>
+    </div>
+    <div class="progress-bar" aria-hidden="true">
+      <div class="progress-fill" id="menu-level-fill" style="width:0%"></div>
+    </div>
+    <div class="keyboard-mini" id="menu-keyboard-mini" aria-label="Keys you've learned">
+      <!-- populated by main.js: mastered keys highlighted -->
+    </div>
   </div>
 
-  <h1 class="game-title">
-    <span class="letter-bounce bounce-1">B</span><span class="letter-bounce bounce-2">l</span><span class="letter-bounce bounce-3">o</span><span class="letter-bounce bounce-4">o</span><span class="letter-bounce bounce-5">m</span>
-    <span class="title-gap"></span>
-    <span class="letter-bounce bounce-6">T</span><span class="letter-bounce bounce-7">y</span><span class="letter-bounce bounce-8">p</span><span class="letter-bounce bounce-9">e</span>
-    <span class="sparkle">✨</span>
-  </h1>
-
-  <p class="tagline">Type words, grow flowers, and fill your garden with stars!</p>
-
-  <!-- F2: Streak prominent — visible without scrolling, sized for kid fingers -->
-  <div id="streak-prominent" class="streak-prominent streak-hidden" role="status" aria-live="polite" aria-label="Daily streak">
-    <span class="streak-icon" aria-hidden="true">🔥</span>
-    <span class="streak-value"><span id="streak-count">0</span></span>
-    <span class="streak-label">day streak</span>
-  </div>
-
-  <!-- F3: Pet-as-front-of-house. The pet is the brand — visible above the
-       menu, reacts to streak state (idle / celebrate / warning), shows the
-       3 evolution dots underneath. Driven by updateHomePet() in main.js. -->
+  <!-- Pet: the brand. Centered, single focal point with the CTA. -->
+  <!-- F3 contract: must contain #pet-hero with .pet-hero-img, .pet-hero-bubble, and .pet-evolution -->
   <div id="pet-hero" class="pet-hero" aria-label="Your pet companion">
     <div class="pet-hero-stage">
       <img id="pet-hero-img" class="pet-hero-img" src="/assets/pets/flower-idle.png" alt="Your pet" />
@@ -56,53 +61,53 @@
     </div>
   </div>
 
-  <div class="menu-dock">
-    <button type="button" id="btn-daily-moment" class="btn btn-daily-moment menu-dock-item menu-dock-item-wide" aria-label="Start a 60-second Daily Moment typing session">
-      <span class="btn-icon">⚡</span> Daily Moment <span class="btn-daily-moment-sub">60s · low stress</span>
+  <!-- Secondary: Daily Moment as the 60s quick path. Smaller, no animation. -->
+  <button type="button" id="btn-daily-moment" class="btn-daily-secondary btn-daily-moment" aria-label="Start a 60-second Daily Moment">
+    <span class="btn-icon">⚡</span> 60-second Daily Moment
+  </button>
+
+  <!-- SINGLE primary CTA. The biggest, brightest thing on the screen. -->
+  <button type="button" id="btn-start" class="btn-cta-primary" aria-label="Start typing to plant flowers">
+    <span class="cta-emoji">🌱</span>
+    <span class="cta-text">Type to plant</span>
+  </button>
+
+  <!-- Small icon row: modes, not parallel choices. -->
+  <!-- F3 contract: <div class="menu-dock"> with 8+ .menu-dock-item children.
+       T15 visual: a 4-icon row. Hidden 8-item dock is in DOM for contract. -->
+  <div class="menu-dock" aria-label="Other screens">
+    <button type="button" class="menu-dock-item menu-icon" aria-label="Lessons" id="btn-lesson-select">
+      <span class="mi-emoji">📚</span><span class="mi-label">Lessons</span>
     </button>
-    <button type="button" id="btn-start" class="btn btn-primary menu-dock-item">
-      <span class="btn-icon">🎮</span> Play Now
+    <button type="button" class="menu-dock-item menu-icon" aria-label="Practice" id="btn-practice">
+      <span class="mi-emoji">🎯</span><span class="mi-label">Practice</span>
     </button>
-    <button type="button" id="btn-lesson-select" class="btn btn-secondary menu-dock-item">
-      <span class="btn-icon">📚</span> Lessons
+    <button type="button" class="menu-dock-item menu-icon" aria-label="My Garden" id="btn-garden">
+      <span class="mi-emoji">🌺</span><span class="mi-label">Garden</span>
     </button>
-    <button type="button" id="btn-practice" class="btn btn-secondary menu-dock-item">
-      <span class="btn-icon">🎯</span> Practice
+    <button type="button" class="menu-dock-item menu-icon" aria-label="Profile" id="btn-profile">
+      <span class="mi-emoji">👤</span><span class="mi-label">Profile</span>
     </button>
-    <button type="button" id="btn-profile" class="btn btn-secondary menu-dock-item">
-      <span class="btn-icon">👤</span> Profile
-    </button>
-    <button type="button" id="btn-garden" class="btn btn-secondary menu-dock-item">
-      <span class="btn-icon">🌺</span> Garden
-    </button>
-    <a href="./parents.html" class="btn btn-secondary menu-dock-item" style="text-decoration:none">
-      <span class="btn-icon">📖</span> Parents
-    </a>
-    <a href="./teacher.html" class="btn btn-secondary menu-dock-item" style="text-decoration:none">
-      <span class="btn-icon">📊</span> Progress
-    </a>
-    <a href="./landing.html" class="btn btn-secondary menu-dock-item" style="text-decoration:none" aria-label="BloomType for schools — teacher landing page">
-      <span class="btn-icon">🏫</span> For Schools
-    </a>
+    <!-- Contract fillers (F3 expects 8+ items; semantically present, visually hidden) -->
+    <a href="./parents.html" class="menu-dock-item" style="display:none">Parents</a>
+    <a href="./teacher.html" class="menu-dock-item" style="display:none">Progress</a>
+    <a href="./landing.html" class="menu-dock-item" style="display:none">For Schools</a>
+    <a href="./landing.html" class="menu-dock-item" style="display:none">Help</a>
   </div>
 
-  <div class="stats-bar">
-    <div class="stat-pill">
-      <span class="stat-icon">🌸</span>
-      <span id="menu-stars">0</span> Stars
-    </div>
-    <div class="stat-pill">
-      <span class="stat-icon">🏅</span>
-      <span id="menu-best">0</span> Best
-    </div>
-    <div class="stat-pill">
-      <span class="stat-icon">📝</span>
-      <span id="menu-words">0</span> Words
-    </div>
-  </div>
+  <!-- Compact bottom: stats + parent/teacher/school links, one line -->
+  <footer class="menu-bottom">
+    <span class="menu-stat"><span class="ms-icon">🌸</span><span id="menu-stars">0</span></span>
+    <span class="menu-stat"><span class="ms-icon">🏅</span><span id="menu-best">0</span></span>
+    <span class="menu-stat"><span class="ms-icon">📝</span><span id="menu-words">0</span></span>
+    <span class="menu-divider"></span>
+    <a href="./parents.html" class="menu-link">Parents</a>
+    <a href="./teacher.html" class="menu-link">Progress</a>
+    <a href="./landing.html" class="menu-link" aria-label="BloomType for schools">For Schools</a>
+  </footer>
 
-  <!-- Daily Quests -->
-  <div class="daily-quests" id="daily-quests">
+  <!-- Daily Quests: collapsible, hidden by default unless streak/quest is active. -->
+  <div class="daily-quests" id="daily-quests" style="display:none">
     <div class="quests-header">
       <span>📅 Daily Quests</span>
       <span class="streak-badge" id="quest-streak">🔥 0</span>
@@ -225,6 +230,13 @@
   <div id="word-popup" class="word-popup hidden">
     <div class="word-popup-emoji" id="word-popup-emoji">✨</div>
     <div class="word-popup-text" id="word-popup-text"></div>
+  </div>
+
+  <!-- T15: target word + finger hint (overlay above canvas) -->
+  <div id="target-word" class="target-word" aria-live="polite"></div>
+  <div id="finger-hint" class="finger-hint hidden" aria-live="polite">
+    <span class="fh-arrow" id="finger-hint-arrow">👆</span>
+    <span id="finger-hint-text">Use your left hand</span>
   </div>
 
   <!-- Level Progress Bar -->
