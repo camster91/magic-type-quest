@@ -9,6 +9,7 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         parents: resolve(__dirname, 'parents.html'),
         teacher: resolve(__dirname, 'teacher.html'),
+        landing: resolve(__dirname, 'landing.html'),
       },
     },
   },
