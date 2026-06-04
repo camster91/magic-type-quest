@@ -744,6 +744,69 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
   font-size: 0.85rem; font-weight: 700; margin-bottom: 8px;
 }
 .streak-badge { font-size: 0.75rem; color: var(--warning); }
+
+/* ===== F2: Streak prominent (home screen) ===== */
+/* Sized for kid fingers (44px min tap target), visible without scrolling,
+   second-most-prominent element on the home screen after the title. */
+.streak-prominent {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px auto 10px;
+  padding: 10px 22px;
+  min-height: 48px;
+  border-radius: 999px;
+  font-family: 'Fredoka One', 'Nunito', system-ui, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ff9a3c 0%, #ff6b6b 100%);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.18);
+  box-shadow: 0 4px 14px rgba(255,107,107,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+  user-select: none;
+}
+.streak-prominent .streak-icon {
+  font-size: 1.5rem;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
+}
+.streak-prominent .streak-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  min-width: 1.2ch;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.streak-prominent .streak-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  opacity: 0.95;
+}
+.streak-prominent.streak-hidden { display: none; }     /* streak = 0 — no fake streak */
+.streak-prominent.streak-gold {                        /* streak >= 7 — gold gradient */
+  background: linear-gradient(135deg, #ffe082 0%, #ffd54f 35%, #ffb300 100%);
+  color: #5d2f00;                                  /* dark brown text on gold reads better than white */
+  text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+  box-shadow: 0 4px 18px rgba(255,179,0,0.55), inset 0 1px 0 rgba(255,255,255,0.5);
+}
+.streak-prominent.streak-at-risk {                     /* >20h since last Daily Moment */
+  background: linear-gradient(135deg, #ff4d4d 0%, #c0392b 100%);
+  animation: streakAtRiskPulse 1.4s ease-in-out infinite;
+  box-shadow: 0 0 0 3px rgba(255,77,77,0.35), 0 4px 18px rgba(192,57,43,0.5);
+}
+@keyframes streakAtRiskPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 3px rgba(255,77,77,0.35), 0 4px 18px rgba(192,57,43,0.5); }
+  50%      { transform: scale(1.04); box-shadow: 0 0 0 8px rgba(255,77,77,0.15), 0 6px 22px rgba(192,57,43,0.7); }
+}
+@media (max-width: 600px) {
+  .streak-prominent { font-size: 1rem; padding: 9px 18px; min-height: 44px; }
+  .streak-prominent .streak-value { font-size: 1.25rem; }
+  .streak-prominent .streak-icon { font-size: 1.3rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .streak-prominent.streak-at-risk { animation: none; }
+}
 .quests-list { display: flex; flex-direction: column; gap: 6px; }
 .quest-item {
   display: flex; align-items: center; gap: 8px;

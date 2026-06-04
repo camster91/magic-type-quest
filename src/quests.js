@@ -43,6 +43,41 @@ export function generateDailyQuests(dateStr) {
   });
 }
 
+/** Bump the streak counter on a new calendar day. Idempotent if called
+ *  multiple times on the same day. Shared by getTodaysQuests and the F1
+ *  Daily-Moment completion path so both increment from the same rule.
+ *  Anti-feature F2: must be a REAL streak — never bump a streak > 0
+ *  to itself, and never bump 0 → 1 on the same day. */
+export function bumpStreakIfToday(profile) {
+  const today = new Date().toISOString().slice(0, 10);
+  if (profile.lastStreakDate === today) return false; // already counted today
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().slice(0, 10);
+  if (profile.lastQuestDate === yesterdayStr) {
+    profile.streak = (profile.streak || 0) + 1;
+  } else if (profile.lastStreakDate == null) {
+    // First day ever — start the streak at 1, not 0
+    profile.streak = 1;
+  } else {
+    // Missed at least one full day — streak resets
+    profile.streak = 1;
+  }
+  profile.lastStreakDate = today;
+  return true;
+}
+
+/** True if the kid has a streak to lose and the last Daily Moment was
+ *  completed > 20h ago. F2 lays the visual slot; F7 (Streak warning)
+ *  will reuse this to drive the "Don't lose your 🔥!" call-to-action. */
+export function isStreakAtRisk(profile, now = Date.now()) {
+  if (!profile || !profile.streak || profile.streak < 1) return false;
+  if (!profile.lastDailyMomentDate) return true; // never played a Daily Moment yet
+  const last = new Date(profile.lastDailyMomentDate).getTime();
+  if (Number.isNaN(last)) return true;
+  return (now - last) > 20 * 60 * 60 * 1000; // > 20h
+}
+
 /** Get or create today's quests. */
 export function getTodaysQuests(profile) {
   const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
@@ -50,15 +85,7 @@ export function getTodaysQuests(profile) {
   if (profile.questDate !== today || !profile.dailyQuests || profile.dailyQuests.length === 0) {
     profile.questDate = today;
     profile.dailyQuests = generateDailyQuests(today);
-    // Check streak
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().slice(0, 10);
-    if (profile.lastQuestDate === yesterdayStr) {
-      profile.streak = (profile.streak || 0) + 1;
-    } else if (profile.lastQuestDate !== today) {
-      profile.streak = 1; // First day or broken streak
-    }
+    bumpStreakIfToday(profile);
     profile.lastQuestDate = today;
   }
 

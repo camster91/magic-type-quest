@@ -34,6 +34,13 @@
 
   <p class="tagline">Type words, grow flowers, and fill your garden with stars!</p>
 
+  <!-- F2: Streak prominent — visible without scrolling, sized for kid fingers -->
+  <div id="streak-prominent" class="streak-prominent streak-hidden" role="status" aria-live="polite" aria-label="Daily streak">
+    <span class="streak-icon" aria-hidden="true">🔥</span>
+    <span class="streak-value"><span id="streak-count">0</span></span>
+    <span class="streak-label">day streak</span>
+  </div>
+
   <div class="menu-buttons">
     <button type="button" id="btn-daily-moment" class="btn btn-daily-moment" aria-label="Start a 60-second Daily Moment typing session">
       <span class="btn-icon">⚡</span> Daily Moment <span class="btn-daily-moment-sub">60s · low stress</span>

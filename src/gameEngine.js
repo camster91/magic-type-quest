@@ -6,7 +6,7 @@ import { LESSON_LEVELS, getLessonByLevel, getFingerHint } from './lessonLevels.j
 import { gameState, loadProfile, saveProfile } from './state.js';
 import { say, getChapter, getEvolutionStage, PET_NAME_DEFAULT } from './story.js';
 import { checkAchievements as checkAchievementsNew } from './achievements.js';
-import { evaluateQuests } from './quests.js';
+import { evaluateQuests, bumpStreakIfToday } from './quests.js';
 import { playAmbient, stopAmbient, audioCtx, initAudio } from './audio.js';
 import { getWeakKeys } from './drills.js';
 import { recordKeyPractice } from './spacedRep.js';
@@ -1595,6 +1595,10 @@ export function endDailyMoment({ reason } = {}) {
 
   // Persist + bump streak if today
   gameState.profile.lastDailyMomentDate = new Date().toISOString();
+  // F2: Daily Moment completion counts toward the streak (same rule as
+  // getTodaysQuests). Without this the prominent streak counter never
+  // moves when the kid uses the F1 entry point.
+  try { bumpStreakIfToday(gameState.profile); } catch {}
   // Bump daily-quest progress for the type_words quest (if it exists)
   try {
     evaluateQuests(gameState.profile, { ...gameState, screen: 'game', level: gameState.level });

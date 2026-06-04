@@ -6,7 +6,7 @@ import { gameState, loadProfile, saveProfile } from './state.js';
 import { init as initEngine, startGame, togglePause, showScreen, showKeyFeedback, highlightTargetKey, startDrillMode, startDailyMoment } from './gameEngine.js';
 import { MENU_TAGLINES, say, PET_NAME_DEFAULT } from './story.js';
 import { getAchievementStats, getAllAchievements } from './achievements.js';
-import { getTodaysQuests, getQuestCompletion } from './quests.js';
+import { getTodaysQuests, getQuestCompletion, isStreakAtRisk } from './quests.js';
 import { getWeakKeys, buildDrillLesson } from './drills.js';
 import { getDueKeys } from './spacedRep.js';
 import { joinClass } from './classroom.js';
@@ -253,6 +253,22 @@ function updateMenuStats() {
   const streak = gameState.profile.streak || 0;
   const streakEl = document.getElementById('quest-streak');
   if (streakEl) streakEl.textContent = streak > 0 ? `🔥 ${streak}` : '';
+
+  // F2: render the prominent streak card on the home screen.
+  // States: streak=0 → hidden (no fake streak per F2 anti-features).
+  //         streak>=7 → gold gradient. at-risk (>20h since last Daily Moment) → pulsing red border.
+  const streakCard = document.getElementById('streak-prominent');
+  if (streakCard) {
+    const streakCountEl = document.getElementById('streak-count');
+    if (streakCountEl) streakCountEl.textContent = streak;
+    streakCard.classList.remove('streak-hidden', 'streak-gold', 'streak-at-risk');
+    if (streak < 1) {
+      streakCard.classList.add('streak-hidden');
+    } else {
+      if (streak >= 7) streakCard.classList.add('streak-gold');
+      if (isStreakAtRisk(gameState.profile)) streakCard.classList.add('streak-at-risk');
+    }
+  }
   const list = document.getElementById('quests-list');
   if (list) {
     list.innerHTML = '';
