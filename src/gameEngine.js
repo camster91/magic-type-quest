@@ -77,6 +77,8 @@ class Word {
     this.shake = 0;
     this.width = 0;
     this.height = 36;
+    this.typedWidth = 0;
+    this.lastMatched = -1;
   }
 
   update(deltaTime) {
@@ -120,10 +122,14 @@ class Word {
 
     // Typed progress underline
     if (this.matched > 0) {
-      const typedText = this.text.slice(0, this.matched);
-      const typedWidth = ctx.measureText(typedText).width;
+      // ⚡ Optimization: Cache measureText results to minimize per-frame overhead
+      if (this.matched !== this.lastMatched) {
+        const typedText = this.text.slice(0, this.matched);
+        this.typedWidth = ctx.measureText(typedText).width;
+        this.lastMatched = this.matched;
+      }
       ctx.fillStyle = COLORS.success;
-      ctx.fillRect(x + 10, this.y + 12, typedWidth, 5);
+      ctx.fillRect(x + 10, this.y + 12, this.typedWidth, 5);
     }
 
     // Target indicator arrow
@@ -177,6 +183,7 @@ function gameLoop(timestamp) {
 
   const deltaTime = lastFrameTime ? Math.min((timestamp - lastFrameTime) / 1000, 0.05) : 0.016;
   lastFrameTime = timestamp;
+  gameState.currentTime = timestamp;
 
   // Clear canvas
   ctx.clearRect(0, 0, gameState.canvasW, gameState.canvasH);
@@ -204,7 +211,7 @@ function gameLoop(timestamp) {
 function updateWords(deltaTime) {
   // Spawn new words
   const lesson = currentLesson();
-  const now = performance.now();
+  const now = gameState.currentTime;
   const adaptiveSpawnRate = lesson.spawnRate / gameState.adaptiveSpeed;
   
   if (gameState.wordsSpawned < lesson.wordsPerLevel && 
@@ -462,7 +469,7 @@ function onWrongKeystroke(key) {
 
 function updateWPM() {
   if (!gameState.levelStartTime) return;
-  const elapsedMin = (performance.now() - gameState.levelStartTime) / 60000;
+  const elapsedMin = (gameState.currentTime - gameState.levelStartTime) / 60000;
   if (elapsedMin < 0.01) return;
   
   // WPM = (characters / 5) / minutes
@@ -886,7 +893,7 @@ function drawGarden() {
   const w = gameState.canvasW;
   const h = gameState.canvasH;
   const groundY = h - 175;
-  const time = performance.now() / 1000;
+  const time = gameState.currentTime / 1000;
 
   if (!bgLayers.sky.img || !bgLayers.sky.img.complete || bgLayers.sky.img._broken) {
     drawFallbackBackground(w, h, groundY);
@@ -1009,7 +1016,7 @@ function drawPet() {
   const baseY = gameState.canvasH - 260;
   
   // Idle breathing animation
-  petBounceY = Math.sin(performance.now() / 500) * 3;
+  petBounceY = Math.sin(gameState.currentTime / 500) * 3;
   
   ctx.drawImage(img, x, baseY + petBounceY, w, h);
   
@@ -1044,8 +1051,10 @@ function loadFlowerImages() {
 }
 
 function drawFlowerImage(flower, groundY) {
-  const types = ['bud', 'sprout', 'bud'];
-  const imgName = types[Math.floor(Math.random() * types.length)];
+  const types = ['bud', 'sprout'];
+  // ⚡ Optimization: Use stable indexing based on x position instead of Math.random()
+  const imgIndex = Math.floor(Math.abs(flower.x)) % types.length;
+  const imgName = types[imgIndex];
   const img = flowerImages[imgName];
   
   if (!img || !img.complete) {
@@ -1065,7 +1074,7 @@ function drawFlowerImage(flower, groundY) {
   ctx.scale(scale, scale);
   
   // Gentle sway
-  const sway = Math.sin(performance.now() / 800 + flower.x) * 3;
+  const sway = Math.sin(gameState.currentTime / 800 + flower.x) * 3;
   ctx.rotate(sway * Math.PI / 180);
   
   ctx.drawImage(img, -size/2, -size/2, size, size);
@@ -1374,7 +1383,7 @@ export function startGame(level = 1) {
   gameState.lastSpawn = 0;
   gameState.lastFrameTime = 0;
   gameState.garden = [];
-  gameState.levelStartTime = performance.now();
+  gameState.levelStartTime = performance.now(); // Keep performance.now() for initial setup as game loop hasn't started
   gameState.keyAccuracy = {};
   gameState.levelWPM = 0;
   gameState.levelAccuracy = 0;
@@ -1460,7 +1469,7 @@ export function startDrillMode(drillLesson) {
   gameState.lastSpawn = 0;
   gameState.lastFrameTime = 0;
   gameState.garden = [];
-  gameState.levelStartTime = performance.now();
+  gameState.levelStartTime = performance.now(); // Keep performance.now() for initial setup
   gameState.levelWPM = 0;
   gameState.levelAccuracy = 0;
   gameState.levelComplete = false;
