@@ -1,0 +1,862 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1024, initial-scale=1" />
+<title>BloomType v2 — Gameplay HUD Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ===== TOKENS (from style bible, locked) ===== */
+:root {
+  --lavender:    #B8A4E3;
+  --lavender-d:  #8B5CF6;
+  --lavender-l:  #A78BFA;
+  --mint:        #A8E3C5;
+  --peach:       #FFC9A8;
+  --cream:       #FFF4E0;
+  --gold:        #F0D080;
+  --streak-gold: #FFD56B;     /* NEW in v2 */
+  --ink:         #3A3441;
+  --ink-soft:    #6B6470;
+  --bg-night-1:  #1a1033;
+  --bg-night-2:  #2d1b5e;
+  --bg-night-3:  #432a7a;
+  --green-ok:    #34D399;
+  --red-err:     #EF4444;
+  --amber-warn:  #FBBF24;
+  --silver:      #C0C7D6;
+  --bronze:      #D49A6A;
+
+  --shadow-soft: 0 4px 16px rgba(58, 52, 65, 0.12);
+  --shadow-pop:  0 8px 32px rgba(139, 92, 246, 0.35);
+  --shadow-glow: 0 0 24px rgba(255, 213, 107, 0.6);
+
+  --font: 'Nunito', system-ui, sans-serif;
+}
+
+/* ===== BASE ===== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--cream);
+  display: block;        /* don't center vertically; let stage sit at top of viewport */
+  padding: 24px;
+  -webkit-font-smoothing: antialiased;
+  overflow: auto;        /* allow scroll if viewport too short */
+}
+
+/* ===== STAGE (iPad landscape 1024×768) ===== */
+.stage {
+  width: 1024px;
+  height: 768px;
+  border-radius: 28px;
+  overflow: hidden;
+  position: relative;
+  background:
+    radial-gradient(ellipse at top, #2a1858 0%, var(--bg-night-1) 60%),
+    var(--bg-night-1);
+  box-shadow: 0 24px 60px rgba(26, 16, 51, 0.45);
+}
+
+/* Sky parallax */
+.sky {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 20% 18%, rgba(255, 213, 107, 0.18) 0%, transparent 28%),
+    radial-gradient(circle at 78% 12%, rgba(184, 164, 227, 0.22) 0%, transparent 32%),
+    radial-gradient(circle at 50% 110%, rgba(255, 201, 168, 0.18) 0%, transparent 50%),
+    linear-gradient(180deg, var(--bg-night-1) 0%, var(--bg-night-2) 55%, var(--bg-night-3) 100%);
+  z-index: 0;
+}
+.stars { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.stars span {
+  position: absolute;
+  width: 2px; height: 2px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.7;
+  animation: twinkle 2.4s ease-in-out infinite;
+}
+.stars span:nth-child(2n) { width: 3px; height: 3px; animation-duration: 3.1s; }
+.stars span:nth-child(3n) { animation-duration: 1.8s; }
+@keyframes twinkle { 0%,100% { opacity: 0.2 } 50% { opacity: 1 } }
+
+/* Floating distant garden island (subtle, lower-third depth) */
+.island {
+  position: absolute;
+  left: 50%; bottom: 220px;
+  transform: translateX(-50%);
+  width: 760px; height: 110px;
+  background: radial-gradient(ellipse, rgba(168, 227, 197, 0.18), transparent 70%);
+  filter: blur(2px);
+  z-index: 2;
+}
+
+/* ===== HUD top bar ===== */
+.hud {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 14px 22px;
+  background: linear-gradient(180deg, rgba(26, 16, 51, 0.72), rgba(26, 16, 51, 0.0));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.hud-left, .hud-right { display: flex; align-items: center; gap: 10px; }
+.hud-center { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.chip.lavender { background: rgba(184, 164, 227, 0.22); border-color: rgba(184, 164, 227, 0.5); }
+.chip.mint     { background: rgba(168, 227, 197, 0.22); border-color: rgba(168, 227, 197, 0.5); }
+.chip.gold     { background: rgba(255, 213, 107, 0.22); border-color: rgba(255, 213, 107, 0.55); }
+.chip.pink     { background: rgba(236, 72, 153, 0.18); border-color: rgba(236, 72, 153, 0.5); }
+
+.chip svg { display: block; }
+
+.chip-streak { box-shadow: var(--shadow-glow); }
+
+.class-pos {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 14px 6px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  color: #fff;
+  font-weight: 700; font-size: 13px;
+  line-height: 1;
+}
+.medal {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 14px;
+  color: var(--ink);
+}
+.medal.silver { background: linear-gradient(135deg, #E5E9F2, #B8C0D0); }
+.medal.gold   { background: linear-gradient(135deg, #FFE89E, #F0C24C); }
+.medal.bronze { background: linear-gradient(135deg, #E5B98C, #B07A4A); color: #fff; }
+
+.hearts { display: flex; gap: 4px; }
+.heart { color: var(--red-err); font-size: 18px; line-height: 1; }
+.heart.lost { color: rgba(239, 68, 68, 0.25); }
+
+.pause-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.10);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ===== Falling-word enemies ===== */
+.play-area {
+  position: absolute;
+  top: 64px; left: 0; right: 0; bottom: 240px;
+  z-index: 3;
+  overflow: hidden;
+}
+
+.word {
+  position: absolute;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px;
+  border-radius: 22px;
+  font-weight: 800; font-size: 26px; letter-spacing: 0.5px;
+  color: #fff;
+  white-space: nowrap;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.35);
+  transition: transform 0.18s ease-out, box-shadow 0.18s ease-out;
+  background: rgba(255, 255, 255, 0.06);
+}
+.word .arrow { font-size: 14px; opacity: 0.9; }
+.word .typed { color: var(--green-ok); font-weight: 900; }
+.word .rest  { color: #fff; }
+
+/* focus color tiers (green / yellow / red hue shift) */
+.word[data-focus="high"]   { background: rgba(52, 211, 153, 0.18); box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.55), 0 6px 20px rgba(52, 211, 153, 0.25); }
+.word[data-focus="mid"]    { background: rgba(251, 191, 36, 0.18); box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.55), 0 6px 20px rgba(251, 191, 36, 0.20); }
+.word[data-focus="low"]    { background: rgba(239, 68, 68, 0.18);  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.55),  0 6px 20px rgba(239, 68, 68, 0.20); }
+
+/* target word = always green, with pulse */
+.word.target {
+  background: rgba(52, 211, 153, 0.35);
+  box-shadow: 0 0 0 3px var(--green-ok), 0 0 40px rgba(52, 211, 153, 0.5);
+  animation: targetPulse 1.4s ease-in-out infinite;
+}
+@keyframes targetPulse {
+  0%,100% { transform: scale(1.0); }
+  50%     { transform: scale(1.04); }
+}
+
+/* shake on miss */
+.word.shake { animation: shake 0.3s linear; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(3px); }
+}
+
+/* the new-key glow (post-correct-keypress) */
+.word.glow::after {
+  content: '';
+  position: absolute; inset: -4px;
+  border-radius: 26px;
+  box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+  animation: glowRing 0.45s ease-out;
+  pointer-events: none;
+}
+@keyframes glowRing {
+  0%   { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.6); }
+  100% { box-shadow: 0 0 0 18px rgba(52, 211, 153, 0); }
+}
+
+/* word-burst position anchor (the explosion happens at the word's center) */
+.burst {
+  position: absolute;
+  width: 4px; height: 4px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Score popup (e.g. +12 floating up) */
+.score-pop {
+  position: absolute;
+  font-weight: 900; font-size: 22px;
+  color: var(--streak-gold);
+  text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  pointer-events: none;
+  animation: floatUp 0.9s ease-out forwards;
+}
+@keyframes floatUp {
+  0%   { transform: translateY(0) scale(0.7); opacity: 0; }
+  20%  { transform: translateY(-10px) scale(1.1); opacity: 1; }
+  100% { transform: translateY(-60px) scale(0.95); opacity: 0; }
+}
+
+/* Sparkle particle */
+.spark {
+  position: absolute;
+  width: 6px; height: 6px;
+  background: var(--streak-gold);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: sparkFly 0.7s ease-out forwards;
+}
+@keyframes sparkFly {
+  0%   { transform: translate(0,0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
+}
+
+/* ===== PET — protagonist, center-right ===== */
+.pet-zone {
+  position: absolute;
+  right: 80px;
+  top: 38%;
+  width: 240px;
+  height: 280px;
+  z-index: 4;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+
+.pet-glow {
+  position: absolute;
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 213, 107, 0.35) 0%, transparent 65%);
+  filter: blur(8px);
+  z-index: -1;
+  animation: pulse 3s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { transform: scale(1); opacity: 0.7; }
+  50%     { transform: scale(1.08); opacity: 1; }
+}
+
+.pet {
+  position: relative;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 30% 30%, #FFE9C7, #FFC9A8 60%, #E89B6F 100%);
+  box-shadow: 0 12px 40px rgba(232, 155, 111, 0.45);
+  animation: bob 2.6s ease-in-out infinite;
+}
+@keyframes bob {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-6px); }
+}
+.pet .horn {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-bottom: 38px solid #F0D080;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+.pet .horn::after {
+  content: '';
+  position: absolute;
+  top: 8px; left: -3px;
+  width: 6px; height: 18px;
+  background: linear-gradient(180deg, #fff, rgba(255,255,255,0));
+  border-radius: 4px;
+}
+.pet .eye {
+  position: absolute;
+  top: 70px;
+  width: 16px; height: 22px;
+  background: var(--ink);
+  border-radius: 50%;
+  box-shadow: inset 0 -4px 0 rgba(255,255,255,0.2);
+}
+.pet .eye::after {
+  content: '';
+  position: absolute;
+  top: 4px; right: 2px;
+  width: 5px; height: 5px;
+  background: #fff;
+  border-radius: 50%;
+}
+.pet .eye.left  { left: 55px; }
+.pet .eye.right { right: 55px; }
+
+.pet .cheek {
+  position: absolute;
+  top: 90px;
+  width: 22px; height: 12px;
+  background: rgba(236, 72, 153, 0.4);
+  border-radius: 50%;
+  filter: blur(1px);
+}
+.pet .cheek.left  { left: 35px; }
+.pet .cheek.right { right: 35px; }
+
+.pet .smile {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px; height: 18px;
+  border: 4px solid var(--ink);
+  border-top: none;
+  border-radius: 0 0 36px 36px;
+}
+
+/* speech bubble */
+.bubble {
+  position: absolute;
+  top: -54px; right: -10px;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 800;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+  white-space: nowrap;
+}
+.bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px; left: 30px;
+  width: 0; height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 12px solid #fff;
+}
+
+/* pet evolution chip (shows current stage) */
+.stage-chip {
+  margin-top: 8px;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  font-weight: 700; font-size: 12px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+/* ===== GARDEN STRIP (mini-view, bottom-right) ===== */
+.garden-strip {
+  position: absolute;
+  right: 16px;
+  bottom: 248px;
+  z-index: 4;
+  display: flex; align-items: flex-end; gap: 6px;
+  padding: 10px 12px 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.flower {
+  width: 24px; height: 30px;
+  display: flex; flex-direction: column; align-items: center;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+.flower .stem {
+  width: 2px; height: 12px;
+  background: linear-gradient(180deg, var(--mint), #5fae85);
+}
+.flower .bloom {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  position: relative;
+  margin-bottom: -2px;
+}
+.flower .bloom::before, .flower .bloom::after {
+  content: '';
+  position: absolute;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  top: 2px;
+}
+.flower .bloom::before { left: -4px; background: inherit; }
+.flower .bloom::after  { right: -4px; background: inherit; }
+.flower .bloom { background: radial-gradient(circle, #fff 0%, inherit 30%); }
+
+.f1 .bloom { background: #FFC9A8; }
+.f2 .bloom { background: #B8A4E3; }
+.f3 .bloom { background: #A8E3C5; }
+.f4 .bloom { background: #F0D080; }
+.f5 .bloom { background: #EC4899; }
+.f6 .bloom { background: #FBBF24; }
+.f7 .bloom { background: #8B5CF6; }
+.f8 .bloom { background: #34D399; }
+.f9 .bloom { background: #FFC9A8; }
+
+/* New flower pop-in animation (added on word complete) */
+.flower.pop {
+  animation: bloom 0.55s ease-out;
+  transform-origin: bottom center;
+}
+@keyframes bloom {
+  0%   { transform: scale(0) rotate(-15deg); }
+  60%  { transform: scale(1.25) rotate(5deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+/* ===== VIRTUAL KEYBOARD ===== */
+.kb {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  z-index: 6;
+  background: linear-gradient(180deg, rgba(26, 16, 51, 0.85), rgba(26, 16, 51, 0.97));
+  padding: 16px 22px 22px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.kb-row { display: flex; gap: 6px; }
+.key {
+  width: 56px; height: 50px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-family: var(--font);
+  font-weight: 700; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s;
+  user-select: none;
+}
+.key:active, .key.press { transform: scale(0.92); background: rgba(255, 255, 255, 0.18); }
+.key.next { background: rgba(52, 211, 153, 0.32); border-color: var(--green-ok); box-shadow: 0 0 12px rgba(52, 211, 153, 0.5); }
+.key.wide { width: 80px; }
+.key.space { width: 360px; font-size: 14px; letter-spacing: 1px; }
+
+/* ===== Tweak controls (dev only) — move to BOTTOM-LEFT to not collide with HUD ===== */
+.tweaks {
+  position: absolute;
+  bottom: 260px; left: 16px;
+  z-index: 100;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  display: flex; flex-direction: column; gap: 6px;
+  font-family: ui-monospace, monospace;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.tweaks label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.tweaks button {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+/* Reduced-motion respect */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+
+  <div class="sky"></div>
+  <div class="stars" id="stars"></div>
+  <div class="island"></div>
+
+  <!-- HUD -->
+  <div class="hud">
+    <div class="hud-left">
+      <span class="chip lavender" title="Score">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2l2 5 5 1-4 4 1 5-4-3-4 3 1-5-4-4 5-1z" fill="#FFC9A8"/></svg>
+        124
+      </span>
+      <span class="chip" title="Level">Lv 3</span>
+      <span class="chip mint" title="Words per minute">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" fill="#A8E3C5"/></svg>
+        28 WPM
+      </span>
+      <span class="chip" title="Focus">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#FBBF24" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="5" fill="#FBBF24"/></svg>
+        92%
+      </span>
+    </div>
+    <div class="hud-center">
+      <div class="class-pos" title="Class leaderboard position">
+        <span class="medal silver">2</span>
+        Mrs. Lee's class
+      </div>
+    </div>
+    <div class="hud-right">
+      <div class="hearts" title="Lives">
+        <span class="heart">❤</span>
+        <span class="heart">❤</span>
+        <span class="heart">❤</span>
+        <span class="heart">❤</span>
+        <span class="heart lost">❤</span>
+      </div>
+      <span class="chip gold chip-streak" title="Daily streak">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4 4 6 4 10a4 4 0 11-8 0c0-2 1-3 1-5 2 1 3 2 3 0 0-2-1-3 0-5z" fill="#FFD56B"/></svg>
+        7
+      </span>
+      <button class="pause-btn" aria-label="Pause">⏸</button>
+    </div>
+  </div>
+
+  <!-- Play area + falling words + pet + garden strip -->
+  <div class="play-area" id="playArea">
+    <!-- Words injected by JS -->
+  </div>
+
+  <!-- Pet -->
+  <div class="pet-zone">
+    <div class="pet-glow"></div>
+    <div class="pet" id="pet">
+      <div class="horn"></div>
+      <div class="eye left"></div>
+      <div class="eye right"></div>
+      <div class="cheek left"></div>
+      <div class="cheek right"></div>
+      <div class="smile"></div>
+      <div class="bubble" id="bubble">Cast it! ✨</div>
+    </div>
+    <div class="stage-chip">🌱 Stage 2 · Bloom</div>
+  </div>
+
+  <!-- Garden strip (mini-view, grows in real-time) -->
+  <div class="garden-strip" id="gardenStrip">
+    <!-- flowers injected by JS -->
+  </div>
+
+  <!-- Virtual keyboard -->
+  <div class="kb" id="kb">
+    <div class="kb-row" data-row="1">
+      <span class="key" data-key="q">Q</span>
+      <span class="key" data-key="w">W</span>
+      <span class="key" data-key="e">E</span>
+      <span class="key" data-key="r">R</span>
+      <span class="key" data-key="t">T</span>
+      <span class="key" data-key="y">Y</span>
+      <span class="key" data-key="u">U</span>
+      <span class="key" data-key="i">I</span>
+      <span class="key" data-key="o">O</span>
+      <span class="key" data-key="p">P</span>
+    </div>
+    <div class="kb-row" data-row="2">
+      <span class="key" data-key="a">A</span>
+      <span class="key" data-key="s">S</span>
+      <span class="key" data-key="d">D</span>
+      <span class="key" data-key="f">F</span>
+      <span class="key" data-key="g">G</span>
+      <span class="key" data-key="h">H</span>
+      <span class="key" data-key="j">J</span>
+      <span class="key" data-key="k">K</span>
+      <span class="key" data-key="l">L</span>
+    </div>
+    <div class="kb-row" data-row="3">
+      <span class="key wide" data-key="z">Z</span>
+      <span class="key" data-key="x">X</span>
+      <span class="key" data-key="c">C</span>
+      <span class="key" data-key="v">V</span>
+      <span class="key" data-key="b">B</span>
+      <span class="key" data-key="n">N</span>
+      <span class="key" data-key="m">M</span>
+    </div>
+    <div class="kb-row" data-row="4">
+      <span class="key space" data-key=" ">SPACE</span>
+    </div>
+  </div>
+
+  <!-- Tweak controls (dev only, not part of shipped screen) -->
+  <div class="tweaks" id="tweaks">
+    <strong>v2 Reference</strong>
+    <label><input type="checkbox" id="reduceMotion"> prefers-reduced-motion</label>
+    <button id="triggerBurst">Trigger word burst</button>
+    <button id="triggerMiss">Trigger miss shake</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   BloomType v2 — Gameplay HUD Reference (static mockup)
+   Self-contained JS. Demonstrates motion + state changes.
+   ============================================================ */
+
+/* 1) Build starfield */
+(function buildStars() {
+  const host = document.getElementById('stars');
+  for (let i = 0; i < 60; i++) {
+    const s = document.createElement('span');
+    s.style.left = (Math.random() * 100) + '%';
+    s.style.top  = (Math.random() * 60) + '%';
+    s.style.animationDelay = (Math.random() * 2.4) + 's';
+    host.appendChild(s);
+  }
+})();
+
+/* 2) Garden strip — start with 7 flowers, ready to grow */
+(function buildGarden() {
+  const host = document.getElementById('gardenStrip');
+  const palette = ['f1','f2','f3','f4','f5','f6','f7','f8','f9'];
+  for (let i = 0; i < 7; i++) {
+    addFlower(palette[i % palette.length], false);
+  }
+})();
+function addFlower(cls, pop=true) {
+  const host = document.getElementById('gardenStrip');
+  const f = document.createElement('div');
+  f.className = 'flower ' + cls + (pop ? ' pop' : '');
+  f.innerHTML = '<div class="bloom"></div><div class="stem"></div>';
+  host.appendChild(f);
+  // cap strip length to keep it as a mini-view
+  while (host.children.length > 12) host.removeChild(host.firstChild);
+}
+
+/* 3) Words — falling-word enemies. The TARGET word is the
+   word-as-enemy framing in action: green pill, pulsing, with
+   the ▶ arrow. Other words are color-graded by focus. */
+const WORDS = [
+  { text: 'cat',     x: 90,  y: 30,  focus: 'high',  target: false },
+  { text: 'dragon',  x: 320, y: 80,  focus: 'mid',   target: false },
+  { text: 'magical', x: 180, y: 140, focus: 'high',  target: true  },
+  { text: 'rose',    x: 60,  y: 200, focus: 'low',   target: false },
+  { text: 'star',    x: 380, y: 180, focus: 'mid',   target: false },
+];
+
+function renderWords() {
+  const host = document.getElementById('playArea');
+  host.innerHTML = '';
+  WORDS.forEach((w, i) => {
+    const el = document.createElement('div');
+    el.className = 'word' + (w.target ? ' target' : '');
+    el.dataset.focus = w.focus;
+    el.style.left = w.x + 'px';
+    el.style.top  = w.y + 'px';
+    el.id = 'word-' + i;
+
+    if (w.target) {
+      // Use explicit string (no whitespace inside the element) to avoid the
+      // "mag ical" split. <span>typed</span><span>rest</span> glued together.
+      el.innerHTML = '<span class="arrow">▶</span><span class="typed">mag</span><span class="rest">ical</span>';
+    } else {
+      el.textContent = w.text;
+    }
+    host.appendChild(el);
+  });
+}
+renderWords();
+
+/* 4) Keyboard — highlight the next key in the target word */
+function highlightNextKey() {
+  document.querySelectorAll('.key').forEach(k => k.classList.remove('next'));
+  const target = document.querySelector('.word.target');
+  if (!target) return;
+  // Find the next untyped letter (skip styled span, read text)
+  const fullText = target.textContent.replace('▶', '').trim();
+  const typed = target.querySelector('.typed')?.textContent || '';
+  const nextChar = fullText.slice(typed.length, typed.length + 1).toLowerCase();
+  if (!nextChar) return;
+  const key = document.querySelector(`.key[data-key="${nextChar}"]`);
+  if (key) key.classList.add('next');
+}
+highlightNextKey();
+
+/* 5) Click key — simulate correct / wrong keypress */
+document.querySelectorAll('.key').forEach(key => {
+  key.addEventListener('click', () => {
+    if (key.classList.contains('press')) return;
+    key.classList.add('press');
+    setTimeout(() => key.classList.remove('press'), 100);
+
+    const k = key.dataset.key;
+    const target = document.querySelector('.word.target');
+    if (!target) return;
+    const fullText = target.textContent.replace('▶', '').trim();
+    const typedEl  = target.querySelector('.typed');
+    const typed    = typedEl ? typedEl.textContent : '';
+    const expected = fullText.slice(typed.length, typed.length + 1).toLowerCase();
+
+    if (k === expected) {
+      /* correct: extend typed, glow, next-key */
+      const newTyped = typed + k;
+      if (newTyped.length === fullText.length) {
+        /* word complete: BURST */
+        completeWord(target);
+      } else {
+        if (typedEl) typedEl.textContent = newTyped;
+        target.classList.add('glow');
+        setTimeout(() => target.classList.remove('glow'), 450);
+        highlightNextKey();
+      }
+    } else {
+      /* miss: shake */
+      target.classList.add('shake');
+      setTimeout(() => target.classList.remove('shake'), 300);
+    }
+  });
+});
+
+function completeWord(target) {
+  const rect = target.getBoundingClientRect();
+  const area = document.getElementById('playArea').getBoundingClientRect();
+  const cx = rect.left - area.left + rect.width / 2;
+  const cy = rect.top  - area.top  + rect.height / 2;
+
+  // Pet celebrate
+  const pet = document.getElementById('pet');
+  pet.style.transform = 'scale(1.15)';
+  setTimeout(() => pet.style.transform = '', 400);
+
+  // Bubble swap
+  const bubble = document.getElementById('bubble');
+  const phrases = ['Yes! ✨', 'Boom! 💥', 'Grow! 🌸', 'Nice! 💪', 'Sparkle! ⭐'];
+  bubble.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+
+  // Score popup
+  const pop = document.createElement('div');
+  pop.className = 'score-pop';
+  pop.textContent = '+' + (10 + Math.floor(Math.random() * 8));
+  pop.style.left = (cx - 20) + 'px';
+  pop.style.top  = (cy - 20) + 'px';
+  document.getElementById('playArea').appendChild(pop);
+  setTimeout(() => pop.remove(), 900);
+
+  // Sparkles
+  for (let i = 0; i < 8; i++) {
+    const sp = document.createElement('div');
+    sp.className = 'spark';
+    sp.style.left = cx + 'px';
+    sp.style.top  = cy + 'px';
+    sp.style.setProperty('--dx', (Math.random() * 120 - 60) + 'px');
+    sp.style.setProperty('--dy', (Math.random() * -100 - 20) + 'px');
+    document.getElementById('playArea').appendChild(sp);
+    setTimeout(() => sp.remove(), 700);
+  }
+
+  // Add a flower
+  addFlower(['f1','f2','f3','f4','f5','f6','f7','f8','f9'][Math.floor(Math.random()*9)]);
+
+  // Replace target with a new word
+  setTimeout(() => {
+    target.remove();
+    // Add a new random word to keep the loop alive
+    const newWords = ['bloom','wisp','cloud','pearl','glow','fern','sun','leaf'];
+    const text = newWords[Math.floor(Math.random() * newWords.length)];
+    const el = document.createElement('div');
+    el.className = 'word target';
+    el.dataset.focus = 'high';
+    el.style.left = (60 + Math.random() * 380) + 'px';
+    el.style.top  = '20px';
+    el.innerHTML = `<span class="arrow">▶</span><span class="typed">${text[0]}</span><span class="rest">${text.slice(1)}</span>`;
+    document.getElementById('playArea').appendChild(el);
+    highlightNextKey();
+  }, 350);
+}
+
+/* 6) Tweak panel — dev only */
+document.getElementById('reduceMotion').addEventListener('change', (e) => {
+  document.body.style.cssText = e.target.checked
+    ? '--motion: reduce'
+    : '';
+  // Reload trick — toggle a class that CSS reads
+  document.documentElement.classList.toggle('reduce', e.target.checked);
+});
+document.getElementById('triggerBurst').addEventListener('click', () => {
+  const target = document.querySelector('.word.target');
+  if (target) completeWord(target);
+});
+document.getElementById('triggerMiss').addEventListener('click', () => {
+  const target = document.querySelector('.word.target');
+  if (target) {
+    target.classList.add('shake');
+    setTimeout(() => target.classList.remove('shake'), 300);
+  }
+});
+
+/* 7) Reduce-motion CSS hook */
+const rmStyle = document.createElement('style');
+rmStyle.textContent = `
+  html.reduce *, html.reduce *::before, html.reduce *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+`;
+document.head.appendChild(rmStyle);
+</script>
+</body>
+</html>

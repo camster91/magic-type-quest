@@ -67,14 +67,19 @@ export function bumpStreakIfToday(profile) {
   return true;
 }
 
-/** True if the kid has a streak to lose and the last Daily Moment was
- *  completed > 20h ago. F2 lays the visual slot; F7 (Streak warning)
- *  will reuse this to drive the "Don't lose your 🔥!" call-to-action. */
+/** True if the kid has a streak worth warning about AND the last Daily
+ *  Moment was completed > 20h ago. F2 lays the visual slot; F7 (Streak
+ *  warning) will reuse this to drive the "Don't lose your 🔥!" CTA.
+ *
+ *  Threshold: streak >= 2. A brand-new player with streak=1 has nothing
+ *  meaningful to lose yet — warning them feels aggressive on the first
+ *  re-open. The warning should appear once the streak is something the
+ *  kid has actually built (2+ days). */
 export function isStreakAtRisk(profile, now = Date.now()) {
-  if (!profile || !profile.streak || profile.streak < 1) return false;
-  if (!profile.lastDailyMomentDate) return true; // never played a Daily Moment yet
+  if (!profile || !profile.streak || profile.streak < 2) return false;
+  if (!profile.lastDailyMomentDate) return false; // streak=2+ but never played — no warning yet
   const last = new Date(profile.lastDailyMomentDate).getTime();
-  if (Number.isNaN(last)) return true;
+  if (Number.isNaN(last)) return false;
   return (now - last) > 20 * 60 * 60 * 1000; // > 20h
 }
 

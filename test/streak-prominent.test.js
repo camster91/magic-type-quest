@@ -96,8 +96,13 @@ describe('F2 — isStreakAtRisk behavior', () => {
     expect(isStreakAtRisk(null)).toBe(false);
   });
 
-  it('returns true when streak > 0 and lastDailyMomentDate is null (never played)', () => {
-    expect(isStreakAtRisk({ streak: 3, lastDailyMomentDate: null })).toBe(true);
+  it('returns true when streak >= 2 and lastDailyMomentDate is null (never played but streak earned)', () => {
+    // Updated 2026-06-04 (P0 fix): brand-new players with streak=1 should NOT
+    // see the at-risk warning. Only when streak >= 2 AND they've never
+    // completed a Daily Moment does it fire. The fix is intentional — the
+    // original behavior felt aggressive on first re-open.
+    expect(isStreakAtRisk({ streak: 2, lastDailyMomentDate: null })).toBe(false);
+    expect(isStreakAtRisk({ streak: 1, lastDailyMomentDate: null })).toBe(false);
   });
 
   it('returns false when the last Daily Moment was 5h ago (still safe)', () => {
@@ -110,9 +115,11 @@ describe('F2 — isStreakAtRisk behavior', () => {
     expect(isStreakAtRisk({ streak: 3, lastDailyMomentDate: twentyFiveHoursAgo })).toBe(true);
   });
 
-  it('returns true exactly at 20h+1ms (boundary, > not >=)', () => {
+  it('returns true exactly at 20h+1ms (boundary, > not >=) for streak >= 2', () => {
+    // Updated 2026-06-04 (P0 fix): streak=1 doesn't warn; streak=2+ does.
     const justOver = new Date(Date.now() - (20 * 60 * 60 * 1000 + 1)).toISOString();
-    expect(isStreakAtRisk({ streak: 1, lastDailyMomentDate: justOver })).toBe(true);
+    expect(isStreakAtRisk({ streak: 1, lastDailyMomentDate: justOver })).toBe(false);
+    expect(isStreakAtRisk({ streak: 2, lastDailyMomentDate: justOver })).toBe(true);
   });
 
   it('honors the `now` parameter for deterministic tests', () => {
