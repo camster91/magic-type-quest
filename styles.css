@@ -500,7 +500,9 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .level-card.play { cursor: pointer; }
 .level-card.play:hover { transform: translateY(-3px); border-color: var(--primary-light); box-shadow: 0 6px 18px rgba(139,92,246,0.25); }
 .level-card.completed { background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.35); }
+.level-card-art { position: relative; width: 100%; height: 64px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
 .level-card-img { width: 56px; height: 56px; object-fit: contain; }
+.level-card-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); }
 .level-card-img.loading { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
 @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 .level-progress-ring { position: absolute; bottom: 8px; right: 8px; width: 24px; height: 24px; }
@@ -508,10 +510,51 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .level-progress-ring circle { fill: none; stroke-width: 3; }
 .level-progress-ring .bg { stroke: rgba(255,255,255,0.1); }
 .level-progress-ring .fill { stroke: var(--success); stroke-linecap: round; transition: stroke-dashoffset 0.5s ease-out; }
-.level-card.locked { opacity: 0.5; pointer-events: none; }
 .level-card-name { font-weight: 800; font-size: 0.9rem; }
-.level-card-sub { font-size: 0.7rem; color: var(--text-dim); line-height: 1.3; max-width: 22ch; }
-.level-lock { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 1.6rem; opacity: 0.5; }
+.level-card-sub {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  line-height: 1.3;
+  max-width: 22ch;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* T20: Locked card affordance — dim+desat the art, add dashed border, big padlock
+   in the middle, and a "LOCKED" chip top-right.  No more "is it broken?" cards. */
+.level-card.locked {
+  opacity: 0.72;
+  pointer-events: none;
+  border: 1px dashed rgba(148, 163, 184, 0.55);
+  filter: grayscale(0.7);
+}
+.level-card.locked .level-card-img { opacity: 0.35; }
+.level-card.locked .level-card-icon { opacity: 0.35; filter: none; }
+.level-lock {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: none;
+}
+.level-lock-icon { font-size: 1.8rem; opacity: 0.95; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)); }
+.level-lock-chip {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.85);
+  color: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  backdrop-filter: blur(4px);
+  text-transform: uppercase;
+}
 .level-check { position: absolute; top: 6px; right: 6px; font-size: 1rem; }
 @media (max-width: 420px) {
   .level-grid { grid-template-columns: 1fr; }

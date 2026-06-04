@@ -208,9 +208,12 @@ function renderLevelCards() {
   if (!container) return;
 
   const completed = gameState.profile?.completedLevels || [];
+  // Unique artwork per lesson where it exists. Lessons 4, 7, 8, 9, 10 fall back
+  // to the big "master" badge — we render the lesson's emoji icon over it instead
+  // of leaning on a generic illustration.
   const levelImages = {
     1: 'home-row.png', 2: 'top-row.png', 3: 'bottom-row.png',
-    4: 'home-row.png', 5: 'capitals.png', 6: 'numbers.png',
+    4: 'master.png', 5: 'capitals.png', 6: 'numbers.png',
     7: 'master.png', 8: 'master.png', 9: 'master.png', 10: 'master.png'
   };
 
@@ -220,16 +223,22 @@ function renderLevelCards() {
     const status = done ? 'completed' : !unlocked ? 'locked' : 'play';
     const imgName = levelImages[lev.id] || 'home-row.png';
     // T15: build a "what this teaches" 1-line subtitle from the description.
+    // T20: 90 char ceiling + 2-line clamp in CSS so the sentence reads clean
+    // and never gets cut mid-word.
     const teaches = (lev.description || lev.subtitle || '').split(/[!?.]/)[0].trim();
-    const shortTeaches = teaches.length > 60 ? teaches.slice(0, 58) + '…' : teaches;
+    const shortTeaches = teaches.length > 90 ? teaches.slice(0, 88) + '…' : teaches;
+    const lockHint = lev.id > 1 ? `Complete level ${lev.id - 1} to unlock` : 'Locked';
     
     return `
-      <button type="button" class="level-card ${status}" data-level="${lev.id}" ${status === 'locked' ? 'disabled' : ''} aria-label="${lev.name}: ${shortTeaches}">
-        <img class="level-card-img" src="/assets/levels/${imgName}" alt="" aria-hidden="true"
-             onerror="this.style.display='none'">
+      <button type="button" class="level-card ${status}" data-level="${lev.id}" ${status === 'locked' ? 'disabled' : ''} aria-label="${lev.name}: ${shortTeaches}" title="${status === 'locked' ? lockHint : ''}">
+        <div class="level-card-art">
+          <img class="level-card-img" src="/assets/levels/${imgName}" alt="" aria-hidden="true"
+               onerror="this.style.display='none'">
+          <div class="level-card-icon" aria-hidden="true">${lev.icon || '⌨️'}</div>
+        </div>
         <div class="level-card-name">${lev.name}</div>
         <div class="level-card-sub">${shortTeaches}</div>
-        ${status === 'locked' ? '<div class="level-lock" aria-hidden="true">🔒</div>' : ''}
+        ${status === 'locked' ? `<div class="level-lock" aria-hidden="true"><span class="level-lock-icon">🔒</span><span class="level-lock-chip">LOCKED</span></div>` : ''}
         ${done ? '<div class="level-check" aria-hidden="true">✅</div>' : ''}
       </button>
     `;
