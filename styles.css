@@ -523,16 +523,20 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
   text-overflow: ellipsis;
 }
 /* T20: Locked card affordance — dim+desat the art, add dashed border, big padlock
-   in the middle, and a "LOCKED" chip top-right.  No more "is it broken?" cards. */
+   in the middle, and a "LOCKED" chip top-right.  No more "is it broken?" cards.
+   The lock overlay is scoped to .level-card-art so it doesn't bleed into the
+   title/subtitle row below. */
 .level-card.locked {
-  opacity: 0.72;
+  opacity: 0.85;
   pointer-events: none;
   border: 1px dashed rgba(148, 163, 184, 0.55);
   filter: grayscale(0.7);
 }
 .level-card.locked .level-card-img { opacity: 0.35; }
 .level-card.locked .level-card-icon { opacity: 0.35; filter: none; }
-.level-lock {
+.level-card.locked .level-card-name,
+.level-card.locked .level-card-sub { opacity: 0.6; }
+.level-card.locked .level-lock-art {
   position: absolute;
   inset: 0;
   display: flex;

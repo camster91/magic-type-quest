@@ -235,10 +235,10 @@ function renderLevelCards() {
           <img class="level-card-img" src="/assets/levels/${imgName}" alt="" aria-hidden="true"
                onerror="this.style.display='none'">
           <div class="level-card-icon" aria-hidden="true">${lev.icon || '⌨️'}</div>
+          ${status === 'locked' ? `<div class="level-lock-art" aria-hidden="true"><span class="level-lock-icon">🔒</span><span class="level-lock-chip">LOCKED</span></div>` : ''}
         </div>
         <div class="level-card-name">${lev.name}</div>
         <div class="level-card-sub">${shortTeaches}</div>
-        ${status === 'locked' ? `<div class="level-lock" aria-hidden="true"><span class="level-lock-icon">🔒</span><span class="level-lock-chip">LOCKED</span></div>` : ''}
         ${done ? '<div class="level-check" aria-hidden="true">✅</div>' : ''}
       </button>
     `;
