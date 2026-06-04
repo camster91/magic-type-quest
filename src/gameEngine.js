@@ -509,6 +509,12 @@ function onCorrectKeystroke(key) {
 
   sounds.correct();
   showKeyFeedback(key, true);
+  // T26: tactile feedback on every keystroke — pressed key glows + scales
+  // for 200ms (covers ALL keys, not just the target), target word pulses
+  // green, +1 floater rises above the score.
+  pulsePressedKey(key);
+  pulseTargetWord();
+  showPlusOneFloater();
   highlightTargetKey(gameState.targetWord?.text?.[gameState.targetIndex]);
   updateWPM();
 
@@ -535,6 +541,10 @@ function onWrongKeystroke(key) {
 
   sounds.wrong();
   showKeyFeedback(key, false);
+  // T26: pressed-pulse on the wrong key + a sharper 200ms red flash so the
+  // kid feels a "nope" without it reading as punishment.
+  pulsePressedKey(key);
+  flashWrongKey(key);
   gameState.combo = 0;
   updateCombo();
   if (gameState.targetWord) {
@@ -639,6 +649,8 @@ function completeWord() {
   gameState.combo++;
   gameState.maxCombo = Math.max(gameState.maxCombo, gameState.combo);
   if (gameState.combo >= 2) sounds.combo();
+  // T26: COMBO x5 / x10 / x15 milestone callout floats up for 800ms.
+  showComboFloater(gameState.combo);
   
   // Stats
   gameState.wordsTyped++;
@@ -925,6 +937,87 @@ export function showKeyFeedback(key, correct) {
     keyEl.classList.add(correct ? 'correct' : 'wrong');
     setTimeout(() => keyEl.classList.remove('correct', 'wrong'), 300);
   }
+}
+
+// ===== T26: PER-KEYPRESS FEEDBACK =====
+// On every keystroke (correct or wrong) the pressed key gets a 200ms
+// glow + 1.1x scale, on top of the existing color tint from .key.correct /
+// .key.wrong. The .pressed class triggers the CSS animation; we remove it
+// after 200ms so the key returns to its resting state. Both the practice
+// keyboard and the game keyboard light up because we querySelectorAll.
+function pulsePressedKey(key) {
+  if (!key) return;
+  const els = document.querySelectorAll(`.key[data-key="${key.toLowerCase()}"]`);
+  els.forEach(el => {
+    el.classList.remove('pressed');
+    // Force reflow so re-adding the class re-fires the animation.
+    void el.offsetWidth;
+    el.classList.add('pressed');
+    setTimeout(() => el.classList.remove('pressed'), 200);
+  });
+}
+
+// Brief pulse on the target word card (canvas word's `glow` is already
+// driven by Word.update). We just bump it for 100ms so the word brightens
+// and the green glow blob behind it pulses.
+function pulseTargetWord() {
+  if (gameState.targetWord) {
+    gameState.targetWord.glow = Math.max(gameState.targetWord.glow, 1.0);
+  }
+}
+
+// Brief red flash on the wrong key (200ms) — different from .wrong which
+// is a 300ms color tint. The flash is a stronger "nope" cue.
+function flashWrongKey(key) {
+  if (!key) return;
+  const els = document.querySelectorAll(`.key[data-key="${key.toLowerCase()}"]`);
+  els.forEach(el => {
+    el.classList.remove('flash-wrong');
+    void el.offsetWidth;
+    el.classList.add('flash-wrong');
+    setTimeout(() => el.classList.remove('flash-wrong'), 200);
+  });
+}
+
+// "+1" floater above the target word card. T19 stripped the score HUD
+// (`.hud-score { display: none }`) for the one-word pedagogy, so we can't
+// anchor to #score — instead we anchor to .target-word, which is the single
+// thing the kid is looking at. Floats up 32px and fades out in 800ms.
+function showPlusOneFloater() {
+  const el = document.createElement('div');
+  el.className = 'plus-one-floater';
+  el.textContent = '+1';
+  const target = document.querySelector('.target-word') || document.getElementById('score');
+  if (target) {
+    const rect = target.getBoundingClientRect();
+    el.style.left = (rect.left + rect.width / 2) + 'px';
+    el.style.top  = (rect.top - 4) + 'px';
+  } else {
+    el.style.left = '50%';
+    el.style.top  = '30%';
+  }
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 800);
+}
+
+// Combo milestone callout. Fires at combos 5, 10, 15 — matches the brief.
+const COMBO_MILESTONES = new Set([5, 10, 15]);
+function showComboFloater(combo) {
+  if (!COMBO_MILESTONES.has(combo)) return;
+  const el = document.createElement('div');
+  el.className = 'combo-floater';
+  el.textContent = `COMBO x${combo}! 🔥`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 800);
+}
+
+// Soft pink 300ms screen flash on level complete — replaces the existing
+// white 0.8s flash. Pink (var(--accent)) reads as celebratory, not jarring.
+function showLevelFlash() {
+  const flash = document.createElement('div');
+  flash.className = 'level-flash';
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 320);
 }
 
 // ===== WORD POPUP =====
@@ -1496,12 +1589,11 @@ function checkLevelComplete() {
 function levelComplete() {
   gameState.gameOver = true;
   sounds.level();
-  
-  // Screen flash
-  const flash = document.createElement('div');
-  flash.style.cssText = 'position:fixed;inset:0;background:white;z-index:25;pointer-events:none;animation:screenFlash 0.8s ease-out forwards;';
-  document.body.appendChild(flash);
-  setTimeout(() => flash.remove(), 800);
+
+  // T26: soft pink 300ms screen flash (was: harsh white 800ms). Pink reads
+  // as celebratory, not jarring — and 300ms is short enough to feel snappy
+  // on the level-complete overlay that follows.
+  showLevelFlash();
   
   // Save progress
   if (!gameState.profile.completedLevels) {
