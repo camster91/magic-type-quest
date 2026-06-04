@@ -1,5 +1,5 @@
 // BloomType service worker — cache app shell + offline fallback
-const CACHE_NAME = "bloomtype-v10";
+const CACHE_NAME = "bloomtype-v11";
 const PRECACHE_ASSETS = [
   "./",
   "index.html",
