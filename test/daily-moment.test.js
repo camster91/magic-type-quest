@@ -90,7 +90,12 @@ describe('Daily Moment (F1) — source contracts', () => {
     expect(mainSrc).toMatch(/window\.__refreshMenuStats\s*=\s*updateMenuStats/);
   });
 
-  it('sw.js: CACHE_NAME bumped to bloomtype-v4 (cache-bust on every code deploy)', () => {
-    expect(swSrc).toMatch(/const CACHE_NAME\s*=\s*["']bloomtype-v4["']/);
+  it('sw.js: CACHE_NAME is bumped past the F1 baseline (v4) so users see F2/F3', () => {
+    // The original F1 contract was v4. F2 bumped to v5. F3 bumped to v6.
+    // The test only enforces that the bump is real, not the specific version.
+    const match = swSrc.match(/const CACHE_NAME\s*=\s*["']bloomtype-v(\d+)["']/);
+    expect(match).toBeTruthy();
+    const version = parseInt(match[1], 10);
+    expect(version).toBeGreaterThanOrEqual(6);
   });
 });

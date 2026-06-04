@@ -285,6 +285,95 @@ function updateMenuStats() {
   }
   const container = document.getElementById('daily-quests');
   if (container) container.style.display = quests.length > 0 ? 'block' : 'none';
+
+  // F3: pet hero on the home screen. Runs after streak/quest state above so
+  // the at-risk and post-Daily-Moment signals are already known.
+  updateHomePet();
+}
+
+// ===== F3: HOME PET HERO =====
+// Renders the pet image, evolution dots, and warning/celebrate class on
+// #pet-hero. Anti-features: reuses the 5 existing pet states, no new
+// animations, no pet dialogue beyond what story.js provides, no
+// customization UI. The pet is identity, not mechanic — the JS only
+// picks the right PNG; the kid never has to "feed" it.
+function updateHomePet() {
+  const petHero = document.getElementById('pet-hero');
+  const petImg = document.getElementById('pet-hero-img');
+  const petBubble = document.getElementById('pet-hero-bubble');
+  const evoContainer = document.getElementById('pet-evolution');
+  if (!petHero || !petImg) return;
+
+  const profile = gameState.profile || {};
+  const avatar = profile.avatar || '🌸';
+  const streak = profile.streak || 0;
+  const lastDM = profile.lastDailyMomentDate;
+  const atRisk = streak >= 1 && isStreakAtRisk(profile);
+
+  // Pick the pet state. Celebrate flag is a transient window signal set
+  // by gameEngine.endDailyMoment so the pet pops after a Daily Moment
+  // completion. We auto-clear it after the animation lands.
+  let state = 'idle';
+  let bubbleText = '';
+  if (window.__petHeroState === 'celebrate') {
+    state = 'celebrate';
+    window.__petHeroState = null; // single-shot
+    bubbleText = 'Yay! 🎉';
+  } else if (atRisk) {
+    state = 'idle'; // base state; .warning class drives the shake + red glow
+    bubbleText = streak >= 7 ? 'Tap me! 🏃' : 'Play to keep me! 💪';
+  } else if (streak >= 7) {
+    state = 'idle';
+    bubbleText = `🔥 ${streak} days!`;
+  } else if (streak >= 1) {
+    state = 'idle';
+    bubbleText = `${streak} day${streak === 1 ? '' : 's'}! Keep going!`;
+  } else {
+    state = 'idle';
+    bubbleText = `Hi! I'm ${avatar} 🌸`;
+  }
+
+  // Apply class + image
+  petHero.classList.remove('celebrate', 'warning');
+  if (state === 'celebrate') petHero.classList.add('celebrate');
+  if (atRisk) petHero.classList.add('warning');
+  petImg.src = getPetPath(avatar, state);
+
+  // Bubble: show for 2.4s when text changes; persistent while at-risk
+  if (petBubble) {
+    if (bubbleText && petBubble.textContent !== bubbleText) {
+      petBubble.textContent = bubbleText;
+      petBubble.classList.add('visible');
+      if (petBubble._hideTimer) clearTimeout(petBubble._hideTimer);
+      petBubble._hideTimer = setTimeout(() => {
+        if (!atRisk) petBubble.classList.remove('visible');
+      }, 2400);
+    } else if (atRisk) {
+      petBubble.classList.add('visible');
+    }
+  }
+
+  // Evolution dots — drive from profile.petEvolution (1/2/3)
+  if (evoContainer) {
+    const stage = Math.max(1, Math.min(3, profile.petEvolution || 1));
+    evoContainer.querySelectorAll('.evo-dot').forEach((dot) => {
+      const dotStage = parseInt(dot.dataset.stage, 10);
+      dot.classList.toggle('active', dotStage === stage);
+    });
+  }
+}
+
+// Trigger a one-shot celebrate on the home pet. Called by
+// gameEngine.endDailyMoment via window.__triggerPetHeroCelebrate so
+// the pet pops when the kid lands back on the menu after a Daily
+// Moment session. Equivalent to setting window.__petHeroState = 'celebrate'
+// and calling __refreshMenuStats().
+function triggerPetHeroCelebrate() {
+  window.__petHeroState = 'celebrate';
+  // Re-render the home pet now (in case the menu is already on screen)
+  if (typeof updateHomePet === 'function') updateHomePet();
+  // Also refresh streak/quest numbers in case the session just bumped them
+  if (typeof window.__refreshMenuStats === 'function') window.__refreshMenuStats();
 }
 
 // ===== PROFILE =====
@@ -577,6 +666,9 @@ function init() {
   // (streak counter, lastDailyMomentDate label, quest progress) without
   // having to import updateMenuStats from this module.
   window.__refreshMenuStats = updateMenuStats;
+  // F3: let gameEngine's endDailyMoment trigger a one-shot pet celebrate
+  // when the kid lands back on the menu after a Daily Moment.
+  window.__triggerPetHeroCelebrate = triggerPetHeroCelebrate;
 }
 
 init();

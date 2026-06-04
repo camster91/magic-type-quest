@@ -41,29 +41,44 @@
     <span class="streak-label">day streak</span>
   </div>
 
-  <div class="menu-buttons">
-    <button type="button" id="btn-daily-moment" class="btn btn-daily-moment" aria-label="Start a 60-second Daily Moment typing session">
+  <!-- F3: Pet-as-front-of-house. The pet is the brand — visible above the
+       menu, reacts to streak state (idle / celebrate / warning), shows the
+       3 evolution dots underneath. Driven by updateHomePet() in main.js. -->
+  <div id="pet-hero" class="pet-hero" aria-label="Your pet companion">
+    <div class="pet-hero-stage">
+      <img id="pet-hero-img" class="pet-hero-img" src="/assets/pets/flower-idle.png" alt="Your pet" />
+      <div id="pet-hero-bubble" class="pet-hero-bubble" aria-live="polite">Hi! I'm Bloom 🌸</div>
+    </div>
+    <div class="pet-evolution" id="pet-evolution" aria-label="Pet evolution stage">
+      <span class="evo-dot active" data-stage="1" title="Sprout">🌱</span>
+      <span class="evo-dot" data-stage="2" title="Bud">🌿</span>
+      <span class="evo-dot" data-stage="3" title="Bloom">🌸</span>
+    </div>
+  </div>
+
+  <div class="menu-dock">
+    <button type="button" id="btn-daily-moment" class="btn btn-daily-moment menu-dock-item menu-dock-item-wide" aria-label="Start a 60-second Daily Moment typing session">
       <span class="btn-icon">⚡</span> Daily Moment <span class="btn-daily-moment-sub">60s · low stress</span>
     </button>
-    <button type="button" id="btn-start" class="btn btn-primary btn-lg">
+    <button type="button" id="btn-start" class="btn btn-primary menu-dock-item">
       <span class="btn-icon">🎮</span> Play Now
     </button>
-    <button type="button" id="btn-lesson-select" class="btn btn-secondary">
-      <span class="btn-icon">📚</span> Choose Lesson
+    <button type="button" id="btn-lesson-select" class="btn btn-secondary menu-dock-item">
+      <span class="btn-icon">📚</span> Lessons
     </button>
-    <button type="button" id="btn-practice" class="btn btn-secondary">
-      <span class="btn-icon">🎯</span> Practice Letters
+    <button type="button" id="btn-practice" class="btn btn-secondary menu-dock-item">
+      <span class="btn-icon">🎯</span> Practice
     </button>
-    <button type="button" id="btn-profile" class="btn btn-secondary">
-      <span class="btn-icon">👤</span> My Profile
+    <button type="button" id="btn-profile" class="btn btn-secondary menu-dock-item">
+      <span class="btn-icon">👤</span> Profile
     </button>
-    <button type="button" id="btn-garden" class="btn btn-secondary">
-      <span class="btn-icon">🌺</span> My Garden
+    <button type="button" id="btn-garden" class="btn btn-secondary menu-dock-item">
+      <span class="btn-icon">🌺</span> Garden
     </button>
-    <a href="./parents.html" class="btn btn-secondary" style="text-decoration:none">
-      <span class="btn-icon">📖</span> For Parents
+    <a href="./parents.html" class="btn btn-secondary menu-dock-item" style="text-decoration:none">
+      <span class="btn-icon">📖</span> Parents
     </a>
-    <a href="./teacher.html" class="btn btn-secondary" style="text-decoration:none">
+    <a href="./teacher.html" class="btn btn-secondary menu-dock-item" style="text-decoration:none">
       <span class="btn-icon">📊</span> Progress
     </a>
   </div>

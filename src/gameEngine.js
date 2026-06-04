@@ -1630,7 +1630,9 @@ export function endDailyMoment({ reason } = {}) {
 
   // Return to menu
   showScreen('menu');
-  // The menu's updateMenuStats is in main.js; use a global tick if available
+  // The menu's updateMenuStats is in main.js; use a global tick if available.
+  // F3: signal the home pet to celebrate once the menu re-renders.
+  window.__petHeroState = 'celebrate';
   if (typeof window.__refreshMenuStats === 'function') window.__refreshMenuStats();
 }
 
