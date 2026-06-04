@@ -731,11 +731,33 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 }
 .key-wide { width: 34px; }
 .key-space { width: 140px; height: 28px; }
-.key[data-finger="lp"]::after, .key[data-finger="rp"]::after { content: 'P'; position: absolute; top: -8px; right: -4px; font-size: 7px; font-weight: 800; color: #EF4444; opacity: 0; transition: opacity 0.2s; background: rgba(0,0,0,0.6); border-radius: 3px; padding: 1px 2px; }
-.key[data-finger="lr"]::after, .key[data-finger="rr"]::after { content: 'R'; position: absolute; top: -8px; right: -4px; font-size: 7px; font-weight: 800; color: #F97316; opacity: 0; transition: opacity 0.2s; background: rgba(0,0,0,0.6); border-radius: 3px; padding: 1px 2px; }
-.key[data-finger="lm"]::after, .key[data-finger="rm"]::after { content: 'M'; position: absolute; top: -8px; right: -4px; font-size: 7px; font-weight: 800; color: #EAB308; opacity: 0; transition: opacity 0.2s; background: rgba(0,0,0,0.6); border-radius: 3px; padding: 1px 2px; }
-.key[data-finger="li"]::after, .key[data-finger="ri"]::after { content: 'I'; position: absolute; top: -8px; right: -4px; font-size: 7px; font-weight: 800; color: #22C55E; opacity: 0; transition: opacity 0.2s; background: rgba(0,0,0,0.6); border-radius: 3px; padding: 1px 2px; }
-.key.target::after { opacity: 1; }
+/* T19: per-finger colored chip on the target key. The kid sees "L-Pinky" /
+   "R-Index" floating just above the next key — not just a letter. The chip
+   color comes from the finger-zone selectors below, so left = blue family,
+   right = green family. Hidden until the key becomes .target. */
+.key::after {
+  content: attr(data-finger-label);
+  position: absolute;
+  top: -22px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 800;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.15s, transform 0.15s;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(139, 92, 246, 0.9);
+  white-space: nowrap;
+  pointer-events: none;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+.key[data-finger="lp"]::after, .key[data-finger="rp"]::after { background: #EF4444; }
+.key[data-finger="lr"]::after, .key[data-finger="rr"]::after { background: #F97316; }
+.key[data-finger="lm"]::after, .key[data-finger="rm"]::after { background: #EAB308; color: #1e1b4b; }
+.key[data-finger="li"]::after, .key[data-finger="ri"]::after { background: #22C55E; }
+.key.target::after { opacity: 1; transform: translateX(-50%) translateY(-2px); }
 @keyframes keyPulse { 0%,100%{transform:scale(1.05)} 50%{transform:scale(1.18)} }
 @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)} }
 
@@ -910,7 +932,11 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 #evolution-desc { font-size: 0.95rem; color: var(--text-dim); margin-bottom: 12px; }
 .evolution-pet-line { font-style: italic; color: var(--accent-light); font-size: 0.9rem; border-left: 3px solid var(--accent); padding-left: 10px; text-align: left; margin-bottom: 16px; }
 
-#game-screen.active ~ .pet-container, #game-screen.active .pet-container { display: none; }
+/* T19: pet is now visible during gameplay. The position (bottom: 175px; left: 60px)
+   sits above the keyboard (which starts at bottom: 0) and to the left of the
+   target word (centered at top: 32%). Reactions flow through showPetReaction()
+   and animate .pet-face.bounce / .pet-face.shake / .pet-face.celebrate.
+   Replaces the prior `#game-screen.active .pet-container { display: none }` rule. */
 
 .review-keys { width: 100%; max-width: 420px; margin: 10px 0; display: none; }
 .review-header { font-size: 0.8rem; font-weight: 700; color: var(--accent); margin-bottom: 6px; }

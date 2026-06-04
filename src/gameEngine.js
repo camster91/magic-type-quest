@@ -796,16 +796,24 @@ function updateKeyboardHighlight() {
 
 // ===== KEYBOARD HIGHLIGHT =====
 export function highlightTargetKey(char) {
+  // T19: there are TWO keyboards on the page (practice + game). querySelector
+  // returned only the FIRST match, so the practice key lit up while the game
+  // key stayed dark. Use querySelectorAll so both keyboards stay in sync.
   document.querySelectorAll('.key').forEach(k => k.classList.remove('target'));
-  
+
   if (!char) return;
-  
-  const keyEl = document.querySelector(`.key[data-key="${char.toLowerCase()}"]`);
-  if (keyEl) {
+
+  const lower = char.toLowerCase();
+  const keyEls = document.querySelectorAll(`.key[data-key="${lower}"]`);
+  keyEls.forEach(keyEl => {
     keyEl.classList.add('target');
-    keyEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-  
+    // Only scrollIntoView the game keyboard (the visible one during play).
+    // Practice keyboard is hidden so scrolling it does nothing useful.
+    if (keyEl.closest('#virtual-keyboard-game')) {
+      keyEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+
   // Show finger hint
   const hint = getFingerHint(char);
   if (hint) {
