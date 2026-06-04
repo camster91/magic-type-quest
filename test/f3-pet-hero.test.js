@@ -219,8 +219,10 @@ describe('F3 — Pet hero: anti-features explicitly NOT built', () => {
 });
 
 describe('F3 — Pet hero: SW cache bust (so users see the new layout)', () => {
-  it('public/sw.js CACHE_NAME is bumped to v6 (was v5 in F2)', () => {
-    expect(swSrc).toMatch(/const CACHE_NAME = "bloomtype-v6"/);
+  it('public/sw.js CACHE_NAME is bumped past v5 (F2 baseline) so users see F3', () => {
+    // F3 ship set v5 -> v6. P0 follow-up (streak >= 2 threshold) bumped to v7.
+    // Test allows any version > v5; the daily-moment test enforces "> v4".
+    expect(swSrc).toMatch(/const CACHE_NAME = "bloomtype-v([6-9]|\d{2,})"/);
     expect(swSrc).not.toMatch(/const CACHE_NAME = "bloomtype-v5"/);
   });
 });
