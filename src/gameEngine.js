@@ -222,6 +222,14 @@ function gameLoop(timestamp) {
   // Clear canvas
   ctx.clearRect(0, 0, gameState.canvasW, gameState.canvasH);
 
+  // T22: detect "target idle" — kid has an active target word but hasn't
+  // pressed a key in 3.5s. Their combo is about to break and they're
+  // disengaged. Switch the pet to the 'hurt' state (wilted/sad) with a
+  // "Don't forget me!" bubble to nudge them back. The state reverts to
+  // idle on next correct keystroke (handled in onCorrectKeystroke via
+  // clearPetWorried).
+  checkPetIdleWarning();
+
   // T19: in T15 overlay mode, the canvas is a quiet gradient backdrop.
   // No mushrooms, no forest, no vines, no falling particles. The word
   // (HTML overlay) and the pet (HTML overlay) are the only focal points.
@@ -495,14 +503,25 @@ function onCorrectKeystroke(key) {
   const k = key.toLowerCase();
   if (!gameState.keyAccuracy[k]) gameState.keyAccuracy[k] = { correct: 0, wrong: 0 };
   gameState.keyAccuracy[k].correct++;
-  
+
   // Spaced repetition tracking
   recordKeyPractice(gameState.profile, k, true);
-  
+
   sounds.correct();
   showKeyFeedback(key, true);
   highlightTargetKey(gameState.targetWord?.text?.[gameState.targetIndex]);
   updateWPM();
+
+  // T22: per-keystroke pet pulse. The .correct class triggers a 350ms
+  // brightness+scale flash on the pet face. We don't swap pet state on
+  // every keystroke (would be too chaotic) — the state swaps still happen
+  // on word_complete / loseHealth via showPetReaction. The pulse is
+  // removed/restarted by toggling the class off then on.
+  pulsePetFace('correct');
+  // T22: cancel any active "worried" reaction and reset the idle timer —
+  // the kid is back on track.
+  lastCorrectKeystrokeAt = performance.now();
+  clearPetWorried();
 }
 
 function onWrongKeystroke(key) {
@@ -510,10 +529,10 @@ function onWrongKeystroke(key) {
   const k = key.toLowerCase();
   if (!gameState.keyAccuracy[k]) gameState.keyAccuracy[k] = { correct: 0, wrong: 0 };
   gameState.keyAccuracy[k].wrong++;
-  
+
   // Spaced repetition tracking
   recordKeyPractice(gameState.profile, k, false);
-  
+
   sounds.wrong();
   showKeyFeedback(key, false);
   gameState.combo = 0;
@@ -523,10 +542,49 @@ function onWrongKeystroke(key) {
   }
   updateHearts();
   updateWPM();
-  
+
   // Screen shake on wrong answer
   document.body.classList.add('screen-shake');
   setTimeout(() => document.body.classList.remove('screen-shake'), 400);
+
+  // T22: pet shake + short "Try again!" bubble. Held briefly so the kid
+  // sees the pet react, then the bubble clears itself after 900ms (shorter
+  // than showPetReaction's 2200ms default — wrong-key feedback should be
+  // quick so it doesn't pile up if the kid is mistyping).
+  pulsePetFace('wrong');
+  showPetBubble('Try again!', 900);
+  // T22: a wrong key still proves the kid is present. Reset the idle
+  // timer so the "Don't forget me!" bubble doesn't fire immediately after.
+  lastCorrectKeystrokeAt = performance.now();
+  clearPetWorried();
+}
+
+/** T22: toggle a one-shot animation class on the gameplay pet face.
+ *  We re-trigger the animation by removing the class, forcing a reflow,
+ *  and re-adding it — the standard CSS animation-restart pattern. */
+function pulsePetFace(cls) {
+  const petFace = document.getElementById('pet-img');
+  if (!petFace) return;
+  petFace.classList.remove('correct', 'wrong', 'celebrate');
+  // Force reflow so the next add re-fires the animation
+  // eslint-disable-next-line no-unused-expressions
+  void petFace.offsetWidth;
+  petFace.classList.add(cls);
+  setTimeout(() => petFace.classList.remove(cls), 500);
+}
+
+/** T22: show a short speech bubble above the pet without swapping the
+ *  pet state. Used for per-keystroke feedback (Try again!, Great!) where
+ *  the bubble text changes faster than the 2200ms timer in showPetReaction. */
+function showPetBubble(text, duration = 2200) {
+  const bubbleEl = document.getElementById('pet-bubble');
+  if (!bubbleEl) return;
+  bubbleEl.textContent = text;
+  bubbleEl.classList.add('visible');
+  // Reuse the same fade timer shape as showPetReaction so the bubble
+  // doesn't stack if multiple pulses fire close together.
+  if (bubbleEl._hideTimer) clearTimeout(bubbleEl._hideTimer);
+  bubbleEl._hideTimer = setTimeout(() => bubbleEl.classList.remove('visible'), duration);
 }
 
 function updateWPM() {
@@ -589,9 +647,13 @@ function completeWord() {
   // Check achievements
   checkAchievements();
   
-  // Pet reaction
+  // Pet reaction — T22 acceptance: each state must be visually distinct.
+  // T22 fix: the 'fire' PNG reads as defeated/faded, not celebratory, so
+  // combo-5 now uses the 'celebrate' state (sparkles, open mouth, raised
+  // arms). Word completion under combo-5 still bumps the bubble text so
+  // the kid still gets the milestone callout.
   if (gameState.combo >= 5) {
-    showPetReaction('fire', `🔥 ${gameState.combo} Combo!`);
+    showPetReaction('celebrate', `🔥 ${gameState.combo} Combo!`);
   } else {
     showPetReaction('happy');
   }
@@ -910,6 +972,12 @@ function showScorePopup(points, x, y) {
 import { PET_EMOJI_TO_NAME, getPetPath, PET_STATES, PET_NAME_LIST } from './assets.js';
 
 let petCurrentState = 'idle';
+// T22: timestamp of the last correct keystroke, used by the idle warning
+// detector. Initialized when the level starts so a kid who joins late
+// doesn't immediately see the "Don't forget me!" bubble.
+let lastCorrectKeystrokeAt = 0;
+let petIdleWarningActive = false;
+const PET_IDLE_WARN_MS = 3500;
 
 function getPetImage(state = petCurrentState) {
   const avatar = gameState.profile?.avatar || '🌸';
@@ -995,10 +1063,61 @@ function showPetReaction(type, text = '') {
     bubbleEl.classList.add('visible');
     setTimeout(() => bubbleEl.classList.remove('visible'), 2200);
   }
-  
+
   setTimeout(() => {
     setPetFrame('idle');
   }, 2200);
+}
+
+/** T22: detect when the kid is idle with a target word on screen. Their
+ *  combo is about to break and they may have lost focus. Switch the pet
+ *  to the 'hurt' state (wilted/sad) with a "Don't forget me!" bubble
+ *  until the next correct keystroke clears it. Runs every frame from
+ *  the game loop. */
+function checkPetIdleWarning() {
+  // Skip if the game is paused/over or the level is complete — the pet
+  // shouldn't nag during the celebration overlay.
+  if (gameState.paused || gameState.gameOver || gameState.levelComplete) {
+    return;
+  }
+  // Lazy init: on the first frame after a level start, lastCorrectKeystrokeAt
+  // is still 0 from the previous level (or first boot). Set it to "now" so
+  // the kid gets the full PET_IDLE_WARN_MS window before the bubble fires.
+  if (lastCorrectKeystrokeAt === 0) {
+    lastCorrectKeystrokeAt = performance.now();
+    return;
+  }
+  // Need an active target word — if there isn't one, the kid isn't being
+  // asked to type anything, so no nag.
+  if (!gameState.targetWord) {
+    if (petIdleWarningActive) clearPetWorried();
+    return;
+  }
+  const now = performance.now();
+  if (!petIdleWarningActive && (now - lastCorrectKeystrokeAt) > PET_IDLE_WARN_MS) {
+    petIdleWarningActive = true;
+    // Swap to the 'hurt' state (wilted, one eye closed, sad) — reads as
+    // "the pet misses you" rather than the defeated/ghosted 'fire' PNG.
+    // The .worried CSS filter (hue shift + desaturate) adds urgency on
+    // top so the pet doesn't look totally broken.
+    showPetReaction('hurt', "Don't forget me!");
+    const petFace = document.getElementById('pet-img');
+    if (petFace) petFace.classList.add('worried');
+  }
+}
+
+/** T22: clear the idle-warning state when the kid types again. Called
+ *  from onCorrectKeystroke. The 'hurt' state set in checkPetIdleWarning
+ *  will time out back to idle via the 2200ms timer inside showPetReaction;
+ *  we just remove the .worried filter and reset the timestamp. */
+function clearPetWorried() {
+  if (!petIdleWarningActive && !document.getElementById('pet-img')?.classList.contains('worried')) {
+    return;
+  }
+  petIdleWarningActive = false;
+  lastCorrectKeystrokeAt = performance.now();
+  const petFace = document.getElementById('pet-img');
+  if (petFace) petFace.classList.remove('worried');
 }
 
 // ===== GARDEN SYSTEM =====
