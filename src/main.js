@@ -222,13 +222,14 @@ function renderLevelCards() {
     const done = completed.includes(lev.id);
     const status = done ? 'completed' : !unlocked ? 'locked' : 'play';
     const imgName = levelImages[lev.id] || 'home-row.png';
-    // T15: build a "what this teaches" 1-line subtitle from the description.
-    // T20: 90 char ceiling + 2-line clamp in CSS so the sentence reads clean
-    // and never gets cut mid-word.
-    const teaches = (lev.description || lev.subtitle || '').split(/[!?.]/)[0].trim();
-    const shortTeaches = teaches.length > 90 ? teaches.slice(0, 88) + '…' : teaches;
+    // T28: use the lesson's `teaches` field as the on-card 1-line subtitle.
+    // Falls back to the first sentence of the description if a lesson was
+    // somehow added without `teaches`. 90-char ceiling + ellipsis is a
+    // safety net; clamp in CSS keeps it to 2 lines.
+    const teachesRaw = (lev.teaches || (lev.description || '').split(/[!?.]/)[0] || '').trim();
+    const shortTeaches = teachesRaw.length > 90 ? teachesRaw.slice(0, 88) + '…' : teachesRaw;
     const lockHint = lev.id > 1 ? `Complete level ${lev.id - 1} to unlock` : 'Locked';
-    
+
     return `
       <button type="button" class="level-card ${status}" data-level="${lev.id}" ${status === 'locked' ? 'disabled' : ''} aria-label="${lev.name}: ${shortTeaches}" title="${status === 'locked' ? lockHint : ''}">
         <div class="level-card-art">
@@ -239,6 +240,7 @@ function renderLevelCards() {
         </div>
         <div class="level-card-name">${lev.name}</div>
         <div class="level-card-sub">${shortTeaches}</div>
+        ${status === 'locked' ? `<div class="level-unlock-hint" aria-hidden="true">🔒 ${lockHint}</div>` : ''}
         ${done ? '<div class="level-check" aria-hidden="true">✅</div>' : ''}
       </button>
     `;

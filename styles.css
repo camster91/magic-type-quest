@@ -537,6 +537,16 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .level-card.locked .level-card-icon { opacity: 0.35; filter: none; }
 .level-card.locked .level-card-name,
 .level-card.locked .level-card-sub { opacity: 0.6; }
+/* T28: visible unlock-requirement line on locked cards. The title attribute
+   is invisible on touch and screen-reader-inconsistent. The chip + this
+   caption together make the lock state self-explanatory. */
+.level-unlock-hint {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: rgba(226, 232, 240, 0.78);
+  margin-top: 2px;
+  letter-spacing: 0.01em;
+}
 .level-card.locked .level-lock-art {
   position: absolute;
   inset: 0;

@@ -12,6 +12,8 @@ export const LESSON_LEVELS = {
     name: "Home Row Garden 🌸",
     subtitle: "Garden Words",
     description: "Learn the foundation with fun garden words! Your fingers always return here.",
+    // T28: "what this teaches" 1-line shown on the Lessons card
+    teaches: "Learn the home row keys: a, s, d, f, j, k, l",
     
     // Typing instruction
     keys: ["a", "s", "d", "f", "j", "k", "l", ";"],
@@ -68,6 +70,7 @@ export const LESSON_LEVELS = {
     name: "Top Row Sky ⬆️",
     subtitle: "Sky Words",
     description: "Reach up to the sky! Learn the top row keys with flying words.",
+    teaches: "Reach up to type: q, w, e, r, t, y, u, i, o, p",
     
     keys: ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
     keyboardRows: ["home", "top"],
@@ -120,6 +123,7 @@ export const LESSON_LEVELS = {
     name: "Bottom Row Ocean ⬇️",
     subtitle: "Ocean Words",
     description: "Dive deep underwater! Learn bottom row keys with sea creatures.",
+    teaches: "Reach down for: z, x, c, v, b, n, m",
     
     keys: ["z", "x", "c", "v", "b", "n", "m"],
     keyboardRows: ["home", "bottom"],
@@ -169,6 +173,7 @@ export const LESSON_LEVELS = {
     name: "All Letters Forest 🌲",
     subtitle: "Forest Adventure",
     description: "Explore the enchanted forest! Use all the letters you've learned.",
+    teaches: "Mix all 26 letters in real words",
     
     keys: ["a", "s", "d", "f", "j", "k", "l", ";", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "z", "x", "c", "v", "b", "n", "m"],
     keyboardRows: ["home", "top", "bottom"],
@@ -223,6 +228,7 @@ export const LESSON_LEVELS = {
     name: "Capital City 🏙️",
     subtitle: "City Words",
     description: "Build a city with CAPITAL letters! Hold Shift with your opposite hand.",
+    teaches: "Type with capitals: A, B, C, D...",
     
     keys: ["A", "S", "D", "F", "J", "K", "L", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
     keyboardRows: ["home", "top"],
@@ -280,6 +286,7 @@ export const LESSON_LEVELS = {
     name: "Number Galaxy 🚀",
     subtitle: "Space Numbers",
     description: "Blast off with numbers! Practice 0-9 in the galaxy.",
+    teaches: "Type numbers: 1, 2, 3, 4, 5, 6, 7, 8, 9, 0",
     
     keys: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
     keyboardRows: ["numbers"],
@@ -332,6 +339,7 @@ export const LESSON_LEVELS = {
     name: "Speed Meadow ⚡",
     subtitle: "Race Through",
     description: "Race through the meadow! Build your typing speed with nature words.",
+    teaches: "Type faster — build your WPM",
     
     keys: "abcdefghijklmnopqrstuvwxyz".split(""),
     keyboardRows: ["home", "top", "bottom"],
@@ -357,6 +365,7 @@ export const LESSON_LEVELS = {
     name: "Accuracy Peak 🎯",
     subtitle: "Climb High",
     description: "Climb to the peak with precision! Each keystroke matters.",
+    teaches: "Type accurately — every key matters",
     
     keys: "abcdefghijklmnopqrstuvwxyz".split(""),
     keyboardRows: ["home", "top", "bottom"],
@@ -382,6 +391,7 @@ export const LESSON_LEVELS = {
     name: "Master Valley ✨",
     subtitle: "Cross the Valley",
     description: "Cross the valley as a typing master! Use all your skills.",
+    teaches: "Combine all skills together",
     
     keys: "abcdefghijklmnopqrstuvwxyz".split(""),
     keyboardRows: ["home", "top", "bottom"],
@@ -407,6 +417,7 @@ export const LESSON_LEVELS = {
     name: "Legend Kingdom 🏆",
     subtitle: "Final Quest",
     description: "Become a legend in the magical kingdom! The ultimate typing challenge.",
+    teaches: "Touch-typing mastery — no looking at keys",
     
     keys: "abcdefghijklmnopqrstuvwxyz0123456789".split(""),
     keyboardRows: ["home", "top", "bottom", "numbers"],
