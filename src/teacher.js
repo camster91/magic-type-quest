@@ -94,8 +94,8 @@ function renderRoster(students, isCloud) {
   empty.classList.add('hidden');
   
   // Stats
-  const totalStars = students.reduce((s, st) => s + (st.total_stars ?? st.totalStars ?? 0), 0);
-  const totalWords = students.reduce((s, st) => s + (st.total_words ?? st.totalWords ?? 0), 0);
+  const totalStars = students.reduce((s, st) => s + (Number(st.total_stars ?? st.totalStars) || 0), 0);
+  const totalWords = students.reduce((s, st) => s + (Number(st.total_words ?? st.totalWords) || 0), 0);
   const avgLevel = students.reduce((s, st) => {
     const cl = st.completed_levels ?? st.completedLevels ?? [];
     return s + (Array.isArray(cl) ? cl.length : 0);
@@ -141,14 +141,15 @@ function renderRoster(students, isCloud) {
     const badgeClass = level >= 10 ? 'badge-green' : level >= 5 ? 'badge-yellow' : 'badge-red';
     const avatar = escapeHTML(st.avatar || '🌸');
     const name = escapeHTML(st.name || 'Anonymous');
-    const words = st.total_words ?? st.totalWords ?? 0;
-    const score = st.high_score ?? st.highScore ?? 0;
-    const stars = st.total_stars ?? st.totalStars ?? 0;
+    const words = escapeHTML(st.total_words ?? st.totalWords ?? 0);
+    const score = escapeHTML(st.high_score ?? st.highScore ?? 0);
+    const stars = escapeHTML(st.total_stars ?? st.totalStars ?? 0);
+    const levelEsc = escapeHTML(level);
     
     return `
       <tr>
         <td><span class="student-avatar">${avatar}</span> <strong>${name}</strong></td>
-        <td>Level ${level}</td>
+        <td>Level ${levelEsc}</td>
         <td>${words}</td>
         <td>${score}</td>
         <td>${stars} ⭐</td>

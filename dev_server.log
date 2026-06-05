@@ -1,0 +1,10 @@
+
+> magic-type-quest@1.0.0 dev
+> vite
+
+Port 5173 is in use, trying another one...
+
+  VITE v8.0.14  ready in 272 ms
+
+  ➜  Local:   http://localhost:5174/magic-type-quest/
+  ➜  Network: use --host to expose
