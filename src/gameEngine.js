@@ -645,12 +645,18 @@ function updateHearts() {
 
 function updateProgressBar() {
   const fillEl = document.getElementById('level-progress-fill');
-  if (!fillEl) return;
+  const wrapEl = document.querySelector('.level-progress-wrap');
+  if (!fillEl || !wrapEl) return;
   const lesson = currentLesson();
   const pct = lesson.wordsPerLevel > 0 
     ? (gameState.wordsCompleted / lesson.wordsPerLevel) * 100 
     : 0;
-  fillEl.style.width = Math.min(pct, 100) + '%';
+  const clampedPct = Math.min(Math.round(pct), 100);
+  fillEl.style.width = clampedPct + '%';
+
+  // Sync ARIA attributes for screen readers
+  wrapEl.setAttribute('aria-valuenow', clampedPct);
+  wrapEl.setAttribute('aria-valuetext', `${clampedPct}% complete`);
 }
 
 function updateTargetDisplay() {

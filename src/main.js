@@ -80,7 +80,15 @@ function updatePracticeDisplay() {
   const totalWords = gameState.currentPracticeWords.length;
   const wordsCompleted = gameState.practiceWordIndex;
   progressCountEl.textContent = `${wordsCompleted + 1} / ${totalWords}`;
-  progressFillEl.style.width = `${((wordsCompleted + (currentWordIndex / currentPracticeWord.length)) / totalWords) * 100}%`;
+  const practicePct = Math.round(((wordsCompleted + (currentWordIndex / currentPracticeWord.length)) / totalWords) * 100);
+  progressFillEl.style.width = `${practicePct}%`;
+
+  // Sync ARIA attributes
+  const practiceBar = document.querySelector('.practice-bar');
+  if (practiceBar) {
+    practiceBar.setAttribute('aria-valuenow', practicePct);
+    practiceBar.setAttribute('aria-valuetext', `${practicePct}% complete`);
+  }
 
   wpmEl.textContent = gameState.practiceWPM;
   accuracyEl.textContent = gameState.practiceAccuracy + '%';
@@ -299,7 +307,9 @@ function loadProfileScreen() {
       pill.className = 'cat-pill';
       pill.innerHTML = `
         <span>${cat.icon} ${cat.label}</span>
-        <div class="cat-bar"><div class="cat-bar-inner" style="width:${cat.pct}%;background:${cat.color}"></div></div>
+        <div class="cat-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${cat.pct}" aria-valuetext="${cat.pct}% ${cat.label} achievements unlocked" aria-label="${cat.label} progress">
+          <div class="cat-bar-inner" style="width:${cat.pct}%;background:${cat.color}"></div>
+        </div>
         <span>${cat.unlocked}/${cat.total}</span>
       `;
       catContainer.appendChild(pill);
