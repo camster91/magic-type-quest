@@ -384,9 +384,9 @@ function loadGardenScreen() {
     const emoji = FLOWER_EMOJIS[f.type] || '🌸';
     const date = f.plantedAt ? new Date(f.plantedAt).toLocaleDateString() : '';
     item.innerHTML = `
-      <div class="garden-flower">${emoji}</div>
+      <div class="garden-flower">${escapeHTML(emoji)}</div>
       <div class="garden-word">${escapeHTML(f.word || '?')}</div>
-      <div class="garden-meta">Lv.${f.level || '?'} ${date}</div>
+      <div class="garden-meta">Lv.${escapeHTML(f.level || '?')} ${date}</div>
     `;
     grid.appendChild(item);
   }
