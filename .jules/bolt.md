@@ -5,3 +5,7 @@
 ## 2025-01-24 - [Unnecessary State Stack Operations]
 **Learning:** Repeated `ctx.save()` and `ctx.restore()` calls, along with `translate`/`rotate`, have a measurable cost when hundreds of particles are rendered per frame, even if rotation is 0.
 **Action:** Conditionally wrap transformation logic to skip state stack operations when rotation/translation is not required.
+
+## 2025-01-24 - [Synchronized Frame Timing]
+**Learning:** Frequent calls to `performance.now()` in a game loop can introduce unnecessary overhead and lead to inconsistent logic across systems within the same frame if they use slightly different timestamps.
+**Action:** Use the timestamp provided by `requestAnimationFrame` and store it in a central `gameState.currentTime` property. Use this shared value for all time-based calculations (animations, WPM, spawning) within that frame.
