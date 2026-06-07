@@ -1,5 +1,3 @@
-# Palette's UX Journal
-
-## 2026-05-30 - [Accessible Game UI Foundations]
-**Learning:** Icon-only buttons and interactive game elements (like level cards) are often overlooked in accessibility. Using semantic <button> elements instead of <div>s and providing clear aria-labels ensures the game is navigable by keyboard and screen readers. Clear keyboard shortcut hints (like "Esc" for pause) reduce cognitive load for players.
-**Action:** Always prefer semantic <button> elements for interactive UI components. Ensure all icon-only buttons have descriptive aria-labels and provide visible keyboard shortcut hints where applicable.
+## 2025-05-15 - Progress Bar Accessibility
+**Learning:** Progress indicators (level bars, achievement stats) without ARIA roles and attributes are inaccessible to screen readers, leaving users unaware of their progress or success. Adding `role="progressbar"` along with dynamic `aria-valuenow` and `aria-valuetext` provides essential semantic context.
+**Action:** Always include `role="progressbar"` and related ARIA attributes (`aria-valuemin`, `aria-valuemax`, `aria-valuenow`, `aria-valuetext`) on any visual progress bar components. Ensure these attributes are updated in the same logic that updates the visual width/fill.
