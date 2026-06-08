@@ -650,7 +650,15 @@ function updateProgressBar() {
   const pct = lesson.wordsPerLevel > 0 
     ? (gameState.wordsCompleted / lesson.wordsPerLevel) * 100 
     : 0;
-  fillEl.style.width = Math.min(pct, 100) + '%';
+  const clampedPct = Math.min(pct, 100);
+  fillEl.style.width = clampedPct + '%';
+
+  // Update ARIA attributes
+  const progressWrap = document.querySelector('.level-progress-wrap');
+  if (progressWrap) {
+    progressWrap.setAttribute('aria-valuenow', Math.round(clampedPct));
+    progressWrap.setAttribute('aria-valuetext', `Level progress: ${gameState.wordsCompleted} of ${lesson.wordsPerLevel} words`);
+  }
 }
 
 function updateTargetDisplay() {
