@@ -107,11 +107,11 @@ function renderRoster(students, isCloud) {
   }).length;
   
   stats.innerHTML = `
-    <div class="stat-card"><div class="stat-value">${students.length}</div><div class="stat-label">Students</div></div>
-    <div class="stat-card"><div class="stat-value">${totalStars}</div><div class="stat-label">Total Stars</div></div>
-    <div class="stat-card"><div class="stat-value">${totalWords}</div><div class="stat-label">Words Typed</div></div>
-    <div class="stat-card"><div class="stat-value">${avgLevel.toFixed(1)}</div><div class="stat-label">Avg Level</div></div>
-    <div class="stat-card"><div class="stat-value">${activeToday}</div><div class="stat-label">Active Today</div></div>
+    <div class="stat-card"><div class="stat-value">${Number(students.length) || 0}</div><div class="stat-label">Students</div></div>
+    <div class="stat-card"><div class="stat-value">${Number(totalStars) || 0}</div><div class="stat-label">Total Stars</div></div>
+    <div class="stat-card"><div class="stat-value">${Number(totalWords) || 0}</div><div class="stat-label">Words Typed</div></div>
+    <div class="stat-card"><div class="stat-value">${Number(avgLevel).toFixed(1)}</div><div class="stat-label">Avg Level</div></div>
+    <div class="stat-card"><div class="stat-value">${Number(activeToday) || 0}</div><div class="stat-label">Active Today</div></div>
   `;
   
   // Red-flag alerts
@@ -141,18 +141,18 @@ function renderRoster(students, isCloud) {
     const badgeClass = level >= 10 ? 'badge-green' : level >= 5 ? 'badge-yellow' : 'badge-red';
     const avatar = escapeHTML(st.avatar || '🌸');
     const name = escapeHTML(st.name || 'Anonymous');
-    const words = st.total_words ?? st.totalWords ?? 0;
-    const score = st.high_score ?? st.highScore ?? 0;
-    const stars = st.total_stars ?? st.totalStars ?? 0;
+    const words = Number(st.total_words ?? st.totalWords ?? 0);
+    const score = Number(st.high_score ?? st.highScore ?? 0);
+    const stars = Number(st.total_stars ?? st.totalStars ?? 0);
     
     return `
       <tr>
         <td><span class="student-avatar">${avatar}</span> <strong>${name}</strong></td>
-        <td>Level ${level}</td>
-        <td>${words}</td>
-        <td>${score}</td>
-        <td>${stars} ⭐</td>
-        <td><span class="badge ${badgeClass}">${status}</span></td>
+        <td>Level ${escapeHTML(level)}</td>
+        <td>${escapeHTML(words)}</td>
+        <td>${escapeHTML(score)}</td>
+        <td>${escapeHTML(stars)} ⭐</td>
+        <td><span class="badge ${badgeClass}">${escapeHTML(status)}</span></td>
         <td>${isCloud ? '☁️ Cloud' : '💾 Local'}</td>
       </tr>
     `;

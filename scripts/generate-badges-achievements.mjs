@@ -7,7 +7,7 @@ import { fileURLToPath } from "url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASE_DIR = resolve(__dirname, "..", "public", "assets");
 
-const API_KEY = "AIzaSyDNQmRXt4HEVLemjmMEKx0wlSZbkycrjYg";
+const API_KEY = process.env.GEMINI_API_KEY;
 
 // Ensure dirs exist
 const dirs = ["badges", "achievements"];

@@ -7,7 +7,7 @@ import { fileURLToPath } from "url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASE_DIR = resolve(__dirname, "..", "public", "assets", "ui_new");
 
-const API_KEY = "AIzaSyDNQmRXt4HEVLemjmMEKx0wlSZbkycrjYg";
+const API_KEY = process.env.GEMINI_API_KEY;
 
 // Ensure dir exists
 if (!existsSync(BASE_DIR)) mkdirSync(BASE_DIR, { recursive: true });

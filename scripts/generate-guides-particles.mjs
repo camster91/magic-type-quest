@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { writeFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 
-const API_KEY = "AIzaSyDNQmRXt4HEVLemjmMEKx0wlSZbkycrjYg";
+const API_KEY = process.env.GEMINI_API_KEY;
 const GUIDES_DIR = "/home/camst/magic-type-quest/public/assets/guides";
 const PARTICLES_DIR = "/home/camst/magic-type-quest/public/assets/particles";
 

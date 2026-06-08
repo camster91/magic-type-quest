@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { writeFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 
-const API_KEY = "AIzaSyDNQmRXt4HEVLemjmMEKx0wlSZbkycrjYg";
+const API_KEY = process.env.GEMINI_API_KEY;
 const OUTPUT_DIR = "/home/camst/magic-type-quest/public/assets/backgrounds";
 const WIDTH = 1920;
 const HEIGHT = 1080;
