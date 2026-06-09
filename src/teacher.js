@@ -85,7 +85,7 @@ function getAllLocalStudents() {
   return students.sort((a, b) => (b.totalStars || 0) - (a.totalStars || 0));
 }
 
-function renderRoster(students, isCloud) {
+export function renderRoster(students, isCloud) {
   const tbody = $('student-body');
   const stats = $('stats-grid');
   const empty = $('empty-state');
@@ -94,8 +94,8 @@ function renderRoster(students, isCloud) {
   empty.classList.add('hidden');
   
   // Stats
-  const totalStars = students.reduce((s, st) => s + (st.total_stars ?? st.totalStars ?? 0), 0);
-  const totalWords = students.reduce((s, st) => s + (st.total_words ?? st.totalWords ?? 0), 0);
+  const totalStars = students.reduce((s, st) => s + Number(st.total_stars ?? st.totalStars ?? 0), 0);
+  const totalWords = students.reduce((s, st) => s + Number(st.total_words ?? st.totalWords ?? 0), 0);
   const avgLevel = students.reduce((s, st) => {
     const cl = st.completed_levels ?? st.completedLevels ?? [];
     return s + (Array.isArray(cl) ? cl.length : 0);
@@ -141,9 +141,9 @@ function renderRoster(students, isCloud) {
     const badgeClass = level >= 10 ? 'badge-green' : level >= 5 ? 'badge-yellow' : 'badge-red';
     const avatar = escapeHTML(st.avatar || '🌸');
     const name = escapeHTML(st.name || 'Anonymous');
-    const words = st.total_words ?? st.totalWords ?? 0;
-    const score = st.high_score ?? st.highScore ?? 0;
-    const stars = st.total_stars ?? st.totalStars ?? 0;
+    const words = Number(st.total_words ?? st.totalWords ?? 0);
+    const score = Number(st.high_score ?? st.highScore ?? 0);
+    const stars = Number(st.total_stars ?? st.totalStars ?? 0);
     
     return `
       <tr>
@@ -245,4 +245,6 @@ function clearAllData() {
 }
 
 // Init
-document.addEventListener('DOMContentLoaded', init);
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', init);
+}

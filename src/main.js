@@ -386,7 +386,7 @@ function loadGardenScreen() {
     item.innerHTML = `
       <div class="garden-flower">${emoji}</div>
       <div class="garden-word">${escapeHTML(f.word || '?')}</div>
-      <div class="garden-meta">Lv.${f.level || '?'} ${date}</div>
+      <div class="garden-meta">Lv.${escapeHTML(f.level || '?')} ${escapeHTML(date)}</div>
     `;
     grid.appendChild(item);
   }
