@@ -5,3 +5,11 @@
 ## 2025-01-24 - [Unnecessary State Stack Operations]
 **Learning:** Repeated `ctx.save()` and `ctx.restore()` calls, along with `translate`/`rotate`, have a measurable cost when hundreds of particles are rendered per frame, even if rotation is 0.
 **Action:** Conditionally wrap transformation logic to skip state stack operations when rotation/translation is not required.
+
+## 2025-02-12 - [Animation Loop Layout Overhead]
+**Learning:** Calling `ctx.measureText` in the animation loop for every word on screen adds significant layout overhead. While it seems fast, it's redundant if the text hasn't changed.
+**Action:** Cache text measurements (like `typedWidth`) and only update them when the content changes (e.g., in `processKeystroke`).
+
+## 2025-02-12 - [Synchronized Timing]
+**Learning:** Multiple calls to `performance.now()` per frame across different systems (HUD, garden, pet) create redundant system calls and slight timing drifts between elements.
+**Action:** Consolidate to a single `gameState.currentTime` updated once per frame using the `requestAnimationFrame` timestamp.
