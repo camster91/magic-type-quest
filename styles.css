@@ -186,6 +186,15 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .practice-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.3s; border-radius: 4px; }
 #practice-count { font-size: 0.9rem; color: var(--text-dim); font-weight: 700; }
 
+.current-char {
+  color: var(--primary-light);
+  text-decoration: underline;
+  text-underline-offset: 8px;
+  text-decoration-thickness: 4px;
+}
+
+.shake { animation: shake 0.3s; }
+
 .practice-stats {
   display: flex;
   gap: 30px;
