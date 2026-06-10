@@ -77,6 +77,9 @@ class Word {
     this.shake = 0;
     this.width = 0;
     this.height = 36;
+    // ⚡ Optimization: Cache measureText results
+    this.typedWidth = 0;
+    this.lastMatched = -1;
   }
 
   update(deltaTime) {
@@ -89,17 +92,20 @@ class Word {
     const shakeX = this.shake > 0 ? (Math.random() - 0.5) * 6 : 0;
     const x = this.x + shakeX;
     
-    // Glow effect for target
+    // ⚡ Optimization: Replace expensive shadowBlur with layered roundRects
     if (this.glow > 0 || this.isTarget) {
-      ctx.save();
-      ctx.shadowColor = this.isTarget ? COLORS.success : COLORS.primary;
-      ctx.shadowBlur = this.isTarget ? 40 : this.glow * 25;
-      ctx.fillStyle = this.isTarget ? 'rgba(52, 211, 153, 0.5)' : 'rgba(139, 92, 246, 0.4)';
-      ctx.globalAlpha = this.isTarget ? 0.6 : 0.3;
-      ctx.beginPath();
-      ctx.roundRect(x - 8, this.y - this.height/2 - 4, this.width + 16, this.height + 8, 16);
-      ctx.fill();
-      ctx.restore();
+      const glowAlpha = this.isTarget ? 0.3 : this.glow * 0.2;
+      const glowColor = this.isTarget ? '52, 211, 153' : '139, 92, 246';
+
+      ctx.fillStyle = `rgba(${glowColor}, ${glowAlpha})`;
+
+      // Layered rects to simulate a soft glow
+      for (let i = 1; i <= 3; i++) {
+        const padding = i * 4;
+        ctx.beginPath();
+        ctx.roundRect(x - 8 - padding/2, this.y - this.height/2 - 4 - padding/2, this.width + 16 + padding, this.height + 8 + padding, 16 + padding/2);
+        ctx.fill();
+      }
     }
 
     // Background pill
@@ -120,10 +126,14 @@ class Word {
 
     // Typed progress underline
     if (this.matched > 0) {
-      const typedText = this.text.slice(0, this.matched);
-      const typedWidth = ctx.measureText(typedText).width;
+      // ⚡ Optimization: Only re-measure if matched count changed
+      if (this.matched !== this.lastMatched) {
+        const typedText = this.text.slice(0, this.matched);
+        this.typedWidth = ctx.measureText(typedText).width;
+        this.lastMatched = this.matched;
+      }
       ctx.fillStyle = COLORS.success;
-      ctx.fillRect(x + 10, this.y + 12, typedWidth, 5);
+      ctx.fillRect(x + 10, this.y + 12, this.typedWidth, 5);
     }
 
     // Target indicator arrow
@@ -165,6 +175,9 @@ function resizeCanvas() {
 
 // ===== GAME LOOP =====
 function gameLoop(timestamp) {
+  // ⚡ Optimization: Single synchronized source of truth for time
+  gameState.currentTime = timestamp;
+
   if (gameState.screen !== 'game' || gameState.gameOver) {
     animationId = requestAnimationFrame(gameLoop);
     return;
@@ -204,7 +217,7 @@ function gameLoop(timestamp) {
 function updateWords(deltaTime) {
   // Spawn new words
   const lesson = currentLesson();
-  const now = performance.now();
+  const now = gameState.currentTime;
   const adaptiveSpawnRate = lesson.spawnRate / gameState.adaptiveSpeed;
   
   if (gameState.wordsSpawned < lesson.wordsPerLevel && 
@@ -462,7 +475,7 @@ function onWrongKeystroke(key) {
 
 function updateWPM() {
   if (!gameState.levelStartTime) return;
-  const elapsedMin = (performance.now() - gameState.levelStartTime) / 60000;
+  const elapsedMin = (gameState.currentTime - gameState.levelStartTime) / 60000;
   if (elapsedMin < 0.01) return;
   
   // WPM = (characters / 5) / minutes
@@ -886,7 +899,7 @@ function drawGarden() {
   const w = gameState.canvasW;
   const h = gameState.canvasH;
   const groundY = h - 175;
-  const time = performance.now() / 1000;
+  const time = gameState.currentTime / 1000;
 
   if (!bgLayers.sky.img || !bgLayers.sky.img.complete || bgLayers.sky.img._broken) {
     drawFallbackBackground(w, h, groundY);
@@ -1009,7 +1022,7 @@ function drawPet() {
   const baseY = gameState.canvasH - 260;
   
   // Idle breathing animation
-  petBounceY = Math.sin(performance.now() / 500) * 3;
+  petBounceY = Math.sin(gameState.currentTime / 500) * 3;
   
   ctx.drawImage(img, x, baseY + petBounceY, w, h);
   
@@ -1045,7 +1058,9 @@ function loadFlowerImages() {
 
 function drawFlowerImage(flower, groundY) {
   const types = ['bud', 'sprout', 'bud'];
-  const imgName = types[Math.floor(Math.random() * types.length)];
+  // ⚡ Optimization: Use stable property instead of Math.random() in rendering loop
+  const imgIndex = Math.floor((flower.x * 100) % types.length);
+  const imgName = types[imgIndex];
   const img = flowerImages[imgName];
   
   if (!img || !img.complete) {
@@ -1065,7 +1080,7 @@ function drawFlowerImage(flower, groundY) {
   ctx.scale(scale, scale);
   
   // Gentle sway
-  const sway = Math.sin(performance.now() / 800 + flower.x) * 3;
+  const sway = Math.sin(gameState.currentTime / 800 + flower.x) * 3;
   ctx.rotate(sway * Math.PI / 180);
   
   ctx.drawImage(img, -size/2, -size/2, size, size);
