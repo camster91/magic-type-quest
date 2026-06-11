@@ -26,6 +26,7 @@ export const defaultState = {
   lastFrameTime: 0,
   canvasW: 800,
   canvasH: 600,
+  currentTime: 0,
   garden: [],
   // WPM & analytics
   levelStartTime: 0,
