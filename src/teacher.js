@@ -141,18 +141,18 @@ function renderRoster(students, isCloud) {
     const badgeClass = level >= 10 ? 'badge-green' : level >= 5 ? 'badge-yellow' : 'badge-red';
     const avatar = escapeHTML(st.avatar || '🌸');
     const name = escapeHTML(st.name || 'Anonymous');
-    const words = st.total_words ?? st.totalWords ?? 0;
-    const score = st.high_score ?? st.highScore ?? 0;
-    const stars = st.total_stars ?? st.totalStars ?? 0;
+    const words = escapeHTML(st.total_words ?? st.totalWords ?? 0);
+    const score = escapeHTML(st.high_score ?? st.highScore ?? 0);
+    const stars = escapeHTML(st.total_stars ?? st.totalStars ?? 0);
     
     return `
       <tr>
         <td><span class="student-avatar">${avatar}</span> <strong>${name}</strong></td>
-        <td>Level ${level}</td>
+        <td>Level ${escapeHTML(level)}</td>
         <td>${words}</td>
         <td>${score}</td>
         <td>${stars} ⭐</td>
-        <td><span class="badge ${badgeClass}">${status}</span></td>
+        <td><span class="badge ${badgeClass}">${escapeHTML(status)}</span></td>
         <td>${isCloud ? '☁️ Cloud' : '💾 Local'}</td>
       </tr>
     `;
