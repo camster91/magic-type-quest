@@ -186,6 +186,36 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .practice-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.3s; border-radius: 4px; }
 #practice-count { font-size: 0.9rem; color: var(--text-dim); font-weight: 700; }
 
+.current-char {
+  color: var(--accent-light);
+  position: relative;
+  display: inline-block;
+  vertical-align: bottom;
+}
+
+.current-char::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent-light);
+  animation: charBlink 1s infinite;
+  border-radius: 2px;
+}
+
+@keyframes charBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .current-char::after {
+    animation: none;
+  }
+}
+
 .practice-stats {
   display: flex;
   gap: 30px;
