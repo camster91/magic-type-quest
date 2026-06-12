@@ -669,6 +669,11 @@ function updateProgressBar() {
     ? (gameState.wordsCompleted / lesson.wordsPerLevel) * 100 
     : 0;
   fillEl.style.width = Math.min(pct, 100) + '%';
+
+  const barEl = document.getElementById('level-progress-bar');
+  if (barEl) {
+    barEl.setAttribute('aria-valuenow', Math.round(Math.min(pct, 100)));
+  }
 }
 
 function updateTargetDisplay() {
