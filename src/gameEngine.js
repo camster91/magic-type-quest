@@ -770,17 +770,17 @@ function updateHUD() {
   const scoreEl = document.getElementById('score');
   const levelEl = document.getElementById('level');
   const accuracyEl = document.getElementById('accuracy');
-  
+
   if (scoreEl) scoreEl.textContent = gameState.score;
   if (levelEl) levelEl.textContent = gameState.level;
-  
+
   if (accuracyEl) {
-    const accuracy = gameState.totalKeystrokes > 0 
-      ? Math.round((gameState.correctKeystrokes / gameState.totalKeystrokes) * 100) 
+    const accuracy = gameState.totalKeystrokes > 0
+      ? Math.round((gameState.correctKeystrokes / gameState.totalKeystrokes) * 100)
       : 100;
     accuracyEl.textContent = accuracy + '%';
   }
-  
+
   // Focus mechanic: show the last focus score (the multiplier indicator)
   const focusScoreEl = document.getElementById('focus-score');
   if (focusScoreEl) {
@@ -793,7 +793,40 @@ function updateHUD() {
       focusDisplay.style.color = `hsl(${hue}, 80%, 45%)`;
     }
   }
-  
+
+  // T30: live gameplay HUD pill — WPM, accuracy, words-done.
+  // The pill is the only new on-screen element; the existing
+  // score/level/wpm/focus nodes stay display:none (T19 decision).
+  const liveWpmEl = document.getElementById('live-wpm');
+  const liveAccEl = document.getElementById('live-accuracy');
+  const liveWordsEl = document.getElementById('live-words');
+  const liveWordsTargetEl = document.getElementById('live-words-target');
+  if (liveWpmEl) liveWpmEl.textContent = gameState.levelWPM || 0;
+  if (liveAccEl) {
+    const acc = gameState.totalKeystrokes > 0
+      ? Math.round((gameState.correctKeystrokes / gameState.totalKeystrokes) * 100)
+      : 100;
+    liveAccEl.textContent = acc;
+  }
+  if (liveWordsEl) liveWordsEl.textContent = gameState.wordsCompleted || 0;
+  if (liveWordsTargetEl) {
+    // Daily Moment: 12-word target. Lesson play: wordsPerLevel. Fall back to 5.
+    let target = 5;
+    if (gameState.mode === 'dailyMoment' || gameState.dailyMoment?.active) {
+      target = gameState.dailyMoment?.wordsTarget || 12;
+    } else {
+      const lesson = currentLesson();
+      if (lesson && lesson.wordsPerLevel) target = lesson.wordsPerLevel;
+    }
+    liveWordsTargetEl.textContent = target;
+    // T30: also update the inline progress bar
+    const fillEl = document.getElementById('live-progress-fill');
+    if (fillEl) {
+      const pct = target > 0 ? Math.min(100, ((gameState.wordsCompleted || 0) / target) * 100) : 0;
+      fillEl.style.width = pct + '%';
+    }
+  }
+
   updateCombo();
   updateProgressBar();
 }

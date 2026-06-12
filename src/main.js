@@ -639,6 +639,11 @@ function bindEvents() {
   $('btn-daily-moment')?.addEventListener('click', () => {
     startDailyMoment();
   });
+  // T29: 1-tap Daily Moment pill on the home progress card.
+  // Same code path as the original Daily Moment button.
+  $('btn-dm-pill')?.addEventListener('click', () => {
+    startDailyMoment();
+  });
 
   $('btn-start')?.addEventListener('click', () => {
     const tutorialSeen = gameState.profile?.tutorialSeen;

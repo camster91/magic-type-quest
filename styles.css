@@ -195,6 +195,52 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
   overflow: hidden;
   margin-bottom: 10px;
 }
+/* T29: progress-bar-row keeps the bar + the 60s pill on one row so the
+   Daily Moment is reachable in 1 tap from the home screen. The right
+   padding matches the card's interior so the pill breathes, not kisses
+   the card's right border. */
+.progress-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-right: 4px;
+}
+.progress-bar-row .progress-bar {
+  flex: 1 1 auto;
+  margin-bottom: 0;
+}
+/* T29: Daily Moment pill. Small (28px tall), amber accent, distinct from
+   the 64px violet "Type to plant" main CTA. Same code path as the
+   streak-warning's full-width button. */
+.dm-pill {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(251,191,36,0.18) 0%, rgba(245,158,11,0.22) 100%);
+  border: 1px solid rgba(251,191,36,0.5);
+  color: var(--warning);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.2s ease, border-color 0.2s ease;
+  min-height: 44px; /* keep iOS tap target comfortable even though the chip is short */
+  min-width: 44px;
+}
+.dm-pill:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, rgba(251,191,36,0.28) 0%, rgba(245,158,11,0.32) 100%);
+  border-color: rgba(251,191,36,0.7);
+}
+.dm-pill:active { transform: translateY(0); }
+.dm-pill-icon { font-size: 0.95rem; line-height: 1; }
+.dm-pill-text { line-height: 1; }
 .progress-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--primary), var(--accent));
@@ -597,6 +643,64 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .hud-combo { color: var(--warning); opacity: 0; transition: opacity 0.3s; }
 .hud-combo.active { opacity: 1; color: var(--accent); border-color: var(--accent-light); }
 .difficulty-badge { display: none; } /* T19: redundant with the word */
+
+/* T30: live gameplay HUD pill — WPM / accuracy / words-done, top-left.
+   Small, low-opacity, never animates so the centered word stays the
+   dominant focal point (per the T19 pedagogy decision). Reuses the
+   card + border tokens the streak chip uses, no new colors. */
+.live-hud {
+  position: fixed;
+  top: 56px;     /* below the existing .hud top bar */
+  left: 12px;
+  z-index: var(--z-hud);
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 10px 5px;
+  min-width: 96px;
+  background: rgba(30, 27, 75, 0.55);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: var(--text);
+  font-family: 'Nunito', 'Inter', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 0.78rem;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  pointer-events: none;
+  opacity: 0.85;
+  font-variant-numeric: tabular-nums;
+}
+.live-hud .lh-row { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.live-hud .lh-emoji { font-size: 0.85rem; line-height: 1; }
+.live-hud .lh-unit { color: var(--text-muted, rgba(226,232,240,0.7)); font-weight: 700; font-size: 0.72rem; }
+.live-hud .lh-dot { color: var(--text-muted, rgba(226,232,240,0.5)); font-weight: 700; }
+.live-hud .lh-stats { color: var(--primary-light); }
+.live-hud .lh-words { color: var(--accent); }
+/* T30: tiny progress bar inside the pill — makes "1 / 10" unambiguous
+   to a 7-year-old (it shows progress, not just a ratio). Reuses the
+   existing --accent gradient; no new colors. */
+.live-hud .lh-progress {
+  margin-top: 3px;
+  height: 4px;
+  width: 100%;
+  background: rgba(139, 92, 246, 0.28);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.live-hud .lh-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--primary-light), var(--accent));
+  border-radius: 999px;
+  transition: width 0.25s ease-out;
+}
+@media (max-width: 420px) {
+  .live-hud { top: 50px; left: 8px; padding: 5px 8px 4px; font-size: 0.72rem; min-width: 88px; }
+  .live-hud .lh-emoji { font-size: 0.78rem; }
+}
 
 /* T15 word-target display — ONE word, large, centered, finger-zone color. */
 .target-word {

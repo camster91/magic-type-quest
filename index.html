@@ -33,14 +33,23 @@
     </div>
   </header>
 
-  <!-- Progress card: level + what keys learned + next up. ONE card. -->
+  <!-- Progress card: level + what keys learned + next up. ONE card.
+       T29: a small "60s" pill sits on the right of the progress bar so the
+       Daily Moment is reachable in 1 tap from the home screen (not just
+       behind the at-risk streak warning). -->
   <div class="progress-card" aria-label="Your progress">
     <div class="progress-row">
       <span class="progress-level" id="menu-level-badge">Level 1 · Home Row</span>
       <span class="progress-next" id="menu-level-next">Type 5 more words to unlock Lv 2</span>
     </div>
-    <div class="progress-bar" aria-hidden="true">
-      <div class="progress-fill" id="menu-level-fill" style="width:0%"></div>
+    <div class="progress-bar-row" aria-hidden="true">
+      <div class="progress-bar">
+        <div class="progress-fill" id="menu-level-fill" style="width:0%"></div>
+      </div>
+      <button type="button" id="btn-dm-pill" class="dm-pill" aria-label="Start a 60-second Daily Moment">
+        <span class="dm-pill-icon" aria-hidden="true">⚡</span>
+        <span class="dm-pill-text">60s</span>
+      </button>
     </div>
     <div class="keyboard-mini" id="menu-keyboard-mini" aria-label="Keys you've learned">
       <!-- populated by main.js: mastered keys highlighted -->
@@ -222,6 +231,14 @@
       </div>
       <button type="button" id="btn-pause" class="btn-icon-only" aria-label="Pause Game" title="Pause Game (Esc)">⏸</button>
     </div>
+  </div>
+
+  <!-- T30: live gameplay HUD — WPM, accuracy, words done. Subtle pill, top-left, -->
+  <!-- small + low-opacity so the centered word stays the dominant focal point.   -->
+  <div id="live-hud" class="live-hud" aria-live="polite" aria-label="Live typing progress">
+    <div class="lh-row lh-stats"><span class="lh-emoji">⚡</span> <span id="live-wpm">0</span> <span class="lh-unit">wpm</span> <span class="lh-dot">·</span> <span id="live-accuracy">100</span><span class="lh-unit">%</span></div>
+    <div class="lh-row lh-words"><span class="lh-emoji">🌸</span> <span id="live-words">0</span><span class="lh-unit"> / </span><span id="live-words-target">5</span></div>
+    <div class="lh-progress" aria-hidden="true"><div class="lh-progress-fill" id="live-progress-fill"></div></div>
   </div>
 
   <!-- Difficulty Badge -->
