@@ -22,6 +22,7 @@ export const defaultState = {
   targetIndex: 0,
   gameOver: false,
   paused: false,
+  currentTime: 0,
   lastSpawn: 0,
   lastFrameTime: 0,
   canvasW: 800,

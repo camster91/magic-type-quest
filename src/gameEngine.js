@@ -83,6 +83,7 @@ class Word {
     this.y = -50;
     this.isTarget = false;
     this.matched = 0;
+    this.typedWidth = 0; // ⚡ Bolt: Cache measurement to avoid redundant ctx.measureText
     this.glow = 0;
     this.shake = 0;
     this.width = 0;
@@ -135,10 +136,9 @@ class Word {
 
     // Typed progress underline
     if (this.matched > 0) {
-      const typedText = this.text.slice(0, this.matched);
-      const typedWidth = ctx.measureText(typedText).width;
+      // ⚡ Bolt: Use cached typedWidth to save on ctx.measureText calls in the animation loop
       ctx.fillStyle = COLORS.success;
-      ctx.fillRect(x + 10, this.y + 12, typedWidth, 5);
+      ctx.fillRect(x + 10, this.y + 12, this.typedWidth, 5);
     }
 
     // Target indicator arrow
@@ -192,6 +192,7 @@ function gameLoop(timestamp) {
 
   const deltaTime = lastFrameTime ? Math.min((timestamp - lastFrameTime) / 1000, 0.05) : 0.016;
   lastFrameTime = timestamp;
+  gameState.currentTime = timestamp;
 
   // Clear canvas
   ctx.clearRect(0, 0, gameState.canvasW, gameState.canvasH);
@@ -219,7 +220,7 @@ function gameLoop(timestamp) {
 function updateWords(deltaTime) {
   // Spawn new words
   const lesson = currentLesson();
-  const now = performance.now();
+  const now = gameState.currentTime;
   const adaptiveSpawnRate = lesson.spawnRate / gameState.adaptiveSpeed;
   
   if (gameState.wordsSpawned < lesson.wordsPerLevel && 
@@ -396,6 +397,9 @@ function processKeystroke(rawKey, isShift) {
     if (caught) {
       caught.isTarget = true;
       caught.matched = 1;
+      // ⚡ Bolt: Update cached typedWidth when matched changes
+      ctx.font = '700 26px Nunito, sans-serif';
+      caught.typedWidth = ctx.measureText(caught.text.slice(0, 1)).width;
       gameState.targetWord = caught;
       gameState.targetIndex = 1;
       gameState.correctKeystrokes++;
@@ -413,6 +417,9 @@ function processKeystroke(rawKey, isShift) {
     // Correct!
     gameState.targetIndex++;
     gameState.targetWord.matched = gameState.targetIndex;
+    // ⚡ Bolt: Update cached typedWidth when matched changes
+    ctx.font = '700 26px Nunito, sans-serif';
+    gameState.targetWord.typedWidth = ctx.measureText(gameState.targetWord.text.slice(0, gameState.targetIndex)).width;
     gameState.correctKeystrokes++;
     gameState.targetWord.glow = 1;
     onCorrectKeystroke(pressedKey);
@@ -480,7 +487,7 @@ function onWrongKeystroke(key) {
 
 function updateWPM() {
   if (!gameState.levelStartTime) return;
-  const elapsedMin = (performance.now() - gameState.levelStartTime) / 60000;
+  const elapsedMin = (gameState.currentTime - gameState.levelStartTime) / 60000;
   if (elapsedMin < 0.01) return;
   
   // WPM = (characters / 5) / minutes
@@ -909,7 +916,7 @@ function drawGarden() {
   const w = gameState.canvasW;
   const h = gameState.canvasH;
   const groundY = h - 175;
-  const time = performance.now() / 1000;
+  const time = gameState.currentTime / 1000;
 
   if (!bgLayers.sky.img || !bgLayers.sky.img.complete || bgLayers.sky.img._broken) {
     drawFallbackBackground(w, h, groundY);
@@ -1032,7 +1039,7 @@ function drawPet() {
   const baseY = gameState.canvasH - 260;
   
   // Idle breathing animation
-  petBounceY = Math.sin(performance.now() / 500) * 3;
+  petBounceY = Math.sin(gameState.currentTime / 500) * 3;
   
   ctx.drawImage(img, x, baseY + petBounceY, w, h);
   
@@ -1088,7 +1095,7 @@ function drawFlowerImage(flower, groundY) {
   ctx.scale(scale, scale);
   
   // Gentle sway
-  const sway = Math.sin(performance.now() / 800 + flower.x) * 3;
+  const sway = Math.sin(gameState.currentTime / 800 + flower.x) * 3;
   ctx.rotate(sway * Math.PI / 180);
   
   ctx.drawImage(img, -size/2, -size/2, size, size);
