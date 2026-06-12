@@ -10,6 +10,7 @@ import { evaluateQuests } from './quests.js';
 import { playAmbient, stopAmbient, audioCtx, initAudio } from './audio.js';
 import { getWeakKeys } from './drills.js';
 import { recordKeyPractice } from './spacedRep.js';
+import { hexToRgba } from './utils.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -98,17 +99,22 @@ class Word {
     const shakeX = this.shake > 0 ? (Math.random() - 0.5) * 6 : 0;
     const x = this.x + shakeX;
     
-    // Glow effect for target
+    // ⚡ Optimization: Replaced expensive shadowBlur with layered rects for glow effect
     if (this.glow > 0 || this.isTarget) {
-      ctx.save();
-      ctx.shadowColor = this.isTarget ? COLORS.success : COLORS.primary;
-      ctx.shadowBlur = this.isTarget ? 40 : this.glow * 25;
-      ctx.fillStyle = this.isTarget ? 'rgba(52, 211, 153, 0.5)' : 'rgba(139, 92, 246, 0.4)';
-      ctx.globalAlpha = this.isTarget ? 0.6 : 0.3;
+      const alphaBase = this.isTarget ? 0.8 : this.glow * 0.6;
+      const glowColor = this.isTarget ? COLORS.success : COLORS.primary;
+
+      // Outer glow layer
+      ctx.fillStyle = hexToRgba(glowColor, alphaBase * 0.3);
       ctx.beginPath();
-      ctx.roundRect(x - 8, this.y - this.height/2 - 4, this.width + 16, this.height + 8, 16);
+      ctx.roundRect(x - 16, this.y - this.height / 2 - 12, this.width + 32, this.height + 24, 20);
       ctx.fill();
-      ctx.restore();
+
+      // Inner glow layer
+      ctx.fillStyle = hexToRgba(glowColor, alphaBase * 0.5);
+      ctx.beginPath();
+      ctx.roundRect(x - 12, this.y - this.height / 2 - 8, this.width + 24, this.height + 16, 18);
+      ctx.fill();
     }
 
     // Background pill
