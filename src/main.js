@@ -14,6 +14,19 @@ import { escapeHTML } from './utils.js';
 
 const $ = (id) => document.getElementById(id);
 
+/** Adds ARIA roles and labels to virtual keyboard keys. */
+function enhanceVirtualKeyboard() {
+  document.querySelectorAll('.key').forEach(key => {
+    const k = key.dataset.key;
+    if (!k) return;
+    key.setAttribute('role', 'button');
+    key.setAttribute('aria-label', k === ' ' ? 'Space' : `Key ${k.toUpperCase()}`);
+    if (!key.hasAttribute('tabindex')) {
+      key.setAttribute('tabindex', '0');
+    }
+  });
+}
+
 // ===== PRACTICE MODE =====
 let practiceLesson = null;
 let currentPracticeWord = '';
@@ -533,6 +546,16 @@ function bindEvents() {
 
   // Keyboard handler
   document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (['lesson-select', 'practice', 'profile', 'garden'].includes(gameState.screen)) {
+        if (gameState.screen === 'practice') {
+          clearInterval(practiceInterval);
+        }
+        showScreen('menu');
+        updateMenuStats();
+        return;
+      }
+    }
     if (gameState.screen === 'practice') handlePracticeKey(e);
   });
 }
@@ -542,6 +565,7 @@ function init() {
   loadProfile();
   bindEvents();
   initEngine();
+  enhanceVirtualKeyboard();
   updateMenuStats();
 }
 

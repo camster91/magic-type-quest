@@ -67,6 +67,7 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
   filter: drop-shadow(0 8px 24px rgba(0,0,0,0.3));
 }
 .island-emoji { font-size: 4rem; }
+.shake { animation: shake 0.3s; }
 @keyframes floatIsland {
   0%,100% { transform: translateY(0) rotate(-3deg); }
   50% { transform: translateY(-12px) rotate(3deg); }
