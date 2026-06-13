@@ -13,3 +13,7 @@
 ## 2025-02-12 - [Synchronized Timing]
 **Learning:** Multiple calls to `performance.now()` per frame across different systems (HUD, garden, pet) create redundant system calls and slight timing drifts between elements.
 **Action:** Consolidate to a single `gameState.currentTime` updated once per frame using the `requestAnimationFrame` timestamp.
+
+## 2026-06-13 - [Memoization of Color Conversion]
+**Learning:** In canvas-heavy applications, utility functions like `hexToRgba` are often called thousands of times per frame (e.g., for particles and glow effects). Parsing hex strings repeatedly using `slice` and `parseInt` adds significant CPU overhead.
+**Action:** Use a `Map` to cache the parsed RGB components of hex strings in shared utility functions to eliminate redundant string manipulation in high-frequency loops.
