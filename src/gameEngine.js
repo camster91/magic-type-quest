@@ -656,6 +656,13 @@ function updateCombo() {
 function updateHearts() {
   const lesson = currentLesson();
   const maxHearts = lesson.health || 5;
+  const currentHealth = Math.max(0, gameState.health);
+
+  const container = document.getElementById('hud-hearts');
+  if (container) {
+    container.setAttribute('aria-label', `Health: ${currentHealth} of ${maxHearts} hearts`);
+  }
+
   for (let i = 1; i <= 5; i++) {
     const heart = document.getElementById(`heart-${i}`);
     if (!heart) continue;

@@ -178,14 +178,28 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 }
 .practice-viewport { text-align: center; margin: 2rem 0; }
 .practice-char-display { font-family: 'Fredoka One', cursive; font-size: 8rem; color: var(--text); text-shadow: 0 0 40px rgba(139,92,246,0.5); line-height: 1.1; }
+.completed-char { color: var(--success); }
+.upcoming-char { opacity: 0.5; }
 .current-char {
-  color: var(--primary-light);
-  border-bottom: 4px solid var(--primary-light);
-  animation: cursor-blink 1s step-end infinite;
+  color: var(--accent-light);
+  position: relative;
+  display: inline-block;
+  vertical-align: bottom;
 }
-@keyframes cursor-blink {
-  from, to { border-color: transparent; }
-  50% { border-color: var(--primary-light); }
+.current-char::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--accent-light);
+  animation: charBlink 1s infinite;
+  border-radius: 2px;
+}
+@keyframes charBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 .practice-hint { font-size: 1.1rem; color: var(--text-dim); margin-top: 1rem; }
 .practice-hint kbd { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 6px; padding: 2px 10px; font-weight: 700; }
@@ -194,30 +208,6 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .practice-bar { width: 200px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
 .practice-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.3s; border-radius: 4px; }
 #practice-count { font-size: 0.9rem; color: var(--text-dim); font-weight: 700; }
-
-.current-char {
-  color: var(--accent-light);
-  position: relative;
-  display: inline-block;
-  vertical-align: bottom;
-}
-
-.current-char::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--accent-light);
-  animation: charBlink 1s infinite;
-  border-radius: 2px;
-}
-
-@keyframes charBlink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .current-char::after {

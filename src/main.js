@@ -60,13 +60,16 @@ function updatePracticeDisplay() {
 
   if (!displayEl || !hintEl || !fingerHintEl || !progressFillEl || !progressCountEl || !wpmEl || !accuracyEl) return;
 
-  // Display the full word, with the current character highlighted
+  // Display the full word, with completed, current, and upcoming characters highlighted
   let displayText = '';
   for (let i = 0; i < currentPracticeWord.length; i++) {
-    if (i === currentWordIndex) {
-      displayText += `<span class="current-char">${currentPracticeWord[i]}</span>`;
+    const char = escapeHTML(currentPracticeWord[i]);
+    if (i < currentWordIndex) {
+      displayText += `<span class="completed-char">${char}</span>`;
+    } else if (i === currentWordIndex) {
+      displayText += `<span class="current-char">${char}</span>`;
     } else {
-      displayText += currentPracticeWord[i];
+      displayText += `<span class="upcoming-char">${char}</span>`;
     }
   }
   displayEl.innerHTML = displayText;
