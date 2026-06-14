@@ -181,17 +181,38 @@ function renderToolbar() {
   });
 }
 
-function exportCSV() {
+/** Sanitize a value for CSV export to prevent formula injection and structural breakage. */
+export function sanitizeCSVField(val) {
+  if (val === null || val === undefined) return '';
+  let str = String(val).trim();
+
+  // 1. Prevent CSV Injection (Formula Injection)
+  // If the field starts with =, +, -, or @, prepend a single quote.
+  if (/^[=\+\-@\r]/.test(str)) {
+    str = "'" + str;
+  }
+
+  // 2. Handle structural breakage (commas, quotes, newlines)
+  // If the field contains commas, double quotes, or newlines, wrap it in double quotes.
+  // Also escape double quotes by doubling them.
+  if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+    str = '"' + str.replace(/"/g, '""') + '"';
+  }
+
+  return str;
+}
+
+export function exportCSV() {
   const rows = Array.from(document.querySelectorAll('#student-body tr'));
   if (rows.length === 0) { alert('No data to export'); return; }
   
   const headers = ['Name', 'Level', 'Words', 'Score', 'Stars', 'Status', 'Source'];
   const data = rows.map(row => {
     const tds = row.querySelectorAll('td');
-    return Array.from(tds).map(td => td.textContent.trim()).join(',');
+    return Array.from(tds).map(td => sanitizeCSVField(td.textContent)).join(',');
   });
   
-  const csv = [headers.join(','), ...data].join('\n');
+  const csv = [headers.map(h => sanitizeCSVField(h)).join(','), ...data].join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
