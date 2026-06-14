@@ -13,3 +13,7 @@
 ## 2025-02-12 - [Synchronized Timing]
 **Learning:** Multiple calls to `performance.now()` per frame across different systems (HUD, garden, pet) create redundant system calls and slight timing drifts between elements.
 **Action:** Consolidate to a single `gameState.currentTime` updated once per frame using the `requestAnimationFrame` timestamp.
+
+## 2025-02-13 - [Hex Color Parsing Overhead]
+**Learning:** Repeatedly parsing hex color strings (e.g., `#8B5CF6`) using `slice` and `parseInt(..., 16)` inside high-frequency canvas drawing loops (words, particles, glow effects) creates unnecessary CPU overhead. Since the game uses a fixed set of theme colors, these results are highly cacheable.
+**Action:** Implement a `Map`-based cache for the intermediate RGB components in `hexToRgba` to replace parsing with a single O(1) lookup.
