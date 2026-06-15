@@ -1,5 +1,13 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+vi.mock('../src/sync.js', () => ({
+  fetchClassRoster: vi.fn(),
+  syncProfile: vi.fn(),
+  logSession: vi.fn(),
+  syncClassRoster: vi.fn(),
+}));
+
 import { exportCSV } from '../src/teacher.js';
 
 describe('CSV Export Security', () => {
