@@ -438,7 +438,10 @@ function bindEvents() {
 
   // Back buttons
   $('btn-lesson-back')?.addEventListener('click', () => showScreen('menu'));
-  $('btn-practice-back')?.addEventListener('click', () => showScreen('menu'));
+  $('btn-practice-back')?.addEventListener('click', () => {
+    if (practiceInterval) clearInterval(practiceInterval);
+    showScreen('menu');
+  });
   $('btn-profile-back')?.addEventListener('click', () => showScreen('menu'));
   $('btn-garden-back')?.addEventListener('click', () => showScreen('menu'));
 
@@ -533,6 +536,14 @@ function bindEvents() {
 
   // Keyboard handler
   document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const escapableScreens = ['practice', 'profile', 'garden', 'lesson-select'];
+      if (escapableScreens.includes(gameState.screen)) {
+        if (practiceInterval) clearInterval(practiceInterval);
+        showScreen('menu');
+        return;
+      }
+    }
     if (gameState.screen === 'practice') handlePracticeKey(e);
   });
 }

@@ -84,7 +84,7 @@
 <div id="lesson-select-screen" class="screen">
   <div class="menu-bg"></div>
   <div class="screen-header">
-    <button type="button" id="btn-lesson-back" class="btn-back">← Back</button>
+    <button type="button" id="btn-lesson-back" class="btn-back" aria-label="Back to menu">← Back <span class="btn-shortcut">(Esc)</span></button>
     <h2>📚 Pick Your Adventure!</h2>
   </div>
   <div id="level-cards" class="level-grid"></div>
@@ -94,7 +94,7 @@
 <div id="practice-screen" class="screen">
   <div class="menu-bg"></div>
   <div class="screen-header">
-    <button type="button" id="btn-practice-back" class="btn-back">← Back</button>
+    <button type="button" id="btn-practice-back" class="btn-back" aria-label="Back to menu">← Back <span class="btn-shortcut">(Esc)</span></button>
     <h2>🎯 Practice Power!</h2>
   </div>
   <div class="practice-viewport">
@@ -167,12 +167,12 @@
       <div id="shift-hint" class="shift-hint hidden">Hold SHIFT!</div>
     </div>
     <div class="hud-right">
-      <div class="hud-hearts">
-        <span id="heart-1" class="heart">❤</span>
-        <span id="heart-2" class="heart">❤</span>
-        <span id="heart-3" class="heart">❤</span>
-        <span id="heart-4" class="heart">❤</span>
-        <span id="heart-5" class="heart">❤</span>
+      <div class="hud-hearts" aria-label="Health">
+      <span id="heart-1" class="heart" aria-hidden="true">❤</span>
+      <span id="heart-2" class="heart" aria-hidden="true">❤</span>
+      <span id="heart-3" class="heart" aria-hidden="true">❤</span>
+      <span id="heart-4" class="heart" aria-hidden="true">❤</span>
+      <span id="heart-5" class="heart" aria-hidden="true">❤</span>
       </div>
       <button type="button" id="btn-pause" class="btn-icon-only" aria-label="Pause Game" title="Pause Game (Esc)">⏸</button>
     </div>
@@ -240,7 +240,7 @@
   </div>
 
   <!-- Achievement Toast -->
-  <div id="achievement-toast" class="achievement-toast hidden">
+  <div id="achievement-toast" class="achievement-toast hidden" role="status" aria-live="polite">
     <div class="toast-icon" id="toast-icon">🏆</div>
     <div class="toast-text">
       <div class="toast-title" id="toast-title">Achievement Unlocked!</div>
@@ -385,7 +385,7 @@
 <div id="profile-screen" class="screen">
   <div class="menu-bg"></div>
   <div class="screen-header">
-    <button type="button" id="btn-profile-back" class="btn-back">← Back</button>
+    <button type="button" id="btn-profile-back" class="btn-back" aria-label="Back to menu">← Back <span class="btn-shortcut">(Esc)</span></button>
     <h2>👤 My Profile</h2>
   </div>
   <div class="profile-card">
@@ -455,7 +455,7 @@
 <div id="garden-screen" class="screen">
   <div class="menu-bg"></div>
   <div class="screen-header">
-    <button type="button" id="btn-garden-back" class="btn-back">← Back</button>
+    <button type="button" id="btn-garden-back" class="btn-back" aria-label="Back to menu">← Back <span class="btn-shortcut">(Esc)</span></button>
     <h2>🌺 My Garden</h2>
   </div>
   <div class="garden-stats" id="garden-stats">

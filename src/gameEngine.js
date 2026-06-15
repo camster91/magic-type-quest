@@ -656,6 +656,11 @@ function updateCombo() {
 function updateHearts() {
   const lesson = currentLesson();
   const maxHearts = lesson.health || 5;
+  const container = document.querySelector('.hud-hearts');
+  if (container) {
+    container.setAttribute('aria-label', `Health: ${gameState.health} of ${maxHearts} hearts`);
+  }
+
   for (let i = 1; i <= 5; i++) {
     const heart = document.getElementById(`heart-${i}`);
     if (!heart) continue;
@@ -664,6 +669,7 @@ function updateHearts() {
     if (show) {
       heart.textContent = i <= gameState.health ? '❤' : '♡';
       heart.classList.toggle('lost', i > gameState.health);
+      heart.setAttribute('aria-hidden', 'true');
     }
   }
 }
