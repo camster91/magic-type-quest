@@ -13,3 +13,7 @@
 ## 2025-02-12 - [Synchronized Timing]
 **Learning:** Multiple calls to `performance.now()` per frame across different systems (HUD, garden, pet) create redundant system calls and slight timing drifts between elements.
 **Action:** Consolidate to a single `gameState.currentTime` updated once per frame using the `requestAnimationFrame` timestamp.
+
+## 2025-05-14 - [Virtual Keyboard DOM Overhead]
+**Learning:** Repetitive `document.querySelectorAll('.key')` and attribute-based `querySelector` calls during high-frequency typing events (every keystroke) create significant layout overhead and CPU spikes.
+**Action:** Cache DOM elements for virtual keyboards in a Map (keyed by character) during lazy initialization to enable O(1) lookups for highlighting and feedback.

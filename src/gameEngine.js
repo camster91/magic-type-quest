@@ -709,15 +709,33 @@ function updateKeyboardHighlight() {
 }
 
 // ===== KEYBOARD HIGHLIGHT =====
+// ⚡ Bolt: Cache virtual keyboard keys to avoid repetitive and expensive DOM queries during typing
+let KEY_ELEMENTS = null;
+let KEY_MAP = null;
+
+function ensureKeyCache() {
+  if (KEY_ELEMENTS) return;
+  KEY_ELEMENTS = Array.from(document.querySelectorAll('.key'));
+  KEY_MAP = new Map();
+  KEY_ELEMENTS.forEach(el => {
+    const key = el.dataset.key?.toLowerCase();
+    if (key) {
+      if (!KEY_MAP.has(key)) KEY_MAP.set(key, []);
+      KEY_MAP.get(key).push(el);
+    }
+  });
+}
+
 export function highlightTargetKey(char) {
-  document.querySelectorAll('.key').forEach(k => k.classList.remove('target'));
+  ensureKeyCache();
+  KEY_ELEMENTS.forEach(k => k.classList.remove('target'));
   
   if (!char) return;
   
-  const keyEl = document.querySelector(`.key[data-key="${char.toLowerCase()}"]`);
-  if (keyEl) {
-    keyEl.classList.add('target');
-    keyEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const keyEls = KEY_MAP.get(char.toLowerCase());
+  if (keyEls) {
+    keyEls.forEach(el => el.classList.add('target'));
+    keyEls[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
   
   // Show finger hint
@@ -737,10 +755,13 @@ function showFingerHint(text, color) {
 }
 
 export function showKeyFeedback(key, correct) {
-  const keyEl = document.querySelector(`.key[data-key="${key.toLowerCase()}"]`);
-  if (keyEl) {
-    keyEl.classList.add(correct ? 'correct' : 'wrong');
-    setTimeout(() => keyEl.classList.remove('correct', 'wrong'), 300);
+  ensureKeyCache();
+  const keyEls = KEY_MAP.get(key.toLowerCase());
+  if (keyEls) {
+    keyEls.forEach(el => {
+      el.classList.add(correct ? 'correct' : 'wrong');
+      setTimeout(() => el.classList.remove('correct', 'wrong'), 300);
+    });
   }
 }
 
