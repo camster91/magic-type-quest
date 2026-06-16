@@ -20,3 +20,24 @@ export function hexToRgba(hex, alpha) {
   const b = parseInt(hex.slice(5, 7), 16);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
+
+/** Sanitizes a field for CSV export to prevent Formula Injection and ensure structural integrity. */
+export function sanitizeCSVField(val) {
+  let str = val === null || val === undefined ? '' : String(val);
+
+  // 1. Mitigate Formula Injection (CSV Injection)
+  // Trigger characters: =, +, -, @, \t, \r
+  if (str.length > 0 && /^[=\+\-@\t\r]/.test(str)) {
+    str = "'" + str;
+  }
+
+  // 2. Escape double quotes (doubling them)
+  let result = str.replace(/"/g, '""');
+
+  // 3. Wrap in double quotes if it contains delimiters
+  if (result.includes('"') || result.includes(',') || result.includes('\n') || result.includes('\r')) {
+    result = `"${result}"`;
+  }
+
+  return result;
+}

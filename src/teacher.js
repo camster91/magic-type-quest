@@ -5,7 +5,7 @@
  */
 
 import { fetchClassRoster } from './sync.js';
-import { escapeHTML } from './utils.js';
+import { escapeHTML, sanitizeCSVField } from './utils.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -181,17 +181,20 @@ function renderToolbar() {
   });
 }
 
-function exportCSV() {
+export function exportCSV() {
   const rows = Array.from(document.querySelectorAll('#student-body tr'));
-  if (rows.length === 0) { alert('No data to export'); return; }
+  if (rows.length === 0) {
+    if (typeof alert === 'function') alert('No data to export');
+    return;
+  }
   
   const headers = ['Name', 'Level', 'Words', 'Score', 'Stars', 'Status', 'Source'];
   const data = rows.map(row => {
     const tds = row.querySelectorAll('td');
-    return Array.from(tds).map(td => td.textContent.trim()).join(',');
+    return Array.from(tds).map(td => sanitizeCSVField(td.textContent.trim())).join(',');
   });
   
-  const csv = [headers.join(','), ...data].join('\n');
+  const csv = [headers.map(h => sanitizeCSVField(h)).join(','), ...data].join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
