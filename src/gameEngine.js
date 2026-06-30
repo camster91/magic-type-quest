@@ -10,6 +10,7 @@ import { evaluateQuests, bumpStreakIfToday } from './quests.js';
 import { playAmbient, stopAmbient, audioCtx, initAudio } from './audio.js';
 import { getWeakKeys } from './drills.js';
 import { recordKeyPractice } from './spacedRep.js';
+import { hexToRgba } from './utils.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -20,6 +21,15 @@ const COLORS = {
   danger: '#EF4444',
   warning: '#FBBF24',
 };
+
+// ===== TOUCH DETECTION =====
+function isTouchDevice() {
+  return (
+    ('ontouchstart' in window) ||
+    (navigator.maxTouchPoints > 0) ||
+    (navigator.msMaxTouchPoints > 0)
+  );
+}
 
 // ===== LESSON RESOLVER =====
 function currentLesson() {
@@ -73,6 +83,7 @@ class Word {
     this.y = -50;
     this.isTarget = false;
     this.matched = 0;
+    this.typedWidth = 0; // ⚡ Bolt: Cache measurement to avoid redundant ctx.measureText
     this.glow = 0;
     this.shake = 0;
     this.width = 0;
@@ -119,17 +130,22 @@ class Word {
     const shakeX = this.shake > 0 ? (Math.random() - 0.5) * 6 : 0;
     const x = this.x + shakeX;
     
-    // Glow effect for target
+    // ⚡ Optimization: Replaced expensive shadowBlur with layered rects for glow effect
     if (this.glow > 0 || this.isTarget) {
-      ctx.save();
-      ctx.shadowColor = this.isTarget ? COLORS.success : COLORS.primary;
-      ctx.shadowBlur = this.isTarget ? 40 : this.glow * 25;
-      ctx.fillStyle = this.isTarget ? 'rgba(52, 211, 153, 0.5)' : 'rgba(139, 92, 246, 0.4)';
-      ctx.globalAlpha = this.isTarget ? 0.6 : 0.3;
+      const alphaBase = this.isTarget ? 0.8 : this.glow * 0.6;
+      const glowColor = this.isTarget ? COLORS.success : COLORS.primary;
+
+      // Outer glow layer
+      ctx.fillStyle = hexToRgba(glowColor, alphaBase * 0.3);
       ctx.beginPath();
-      ctx.roundRect(x - 8, this.y - this.height/2 - 4, this.width + 16, this.height + 8, 16);
+      ctx.roundRect(x - 16, this.y - this.height / 2 - 12, this.width + 32, this.height + 24, 20);
       ctx.fill();
-      ctx.restore();
+
+      // Inner glow layer
+      ctx.fillStyle = hexToRgba(glowColor, alphaBase * 0.5);
+      ctx.beginPath();
+      ctx.roundRect(x - 12, this.y - this.height / 2 - 8, this.width + 24, this.height + 16, 18);
+      ctx.fill();
     }
 
     // Background pill — color reflects focus (green = high, orange = mid, red = low)
@@ -161,10 +177,9 @@ class Word {
 
     // Typed progress underline
     if (this.matched > 0) {
-      const typedText = this.text.slice(0, this.matched);
-      const typedWidth = ctx.measureText(typedText).width;
+      // ⚡ Bolt: Use cached typedWidth to save on ctx.measureText calls in the animation loop
       ctx.fillStyle = COLORS.success;
-      ctx.fillRect(x + 10, this.y + 12, typedWidth, 5);
+      ctx.fillRect(x + 10, this.y + 12, this.typedWidth, 5);
     }
 
     // Target indicator arrow
@@ -218,6 +233,7 @@ function gameLoop(timestamp) {
 
   const deltaTime = lastFrameTime ? Math.min((timestamp - lastFrameTime) / 1000, 0.05) : 0.016;
   lastFrameTime = timestamp;
+  gameState.currentTime = timestamp;
 
   // Clear canvas
   ctx.clearRect(0, 0, gameState.canvasW, gameState.canvasH);
@@ -280,7 +296,7 @@ function drawQuietGradient() {
 function updateWords(deltaTime) {
   // Spawn new words — T15: cap at 1 active word for the "one word at a time" pedagogy.
   const lesson = currentLesson();
-  const now = performance.now();
+  const now = gameState.currentTime;
   const adaptiveSpawnRate = lesson.spawnRate / gameState.adaptiveSpeed;
 
   if (gameState.activeWords.length < 1 &&
@@ -376,8 +392,11 @@ function handleKey(e) {
   if (gameState.screen !== 'game' || gameState.paused || gameState.gameOver) return;
   if (e.repeat) return;
   
-  const tag = document.activeElement?.tagName;
-  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  // Bail only on real text fields — #mobile-input is a hidden virtual-keyboard
+  // sink on touch devices and must NOT block desktop keyboard input.
+  const active = document.activeElement;
+  const activeId = active?.id;
+  if (activeId !== 'mobile-input' && (active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA')) return;
 
   // Pause with Escape
   if (e.key === 'Escape') {
@@ -455,6 +474,9 @@ function processKeystroke(rawKey, isShift) {
     if (caught) {
       caught.isTarget = true;
       caught.matched = 1;
+      // ⚡ Bolt: Update cached typedWidth when matched changes
+      ctx.font = '700 26px Nunito, sans-serif';
+      caught.typedWidth = ctx.measureText(caught.text.slice(0, 1)).width;
       gameState.targetWord = caught;
       gameState.targetIndex = 1;
       gameState.correctKeystrokes++;
@@ -472,6 +494,9 @@ function processKeystroke(rawKey, isShift) {
     // Correct!
     gameState.targetIndex++;
     gameState.targetWord.matched = gameState.targetIndex;
+    // ⚡ Bolt: Update cached typedWidth when matched changes
+    ctx.font = '700 26px Nunito, sans-serif';
+    gameState.targetWord.typedWidth = ctx.measureText(gameState.targetWord.text.slice(0, gameState.targetIndex)).width;
     gameState.correctKeystrokes++;
     gameState.targetWord.glow = 1;
     onCorrectKeystroke(pressedKey);
@@ -599,7 +624,7 @@ function showPetBubble(text, duration = 2200) {
 
 function updateWPM() {
   if (!gameState.levelStartTime) return;
-  const elapsedMin = (performance.now() - gameState.levelStartTime) / 60000;
+  const elapsedMin = (gameState.currentTime - gameState.levelStartTime) / 60000;
   if (elapsedMin < 0.01) return;
   
   // WPM = (characters / 5) / minutes
@@ -870,6 +895,11 @@ function updateProgressBar() {
     ? (gameState.wordsCompleted / lesson.wordsPerLevel) * 100 
     : 0;
   fillEl.style.width = Math.min(pct, 100) + '%';
+
+  const barEl = document.getElementById('level-progress-bar');
+  if (barEl) {
+    barEl.setAttribute('aria-valuenow', Math.round(Math.min(pct, 100)));
+  }
 }
 
 function updateTargetDisplay() {
@@ -1288,7 +1318,7 @@ function drawGarden() {
   const w = gameState.canvasW;
   const h = gameState.canvasH;
   const groundY = h - 175;
-  const time = performance.now() / 1000;
+  const time = gameState.currentTime / 1000;
 
   if (!bgLayers.sky.img || !bgLayers.sky.img.complete || bgLayers.sky.img._broken) {
     drawFallbackBackground(w, h, groundY);
@@ -1415,7 +1445,7 @@ function drawPet() {
   const baseY = gameState.canvasH - 260;
   
   // Idle breathing animation
-  petBounceY = Math.sin(performance.now() / 500) * 3;
+  petBounceY = Math.sin(gameState.currentTime / 500) * 3;
   
   ctx.drawImage(img, x, baseY + petBounceY, w, h);
   
@@ -1498,7 +1528,7 @@ function drawFlowerImage(flower, groundY) {
   ctx.scale(scale, scale);
 
   // Gentle sway
-  const sway = Math.sin(performance.now() / 800 + flower.x) * 3;
+  const sway = Math.sin(gameState.currentTime / 800 + flower.x) * 3;
   ctx.rotate(sway * Math.PI / 180);
 
   ctx.drawImage(img, -size/2, -size/2, size, size);
@@ -2048,9 +2078,10 @@ export function startGame(level = 1) {
   // Start loop
   animationId = requestAnimationFrame(gameLoop);
   
-  // Focus mobile input for virtual keyboard (iOS/Android tablets)
+  // Focus mobile input for virtual keyboard (touch devices only — on desktop
+  // it would steal keyboard focus from the real game handler).
   const mobileInput = document.getElementById('mobile-input');
-  if (mobileInput) mobileInput.focus();
+  if (mobileInput && isTouchDevice()) mobileInput.focus();
 }
 
 export function startDrillMode(drillLesson) {
@@ -2116,9 +2147,9 @@ export function startDrillMode(drillLesson) {
   
   animationId = requestAnimationFrame(gameLoop);
   
-  // Focus mobile input for virtual keyboard (iOS/Android tablets)
+  // Focus mobile input for virtual keyboard (touch devices only)
   const mobileInput = document.getElementById('mobile-input');
-  if (mobileInput) mobileInput.focus();
+  if (mobileInput && isTouchDevice()) mobileInput.focus();
 }
 
 function preloadImages() {

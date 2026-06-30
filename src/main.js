@@ -85,7 +85,14 @@ function updatePracticeDisplay() {
   const totalWords = gameState.currentPracticeWords.length;
   const wordsCompleted = gameState.practiceWordIndex;
   progressCountEl.textContent = `${wordsCompleted + 1} / ${totalWords}`;
-  progressFillEl.style.width = `${((wordsCompleted + (currentWordIndex / currentPracticeWord.length)) / totalWords) * 100}%`;
+  const pct = ((wordsCompleted + (currentWordIndex / currentPracticeWord.length)) / totalWords) * 100;
+  progressFillEl.style.width = `${pct}%`;
+
+  const barEl = $('practice-bar');
+  if (barEl) {
+    barEl.setAttribute('aria-valuenow', Math.round(pct));
+    barEl.setAttribute('aria-valuetext', `Word ${wordsCompleted + 1} of ${totalWords}`);
+  }
 
   wpmEl.textContent = gameState.practiceWPM;
   accuracyEl.textContent = gameState.practiceAccuracy + '%';
@@ -314,8 +321,8 @@ function updateMenuStats() {
       const item = document.createElement('div');
       item.className = `quest-item ${q.completed ? 'completed' : ''}`;
       item.innerHTML = `
-        <span class="quest-icon">${q.completed ? '✅' : q.icon}</span>
-        <span class="quest-text">${q.desc}</span>
+        <span class="quest-icon">${q.completed ? '✅' : escapeHTML(q.icon)}</span>
+        <span class="quest-text">${escapeHTML(q.desc)}</span>
         <span class="quest-check">${q.completed ? '✓' : ''}</span>
       `;
       list.appendChild(item);
@@ -534,9 +541,9 @@ function loadProfileScreen() {
       const pill = document.createElement('div');
       pill.className = 'cat-pill';
       pill.innerHTML = `
-        <span>${cat.icon} ${cat.label}</span>
-        <div class="cat-bar"><div class="cat-bar-inner" style="width:${cat.pct}%;background:${cat.color}"></div></div>
-        <span>${cat.unlocked}/${cat.total}</span>
+        <span>${escapeHTML(cat.icon)} ${escapeHTML(cat.label)}</span>
+        <div class="cat-bar"><div class="cat-bar-inner" style="width:${escapeHTML(cat.pct)}%;background:${escapeHTML(cat.color)}"></div></div>
+        <span>${escapeHTML(cat.unlocked)}/${escapeHTML(cat.total)}</span>
       `;
       catContainer.appendChild(pill);
     }
@@ -550,9 +557,9 @@ function loadProfileScreen() {
       const item = document.createElement('div');
       item.className = `achievement-item ${ach.unlocked ? 'unlocked' : ''}`;
       item.innerHTML = `
-        <div class="ach-icon">${ach.unlocked ? ach.icon : '🔒'}</div>
-        <div class="ach-title">${ach.title}</div>
-        <div class="ach-desc">${ach.desc}</div>
+        <div class="ach-icon">${ach.unlocked ? escapeHTML(ach.icon) : '🔒'}</div>
+        <div class="ach-title">${escapeHTML(ach.title)}</div>
+        <div class="ach-desc">${escapeHTML(ach.desc)}</div>
       `;
       grid.appendChild(item);
     }
@@ -565,7 +572,7 @@ function loadProfileScreen() {
     if (due.length > 0) {
       reviewContainer.innerHTML = `
         <div class="review-header">🔄 Keys to Review</div>
-        <div class="review-list">${due.map(k => `<span class="review-key">${k.toUpperCase()}</span>`).join('')}</div>
+        <div class="review-list">${due.map(k => `<span class="review-key">${escapeHTML(k.toUpperCase())}</span>`).join('')}</div>
       `;
       reviewContainer.style.display = 'block';
     } else {
@@ -625,9 +632,9 @@ function loadGardenScreen() {
     const emoji = FLOWER_EMOJIS[f.type] || '🌸';
     const date = f.plantedAt ? new Date(f.plantedAt).toLocaleDateString() : '';
     item.innerHTML = `
-      <div class="garden-flower">${emoji}</div>
+      <div class="garden-flower">${escapeHTML(emoji)}</div>
       <div class="garden-word">${escapeHTML(f.word || '?')}</div>
-      <div class="garden-meta">Lv.${f.level || '?'} ${date}</div>
+      <div class="garden-meta">Lv.${escapeHTML(f.level ?? '?')} ${escapeHTML(date)}</div>
     `;
     grid.appendChild(item);
   }
