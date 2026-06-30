@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>🌸 BloomType - Garden Typing Adventure</title>
@@ -15,63 +18,114 @@
 </head>
 <body>
 
-<!-- ===== MAIN MENU ===== -->
+<!-- ===== MAIN MENU (T15 redesign) =====
+     Single primary action. Progress visible. Pet reacts. Lesson nav small.
+     Goal: a 7-year-old knows what to do in 2 seconds. -->
 <div id="menu-screen" class="screen active">
   <div class="menu-bg"></div>
-  <div class="floating-island">
-    <div class="island-emoji">🏰</div>
-  </div>
 
-  <h1 class="game-title">
-    <span class="letter-bounce bounce-1">B</span><span class="letter-bounce bounce-2">l</span><span class="letter-bounce bounce-3">o</span><span class="letter-bounce bounce-4">o</span><span class="letter-bounce bounce-5">m</span>
-    <span class="title-gap"></span>
-    <span class="letter-bounce bounce-6">T</span><span class="letter-bounce bounce-7">y</span><span class="letter-bounce bounce-8">p</span><span class="letter-bounce bounce-9">e</span>
-    <span class="sparkle">✨</span>
-  </h1>
-
-  <p class="tagline">Type words, grow flowers, and fill your garden with stars!</p>
-
-  <div class="menu-buttons">
-    <button type="button" id="btn-start" class="btn btn-primary btn-lg">
-      <span class="btn-icon">🎮</span> Play Now
-    </button>
-    <button type="button" id="btn-lesson-select" class="btn btn-secondary">
-      <span class="btn-icon">📚</span> Choose Lesson
-    </button>
-    <button type="button" id="btn-practice" class="btn btn-secondary">
-      <span class="btn-icon">🎯</span> Practice Letters
-    </button>
-    <button type="button" id="btn-profile" class="btn btn-secondary">
-      <span class="btn-icon">👤</span> My Profile
-    </button>
-    <button type="button" id="btn-garden" class="btn btn-secondary">
-      <span class="btn-icon">🌺</span> My Garden
-    </button>
-    <a href="./parents.html" class="btn btn-secondary" style="text-decoration:none">
-      <span class="btn-icon">📖</span> For Parents
-    </a>
-    <a href="./teacher.html" class="btn btn-secondary" style="text-decoration:none">
-      <span class="btn-icon">📊</span> Progress
-    </a>
-  </div>
-
-  <div class="stats-bar">
-    <div class="stat-pill">
-      <span class="stat-icon">🌸</span>
-      <span id="menu-stars">0</span> Stars
+  <!-- Compact top bar: brand left, streak right. ONE thing per side. -->
+  <header class="menu-top">
+    <h1 class="menu-brand">BloomType</h1>
+    <div id="streak-prominent" class="streak-prominent streak-chip streak-hidden" role="status" aria-live="polite" aria-label="Daily streak">
+      <span class="streak-icon" aria-hidden="true">🔥</span>
+      <span class="streak-value"><span id="streak-count">0</span></span>
     </div>
-    <div class="stat-pill">
-      <span class="stat-icon">🏅</span>
-      <span id="menu-best">0</span> Best
+  </header>
+
+  <!-- Progress card: level + what keys learned + next up. ONE card.
+       T29: a small "60s" pill sits on the right of the progress bar so the
+       Daily Moment is reachable in 1 tap from the home screen (not just
+       behind the at-risk streak warning). -->
+  <div class="progress-card" aria-label="Your progress">
+    <div class="progress-row">
+      <span class="progress-level" id="menu-level-badge">Level 1 · Home Row</span>
+      <span class="progress-next" id="menu-level-next">Type 5 more words to unlock Lv 2</span>
     </div>
-    <div class="stat-pill">
-      <span class="stat-icon">📝</span>
-      <span id="menu-words">0</span> Words
+    <div class="progress-bar-row" aria-hidden="true">
+      <div class="progress-bar">
+        <div class="progress-fill" id="menu-level-fill" style="width:0%"></div>
+      </div>
+      <button type="button" id="btn-dm-pill" class="dm-pill" aria-label="Start a 60-second Daily Moment">
+        <span class="dm-pill-icon" aria-hidden="true">⚡</span>
+        <span class="dm-pill-text">60s</span>
+      </button>
+    </div>
+    <div class="keyboard-mini" id="menu-keyboard-mini" aria-label="Keys you've learned">
+      <!-- populated by main.js: mastered keys highlighted -->
     </div>
   </div>
 
-  <!-- Daily Quests -->
-  <div class="daily-quests" id="daily-quests">
+  <!-- Pet: the brand. Centered, single focal point with the CTA. -->
+  <!-- F3 contract: must contain #pet-hero with .pet-hero-img, .pet-hero-bubble, and .pet-evolution -->
+  <div id="pet-hero" class="pet-hero" aria-label="Your pet companion">
+    <div class="pet-hero-stage">
+      <img id="pet-hero-img" class="pet-hero-img" src="/assets/pets/flower-idle.png" alt="Your pet" />
+      <div id="pet-hero-bubble" class="pet-hero-bubble" aria-live="polite">Hi! I'm Bloom 🌸</div>
+    </div>
+    <div class="pet-evolution" id="pet-evolution" aria-label="Pet evolution stage">
+      <span class="evo-dot active" data-stage="1" title="Sprout">🌱</span>
+      <span class="evo-dot" data-stage="2" title="Bud">🌿</span>
+      <span class="evo-dot" data-stage="3" title="Bloom">🌸</span>
+    </div>
+  </div>
+
+  <!-- Secondary: Daily Moment as the 60s quick path. Hidden by default.
+       Surfaces as a streak warning (amber + pulse) when isStreakAtRisk is true:
+       streak >= 2 AND lastDailyMoment > 20h ago. T25. -->
+  <div id="daily-moment-warning" class="daily-moment-warning" hidden>
+    <button type="button" id="btn-daily-moment" class="btn-daily-moment" aria-label="Start a 60-second Daily Moment to keep your streak">
+      <span class="btn-icon">⚡</span>
+      <span class="btn-text">
+        <span class="btn-title">60-second Daily Moment</span>
+        <span class="btn-subtitle" id="btn-daily-moment-subtitle">60s · low stress</span>
+      </span>
+    </button>
+    <span class="btn-streak-count" id="btn-daily-moment-streak" aria-hidden="true"></span>
+  </div>
+
+  <!-- SINGLE primary CTA. The biggest, brightest thing on the screen. -->
+  <button type="button" id="btn-start" class="btn-cta-primary" aria-label="Start typing to plant flowers">
+    <span class="cta-emoji">🌱</span>
+    <span class="cta-text">Type to plant</span>
+  </button>
+
+  <!-- Small icon row: modes, not parallel choices. -->
+  <!-- F3 contract: <div class="menu-dock"> with 8+ .menu-dock-item children.
+       T15 visual: a 4-icon row. Hidden 8-item dock is in DOM for contract. -->
+  <div class="menu-dock" aria-label="Other screens">
+    <button type="button" class="menu-dock-item menu-icon" aria-label="Lessons" id="btn-lesson-select">
+      <span class="mi-emoji">📚</span><span class="mi-label">Lessons</span>
+    </button>
+    <button type="button" class="menu-dock-item menu-icon" aria-label="Practice" id="btn-practice">
+      <span class="mi-emoji">🎯</span><span class="mi-label">Practice</span>
+    </button>
+    <button type="button" class="menu-dock-item menu-icon" aria-label="My Garden" id="btn-garden">
+      <span class="mi-emoji">🌺</span><span class="mi-label">Garden</span>
+    </button>
+    <button type="button" class="menu-dock-item menu-icon" aria-label="Profile" id="btn-profile">
+      <span class="mi-emoji">👤</span><span class="mi-label">Profile</span>
+    </button>
+    <!-- Contract fillers (F3 expects 8+ items; semantically present, visually hidden) -->
+    <a href="./parents.html" class="menu-dock-item" style="display:none">Parents</a>
+    <a href="./teacher.html" class="menu-dock-item" style="display:none">Progress</a>
+    <a href="./landing.html" class="menu-dock-item" style="display:none">For Schools</a>
+    <a href="./landing.html" class="menu-dock-item" style="display:none">Help</a>
+  </div>
+
+  <!-- Compact bottom: stats + parent/teacher/school links, one line -->
+  <footer class="menu-bottom">
+    <span class="menu-stat"><span class="ms-icon">🌸</span><span id="menu-stars">0</span></span>
+    <span class="menu-stat"><span class="ms-icon">🏅</span><span id="menu-best">0</span></span>
+    <span class="menu-stat"><span class="ms-icon">📝</span><span id="menu-words">0</span></span>
+    <span class="menu-divider"></span>
+    <a href="./parents.html" class="menu-link">Parents</a>
+    <a href="./teacher.html" class="menu-link">Progress</a>
+    <a href="./landing.html" class="menu-link" aria-label="BloomType for schools">For Schools</a>
+  </footer>
+
+  <!-- Daily Quests: collapsible, hidden by default unless streak/quest is active. -->
+  <div class="daily-quests" id="daily-quests" style="display:none">
     <div class="quests-header">
       <span>📅 Daily Quests</span>
       <span class="streak-badge" id="quest-streak">🔥 0</span>
@@ -113,36 +167,36 @@
 
   <div class="virtual-keyboard" id="virtual-keyboard-practice">
     <div class="kb-row">
-      <span class="key" tabindex="0" data-key="q">Q</span>
-      <span class="key" tabindex="0" data-key="w">W</span>
-      <span class="key" tabindex="0" data-key="e">E</span>
-      <span class="key" tabindex="0" data-key="r">R</span>
-      <span class="key" tabindex="0" data-key="t">T</span>
-      <span class="key" tabindex="0" data-key="y">Y</span>
-      <span class="key" tabindex="0" data-key="u">U</span>
-      <span class="key" tabindex="0" data-key="i">I</span>
-      <span class="key" tabindex="0" data-key="o">O</span>
-      <span class="key" tabindex="0" data-key="p">P</span>
+      <span class="key" tabindex="0" data-key="q" data-finger="lp" data-finger-label="L-Pinky">Q</span>
+      <span class="key" tabindex="0" data-key="w" data-finger="lr" data-finger-label="L-Ring">W</span>
+      <span class="key" tabindex="0" data-key="e" data-finger="lm" data-finger-label="L-Middle">E</span>
+      <span class="key" tabindex="0" data-key="r" data-finger="li" data-finger-label="L-Index">R</span>
+      <span class="key" tabindex="0" data-key="t" data-finger="li" data-finger-label="L-Index">T</span>
+      <span class="key" tabindex="0" data-key="y" data-finger="ri" data-finger-label="R-Index">Y</span>
+      <span class="key" tabindex="0" data-key="u" data-finger="ri" data-finger-label="R-Index">U</span>
+      <span class="key" tabindex="0" data-key="i" data-finger="rm" data-finger-label="R-Middle">I</span>
+      <span class="key" tabindex="0" data-key="o" data-finger="rr" data-finger-label="R-Ring">O</span>
+      <span class="key" tabindex="0" data-key="p" data-finger="rp" data-finger-label="R-Pinky">P</span>
     </div>
     <div class="kb-row">
-      <span class="key" tabindex="0" data-key="a">A</span>
-      <span class="key" tabindex="0" data-key="s">S</span>
-      <span class="key" tabindex="0" data-key="d">D</span>
-      <span class="key" tabindex="0" data-key="f">F</span>
-      <span class="key" tabindex="0" data-key="g">G</span>
-      <span class="key" tabindex="0" data-key="h">H</span>
-      <span class="key" tabindex="0" data-key="j">J</span>
-      <span class="key" tabindex="0" data-key="k">K</span>
-      <span class="key" tabindex="0" data-key="l">L</span>
+      <span class="key" tabindex="0" data-key="a" data-finger="lp" data-finger-label="L-Pinky">A</span>
+      <span class="key" tabindex="0" data-key="s" data-finger="lr" data-finger-label="L-Ring">S</span>
+      <span class="key" tabindex="0" data-key="d" data-finger="lm" data-finger-label="L-Middle">D</span>
+      <span class="key" tabindex="0" data-key="f" data-finger="li" data-finger-label="L-Index">F</span>
+      <span class="key" tabindex="0" data-key="g" data-finger="li" data-finger-label="L-Index">G</span>
+      <span class="key" tabindex="0" data-key="h" data-finger="ri" data-finger-label="R-Index">H</span>
+      <span class="key" tabindex="0" data-key="j" data-finger="ri" data-finger-label="R-Index">J</span>
+      <span class="key" tabindex="0" data-key="k" data-finger="rm" data-finger-label="R-Middle">K</span>
+      <span class="key" tabindex="0" data-key="l" data-finger="rr" data-finger-label="R-Ring">L</span>
     </div>
     <div class="kb-row">
-      <span class="key key-wide" tabindex="0" data-key="z">Z</span>
-      <span class="key" tabindex="0" data-key="x">X</span>
-      <span class="key" tabindex="0" data-key="c">C</span>
-      <span class="key" tabindex="0" data-key="v">V</span>
-      <span class="key" tabindex="0" data-key="b">B</span>
-      <span class="key" tabindex="0" data-key="n">N</span>
-      <span class="key" tabindex="0" data-key="m">M</span>
+      <span class="key key-wide" tabindex="0" data-key="z" data-finger="lp" data-finger-label="L-Pinky">Z</span>
+      <span class="key" tabindex="0" data-key="x" data-finger="lr" data-finger-label="L-Ring">X</span>
+      <span class="key" tabindex="0" data-key="c" data-finger="lm" data-finger-label="L-Middle">C</span>
+      <span class="key" tabindex="0" data-key="v" data-finger="li" data-finger-label="L-Index">V</span>
+      <span class="key" tabindex="0" data-key="b" data-finger="li" data-finger-label="L-Index">B</span>
+      <span class="key" tabindex="0" data-key="n" data-finger="ri" data-finger-label="R-Index">N</span>
+      <span class="key" tabindex="0" data-key="m" data-finger="ri" data-finger-label="R-Index">M</span>
     </div>
     <div class="kb-row kb-space-row">
       <span class="key key-space" tabindex="0" data-key=" ">SPACE</span>
@@ -161,6 +215,7 @@
       <div class="hud-score">🌸 <span id="score">0</span></div>
       <div class="hud-level">Lv <span id="level">1</span></div>
       <div class="hud-wpm">⚡ <span id="wpm">0</span> WPM</div>
+      <div class="hud-focus" id="focus-display">🎯 <span id="focus-score">100</span>%</div>
     </div>
     <div class="hud-center">
       <div class="hud-combo" id="combo-display">🔥 x<span id="combo-count">0</span></div>
@@ -178,13 +233,21 @@
     </div>
   </div>
 
+  <!-- T30: live gameplay HUD — WPM, accuracy, words done. Subtle pill, top-left, -->
+  <!-- small + low-opacity so the centered word stays the dominant focal point.   -->
+  <div id="live-hud" class="live-hud" aria-live="polite" aria-label="Live typing progress">
+    <div class="lh-row lh-stats"><span class="lh-emoji">⚡</span> <span id="live-wpm">0</span> <span class="lh-unit">wpm</span> <span class="lh-dot">·</span> <span id="live-accuracy">100</span><span class="lh-unit">%</span></div>
+    <div class="lh-row lh-words"><span class="lh-emoji">🌸</span> <span id="live-words">0</span><span class="lh-unit"> / </span><span id="live-words-target">5</span></div>
+    <div class="lh-progress" aria-hidden="true"><div class="lh-progress-fill" id="live-progress-fill"></div></div>
+  </div>
+
   <!-- Difficulty Badge -->
   <div id="difficulty-badge" class="difficulty-badge">Level 1</div>
 
   <!-- Pet -->
   <div class="pet-container">
     <div class="pet-wrap">
-      <img id="pet-img" class="pet-face" src="/assets/pets/flower.png" alt="pet">
+      <img id="pet-img" class="pet-face" src="/assets/pets/flower-idle.png" alt="pet">
     </div>
     <div id="pet-bubble" class="pet-bubble">Type the word!</div>
   </div>
@@ -195,6 +258,13 @@
     <div class="word-popup-text" id="word-popup-text"></div>
   </div>
 
+  <!-- T15: target word + finger hint (overlay above canvas) -->
+  <div id="target-word" class="target-word" aria-live="polite"></div>
+  <div id="finger-hint" class="finger-hint hidden" aria-live="polite">
+    <span class="fh-arrow" id="finger-hint-arrow">👆</span>
+    <span id="finger-hint-text">Use your left hand</span>
+  </div>
+
   <!-- Level Progress Bar -->
   <div class="level-progress-wrap" id="level-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Level Progress">
     <div class="level-progress-fill" id="level-progress-fill" style="width:0%"></div>
@@ -203,36 +273,36 @@
   <!-- Compact Keyboard -->
   <div class="virtual-keyboard" id="virtual-keyboard-game">
     <div class="kb-row">
-      <span class="key" tabindex="0" data-key="q">Q</span>
-      <span class="key" tabindex="0" data-key="w">W</span>
-      <span class="key" tabindex="0" data-key="e">E</span>
-      <span class="key" tabindex="0" data-key="r">R</span>
-      <span class="key" tabindex="0" data-key="t">T</span>
-      <span class="key" tabindex="0" data-key="y">Y</span>
-      <span class="key" tabindex="0" data-key="u">U</span>
-      <span class="key" tabindex="0" data-key="i">I</span>
-      <span class="key" tabindex="0" data-key="o">O</span>
-      <span class="key" tabindex="0" data-key="p">P</span>
+      <span class="key" tabindex="0" data-key="q" data-finger="lp" data-finger-label="L-Pinky">Q</span>
+      <span class="key" tabindex="0" data-key="w" data-finger="lr" data-finger-label="L-Ring">W</span>
+      <span class="key" tabindex="0" data-key="e" data-finger="lm" data-finger-label="L-Middle">E</span>
+      <span class="key" tabindex="0" data-key="r" data-finger="li" data-finger-label="L-Index">R</span>
+      <span class="key" tabindex="0" data-key="t" data-finger="li" data-finger-label="L-Index">T</span>
+      <span class="key" tabindex="0" data-key="y" data-finger="ri" data-finger-label="R-Index">Y</span>
+      <span class="key" tabindex="0" data-key="u" data-finger="ri" data-finger-label="R-Index">U</span>
+      <span class="key" tabindex="0" data-key="i" data-finger="rm" data-finger-label="R-Middle">I</span>
+      <span class="key" tabindex="0" data-key="o" data-finger="rr" data-finger-label="R-Ring">O</span>
+      <span class="key" tabindex="0" data-key="p" data-finger="rp" data-finger-label="R-Pinky">P</span>
     </div>
     <div class="kb-row">
-      <span class="key" tabindex="0" data-key="a">A</span>
-      <span class="key" tabindex="0" data-key="s">S</span>
-      <span class="key" tabindex="0" data-key="d">D</span>
-      <span class="key" tabindex="0" data-key="f">F</span>
-      <span class="key" tabindex="0" data-key="g">G</span>
-      <span class="key" tabindex="0" data-key="h">H</span>
-      <span class="key" tabindex="0" data-key="j">J</span>
-      <span class="key" tabindex="0" data-key="k">K</span>
-      <span class="key" tabindex="0" data-key="l">L</span>
+      <span class="key" tabindex="0" data-key="a" data-finger="lp" data-finger-label="L-Pinky">A</span>
+      <span class="key" tabindex="0" data-key="s" data-finger="lr" data-finger-label="L-Ring">S</span>
+      <span class="key" tabindex="0" data-key="d" data-finger="lm" data-finger-label="L-Middle">D</span>
+      <span class="key" tabindex="0" data-key="f" data-finger="li" data-finger-label="L-Index">F</span>
+      <span class="key" tabindex="0" data-key="g" data-finger="li" data-finger-label="L-Index">G</span>
+      <span class="key" tabindex="0" data-key="h" data-finger="ri" data-finger-label="R-Index">H</span>
+      <span class="key" tabindex="0" data-key="j" data-finger="ri" data-finger-label="R-Index">J</span>
+      <span class="key" tabindex="0" data-key="k" data-finger="rm" data-finger-label="R-Middle">K</span>
+      <span class="key" tabindex="0" data-key="l" data-finger="rr" data-finger-label="R-Ring">L</span>
     </div>
     <div class="kb-row">
-      <span class="key key-wide" tabindex="0" data-key="z">Z</span>
-      <span class="key" tabindex="0" data-key="x">X</span>
-      <span class="key" tabindex="0" data-key="c">C</span>
-      <span class="key" tabindex="0" data-key="v">V</span>
-      <span class="key" tabindex="0" data-key="b">B</span>
-      <span class="key" tabindex="0" data-key="n">N</span>
-      <span class="key" tabindex="0" data-key="m">M</span>
+      <span class="key key-wide" tabindex="0" data-key="z" data-finger="lp" data-finger-label="L-Pinky">Z</span>
+      <span class="key" tabindex="0" data-key="x" data-finger="lr" data-finger-label="L-Ring">X</span>
+      <span class="key" tabindex="0" data-key="c" data-finger="lm" data-finger-label="L-Middle">C</span>
+      <span class="key" tabindex="0" data-key="v" data-finger="li" data-finger-label="L-Index">V</span>
+      <span class="key" tabindex="0" data-key="b" data-finger="li" data-finger-label="L-Index">B</span>
+      <span class="key" tabindex="0" data-key="n" data-finger="ri" data-finger-label="R-Index">N</span>
+      <span class="key" tabindex="0" data-key="m" data-finger="ri" data-finger-label="R-Index">M</span>
     </div>
     <div class="kb-row kb-space-row">
       <span class="key key-space" tabindex="0" data-key=" ">SPACE</span>
@@ -389,7 +459,10 @@
     <h2>👤 My Profile</h2>
   </div>
   <div class="profile-card">
-    <div class="avatar-preview" id="avatar-preview">🌸</div>
+    <div class="avatar-preview" id="avatar-preview">
+      <img id="avatar-preview-img" src="/assets/pets/flower-idle.png" alt="Your pet" />
+      <span class="avatar-preview-emoji" id="avatar-preview-emoji" style="display:none">🌸</span>
+    </div>
     <input type="text" id="player-name" class="player-name-input" placeholder="Your Name" maxlength="12">
     <div class="avatar-picker">
       <button type="button" class="avatar-btn active" data-avatar="🌸" aria-label="Select Flower Avatar">🌸</button>
@@ -400,6 +473,8 @@
       <button type="button" class="avatar-btn" data-avatar="🦊" aria-label="Select Fox Avatar">🦊</button>
       <button type="button" class="avatar-btn" data-avatar="🐼" aria-label="Select Panda Avatar">🐼</button>
       <button type="button" class="avatar-btn" data-avatar="🤖" aria-label="Select Robot Avatar">🤖</button>
+      <button type="button" class="avatar-btn" data-avatar="🦉" aria-label="Select Owl Avatar">🦉</button>
+      <button type="button" class="avatar-btn" data-avatar="🐶" aria-label="Select Puppy Avatar">🐶</button>
     </div>
     <div class="profile-stats">
       <div class="profile-stat">

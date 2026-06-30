@@ -35,6 +35,13 @@ export const defaultState = {
   levelAccuracy: 0,
   levelComplete: false,
   skipsUsed: 0,
+  // Daily Moment state (F1) — soft 60s typing session, no game-over
+  dailyMoment: {
+    active: false,
+    startTime: 0,
+    durationMs: 60_000,
+    wordsTarget: 12,
+  },
   // Practice Mode state
   practiceLessonId: 1,
   currentPracticeWords: [],
@@ -60,6 +67,7 @@ export const defaultState = {
     classCode: null, // Classroom code for teacher dashboard
     uuid: null, // Stable identifier for class sync
     keySR: {}, // Spaced repetition state for weak keys
+    lastDailyMomentDate: null, // F1: ISO date of last completed Daily Moment
   },
 };
 

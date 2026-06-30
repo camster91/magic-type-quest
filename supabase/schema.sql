@@ -27,7 +27,7 @@ create policy "Self insert" on profiles for insert with check (auth.uid() = id);
 create table if not exists game_sessions (
   id bigserial primary key,
   profile_id uuid references profiles(id) on delete cascade,
-  level text not null,
+  level integer not null,
   score integer default 0,
   wpm decimal(5,2) default 0,
   accuracy decimal(5,2) default 0,
@@ -38,9 +38,9 @@ create table if not exists game_sessions (
   created_at timestamptz default now()
 );
 
--- Index for teacher analytics
+-- Index for teacher analytics (joins to profiles.class_code)
 create index if not exists idx_sessions_profile on game_sessions(profile_id, created_at desc);
-create index if not exists idx_sessions_class on game_sessions(class_code, created_at desc) where class_code is not null;
+create index if not exists idx_profiles_class on profiles(class_code) where class_code is not null;
 
 -- RLS: anyone can insert (anonymous play), only profile owner can read
 create policy "Open insert" on game_sessions for insert with check (true);
@@ -61,6 +61,9 @@ create table if not exists class_roster (
   unique(class_code, profile_id)
 );
 
+-- RLS must be enabled for policies to take effect
+alter table class_roster enable row level security;
+
 -- Teacher: read by class_code
 create policy "Class read" on class_roster for select using (true);
 create policy "Student upsert" on class_roster for insert with check (true);
@@ -72,6 +75,9 @@ create table if not exists teacher_codes (
   teacher_id uuid references auth.users(id) on delete cascade,
   created_at timestamptz default now()
 );
+
+-- RLS must be enabled for policies to take effect
+alter table teacher_codes enable row level security;
 
 create policy "Teacher own codes" on teacher_codes for all using (auth.uid() = teacher_id);
 

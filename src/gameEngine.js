@@ -6,7 +6,7 @@ import { LESSON_LEVELS, getLessonByLevel, getFingerHint } from './lessonLevels.j
 import { gameState, loadProfile, saveProfile } from './state.js';
 import { say, getChapter, getEvolutionStage, PET_NAME_DEFAULT } from './story.js';
 import { checkAchievements as checkAchievementsNew } from './achievements.js';
-import { evaluateQuests } from './quests.js';
+import { evaluateQuests, bumpStreakIfToday } from './quests.js';
 import { playAmbient, stopAmbient, audioCtx, initAudio } from './audio.js';
 import { getWeakKeys } from './drills.js';
 import { recordKeyPractice } from './spacedRep.js';
@@ -88,15 +88,45 @@ class Word {
     this.shake = 0;
     this.width = 0;
     this.height = 36;
+    // Focus mechanic: 100 at spawn, decays to 0 as the word falls.
+    // Higher focus at completion = higher score multiplier.
+    this.focus = 100;
   }
 
   update(deltaTime) {
+    // T15: in overlay mode, the word doesn't fall — it sits centered
+    // while the kid types. No timer pressure, no missed-word penalty.
+    if (typeof window !== 'undefined' && window.__bloomtypeT15Overlay) {
+      // Park the word above the canvas so its isAtBottom() never fires
+      this.y = -200;
+      this.speed = 0;
+      if (this.glow > 0) this.glow -= deltaTime * 3;
+      if (this.shake > 0) this.shake -= deltaTime * 5;
+      return;
+    }
     this.y += this.speed * 60 * deltaTime;
     if (this.glow > 0) this.glow -= deltaTime * 3;
     if (this.shake > 0) this.shake -= deltaTime * 5;
+    // Focus decays as the word falls. The groundY is ~220px from bottom;
+    // once y crosses that, the word is "missed" and focus is 0.
+    const groundY = gameState.canvasH - 220;
+    if (groundY > 0) {
+      this.focus = Math.max(0, Math.min(100, 100 * (1 - this.y / groundY)));
+    }
+  }
+
+  /** Multiplier applied to base score on completion. 1.0 at full focus, 0.5 at half. */
+  getScoreMultiplier() {
+    return 0.5 + (this.focus / 100) * 0.5; // 0.5x to 1.0x
   }
 
   draw(ctx) {
+    // T15: in overlay mode, the HTML .target-word shows the current word.
+    // The canvas still tracks the word for game logic (completion, focus,
+    // pet reactions) but we don't paint it on the canvas.
+    if (typeof window !== 'undefined' && window.__bloomtypeT15Overlay) {
+      return;
+    }
     const shakeX = this.shake > 0 ? (Math.random() - 0.5) * 6 : 0;
     const x = this.x + shakeX;
     
@@ -118,9 +148,20 @@ class Word {
       ctx.fill();
     }
 
-    // Background pill
-    ctx.fillStyle = this.isTarget ? 'rgba(52, 211, 153, 0.35)' : 'rgba(139, 92, 246, 0.35)';
-    ctx.strokeStyle = this.isTarget ? COLORS.success : 'rgba(200, 180, 255, 0.8)';
+    // Background pill — color reflects focus (green = high, orange = mid, red = low)
+    // isTarget always wins (green) so the active word stays readable.
+    let pillFill, pillStroke;
+    if (this.isTarget) {
+      pillFill = 'rgba(52, 211, 153, 0.35)';
+      pillStroke = COLORS.success;
+    } else {
+      // Hue shifts: focus 100 -> green (120), focus 50 -> yellow (60), focus 0 -> red (0)
+      const hue = Math.round((this.focus / 100) * 120);
+      pillFill = `hsla(${hue}, 70%, 50%, 0.30)`;
+      pillStroke = `hsla(${hue}, 70%, 70%, 0.8)`;
+    }
+    ctx.fillStyle = pillFill;
+    ctx.strokeStyle = pillStroke;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.roundRect(x - 8, this.y - this.height/2 - 4, this.width + 16, this.height + 8, 16);
@@ -197,6 +238,28 @@ function gameLoop(timestamp) {
   // Clear canvas
   ctx.clearRect(0, 0, gameState.canvasW, gameState.canvasH);
 
+  // T22: detect "target idle" — kid has an active target word but hasn't
+  // pressed a key in 3.5s. Their combo is about to break and they're
+  // disengaged. Switch the pet to the 'hurt' state (wilted/sad) with a
+  // "Don't forget me!" bubble to nudge them back. The state reverts to
+  // idle on next correct keystroke (handled in onCorrectKeystroke via
+  // clearPetWorried).
+  checkPetIdleWarning();
+
+  // T19: in T15 overlay mode, the canvas is a quiet gradient backdrop.
+  // No mushrooms, no forest, no vines, no falling particles. The word
+  // (HTML overlay) and the pet (HTML overlay) are the only focal points.
+  // The canvas still exists for animation continuity but draws nothing
+  // that competes with them.
+  if (typeof window !== 'undefined' && window.__bloomtypeT15Overlay) {
+    drawQuietGradient();
+    updateWords(deltaTime);
+    // No drawWords (overlay), no drawPet (HTML pet), no particles.
+    checkLevelComplete();
+    animationId = requestAnimationFrame(gameLoop);
+    return;
+  }
+
   // Draw garden (parallax background + flowers)
   drawGarden();
 
@@ -217,13 +280,27 @@ function gameLoop(timestamp) {
   animationId = requestAnimationFrame(gameLoop);
 }
 
+/** T19: flat dark gradient as the gameplay backdrop. The word (HTML) and
+ *  pet (HTML) sit on top; nothing on the canvas competes with them. */
+function drawQuietGradient() {
+  const w = gameState.canvasW;
+  const h = gameState.canvasH;
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, '#1e1b4b');     // --bg-1
+  grad.addColorStop(0.55, '#312e81');  // mid: indigo
+  grad.addColorStop(1, '#0f0a3d');     // deep bottom
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+}
+
 function updateWords(deltaTime) {
-  // Spawn new words
+  // Spawn new words — T15: cap at 1 active word for the "one word at a time" pedagogy.
   const lesson = currentLesson();
   const now = gameState.currentTime;
   const adaptiveSpawnRate = lesson.spawnRate / gameState.adaptiveSpeed;
-  
-  if (gameState.wordsSpawned < lesson.wordsPerLevel && 
+
+  if (gameState.activeWords.length < 1 &&
+      gameState.wordsSpawned < lesson.wordsPerLevel &&
       now - gameState.lastSpawn > adaptiveSpawnRate) {
     spawnWord();
     gameState.lastSpawn = now;
@@ -451,14 +528,31 @@ function onCorrectKeystroke(key) {
   const k = key.toLowerCase();
   if (!gameState.keyAccuracy[k]) gameState.keyAccuracy[k] = { correct: 0, wrong: 0 };
   gameState.keyAccuracy[k].correct++;
-  
+
   // Spaced repetition tracking
   recordKeyPractice(gameState.profile, k, true);
-  
+
   sounds.correct();
   showKeyFeedback(key, true);
+  // T26: tactile feedback on every keystroke — pressed key glows + scales
+  // for 200ms (covers ALL keys, not just the target), target word pulses
+  // green, +1 floater rises above the score.
+  pulsePressedKey(key);
+  pulseTargetWord();
+  showPlusOneFloater();
   highlightTargetKey(gameState.targetWord?.text?.[gameState.targetIndex]);
   updateWPM();
+
+  // T22: per-keystroke pet pulse. The .correct class triggers a 350ms
+  // brightness+scale flash on the pet face. We don't swap pet state on
+  // every keystroke (would be too chaotic) — the state swaps still happen
+  // on word_complete / loseHealth via showPetReaction. The pulse is
+  // removed/restarted by toggling the class off then on.
+  pulsePetFace('correct');
+  // T22: cancel any active "worried" reaction and reset the idle timer —
+  // the kid is back on track.
+  lastCorrectKeystrokeAt = performance.now();
+  clearPetWorried();
 }
 
 function onWrongKeystroke(key) {
@@ -466,12 +560,16 @@ function onWrongKeystroke(key) {
   const k = key.toLowerCase();
   if (!gameState.keyAccuracy[k]) gameState.keyAccuracy[k] = { correct: 0, wrong: 0 };
   gameState.keyAccuracy[k].wrong++;
-  
+
   // Spaced repetition tracking
   recordKeyPractice(gameState.profile, k, false);
-  
+
   sounds.wrong();
   showKeyFeedback(key, false);
+  // T26: pressed-pulse on the wrong key + a sharper 200ms red flash so the
+  // kid feels a "nope" without it reading as punishment.
+  pulsePressedKey(key);
+  flashWrongKey(key);
   gameState.combo = 0;
   updateCombo();
   if (gameState.targetWord) {
@@ -479,10 +577,49 @@ function onWrongKeystroke(key) {
   }
   updateHearts();
   updateWPM();
-  
+
   // Screen shake on wrong answer
   document.body.classList.add('screen-shake');
   setTimeout(() => document.body.classList.remove('screen-shake'), 400);
+
+  // T22: pet shake + short "Try again!" bubble. Held briefly so the kid
+  // sees the pet react, then the bubble clears itself after 900ms (shorter
+  // than showPetReaction's 2200ms default — wrong-key feedback should be
+  // quick so it doesn't pile up if the kid is mistyping).
+  pulsePetFace('wrong');
+  showPetBubble('Try again!', 900);
+  // T22: a wrong key still proves the kid is present. Reset the idle
+  // timer so the "Don't forget me!" bubble doesn't fire immediately after.
+  lastCorrectKeystrokeAt = performance.now();
+  clearPetWorried();
+}
+
+/** T22: toggle a one-shot animation class on the gameplay pet face.
+ *  We re-trigger the animation by removing the class, forcing a reflow,
+ *  and re-adding it — the standard CSS animation-restart pattern. */
+function pulsePetFace(cls) {
+  const petFace = document.getElementById('pet-img');
+  if (!petFace) return;
+  petFace.classList.remove('correct', 'wrong', 'celebrate');
+  // Force reflow so the next add re-fires the animation
+  // eslint-disable-next-line no-unused-expressions
+  void petFace.offsetWidth;
+  petFace.classList.add(cls);
+  setTimeout(() => petFace.classList.remove(cls), 500);
+}
+
+/** T22: show a short speech bubble above the pet without swapping the
+ *  pet state. Used for per-keystroke feedback (Try again!, Great!) where
+ *  the bubble text changes faster than the 2200ms timer in showPetReaction. */
+function showPetBubble(text, duration = 2200) {
+  const bubbleEl = document.getElementById('pet-bubble');
+  if (!bubbleEl) return;
+  bubbleEl.textContent = text;
+  bubbleEl.classList.add('visible');
+  // Reuse the same fade timer shape as showPetReaction so the bubble
+  // doesn't stack if multiple pulses fire close together.
+  if (bubbleEl._hideTimer) clearTimeout(bubbleEl._hideTimer);
+  bubbleEl._hideTimer = setTimeout(() => bubbleEl.classList.remove('visible'), duration);
 }
 
 function updateWPM() {
@@ -510,15 +647,25 @@ function completeWord() {
   sounds.word();
   spawnParticles(word.x + word.width/2, word.y, 15);
   
-  // Score
+  // Score — base × focus multiplier (0.5x to 1.0x) × (1 + combo/10)
+  const focusMultiplier = word.getScoreMultiplier();
   const baseScore = word.text.length * 10;
+  const focusBonus = Math.round(baseScore * (focusMultiplier - 0.5));
   const comboBonus = gameState.combo * 5;
   const levelBonus = gameState.level * 2;
-  const totalPoints = baseScore + comboBonus + levelBonus;
+  const totalPoints = baseScore + focusBonus + comboBonus + levelBonus;
   gameState.score += totalPoints;
+  gameState.totalFocusBonus = (gameState.totalFocusBonus || 0) + focusBonus;
+  gameState.lastFocus = Math.round(word.focus);
   
-  // Show score popup
+  // Show score popup (with focus indicator if bonus was earned)
   showScorePopup(totalPoints, word.x + word.width/2, word.y);
+  if (focusBonus > 0) {
+    setTimeout(() => showScorePopup(
+      `+${focusBonus} focus`,
+      word.x + word.width/2, word.y - 40
+    ), 200);
+  }
   
   // Show word popup
   showWordPopup(word.text);
@@ -527,6 +674,8 @@ function completeWord() {
   gameState.combo++;
   gameState.maxCombo = Math.max(gameState.maxCombo, gameState.combo);
   if (gameState.combo >= 2) sounds.combo();
+  // T26: COMBO x5 / x10 / x15 milestone callout floats up for 800ms.
+  showComboFloater(gameState.combo);
   
   // Stats
   gameState.wordsTyped++;
@@ -535,11 +684,22 @@ function completeWord() {
   // Check achievements
   checkAchievements();
   
-  // Pet reaction
+  // Pet reaction — T22 acceptance: each state must be visually distinct.
+  // T22 fix: the 'fire' PNG reads as defeated/faded, not celebratory, so
+  // combo-5 now uses the 'celebrate' state (sparkles, open mouth, raised
+  // arms). Word completion under combo-5 still bumps the bubble text so
+  // the kid still gets the milestone callout.
   if (gameState.combo >= 5) {
-    showPetReaction('fire', `🔥 ${gameState.combo} Combo!`);
+    showPetReaction('celebrate', `🔥 ${gameState.combo} Combo!`);
   } else {
     showPetReaction('happy');
+  }
+
+  // F1 Daily Moment: end the session if wordsTarget is hit
+  if (gameState.dailyMoment?.active &&
+      gameState.wordsCompleted >= (gameState.dailyMoment.wordsTarget || 12)) {
+    // defer to the next tick so this completeWord() finishes cleanly
+    setTimeout(() => endDailyMoment({ reason: 'wordsTarget' }), 0);
   }
   
   // Plant flower in garden (session + persistent)
@@ -595,6 +755,19 @@ function skipWord() {
 }
 
 function loseHealth() {
+  // F1 Daily Moment: no game-over, no health loss. Words just disappear.
+  if (gameState.dailyMoment?.active) {
+    if (gameState.targetWord) {
+      const idx = gameState.activeWords.indexOf(gameState.targetWord);
+      if (idx >= 0) gameState.activeWords.splice(idx, 1);
+      gameState.targetWord = null;
+      gameState.targetIndex = 0;
+      updateTargetDisplay();
+      updateKeyboardHighlight();
+    }
+    return;
+  }
+
   gameState.health--;
   gameState.combo = 0;
   sounds.heart();
@@ -602,7 +775,7 @@ function loseHealth() {
   showPetReaction('hurt');
   updateHearts();
   updateCombo();
-  
+
   if (gameState.health <= 0) {
     gameOver();
   }
@@ -622,17 +795,63 @@ function updateHUD() {
   const scoreEl = document.getElementById('score');
   const levelEl = document.getElementById('level');
   const accuracyEl = document.getElementById('accuracy');
-  
+
   if (scoreEl) scoreEl.textContent = gameState.score;
   if (levelEl) levelEl.textContent = gameState.level;
-  
+
   if (accuracyEl) {
-    const accuracy = gameState.totalKeystrokes > 0 
-      ? Math.round((gameState.correctKeystrokes / gameState.totalKeystrokes) * 100) 
+    const accuracy = gameState.totalKeystrokes > 0
+      ? Math.round((gameState.correctKeystrokes / gameState.totalKeystrokes) * 100)
       : 100;
     accuracyEl.textContent = accuracy + '%';
   }
-  
+
+  // Focus mechanic: show the last focus score (the multiplier indicator)
+  const focusScoreEl = document.getElementById('focus-score');
+  if (focusScoreEl) {
+    const lastFocus = gameState.lastFocus;
+    focusScoreEl.textContent = (typeof lastFocus === 'number') ? lastFocus : 100;
+    // Color the focus score green for high, red for low
+    const focusDisplay = document.getElementById('focus-display');
+    if (focusDisplay && typeof lastFocus === 'number') {
+      const hue = Math.round((lastFocus / 100) * 120);
+      focusDisplay.style.color = `hsl(${hue}, 80%, 45%)`;
+    }
+  }
+
+  // T30: live gameplay HUD pill — WPM, accuracy, words-done.
+  // The pill is the only new on-screen element; the existing
+  // score/level/wpm/focus nodes stay display:none (T19 decision).
+  const liveWpmEl = document.getElementById('live-wpm');
+  const liveAccEl = document.getElementById('live-accuracy');
+  const liveWordsEl = document.getElementById('live-words');
+  const liveWordsTargetEl = document.getElementById('live-words-target');
+  if (liveWpmEl) liveWpmEl.textContent = gameState.levelWPM || 0;
+  if (liveAccEl) {
+    const acc = gameState.totalKeystrokes > 0
+      ? Math.round((gameState.correctKeystrokes / gameState.totalKeystrokes) * 100)
+      : 100;
+    liveAccEl.textContent = acc;
+  }
+  if (liveWordsEl) liveWordsEl.textContent = gameState.wordsCompleted || 0;
+  if (liveWordsTargetEl) {
+    // Daily Moment: 12-word target. Lesson play: wordsPerLevel. Fall back to 5.
+    let target = 5;
+    if (gameState.mode === 'dailyMoment' || gameState.dailyMoment?.active) {
+      target = gameState.dailyMoment?.wordsTarget || 12;
+    } else {
+      const lesson = currentLesson();
+      if (lesson && lesson.wordsPerLevel) target = lesson.wordsPerLevel;
+    }
+    liveWordsTargetEl.textContent = target;
+    // T30: also update the inline progress bar
+    const fillEl = document.getElementById('live-progress-fill');
+    if (fillEl) {
+      const pct = target > 0 ? Math.min(100, ((gameState.wordsCompleted || 0) / target) * 100) : 0;
+      fillEl.style.width = pct + '%';
+    }
+  }
+
   updateCombo();
   updateProgressBar();
 }
@@ -686,20 +905,51 @@ function updateProgressBar() {
 function updateTargetDisplay() {
   const targetWord = document.getElementById('target-word');
   const targetTyped = document.getElementById('target-typed');
-  
-  if (!targetWord || !targetTyped) return;
-  
+  const fingerHint = document.getElementById('finger-hint');
+  const fingerHintText = document.getElementById('finger-hint-text');
+  const fingerHintArrow = document.getElementById('finger-hint-arrow');
+
+  if (!targetWord) return;
+
   if (gameState.targetWord) {
-    targetWord.textContent = gameState.targetWord.text;
-    targetTyped.textContent = gameState.targetWord.text.slice(0, gameState.targetIndex);
+    // T15: render the word as spans with per-character state (typed/next/finger-zone)
+    const word = gameState.targetWord.text || '';
+    const typed = gameState.targetIndex || 0;
+    const lower = word.toLowerCase();
+    let html = '';
+    for (let i = 0; i < word.length; i++) {
+      const ch = word[i];
+      const lowerCh = lower[i];
+      const isTyped = i < typed;
+      const isNext = i === typed;
+      // Finger zone: left if a/s/d/f/g/q/w/e/r/t/z/x/c/v/b, right otherwise
+      const isLeft = 'asdfgqwertzxcvb'.includes(lowerCh);
+      const zoneClass = isNext ? (isLeft ? 'finger-left' : 'finger-right') : '';
+      const stateClass = isTyped ? 'typed' : (isNext ? 'next' : '');
+      html += `<span class="tw-char ${stateClass} ${zoneClass}">${ch}</span>`;
+    }
+    targetWord.innerHTML = html;
+
+    if (targetTyped) targetTyped.textContent = word.slice(0, typed);
+
+    // Finger hint under the word
+    if (fingerHint && fingerHintText) {
+      const nextCh = lower[typed];
+      const isLeft = 'asdfgqwertzxcvb'.includes(nextCh);
+      if (nextCh) {
+        const hint = getFingerHint(nextCh);
+        const label = hint ? hint.label : (isLeft ? 'left hand' : 'right hand');
+        fingerHintText.textContent = `Use your ${label}`;
+        if (fingerHintArrow) fingerHintArrow.textContent = isLeft ? '👈' : '👉';
+        fingerHint.classList.remove('hidden');
+      } else {
+        fingerHint.classList.add('hidden');
+      }
+    }
   } else {
-    // Force clear both elements
-    targetWord.innerHTML = '\u00A0';
-    targetTyped.innerHTML = '\u00A0';
-    requestAnimationFrame(() => {
-      targetWord.innerHTML = '';
-      targetTyped.innerHTML = '';
-    });
+    targetWord.innerHTML = '';
+    if (targetTyped) targetTyped.textContent = '';
+    if (fingerHint) fingerHint.classList.add('hidden');
   }
 }
 
@@ -710,16 +960,24 @@ function updateKeyboardHighlight() {
 
 // ===== KEYBOARD HIGHLIGHT =====
 export function highlightTargetKey(char) {
+  // T19: there are TWO keyboards on the page (practice + game). querySelector
+  // returned only the FIRST match, so the practice key lit up while the game
+  // key stayed dark. Use querySelectorAll so both keyboards stay in sync.
   document.querySelectorAll('.key').forEach(k => k.classList.remove('target'));
-  
+
   if (!char) return;
-  
-  const keyEl = document.querySelector(`.key[data-key="${char.toLowerCase()}"]`);
-  if (keyEl) {
+
+  const lower = char.toLowerCase();
+  const keyEls = document.querySelectorAll(`.key[data-key="${lower}"]`);
+  keyEls.forEach(keyEl => {
     keyEl.classList.add('target');
-    keyEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-  
+    // Only scrollIntoView the game keyboard (the visible one during play).
+    // Practice keyboard is hidden so scrolling it does nothing useful.
+    if (keyEl.closest('#virtual-keyboard-game')) {
+      keyEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+
   // Show finger hint
   const hint = getFingerHint(char);
   if (hint) {
@@ -742,6 +1000,87 @@ export function showKeyFeedback(key, correct) {
     keyEl.classList.add(correct ? 'correct' : 'wrong');
     setTimeout(() => keyEl.classList.remove('correct', 'wrong'), 300);
   }
+}
+
+// ===== T26: PER-KEYPRESS FEEDBACK =====
+// On every keystroke (correct or wrong) the pressed key gets a 200ms
+// glow + 1.1x scale, on top of the existing color tint from .key.correct /
+// .key.wrong. The .pressed class triggers the CSS animation; we remove it
+// after 200ms so the key returns to its resting state. Both the practice
+// keyboard and the game keyboard light up because we querySelectorAll.
+function pulsePressedKey(key) {
+  if (!key) return;
+  const els = document.querySelectorAll(`.key[data-key="${key.toLowerCase()}"]`);
+  els.forEach(el => {
+    el.classList.remove('pressed');
+    // Force reflow so re-adding the class re-fires the animation.
+    void el.offsetWidth;
+    el.classList.add('pressed');
+    setTimeout(() => el.classList.remove('pressed'), 200);
+  });
+}
+
+// Brief pulse on the target word card (canvas word's `glow` is already
+// driven by Word.update). We just bump it for 100ms so the word brightens
+// and the green glow blob behind it pulses.
+function pulseTargetWord() {
+  if (gameState.targetWord) {
+    gameState.targetWord.glow = Math.max(gameState.targetWord.glow, 1.0);
+  }
+}
+
+// Brief red flash on the wrong key (200ms) — different from .wrong which
+// is a 300ms color tint. The flash is a stronger "nope" cue.
+function flashWrongKey(key) {
+  if (!key) return;
+  const els = document.querySelectorAll(`.key[data-key="${key.toLowerCase()}"]`);
+  els.forEach(el => {
+    el.classList.remove('flash-wrong');
+    void el.offsetWidth;
+    el.classList.add('flash-wrong');
+    setTimeout(() => el.classList.remove('flash-wrong'), 200);
+  });
+}
+
+// "+1" floater above the target word card. T19 stripped the score HUD
+// (`.hud-score { display: none }`) for the one-word pedagogy, so we can't
+// anchor to #score — instead we anchor to .target-word, which is the single
+// thing the kid is looking at. Floats up 32px and fades out in 800ms.
+function showPlusOneFloater() {
+  const el = document.createElement('div');
+  el.className = 'plus-one-floater';
+  el.textContent = '+1';
+  const target = document.querySelector('.target-word') || document.getElementById('score');
+  if (target) {
+    const rect = target.getBoundingClientRect();
+    el.style.left = (rect.left + rect.width / 2) + 'px';
+    el.style.top  = (rect.top - 4) + 'px';
+  } else {
+    el.style.left = '50%';
+    el.style.top  = '30%';
+  }
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 800);
+}
+
+// Combo milestone callout. Fires at combos 5, 10, 15 — matches the brief.
+const COMBO_MILESTONES = new Set([5, 10, 15]);
+function showComboFloater(combo) {
+  if (!COMBO_MILESTONES.has(combo)) return;
+  const el = document.createElement('div');
+  el.className = 'combo-floater';
+  el.textContent = `COMBO x${combo}! 🔥`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 800);
+}
+
+// Soft pink 300ms screen flash on level complete — replaces the existing
+// white 0.8s flash. Pink (var(--accent)) reads as celebratory, not jarring.
+function showLevelFlash() {
+  const flash = document.createElement('div');
+  flash.className = 'level-flash';
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 320);
 }
 
 // ===== WORD POPUP =====
@@ -786,20 +1125,19 @@ function showScorePopup(points, x, y) {
 }
 
 // ===== PET REACTIONS =====
-const PET_IMAGES = {
-  '🌸': 'assets/pets/flower.png',
-  '🌻': 'assets/pets/sunflower.png',
-  '🐉': 'assets/pets/dragon.png',
-  '🐱': 'assets/pets/cat.png',
-  '🤖': 'assets/pets/robot.png',
-  '🐰': 'assets/pets/bunny.png',
-  '🐼': 'assets/pets/panda.png',
-  '🦊': 'assets/pets/fox.png',
-};
+import { PET_EMOJI_TO_NAME, getPetPath, PET_STATES, PET_NAME_LIST } from './assets.js';
 
-function getPetImage() {
+let petCurrentState = 'idle';
+// T22: timestamp of the last correct keystroke, used by the idle warning
+// detector. Initialized when the level starts so a kid who joins late
+// doesn't immediately see the "Don't forget me!" bubble.
+let lastCorrectKeystrokeAt = 0;
+let petIdleWarningActive = false;
+const PET_IDLE_WARN_MS = 3500;
+
+function getPetImage(state = petCurrentState) {
   const avatar = gameState.profile?.avatar || '🌸';
-  return PET_IMAGES[avatar] || PET_IMAGES['🌸'];
+  return getPetPath(avatar, state);
 }
 
 function setPetImage() {
@@ -807,7 +1145,7 @@ function setPetImage() {
   if (petImg) {
     petImg.src = getPetImage();
     const avatar = gameState.profile?.avatar || '🌸';
-    const names = { '🌸': 'Flower', '🌻': 'Sunflower', '🐉': 'Dragon', '🐱': 'Cat', '🤖': 'Robot', '🐰': 'Bunny', '🐼': 'Panda', '🦊': 'Fox' };
+    const names = { '🌸': 'Flower', '🌻': 'Sunflower', '🐉': 'Dragon', '🐱': 'Cat', '🤖': 'Robot', '🐰': 'Bunny', '🐼': 'Panda', '🦊': 'Fox', '🦉': 'Owl', '🐶': 'Puppy' };
     petImg.alt = (names[avatar] || 'Flower') + ' Pet';
   }
 }
@@ -815,27 +1153,36 @@ function setPetImage() {
 function showPetReaction(type, text = '') {
   const bubbleEl = document.getElementById('pet-bubble');
   const evolution = getEvolutionStage(gameState.level || 1);
-  
-  // Set pet animation frame
+
+  // Map reaction type -> pet state
+  let newState = 'idle';
   switch(type) {
     case 'happy':
     case 'correct':
-      setPetFrame('happy');
+      newState = 'happy';
       break;
     case 'fire':
-      setPetFrame('fire');
+      newState = 'fire';
       break;
     case 'hurt':
     case 'wrong':
-      setPetFrame('hurt');
+      newState = 'hurt';
       break;
     case 'celebrate':
     case 'levelComplete':
-      setPetFrame('celebrate');
+      newState = 'celebrate';
       break;
+    case 'idle':
     default:
-      setPetFrame('idle');
+      newState = 'idle';
   }
+
+  // Update state and refresh DOM image (menu avatar)
+  petCurrentState = newState;
+  setPetImage();
+
+  // Set pet animation frame (in-canvas pet)
+  setPetFrame(newState);
   
   if (!bubbleEl) return;
   
@@ -872,10 +1219,61 @@ function showPetReaction(type, text = '') {
     bubbleEl.classList.add('visible');
     setTimeout(() => bubbleEl.classList.remove('visible'), 2200);
   }
-  
+
   setTimeout(() => {
     setPetFrame('idle');
   }, 2200);
+}
+
+/** T22: detect when the kid is idle with a target word on screen. Their
+ *  combo is about to break and they may have lost focus. Switch the pet
+ *  to the 'hurt' state (wilted/sad) with a "Don't forget me!" bubble
+ *  until the next correct keystroke clears it. Runs every frame from
+ *  the game loop. */
+function checkPetIdleWarning() {
+  // Skip if the game is paused/over or the level is complete — the pet
+  // shouldn't nag during the celebration overlay.
+  if (gameState.paused || gameState.gameOver || gameState.levelComplete) {
+    return;
+  }
+  // Lazy init: on the first frame after a level start, lastCorrectKeystrokeAt
+  // is still 0 from the previous level (or first boot). Set it to "now" so
+  // the kid gets the full PET_IDLE_WARN_MS window before the bubble fires.
+  if (lastCorrectKeystrokeAt === 0) {
+    lastCorrectKeystrokeAt = performance.now();
+    return;
+  }
+  // Need an active target word — if there isn't one, the kid isn't being
+  // asked to type anything, so no nag.
+  if (!gameState.targetWord) {
+    if (petIdleWarningActive) clearPetWorried();
+    return;
+  }
+  const now = performance.now();
+  if (!petIdleWarningActive && (now - lastCorrectKeystrokeAt) > PET_IDLE_WARN_MS) {
+    petIdleWarningActive = true;
+    // Swap to the 'hurt' state (wilted, one eye closed, sad) — reads as
+    // "the pet misses you" rather than the defeated/ghosted 'fire' PNG.
+    // The .worried CSS filter (hue shift + desaturate) adds urgency on
+    // top so the pet doesn't look totally broken.
+    showPetReaction('hurt', "Don't forget me!");
+    const petFace = document.getElementById('pet-img');
+    if (petFace) petFace.classList.add('worried');
+  }
+}
+
+/** T22: clear the idle-warning state when the kid types again. Called
+ *  from onCorrectKeystroke. The 'hurt' state set in checkPetIdleWarning
+ *  will time out back to idle via the 2200ms timer inside showPetReaction;
+ *  we just remove the .worried filter and reset the timestamp. */
+function clearPetWorried() {
+  if (!petIdleWarningActive && !document.getElementById('pet-img')?.classList.contains('worried')) {
+    return;
+  }
+  petIdleWarningActive = false;
+  lastCorrectKeystrokeAt = performance.now();
+  const petFace = document.getElementById('pet-img');
+  if (petFace) petFace.classList.remove('worried');
 }
 
 // ===== GARDEN SYSTEM =====
@@ -894,10 +1292,14 @@ function loadBgImages() {
     img.src = src;
     return img;
   };
-  bgLayers.sky.img = loadImg('/assets/pro/bg/sky.png');
-  bgLayers.trees.img = loadImg('/assets/pro/bg/trees.png');
-  bgLayers.hills.img = loadImg('/assets/pro/bg/hills.png');
-  bgLayers.grass.img = loadImg('/assets/pro/bg/grass.png');
+  // New parallax layer pack: 3 layers per scene (sky / mid / foreground).
+  // New parallax layer pack: 3 layers per scene (sky / mid / foreground).
+  // Files were merged into the existing /backgrounds/ directory during cleanup,
+  // so we read from there now (no -new suffix).
+  bgLayers.sky.img = loadImg('/assets/backgrounds/magical_garden-sky.png');
+  bgLayers.trees.img = loadImg('/assets/backgrounds/magical_garden-mid.png');
+  bgLayers.hills.img = loadImg('/assets/backgrounds/magical_garden-foreground.png');
+  bgLayers.grass.img = loadImg('/assets/backgrounds/magical_garden-foreground.png');
 }
 
 function drawBgLayer(layer, w, h, time, heightScale) {
@@ -1008,21 +1410,25 @@ function drawStars(groundY) {
 }
 
 // ===== ANIMATED PET SYSTEM =====
+// petFrames[s] holds the Image for the player's currently-selected pet in state s
+// Loaded on demand when a state change is requested.
 const petFrames = {
   idle: null, happy: null, hurt: null, celebrate: null, fire: null,
 };
 
+function loadPetState(state) {
+  if (petFrames[state] && petFrames[state].complete) return petFrames[state];
+  const img = new Image();
+  img.onload = () => { petFrames[state] = img; };
+  img.onerror = () => { img._broken = true; };
+  img.src = getPetImage(state);
+  petFrames[state] = img; // assign immediately so concurrent calls don't re-create
+  return img;
+}
+
 function loadPetImages() {
-  const loadImg = (src) => {
-    const img = new Image();
-    img.src = src;
-    return img;
-  };
-  petFrames.idle = loadImg('/assets/pro/pet/idle.png');
-  petFrames.happy = loadImg('/assets/pro/pet/happy.png');
-  petFrames.hurt = loadImg('/assets/pro/pet/hurt.png');
-  petFrames.celebrate = loadImg('/assets/pro/pet/celebrate.png');
-  petFrames.fire = loadImg('/assets/pro/pet/fire.png');
+  // Preload idle for the initial render; other states load on demand
+  loadPetState('idle');
 }
 
 let petCurrentFrame = 'idle';
@@ -1052,10 +1458,23 @@ function drawPet() {
 }
 
 function setPetFrame(frame) {
-  if (petFrames[frame]) {
-    petCurrentFrame = frame;
-    petFrameTimer = 0;
+  // Always trigger a load for the new state (covers pet changes too)
+  loadPetState(frame);
+  petCurrentFrame = frame;
+  petFrameTimer = 0;
+}
+
+// Called when the player picks a new avatar. Invalidate cached pet images
+// and refresh both the DOM avatar and the canvas in-canvas pet.
+function onAvatarChanged() {
+  // Clear cached images so the next state change fetches the new pet
+  for (const state of ['idle', 'happy', 'hurt', 'celebrate', 'fire']) {
+    petFrames[state] = null;
   }
+  // Refresh the menu DOM avatar
+  setPetImage();
+  // Preload idle for the new pet
+  loadPetState(petCurrentState);
 }
 
 // ===== IMAGE-BASED FLOWERS =====
@@ -1077,27 +1496,41 @@ function drawFlowerImage(flower, groundY) {
   const types = ['bud', 'sprout', 'bud'];
   const imgName = types[Math.floor(Math.random() * types.length)];
   const img = flowerImages[imgName];
-  
+
+  const scale = flower.scale * flower.bloomProgress;
+  if (scale <= 0.01) return;
+
   if (!img || !img.complete) {
-    // Fallback to code-drawn
-    drawFlowerFromGround(flower, groundY);
+    // Canvas-drawn fallback (no external image)
+    const x = flower.x;
+    const size = 60 * scale;
+    ctx.save();
+    ctx.translate(x, groundY - size * 0.5);
+    ctx.fillStyle = '#ff7ab6';
+    ctx.beginPath();
+    ctx.arc(0, 0, size * 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#2d6a4f';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.3);
+    ctx.lineTo(0, size * 0.8);
+    ctx.stroke();
+    ctx.restore();
     return;
   }
-  
+
   const x = flower.x;
-  const scale = flower.scale * flower.bloomProgress;
   const size = 60 * scale;
-  
-  if (scale <= 0.01) return;
-  
+
   ctx.save();
   ctx.translate(x, groundY - size * 0.8);
   ctx.scale(scale, scale);
-  
+
   // Gentle sway
   const sway = Math.sin(gameState.currentTime / 800 + flower.x) * 3;
   ctx.rotate(sway * Math.PI / 180);
-  
+
   ctx.drawImage(img, -size/2, -size/2, size, size);
   ctx.restore();
 }
@@ -1219,12 +1652,11 @@ function checkLevelComplete() {
 function levelComplete() {
   gameState.gameOver = true;
   sounds.level();
-  
-  // Screen flash
-  const flash = document.createElement('div');
-  flash.style.cssText = 'position:fixed;inset:0;background:white;z-index:25;pointer-events:none;animation:screenFlash 0.8s ease-out forwards;';
-  document.body.appendChild(flash);
-  setTimeout(() => flash.remove(), 800);
+
+  // T26: soft pink 300ms screen flash (was: harsh white 800ms). Pink reads
+  // as celebratory, not jarring — and 300ms is short enough to feel snappy
+  // on the level-complete overlay that follows.
+  showLevelFlash();
   
   // Save progress
   if (!gameState.profile.completedLevels) {
@@ -1378,11 +1810,194 @@ function spawnConfetti(x, y, count) {
   }
 }
 
+// ===== DAILY MOMENT (F1) =====
+// Soft 60s typing session. No game-over, no hearts, no level score — just
+// streak/quest progress and a gentle "session complete" landing. Reuses
+// the existing game engine: words fall, focus mechanic, completeWord.
+let dailyMomentTimerId = null;
+let dailyMomentCountdownId = null;
+
+export function startDailyMoment() {
+  initAudio();
+  playAmbient();
+
+  // Use the player's current level (or level 1 if they've never played)
+  const level = (gameState.profile?.completedLevels?.length
+    ? Math.max(1, ...gameState.profile.completedLevels)
+    : 1);
+  const lesson = getLessonByLevel(level);
+
+  // Reset the same fields startGame resets, but with a daily-moment flag.
+  gameState.screen = 'game';
+  gameState.level = level;
+  gameState.score = 0;
+  gameState.combo = 0;
+  gameState.maxCombo = 0;
+  gameState.wordsTyped = 0;
+  gameState.wordsCompleted = 0;
+  gameState.wordsSpawned = 0;
+  gameState.totalKeystrokes = 0;
+  gameState.correctKeystrokes = 0;
+  gameState.health = 999; // sentinel: never drain to 0 during daily moment
+  gameState.activeWords = [];
+  gameState.targetWord = null;
+  gameState.targetIndex = 0;
+  gameState.gameOver = false;
+  gameState.paused = false;
+  gameState.lastSpawn = 0;
+  gameState.lastFrameTime = 0;
+  gameState.garden = [];
+  gameState.levelStartTime = performance.now();
+  gameState.keyAccuracy = {};
+  gameState.levelWPM = 0;
+  gameState.levelAccuracy = 0;
+  gameState.levelComplete = false;
+  gameState.skipsUsed = 0;
+  gameState.adaptiveSpeed = 1.0;
+  gameState.lastAdaptiveCheck = 0;
+
+  // Activate daily-moment mode (consulted by loseHealth + completeWord)
+  gameState.dailyMoment = {
+    active: true,
+    startTime: performance.now(),
+    durationMs: 60_000,
+    wordsTarget: 12,
+    lessonSpeed: lesson?.speed || 0.4,
+    lessonWords: (lesson?.words || []).slice(),
+  };
+  achievementQueue = [];
+  achievementShowing = false;
+
+  // Show game screen
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('game-screen').classList.add('active');
+
+  // Show a soft chapter-style intro card (no level badge)
+  const chapterOverlay = document.getElementById('chapter-intro');
+  if (chapterOverlay) {
+    const titleEl = chapterOverlay.querySelector('.chapter-title');
+    const subtitleEl = chapterOverlay.querySelector('.chapter-subtitle');
+    const introEl = chapterOverlay.querySelector('.chapter-intro-text');
+    const petLineEl = chapterOverlay.querySelector('.chapter-pet-line');
+    if (titleEl) titleEl.textContent = 'Daily Moment';
+    if (subtitleEl) subtitleEl.textContent = '60 seconds of focused typing';
+    if (introEl) introEl.textContent = 'No pressure. Type what you can. We will cheer you on!';
+    if (petLineEl) petLineEl.textContent = '"I will be right here with you." — Bloom';
+    chapterOverlay.classList.remove('hidden');
+    const dismiss = () => chapterOverlay.classList.add('hidden');
+    setTimeout(dismiss, 3500);
+    chapterOverlay.addEventListener('click', dismiss, { once: true });
+  }
+
+  resizeCanvas();
+  setPetImage();
+  preloadImages();
+  spawnWord();
+  updateHUD();
+  updateHearts();
+  updateTargetDisplay();
+  updateLessonInfo();
+
+  // Hide level-complete / gameover overlays if they were open
+  document.getElementById('level-overlay')?.classList.add('hidden');
+  document.getElementById('gameover-overlay')?.classList.add('hidden');
+
+  // Replace the level badge with a soft "Daily Moment" label
+  const badge = document.getElementById('difficulty-badge');
+  if (badge) badge.textContent = '⚡ Daily Moment';
+
+  animationId = requestAnimationFrame(gameLoop);
+
+  // Mobile input for soft keyboard (same as startGame)
+  const mobileInput = document.getElementById('mobile-input');
+  if (mobileInput && ('ontouchstart' in window || navigator.maxTouchPoints > 0)) {
+    mobileInput.focus();
+  }
+
+  // End the session after the duration, regardless of progress
+  if (dailyMomentTimerId) clearTimeout(dailyMomentTimerId);
+  dailyMomentTimerId = setTimeout(() => endDailyMoment({ reason: 'timeUp' }), 60_000);
+
+  // Tick the HUD countdown once per second
+  if (dailyMomentCountdownId) clearInterval(dailyMomentCountdownId);
+  dailyMomentCountdownId = setInterval(updateDailyMomentHUD, 250);
+  updateDailyMomentHUD();
+}
+
+function updateDailyMomentHUD() {
+  if (!gameState.dailyMoment?.active) return;
+  const elapsed = performance.now() - gameState.dailyMoment.startTime;
+  const remaining = Math.max(0, gameState.dailyMoment.durationMs - elapsed);
+  const seconds = Math.ceil(remaining / 1000);
+  const wpmEl = document.getElementById('wpm');
+  // Reuse the WPM slot to show time + words so we don't add new HUD chrome
+  if (wpmEl) wpmEl.textContent = `${seconds}s · ${gameState.wordsCompleted}/${gameState.dailyMoment.wordsTarget}`;
+}
+
+export function endDailyMoment({ reason } = {}) {
+  if (!gameState.dailyMoment?.active) return;
+
+  // Clear timers
+  if (dailyMomentTimerId) { clearTimeout(dailyMomentTimerId); dailyMomentTimerId = null; }
+  if (dailyMomentCountdownId) { clearInterval(dailyMomentCountdownId); dailyMomentCountdownId = null; }
+
+  // Capture stats
+  const wordsCompleted = gameState.wordsCompleted;
+  const elapsedMs = performance.now() - (gameState.dailyMoment.startTime || performance.now());
+  const elapsedMin = Math.max(elapsedMs / 60_000, 1 / 60);
+  const wpm = Math.round((gameState.correctKeystrokes / 5) / elapsedMin);
+  const accuracy = gameState.totalKeystrokes > 0
+    ? Math.round((gameState.correctKeystrokes / gameState.totalKeystrokes) * 100)
+    : 100;
+
+  // Persist + bump streak if today
+  gameState.profile.lastDailyMomentDate = new Date().toISOString();
+  // F2: Daily Moment completion counts toward the streak (same rule as
+  // getTodaysQuests). Without this the prominent streak counter never
+  // moves when the kid uses the F1 entry point.
+  try { bumpStreakIfToday(gameState.profile); } catch {}
+  // Bump daily-quest progress for the type_words quest (if it exists)
+  try {
+    evaluateQuests(gameState.profile, { ...gameState, screen: 'game', level: gameState.level });
+  } catch {}
+  saveProfile();
+
+  // Soft landing: stop the loop, route back to menu, show a toast
+  cancelAnimationFrame(animationId);
+  stopAmbient();
+  gameState.dailyMoment.active = false;
+  gameState.gameOver = true; // suppress the normal level/gameover overlays
+
+  // Hide the chapter intro if it was still up
+  document.getElementById('chapter-intro')?.classList.add('hidden');
+
+  // Toast: "Daily Moment complete — N words, X% accuracy!"
+  const toast = document.getElementById('achievement-toast');
+  if (toast) {
+    document.getElementById('toast-icon').textContent = '⚡';
+    document.getElementById('toast-title').textContent = 'Daily Moment complete!';
+    document.getElementById('toast-desc').textContent =
+      `${wordsCompleted} word${wordsCompleted === 1 ? '' : 's'} · ${wpm} WPM · ${accuracy}% accuracy`;
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), 4000);
+  }
+
+  // Play a gentle completion sound (reuse "word" arpeggio at lower gain)
+  sounds.word();
+
+  // Return to menu
+  showScreen('menu');
+  // The menu's updateMenuStats is in main.js; use a global tick if available.
+  // F3: signal the home pet to celebrate once the menu re-renders.
+  window.__petHeroState = 'celebrate';
+  if (typeof window.__refreshMenuStats === 'function') window.__refreshMenuStats();
+}
+
 // ===== START GAME =====
 export function startGame(level = 1) {
   initAudio();
   playAmbient();
-  
+
   const lesson = getLessonByLevel(level);
   
   gameState.screen = 'game';
