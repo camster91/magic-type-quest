@@ -28,7 +28,7 @@
     "jsdom": "^29.1.1",
     "playwright": "^1.61.1",
     "vite": "^8.0.16",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.10"
   },
   "optionalDependencies": {
     "@supabase/supabase-js": "^2.45.0"
