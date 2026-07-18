@@ -31,6 +31,6 @@
     "vitest": "^4.1.10"
   },
   "optionalDependencies": {
-    "@supabase/supabase-js": "^2.110.2"
+    "@supabase/supabase-js": "^2.110.7"
   }
 }
