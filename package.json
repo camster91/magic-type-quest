@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/camster91/magic-type-quest#readme",
   "devDependencies": {
-    "@eslint/js": "^9.0.0",
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.0",
     "eslint": "^9.0.0",
     "jsdom": "^29.1.1",
