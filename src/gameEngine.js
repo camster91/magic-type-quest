@@ -1155,7 +1155,7 @@ function showPetReaction(type, text = '') {
   const evolution = getEvolutionStage(gameState.level || 1);
 
   // Map reaction type -> pet state
-  let newState = 'idle';
+  let newState;
   switch(type) {
     case 'happy':
     case 'correct':

@@ -444,8 +444,8 @@ function updateHomePet() {
   // Pick the pet state. Celebrate flag is a transient window signal set
   // by gameEngine.endDailyMoment so the pet pops after a Daily Moment
   // completion. We auto-clear it after the animation lands.
-  let state = 'idle';
-  let bubbleText = '';
+  let state;
+  let bubbleText;
   if (window.__petHeroState === 'celebrate') {
     state = 'celebrate';
     window.__petHeroState = null; // single-shot
