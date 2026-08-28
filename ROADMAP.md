@@ -9,7 +9,7 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 210 tests pass across 27 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 214 tests pass across 28 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -139,8 +139,11 @@ children.
      into `src/gameInput.js` with direct behavioral coverage. Fixed one-character
      lesson words that could not complete, accepted uppercase mobile input in
      Shift lessons, and stopped modifier-only keys from counting as mistakes.
-   - Remaining: extract the broader canvas renderer; `src/gameEngine.js` is now
-     1,969 lines, down from 2,386.
+   - Completed 2026-08-28: extracted quiet-gradient, word, particle, and confetti
+     rendering into `src/gameCanvas.js` with deterministic drawing, lifecycle,
+     fallback-texture, and reduced-motion coverage.
+   - Remaining: move the background, pet, and flower scene renderer behind the
+     same boundary; `src/gameEngine.js` is now 1,836 lines, down from 2,386.
 4. Add privacy-conscious product analytics only after the privacy model is
    approved.
 
@@ -175,6 +178,8 @@ children.
   Moment, and weak-key drill modes.
 - Desktop and mobile gameplay input share a directly tested controller, including
   Shift lessons, one-character words, skip/pause routing, and dialog focus wrap.
+- Common canvas effects are isolated and directly tested, including reduced-motion
+  suppression and the unloaded-texture fallback.
 
 ## Decision log
 

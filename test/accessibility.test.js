@@ -8,12 +8,14 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 let document;
 let css;
 let engineSource;
+let canvasSource;
 
 beforeAll(() => {
   const html = readFileSync(resolve(__dirname, '../index.html'), 'utf8');
   document = new JSDOM(html).window.document;
   css = readFileSync(resolve(__dirname, '../styles.css'), 'utf8');
   engineSource = readFileSync(resolve(__dirname, '../src/gameEngine.js'), 'utf8');
+  canvasSource = readFileSync(resolve(__dirname, '../src/gameCanvas.js'), 'utf8');
 });
 
 function luminance(hex) {
@@ -98,7 +100,7 @@ describe('game accessibility contracts', () => {
     expect(css).toMatch(/@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*animation-duration:\s*0\.01ms\s*!important;/);
     expect(css).toMatch(/\.plus-one-floater,[\s\S]*\.level-flash\s*\{\s*display:\s*none\s*!important;/);
     expect(engineSource).toMatch(/function prefersReducedMotion\(\)/);
-    expect(engineSource).toMatch(/function spawnParticles[\s\S]*if \(prefersReducedMotion\(\)\) return;/);
-    expect(engineSource).toMatch(/function spawnConfetti[\s\S]*if \(prefersReducedMotion\(\)\) return;/);
+    expect(canvasSource).toMatch(/function spawnParticles[\s\S]*if \(prefersReducedMotion\(\)\) return;/);
+    expect(canvasSource).toMatch(/function spawnConfetti[\s\S]*if \(prefersReducedMotion\(\)\) return;/);
   });
 });

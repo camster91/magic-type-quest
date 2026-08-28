@@ -123,10 +123,11 @@ BloomType                  Purpose
 ├── parents.html          — parent info page
 ├── teacher.html          — teacher dashboard (Supabase-backed)
 ├── styles.css            — design system
-├── src/                  — 27 ES modules (~7,700 lines)
+├── src/                  — 28 ES modules (~7,700 lines)
 │   ├── main.js           — bootstrap + screen routing
 │   ├── state.js          — localStorage state + cloud sync
 │   ├── gameEngine.js     — game orchestration + canvas loop
+│   ├── gameCanvas.js     — gradients, words, particles + confetti
 │   ├── gameInput.js      — desktop/mobile input controller
 │   ├── gameSession.js    — per-session state initialization
 │   ├── gameWord.js       — canvas word model + renderer
@@ -155,7 +156,7 @@ BloomType                  Purpose
 | Check | Result |
 |-------|--------|
 | Build | ✅ `vite build` succeeds (4 HTML pages) |
-| Tests | ✅ 210 vitest tests pass across 27 files |
+| Tests | ✅ 214 vitest tests pass across 28 files |
 | Browser journeys | ✅ 9 Playwright tests cover classroom join/export/leave, responsive home actions, keyboard onboarding, ten-level progression, the production build, PWA scope, offline reload, and cache cleanup |
 | Remote CI | ✅ Core checks run on the repository-scoped Ashbi VPS runner |
 | npm audit | ✅ 0 vulnerabilities |

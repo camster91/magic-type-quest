@@ -16,6 +16,7 @@ import { highlightTargetKey, showKeyFeedback } from './gamePresentation.js';
 import { GameWord } from './gameWord.js';
 import { resetGameSession } from './gameSession.js';
 import { createGameInputController, trapDialogFocus } from './gameInput.js';
+import { createCanvasEffects } from './gameCanvas.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -53,6 +54,18 @@ function currentLesson() {
 // ===== GAME STATE =====
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
+const {
+  drawQuietGradient,
+  drawTexturedParticles,
+  drawWords,
+  spawnConfetti,
+  spawnParticles,
+  updateParticles,
+} = createCanvasEffects({
+  context: ctx,
+  state: gameState,
+  prefersReducedMotion,
+});
 
 let animationId = null;
 let lastFrameTime = 0;
@@ -134,19 +147,6 @@ function gameLoop(timestamp) {
   animationId = requestAnimationFrame(gameLoop);
 }
 
-/** T19: flat dark gradient as the gameplay backdrop. The word (HTML) and
- *  pet (HTML) sit on top; nothing on the canvas competes with them. */
-function drawQuietGradient() {
-  const w = gameState.canvasW;
-  const h = gameState.canvasH;
-  const grad = ctx.createLinearGradient(0, 0, 0, h);
-  grad.addColorStop(0, '#1e1b4b');     // --bg-1
-  grad.addColorStop(0.55, '#312e81');  // mid: indigo
-  grad.addColorStop(1, '#0f0a3d');     // deep bottom
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, w, h);
-}
-
 function updateWords(deltaTime) {
   // Spawn new words — T15: cap at 1 active word for the "one word at a time" pedagogy.
   const lesson = currentLesson();
@@ -202,12 +202,6 @@ function updateWords(deltaTime) {
       updateKeyboardHighlight();
       speakWord(nextWord.text);
     }
-  }
-}
-
-function drawWords() {
-  for (const word of gameState.activeWords) {
-    word.draw(ctx);
   }
 }
 
@@ -1238,110 +1232,6 @@ function drawFlowerImage(flower, groundY) {
   ctx.restore();
 }
 
-// ===== TEXTURED PARTICLES =====
-const particleTexture = new Image();
-particleTexture.src = 'assets/pro/particles/sparkle.png';
-
-function drawTexturedParticles() {
-  if (!particleTexture.complete) {
-    // Fallback to solid circles
-    drawParticles();
-    return;
-  }
-  
-  for (const p of particles) {
-    ctx.globalAlpha = Math.max(0, p.life);
-    const size = p.size * p.life * 2;
-    
-    // ⚡ Optimization: Avoid save/restore/translate/rotate if no rotation is needed
-    const needsTransform = (p.rotation !== undefined && p.rotation !== 0);
-
-    if (p.type === 'confetti') {
-      ctx.fillStyle = p.color;
-      if (needsTransform) {
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rotation);
-        ctx.fillRect(-size / 2, -size / 4, size, size / 2);
-        ctx.restore();
-      } else {
-        ctx.fillRect(p.x - size / 2, p.y - size / 4, size, size / 2);
-      }
-    } else {
-      if (needsTransform) {
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rotation);
-        ctx.drawImage(particleTexture, -size/2, -size/2, size, size);
-        ctx.restore();
-      } else {
-        ctx.drawImage(particleTexture, p.x - size/2, p.y - size/2, size, size);
-      }
-    }
-  }
-  ctx.globalAlpha = 1;
-}
-
-// ===== PARTICLE SYSTEM =====
-const particles = [];
-
-function spawnParticles(x, y, count, color = COLORS.success) {
-  if (prefersReducedMotion()) return;
-  for (let i = 0; i < count; i++) {
-    const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
-    const speed = 2 + Math.random() * 4;
-    particles.push({
-      x,
-      y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 2,
-      life: 1,
-      decay: 0.02 + Math.random() * 0.02,
-      color,
-      size: 3 + Math.random() * 4,
-    });
-  }
-}
-
-function updateParticles() {
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i];
-    p.x += p.vx;
-    p.y += p.vy;
-    p.vy += 0.08;
-    if (p.rotation !== undefined) p.rotation += p.rotSpeed || 0.05;
-    p.life -= p.decay;
-    if (p.life <= 0) particles.splice(i, 1);
-  }
-}
-
-function drawParticles() {
-  for (const p of particles) {
-    ctx.globalAlpha = Math.max(0, p.life);
-    ctx.fillStyle = p.color;
-
-    // ⚡ Optimization: Avoid save/restore/translate/rotate if no rotation is needed
-    const needsTransform = (p.type === 'confetti' && p.rotation !== undefined && p.rotation !== 0);
-
-    if (p.type === 'confetti') {
-      if (needsTransform) {
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rotation);
-        ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
-        ctx.restore();
-      } else {
-        ctx.fillRect(p.x - p.size / 2, p.y - p.size / 4, p.size, p.size / 2);
-      }
-    } else {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-  ctx.globalAlpha = 1;
-}
-
 // ===== LEVEL MANAGEMENT =====
 function checkLevelComplete() {
   const lesson = currentLesson();
@@ -1494,29 +1384,6 @@ function checkAchievements() {
   if (achievementQueue.length > 0) {
     showNextAchievement();
     saveProfile();
-  }
-}
-
-// ===== LEVEL COMPLETE CONFETTI =====
-function spawnConfetti(x, y, count) {
-  if (prefersReducedMotion()) return;
-  const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#FFD93D', '#A78BFA', '#F472B6', '#34D399'];
-  for (let i = 0; i < count; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = 3 + Math.random() * 8;
-    particles.push({
-      x: x || gameState.canvasW / 2,
-      y: y || gameState.canvasH / 2,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 5,
-      life: 1,
-      decay: 0.008 + Math.random() * 0.015,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      size: 4 + Math.random() * 8,
-      type: 'confetti',
-      rotation: Math.random() * Math.PI * 2,
-      rotSpeed: (Math.random() - 0.5) * 0.3,
-    });
   }
 }
 
