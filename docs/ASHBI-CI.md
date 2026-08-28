@@ -22,7 +22,12 @@ repository-scoped and must not execute untrusted fork pull requests.
 
 The CI workflow enforces that boundary with a job condition: pushes run, and
 pull requests run only when their head repository is this repository. Keep that
-condition in place whenever editing `.github/workflows/ci.yml`.
+condition in place whenever editing `.github/workflows/ci.yml` or
+`.github/workflows/build-and-push.yml`.
+
+The image publishing workflow also runs directly on this runner and uses its
+Docker daemon to build the multi-architecture GHCR image. Core CI remains
+isolated inside the digest-pinned Playwright container.
 
 ## Routine checks
 
