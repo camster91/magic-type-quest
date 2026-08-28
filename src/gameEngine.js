@@ -55,9 +55,14 @@ function currentLesson() {
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 const {
+  drawGarden,
+  drawPet,
   drawQuietGradient,
   drawTexturedParticles,
   drawWords,
+  loadSceneImages,
+  reloadPet,
+  setPetFrame,
   spawnConfetti,
   spawnParticles,
   updateParticles,
@@ -65,6 +70,7 @@ const {
   context: ctx,
   state: gameState,
   prefersReducedMotion,
+  getPetImage,
 });
 
 let animationId = null;
@@ -973,263 +979,11 @@ function clearPetWorried() {
   if (petFace) petFace.classList.remove('worried');
 }
 
-// ===== GARDEN SYSTEM =====
-// ===== PARALLAX BACKGROUND SYSTEM =====
-const bgLayers = {
-  sky: { img: null, scroll: 0.02, y: 0 },
-  trees: { img: null, scroll: 0.05, y: 0.35 },
-  hills: { img: null, scroll: 0.12, y: 0.55 },
-  grass: { img: null, scroll: 0.25, y: 0.85 },
-};
-
-function loadBgImages() {
-  const loadImg = (src) => {
-    const img = new Image();
-    img.onerror = () => { img._broken = true; };
-    img.src = src;
-    return img;
-  };
-  // New parallax layer pack: 3 layers per scene (sky / mid / foreground).
-  // New parallax layer pack: 3 layers per scene (sky / mid / foreground).
-  // Files were merged into the existing /backgrounds/ directory during cleanup,
-  // so we read from there now (no -new suffix).
-  bgLayers.sky.img = loadImg('assets/backgrounds/magical_garden-sky.png');
-  bgLayers.trees.img = loadImg('assets/backgrounds/magical_garden-mid.png');
-  bgLayers.hills.img = loadImg('assets/backgrounds/magical_garden-foreground.png');
-  bgLayers.grass.img = loadImg('assets/backgrounds/magical_garden-foreground.png');
-}
-
-function drawBgLayer(layer, w, h, time, heightScale) {
-  const img = layer.img;
-  if (!img || !img.complete || img._broken || img.naturalWidth === 0) return;
-  const layerH = h * heightScale;
-  const layerW = (img.width / img.height) * layerH;
-  const offsetX = (time * layer.scroll * 20) % layerW;
-
-  for (let x = -offsetX; x < w; x += layerW) {
-    ctx.drawImage(img, x, h - layerH, layerW, layerH);
-  }
-}
-
-function drawGarden() {
-  const w = gameState.canvasW;
-  const h = gameState.canvasH;
-  const groundY = h - 175;
-  const time = gameState.currentTime / 1000;
-
-  if (!bgLayers.sky.img || !bgLayers.sky.img.complete || bgLayers.sky.img._broken) {
-    drawFallbackBackground(w, h, groundY);
-    return;
-  }
-
-  drawBgLayer(bgLayers.sky, w, h, time, 0.3);
-  drawStars(groundY);
-  drawBgLayer(bgLayers.trees, w, h, time, 0.5);
-  drawBgLayer(bgLayers.hills, w, h, time, 0.8);
-  drawBgLayer(bgLayers.grass, w, h, time, 1.0);
-
-  if (gameState.garden.length > 30) gameState.garden = gameState.garden.slice(-30);
-  for (const flower of gameState.garden) {
-    drawFlowerImage(flower, groundY);
-  }
-}
-
-function drawFallbackBackground(w, h, groundY) {
-  const skyGrad = ctx.createLinearGradient(0, 0, 0, groundY);
-  skyGrad.addColorStop(0, '#0d0b2e');
-  skyGrad.addColorStop(0.3, '#1e1b5e');
-  skyGrad.addColorStop(0.6, '#4a2d7a');
-  skyGrad.addColorStop(0.85, '#8b4a8a');
-  skyGrad.addColorStop(1, '#c46a8a');
-  ctx.fillStyle = skyGrad;
-  ctx.fillRect(0, 0, w, groundY);
-  
-  drawStars(groundY);
-  
-  ctx.fillStyle = '#1a3a2a';
-  ctx.beginPath();
-  ctx.moveTo(0, groundY);
-  for (let x = 0; x <= w; x += 50) {
-    ctx.lineTo(x, groundY - 30 - Math.sin(x * 0.008) * 25 - Math.cos(x * 0.015) * 15);
-  }
-  ctx.lineTo(w, groundY);
-  ctx.closePath();
-  ctx.fill();
-  
-  const grassGrad = ctx.createLinearGradient(0, groundY - 40, 0, h);
-  grassGrad.addColorStop(0, '#2d6b3a');
-  grassGrad.addColorStop(0.5, '#3d8b4a');
-  grassGrad.addColorStop(1, '#4a9b5a');
-  ctx.fillStyle = grassGrad;
-  ctx.beginPath();
-  ctx.moveTo(0, groundY);
-  for (let x = 0; x <= w; x += 40) {
-    ctx.lineTo(x, groundY - 15 - Math.sin(x * 0.012) * 12 - Math.cos(x * 0.02) * 8);
-  }
-  ctx.lineTo(w, h);
-  ctx.lineTo(0, h);
-  ctx.closePath();
-  ctx.fill();
-}
-
-const stars = [];
-function drawStars(groundY) {
-  if (stars.length === 0) {
-    for (let i = 0; i < 100; i++) {
-      stars.push({
-        x: Math.random() * 2000,
-        y: Math.random() * (groundY || 600),
-        size: Math.random() * 2.5 + 0.5,
-        twinkle: Math.random() * Math.PI * 2,
-        speed: Math.random() * 0.03 + 0.01
-      });
-    }
-  }
-
-  // ⚡ Optimization: Set fillStyle once and use globalAlpha to avoid string parsing.
-  // ⚡ Optimization: Removed shadowBlur as it's extremely expensive in loops.
-  ctx.save();
-  ctx.fillStyle = '#ffffc8';
-  const canvasW = gameState.canvasW;
-
-  for (const star of stars) {
-    if (!prefersReducedMotion()) star.twinkle += star.speed;
-
-    // ⚡ Optimization: Viewport culling
-    if (star.x < 0 || star.x > canvasW) continue;
-
-    ctx.globalAlpha = prefersReducedMotion() ? 0.45 : 0.3 + Math.sin(star.twinkle) * 0.3;
-    ctx.beginPath();
-    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.restore();
-}
-
-// ===== ANIMATED PET SYSTEM =====
-// petFrames[s] holds the Image for the player's currently-selected pet in state s
-// Loaded on demand when a state change is requested.
-const petFrames = {
-  idle: null, happy: null, hurt: null, celebrate: null, fire: null,
-};
-
-function loadPetState(state) {
-  if (petFrames[state] && petFrames[state].complete) return petFrames[state];
-  const img = new Image();
-  img.onload = () => { petFrames[state] = img; };
-  img.onerror = () => { img._broken = true; };
-  img.src = getPetImage(state);
-  petFrames[state] = img; // assign immediately so concurrent calls don't re-create
-  return img;
-}
-
-function loadPetImages() {
-  // Preload idle for the initial render; other states load on demand
-  loadPetState('idle');
-}
-
-let petCurrentFrame = 'idle';
-let petFrameTimer = 0;
-let petBounceY = 0;
-
-function drawPet() {
-  const img = petFrames[petCurrentFrame];
-  if (!img || !img.complete) return;
-  
-  const w = 100;
-  const h = 100;
-  const x = 60;
-  const baseY = gameState.canvasH - 260;
-  
-  // Idle breathing animation
-  petBounceY = prefersReducedMotion() ? 0 : Math.sin(gameState.currentTime / 500) * 3;
-  
-  ctx.drawImage(img, x, baseY + petBounceY, w, h);
-  
-  // Reset to idle after animation
-  petFrameTimer++;
-  if (petFrameTimer > 60 && petCurrentFrame !== 'idle') {
-    petCurrentFrame = 'idle';
-    petFrameTimer = 0;
-  }
-}
-
-function setPetFrame(frame) {
-  // Always trigger a load for the new state (covers pet changes too)
-  loadPetState(frame);
-  petCurrentFrame = frame;
-  petFrameTimer = 0;
-}
-
 // Called when the player picks a new avatar. Invalidate cached pet images
 // and refresh both the DOM avatar and the canvas in-canvas pet.
 export function onAvatarChanged() {
-  // Clear cached images so the next state change fetches the new pet
-  for (const state of ['idle', 'happy', 'hurt', 'celebrate', 'fire']) {
-    petFrames[state] = null;
-  }
-  // Refresh the menu DOM avatar
   setPetImage();
-  // Preload idle for the new pet
-  loadPetState(petCurrentState);
-}
-
-// ===== IMAGE-BASED FLOWERS =====
-const flowerImages = {
-  bud: null, sprout: null, bloom: null,
-};
-
-function loadFlowerImages() {
-  const loadImg = (src) => {
-    const img = new Image();
-    img.src = src;
-    return img;
-  };
-  flowerImages.bud = loadImg('assets/pro/flowers/bud.png');
-  flowerImages.sprout = loadImg('assets/pro/flowers/sprout.png');
-}
-
-function drawFlowerImage(flower, groundY) {
-  const types = ['bud', 'sprout', 'bud'];
-  const imgName = types[Math.floor(Math.random() * types.length)];
-  const img = flowerImages[imgName];
-
-  const scale = flower.scale * flower.bloomProgress;
-  if (scale <= 0.01) return;
-
-  if (!img || !img.complete) {
-    // Canvas-drawn fallback (no external image)
-    const x = flower.x;
-    const size = 60 * scale;
-    ctx.save();
-    ctx.translate(x, groundY - size * 0.5);
-    ctx.fillStyle = '#ff7ab6';
-    ctx.beginPath();
-    ctx.arc(0, 0, size * 0.3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#2d6a4f';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(0, size * 0.3);
-    ctx.lineTo(0, size * 0.8);
-    ctx.stroke();
-    ctx.restore();
-    return;
-  }
-
-  const x = flower.x;
-  const size = 60 * scale;
-
-  ctx.save();
-  ctx.translate(x, groundY - size * 0.8);
-  ctx.scale(scale, scale);
-
-  // Gentle sway
-  const sway = prefersReducedMotion() ? 0 : Math.sin(gameState.currentTime / 800 + flower.x) * 3;
-  ctx.rotate(sway * Math.PI / 180);
-
-  ctx.drawImage(img, -size/2, -size/2, size, size);
-  ctx.restore();
+  reloadPet(petCurrentState);
 }
 
 // ===== LEVEL MANAGEMENT =====
@@ -1781,10 +1535,7 @@ function updateLessonInfo() {
 export function init() {
   loadProfile();
   resizeCanvas();
-  // Load pro image assets
-  loadBgImages();
-  loadPetImages();
-  loadFlowerImages();
+  loadSceneImages();
   // Expose for testing
   window.gameState = gameState;
   // Desktop keyboard

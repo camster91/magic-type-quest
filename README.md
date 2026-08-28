@@ -127,7 +127,7 @@ BloomType                  Purpose
 │   ├── main.js           — bootstrap + screen routing
 │   ├── state.js          — localStorage state + cloud sync
 │   ├── gameEngine.js     — game orchestration + canvas loop
-│   ├── gameCanvas.js     — gradients, words, particles + confetti
+│   ├── gameCanvas.js     — backgrounds, pets, flowers + effects
 │   ├── gameInput.js      — desktop/mobile input controller
 │   ├── gameSession.js    — per-session state initialization
 │   ├── gameWord.js       — canvas word model + renderer
@@ -156,7 +156,7 @@ BloomType                  Purpose
 | Check | Result |
 |-------|--------|
 | Build | ✅ `vite build` succeeds (4 HTML pages) |
-| Tests | ✅ 214 vitest tests pass across 28 files |
+| Tests | ✅ 217 vitest tests pass across 28 files |
 | Browser journeys | ✅ 9 Playwright tests cover classroom join/export/leave, responsive home actions, keyboard onboarding, ten-level progression, the production build, PWA scope, offline reload, and cache cleanup |
 | Remote CI | ✅ Core checks run on the repository-scoped Ashbi VPS runner |
 | npm audit | ✅ 0 vulnerabilities |

@@ -9,7 +9,7 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 214 tests pass across 28 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 217 tests pass across 28 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -142,8 +142,11 @@ children.
    - Completed 2026-08-28: extracted quiet-gradient, word, particle, and confetti
      rendering into `src/gameCanvas.js` with deterministic drawing, lifecycle,
      fallback-texture, and reduced-motion coverage.
-   - Remaining: move the background, pet, and flower scene renderer behind the
-     same boundary; `src/gameEngine.js` is now 1,836 lines, down from 2,386.
+   - Completed 2026-08-28: moved background parallax, fallback scenery, stars,
+     pet frames, and flowers behind the same renderer boundary. Flowers now
+     remain visible when background assets fail and keep a stable image variant
+     between frames. `src/gameEngine.js` is 1,587 lines, down from 2,386; the
+     input, rendering, session, and presentation split is complete.
 4. Add privacy-conscious product analytics only after the privacy model is
    approved.
 
@@ -180,6 +183,8 @@ children.
   Shift lessons, one-character words, skip/pause routing, and dialog focus wrap.
 - Common canvas effects are isolated and directly tested, including reduced-motion
   suppression and the unloaded-texture fallback.
+- The complete canvas scene renderer owns background, pet, flower, word, and
+  particle drawing with deterministic fallback and asset-reload coverage.
 
 ## Decision log
 

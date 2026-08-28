@@ -7,6 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const enginePath = resolve(__dirname, '../src/gameEngine.js');
 const engineSrc = readFileSync(enginePath, 'utf-8');
 const wordSrc = readFileSync(resolve(__dirname, '../src/gameWord.js'), 'utf-8');
+const canvasSrc = readFileSync(resolve(__dirname, '../src/gameCanvas.js'), 'utf-8');
 
 describe('Focus mechanic - source contracts', () => {
   it('Word constructor initializes focus to 100', () => {
@@ -35,9 +36,9 @@ describe('Focus mechanic - source contracts', () => {
   });
 
   it('Background parallax uses a deployment-base-safe assets/backgrounds path', () => {
-    expect(engineSrc).toMatch(/loadImg\(['"]assets\/backgrounds\/magical_garden-sky\.png['"]\)/);
-    expect(engineSrc).not.toMatch(/loadImg\(['"]\/assets\//);
-    expect(engineSrc).not.toMatch(/backgrounds-new\/magical_garden/);
+    expect(canvasSrc).toMatch(/loadImage\(['"]assets\/backgrounds\/magical_garden-sky\.png['"]/);
+    expect(canvasSrc).not.toMatch(/loadImage\(['"]\/assets\//);
+    expect(canvasSrc).not.toMatch(/backgrounds-new\/magical_garden/);
   });
 });
 
