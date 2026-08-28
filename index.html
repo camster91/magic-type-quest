@@ -77,8 +77,8 @@
     <button type="button" id="btn-daily-moment" class="btn-daily-moment" aria-label="Start a 60-second Daily Moment to keep your streak">
       <span class="btn-icon">⚡</span>
       <span class="btn-text">
-        <span class="btn-title">60-second Daily Moment</span>
-        <span class="btn-subtitle" id="btn-daily-moment-subtitle">60s · low stress</span>
+        <span class="btn-title" data-i18n="menu.daily">60-second Daily Moment</span>
+        <span class="btn-subtitle" id="btn-daily-moment-subtitle" data-i18n="menu.lowStress">60s · low stress</span>
       </span>
     </button>
     <span class="btn-streak-count" id="btn-daily-moment-streak" aria-hidden="true"></span>
@@ -87,7 +87,7 @@
   <!-- SINGLE primary CTA. The biggest, brightest thing on the screen. -->
   <button type="button" id="btn-start" class="btn-cta-primary" aria-label="Start typing to plant flowers">
     <span class="cta-emoji">🌱</span>
-    <span class="cta-text">Type to plant</span>
+    <span class="cta-text" data-i18n="menu.cta">Type to plant</span>
   </button>
 
   <!-- Small icon row: modes, not parallel choices. -->
@@ -95,16 +95,16 @@
        T15 visual: a 4-icon row. Hidden 8-item dock is in DOM for contract. -->
   <div class="menu-dock" aria-label="Other screens">
     <button type="button" class="menu-dock-item menu-icon" aria-label="Lessons" id="btn-lesson-select">
-      <span class="mi-emoji">📚</span><span class="mi-label">Lessons</span>
+      <span class="mi-emoji">📚</span><span class="mi-label" data-i18n="nav.lessons">Lessons</span>
     </button>
     <button type="button" class="menu-dock-item menu-icon" aria-label="Practice" id="btn-practice">
-      <span class="mi-emoji">🎯</span><span class="mi-label">Practice</span>
+      <span class="mi-emoji">🎯</span><span class="mi-label" data-i18n="nav.practice">Practice</span>
     </button>
     <button type="button" class="menu-dock-item menu-icon" aria-label="My Garden" id="btn-garden">
-      <span class="mi-emoji">🌺</span><span class="mi-label">Garden</span>
+      <span class="mi-emoji">🌺</span><span class="mi-label" data-i18n="nav.garden">Garden</span>
     </button>
     <button type="button" class="menu-dock-item menu-icon" aria-label="Profile" id="btn-profile">
-      <span class="mi-emoji">👤</span><span class="mi-label">Profile</span>
+      <span class="mi-emoji">👤</span><span class="mi-label" data-i18n="nav.profile">Profile</span>
     </button>
     <!-- Contract fillers (F3 expects 8+ items; semantically present, visually hidden) -->
     <a href="./parents.html" class="menu-dock-item" style="display:none">Parents</a>
@@ -119,9 +119,9 @@
     <span class="menu-stat"><span class="ms-icon">🏅</span><span id="menu-best">0</span></span>
     <span class="menu-stat"><span class="ms-icon">📝</span><span id="menu-words">0</span></span>
     <span class="menu-divider"></span>
-    <a href="./parents.html" class="menu-link">Parents</a>
-    <a href="./teacher.html" class="menu-link">Progress</a>
-    <a href="./landing.html" class="menu-link" aria-label="BloomType for schools">For Schools</a>
+    <a href="./parents.html" class="menu-link" data-i18n="nav.parents">Parents</a>
+    <a href="./teacher.html" class="menu-link" data-i18n="nav.progress">Progress</a>
+    <a href="./landing.html" class="menu-link" aria-label="BloomType for schools" data-i18n="nav.schools">For Schools</a>
   </footer>
 
   <!-- Daily Quests: collapsible, hidden by default unless streak/quest is active. -->
@@ -138,7 +138,7 @@
 <div id="lesson-select-screen" class="screen">
   <div class="menu-bg"></div>
   <div class="screen-header">
-    <button type="button" id="btn-lesson-back" class="btn-back">← Back</button>
+    <button type="button" id="btn-lesson-back" class="btn-back">← <span data-i18n="nav.back">Back</span></button>
     <h2>📚 Pick Your Adventure!</h2>
   </div>
   <div id="level-cards" class="level-grid"></div>
@@ -148,7 +148,7 @@
 <div id="practice-screen" class="screen">
   <div class="menu-bg"></div>
   <div class="screen-header">
-    <button type="button" id="btn-practice-back" class="btn-back">← Back</button>
+    <button type="button" id="btn-practice-back" class="btn-back">← <span data-i18n="nav.back">Back</span></button>
     <h2>🎯 Practice Power!</h2>
   </div>
   <div class="practice-viewport">
@@ -162,7 +162,7 @@
   </div>
   <div class="practice-stats">
     <div class="practice-stat">⚡ <span id="practice-wpm">0</span> WPM</div>
-    <div class="practice-stat">🎯 <span id="practice-accuracy">0</span> Accuracy</div>
+    <div class="practice-stat">🎯 <span id="practice-accuracy">0</span> <span data-i18n="metric.accuracy">Accuracy</span></div>
   </div>
 
   <div class="virtual-keyboard" id="virtual-keyboard-practice">
@@ -321,9 +321,9 @@
   <!-- Pause Overlay -->
   <div id="pause-overlay" class="overlay hidden">
     <div class="overlay-card">
-      <h2>⏸️ Paused</h2>
-      <button type="button" id="btn-resume" class="btn btn-primary">▶ Resume <span class="btn-shortcut">(Esc)</span></button>
-      <button type="button" id="btn-quit" class="btn btn-danger">🏠 Quit to Menu</button>
+      <h2>⏸️ <span data-i18n="game.paused">Paused</span></h2>
+      <button type="button" id="btn-resume" class="btn btn-primary">▶ <span data-i18n="game.resume">Resume</span> <span class="btn-shortcut">(Esc)</span></button>
+      <button type="button" id="btn-quit" class="btn btn-danger">🏠 <span data-i18n="game.quit">Quit to Menu</span></button>
     </div>
   </div>
 
@@ -357,13 +357,13 @@
       <div class="level-stars">🌸🌸🌸</div>
       <h2>Level <span id="level-complete-num">1</span> Complete!</h2>
       <div class="level-stats">
-        <p>Score: <span id="level-score">0</span></p>
-        <p>Words: <span id="level-words">0</span></p>
+        <p><span data-i18n="metric.score">Score</span>: <span id="level-score">0</span></p>
+        <p><span data-i18n="metric.words">Words</span>: <span id="level-words">0</span></p>
         <p>Best Combo: <span id="level-combo">0</span></p>
       </div>
       <button type="button" id="btn-next-level" class="btn btn-primary">Next Level →</button>
       <button type="button" id="btn-replay" class="btn btn-secondary">Replay</button>
-      <button type="button" id="btn-level-menu" class="btn btn-secondary">📚 All Lessons</button>
+      <button type="button" id="btn-level-menu" class="btn btn-secondary">📚 <span data-i18n="nav.allLessons">All Lessons</span></button>
     </div>
   </div>
 
@@ -374,9 +374,9 @@
       <h2>Almost!</h2>
       <p class="gameover-message">The words snuck past us! Bloom believes in you — try again!</p>
       <div class="gameover-stats">
-        <p>🌸 Final Score: <span id="final-score">0</span></p>
+        <p>🌸 <span data-i18n="metric.finalScore">Final Score</span>: <span id="final-score">0</span></p>
         <p>🔥 Best Combo: <span id="final-combo">0</span></p>
-        <p>📝 Words Typed: <span id="final-words">0</span></p>
+        <p>📝 <span data-i18n="metric.wordsTyped">Words Typed</span>: <span id="final-words">0</span></p>
       </div>
       <div class="gameover-buttons">
         <button type="button" id="btn-retry" class="btn btn-primary">Try Again</button>
@@ -455,15 +455,15 @@
 <div id="profile-screen" class="screen">
   <div class="menu-bg"></div>
   <div class="screen-header">
-    <button type="button" id="btn-profile-back" class="btn-back">← Back</button>
-    <h2>👤 My Profile</h2>
+    <button type="button" id="btn-profile-back" class="btn-back">← <span data-i18n="nav.back">Back</span></button>
+    <h2>👤 <span data-i18n="profile.title">My Profile</span></h2>
   </div>
   <div class="profile-card">
     <div class="avatar-preview" id="avatar-preview">
       <img id="avatar-preview-img" src="assets/pets/flower-idle.png" alt="Your pet" />
       <span class="avatar-preview-emoji" id="avatar-preview-emoji" style="display:none">🌸</span>
     </div>
-    <input type="text" id="player-name" class="player-name-input" placeholder="Your Name" maxlength="12">
+    <input type="text" id="player-name" class="player-name-input" placeholder="Your Name" data-i18n-placeholder="profile.name" maxlength="12">
     <div class="avatar-picker">
       <button type="button" class="avatar-btn active" data-avatar="🌸" aria-label="Select Flower Avatar">🌸</button>
       <button type="button" class="avatar-btn" data-avatar="🌻" aria-label="Select Sunflower Avatar">🌻</button>
@@ -480,17 +480,17 @@
       <div class="profile-stat">
         <span class="ps-icon">🌸</span>
         <span class="ps-num" id="profile-stars">0</span>
-        <span class="ps-label">Stars</span>
+        <span class="ps-label" data-i18n="profile.stars">Stars</span>
       </div>
       <div class="profile-stat">
         <span class="ps-icon">🏅</span>
         <span class="ps-num" id="profile-best">0</span>
-        <span class="ps-label">Best Score</span>
+        <span class="ps-label" data-i18n="profile.best">Best Score</span>
       </div>
       <div class="profile-stat">
         <span class="ps-icon">📝</span>
         <span class="ps-num" id="profile-words">0</span>
-        <span class="ps-label">Words</span>
+        <span class="ps-label" data-i18n="profile.words">Words</span>
       </div>
       <div class="profile-stat">
         <span class="ps-icon">🏆</span>
@@ -500,7 +500,7 @@
     </div>
     <div class="profile-achievements-section">
       <div class="achievements-header">
-        <span>🏆 Achievements</span>
+        <span>🏆 <span data-i18n="profile.achievements">Achievements</span></span>
         <span id="achievements-count">0 / 18</span>
       </div>
       <div class="achievements-categories" id="achievements-categories">
@@ -514,15 +514,22 @@
     <div id="review-keys" class="review-keys"></div>
 
     <div class="profile-class-section">
-      <label class="profile-label">Class Code</label>
-      <input type="text" id="class-code" class="profile-input" placeholder="Enter code (e.g. ABC123)" maxlength="10">
-      <p class="profile-hint">Ask your teacher for a class code to share your progress.</p>
+      <label class="profile-label" data-i18n="profile.classCode">Class Code</label>
+      <input type="text" id="class-code" class="profile-input" placeholder="Enter code (e.g. ABC123)" data-i18n-placeholder="profile.classPlaceholder" maxlength="10">
+      <p class="profile-hint" data-i18n="profile.classHint">Ask your teacher for a class code to share your progress.</p>
     </div>
 
+    <label class="profile-label" for="language-select" data-i18n="profile.language">Language</label>
+    <select id="language-select" class="profile-input">
+      <option value="en">English</option>
+      <option value="fr">Français</option>
+      <option value="es">Español</option>
+    </select>
+
     <label class="toggle-label">
-      <input type="checkbox" id="voice-toggle"> 🗣 Voice Narration
+      <input type="checkbox" id="voice-toggle"> 🗣 <span data-i18n="profile.voice">Voice Narration</span>
     </label>
-    <button type="button" id="btn-save-profile" class="btn btn-primary">Save Profile</button>
+    <button type="button" id="btn-save-profile" class="btn btn-primary" data-i18n="profile.save">Save Profile</button>
   </div>
 </div>
 
@@ -530,8 +537,8 @@
 <div id="garden-screen" class="screen">
   <div class="menu-bg"></div>
   <div class="screen-header">
-    <button type="button" id="btn-garden-back" class="btn-back">← Back</button>
-    <h2>🌺 My Garden</h2>
+    <button type="button" id="btn-garden-back" class="btn-back">← <span data-i18n="nav.back">Back</span></button>
+    <h2>🌺 <span data-i18n="garden.title">My Garden</span></h2>
   </div>
   <div class="garden-stats" id="garden-stats">
     <span>🌸 <span id="garden-count">0</span> flowers planted</span>

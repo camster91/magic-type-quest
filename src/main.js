@@ -11,6 +11,7 @@ import { getWeakKeys, buildDrillLesson } from './drills.js';
 import { getDueKeys } from './spacedRep.js';
 import { joinClass } from './classroom.js';
 import { escapeHTML } from './utils.js';
+import { applyTranslations, formatDate, formatNumber, setLocale, t } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -76,11 +77,11 @@ function updatePracticeDisplay() {
   }
   displayEl.innerHTML = displayText;
 
-  hintEl.innerHTML = `Type: <kbd>${currentPracticeWord}</kbd>`;
+  hintEl.innerHTML = `${escapeHTML(t('practice.type', { word: '' }))}<kbd>${escapeHTML(currentPracticeWord)}</kbd>`;
 
   const nextChar = currentPracticeWord[currentWordIndex];
   const fingerHint = getFingerHint(nextChar);
-  fingerHintEl.textContent = fingerHint ? `Use your ${fingerHint.label}` : '';
+  fingerHintEl.textContent = fingerHint ? t('game.useFinger', { finger: fingerHint.label }) : '';
   
   const totalWords = gameState.currentPracticeWords.length;
   const wordsCompleted = gameState.practiceWordIndex;
@@ -91,7 +92,7 @@ function updatePracticeDisplay() {
   const barEl = $('practice-bar');
   if (barEl) {
     barEl.setAttribute('aria-valuenow', Math.round(pct));
-    barEl.setAttribute('aria-valuetext', `Word ${wordsCompleted + 1} of ${totalWords}`);
+    barEl.setAttribute('aria-valuetext', t('practice.wordProgress', { current: wordsCompleted + 1, total: totalWords }));
   }
 
   wpmEl.textContent = gameState.practiceWPM;
@@ -254,9 +255,9 @@ function renderLevelCards() {
 
 // ===== UPDATE MENU STATS =====
 function updateMenuStats() {
-  $('menu-stars') && ($('menu-stars').textContent = gameState.profile?.totalStars || 0);
-  $('menu-best') && ($('menu-best').textContent = gameState.profile?.highScore || 0);
-  $('menu-words') && ($('menu-words').textContent = gameState.profile?.totalWords || 0);
+  $('menu-stars') && ($('menu-stars').textContent = formatNumber(gameState.profile?.totalStars || 0));
+  $('menu-best') && ($('menu-best').textContent = formatNumber(gameState.profile?.highScore || 0));
+  $('menu-words') && ($('menu-words').textContent = formatNumber(gameState.profile?.totalWords || 0));
   // T17: hide the bottom stats row when all values are 0 — a brand-new
   // player shouldn't see three zeroes under a "Type to plant" button.
   // The stats reappear as soon as the kid has any progress.
@@ -302,8 +303,8 @@ function updateMenuStats() {
   const atRisk = isStreakAtRisk(gameState.profile);
   if (dmWrapper) dmWrapper.hidden = !atRisk;
   if (dmButton) dmButton.classList.toggle('at-risk', atRisk);
-  if (dmSubtitle) dmSubtitle.textContent = atRisk ? 'Tap to keep your 🔥!' : '60s · low stress';
-  if (dmStreakChip) dmStreakChip.textContent = atRisk && streak > 0 ? `🔥 ${streak} — at risk!` : '';
+  if (dmSubtitle) dmSubtitle.textContent = atRisk ? t('menu.keepStreak') : t('menu.lowStress');
+  if (dmStreakChip) dmStreakChip.textContent = atRisk && streak > 0 ? t('menu.atRisk', { count: streak }) : '';
   const list = document.getElementById('quests-list');
   if (list) {
     list.innerHTML = '';
@@ -377,14 +378,14 @@ function updateHomeProgressCard() {
     if (prev?.keys) for (const k of prev.keys) masteredSet.add(k);
   }
 
-  badge.textContent = `Level ${level.id} · ${level.name}`;
+  badge.textContent = t('game.levelName', { level: level.id, name: level.name });
   if (next) {
     if (isComplete) {
-      next.textContent = `Level ${level.id} cleared — try the next!`;
+      next.textContent = t('game.levelCleared', { level: level.id });
     } else if (level.id >= 5) {
-      next.textContent = `Keep going to become a Typing Master!`;
+      next.textContent = t('game.mastery');
     } else {
-      next.textContent = `Master the ${level.name.toLowerCase()} to unlock Lv ${level.id + 1}`;
+      next.textContent = t('game.levelUnlock', { name: level.name.toLowerCase(), level: level.id + 1 });
     }
   }
   if (fill) {
@@ -513,6 +514,7 @@ function loadProfileScreen() {
   $('profile-words') && ($('profile-words').textContent = p.totalWords || 0);
   $('profile-achievements') && ($('profile-achievements').textContent = (p.achievements?.length) || 0);
   $('voice-toggle') && ($('voice-toggle').checked = p.voiceEnabled !== false);
+  $('language-select') && ($('language-select').value = p.locale || 'en');
 
   document.querySelectorAll('.avatar-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.avatar === (p.avatar || '🌸'));
@@ -577,6 +579,8 @@ function saveProfileScreen() {
   p.name = $('player-name')?.value?.trim() || 'Player';
   p.avatar = document.querySelector('.avatar-btn.active')?.dataset?.avatar || '🌸';
   p.voiceEnabled = $('voice-toggle')?.checked !== false;
+  p.locale = setLocale($('language-select')?.value || 'en');
+  applyTranslations();
   const code = $('class-code')?.value?.trim();
   if (code) joinClass(p, code);
   saveProfile();
@@ -619,7 +623,7 @@ function loadGardenScreen() {
     const item = document.createElement('div');
     item.className = 'garden-item';
     const emoji = FLOWER_EMOJIS[f.type] || '🌸';
-    const date = f.plantedAt ? new Date(f.plantedAt).toLocaleDateString() : '';
+    const date = f.plantedAt ? formatDate(f.plantedAt, { dateStyle: 'short' }) : '';
     item.innerHTML = `
       <div class="garden-flower">${escapeHTML(emoji)}</div>
       <div class="garden-word">${escapeHTML(f.word || '?')}</div>
@@ -685,6 +689,11 @@ function bindEvents() {
   $('btn-save-profile')?.addEventListener('click', () => {
     saveProfileScreen();
     showScreen('menu');
+  });
+
+  $('language-select')?.addEventListener('change', (event) => {
+    setLocale(event.target.value);
+    applyTranslations();
   });
   
   // Avatar picker
@@ -784,6 +793,8 @@ function bindEvents() {
 // ===== INIT =====
 function init() {
   loadProfile();
+  setLocale(gameState.profile?.locale || navigator.language?.split('-')[0] || 'en');
+  applyTranslations();
   bindEvents();
   initEngine();
   updateMenuStats();

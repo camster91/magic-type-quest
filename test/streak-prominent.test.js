@@ -294,13 +294,13 @@ describe('T25 — Daily Moment streak-warning button: at-risk state', () => {
     expect(fnMatch[0]).toMatch(/dmStreakChip/);
     expect(fnMatch[0]).toMatch(/dmButton\.classList\.toggle\(\s*['"]at-risk['"]/);
     expect(fnMatch[0]).toMatch(/dmWrapper\.hidden\s*=\s*!atRisk/);
-    expect(fnMatch[0]).toMatch(/Tap to keep your 🔥!/);
-    expect(fnMatch[0]).toMatch(/60s · low stress/);
+    expect(fnMatch[0]).toMatch(/t\(['"]menu\.keepStreak['"]\)/);
+    expect(fnMatch[0]).toMatch(/t\(['"]menu\.lowStress['"]\)/);
   });
 
   it('main.js: at-risk streak chip renders "🔥 N — at risk!" when streak > 0', () => {
     const fnMatch = mainSrc.match(/function updateMenuStats\s*\(\s*\)\s*\{[\s\S]*?\n\}/);
-    expect(fnMatch[0]).toMatch(/🔥 \$\{streak\} — at risk!/);
+    expect(fnMatch[0]).toMatch(/t\(['"]menu\.atRisk['"],\s*\{\s*count:\s*streak\s*\}\)/);
   });
 
   it('CSS: .btn-daily-moment uses a warm amber gradient in the at-risk variant', () => {

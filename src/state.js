@@ -61,6 +61,7 @@ export const defaultState = {
     totalWords: 0,
     completedLevels: [],
     voiceEnabled: true,
+    locale: 'en',
     petEvolution: 1, // 1=sprout, 2=bud, 3=bloom
     seenEvolutions: [], // Track which evolutions the player has seen
     garden: [], // Persistent flower collection across sessions

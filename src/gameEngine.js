@@ -11,6 +11,7 @@ import { playAmbient, stopAmbient, audioCtx, initAudio } from './audio.js';
 import { getWeakKeys } from './drills.js';
 import { recordKeyPractice } from './spacedRep.js';
 import { hexToRgba } from './utils.js';
+import { formatNumber, t } from './i18n.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -518,7 +519,7 @@ function showShiftHint() {
   const hint = document.getElementById('shift-hint');
   if (hint) {
     hint.classList.remove('hidden');
-    hint.textContent = 'Hold SHIFT for capital letters!';
+    hint.textContent = t('game.shift');
     setTimeout(() => hint.classList.add('hidden'), 1500);
   }
 }
@@ -689,7 +690,7 @@ function completeWord() {
   // arms). Word completion under combo-5 still bumps the bubble text so
   // the kid still gets the milestone callout.
   if (gameState.combo >= 5) {
-    showPetReaction('celebrate', `🔥 ${gameState.combo} Combo!`);
+    showPetReaction('celebrate', t('game.combo', { count: gameState.combo }));
   } else {
     showPetReaction('happy');
   }
@@ -795,8 +796,8 @@ function updateHUD() {
   const levelEl = document.getElementById('level');
   const accuracyEl = document.getElementById('accuracy');
 
-  if (scoreEl) scoreEl.textContent = gameState.score;
-  if (levelEl) levelEl.textContent = gameState.level;
+  if (scoreEl) scoreEl.textContent = formatNumber(gameState.score);
+  if (levelEl) levelEl.textContent = formatNumber(gameState.level);
 
   if (accuracyEl) {
     const accuracy = gameState.totalKeystrokes > 0
@@ -938,7 +939,7 @@ function updateTargetDisplay() {
       if (nextCh) {
         const hint = getFingerHint(nextCh);
         const label = hint ? hint.label : (isLeft ? 'left hand' : 'right hand');
-        fingerHintText.textContent = `Use your ${label}`;
+        fingerHintText.textContent = t('game.useFinger', { finger: label });
         if (fingerHintArrow) fingerHintArrow.textContent = isLeft ? '👈' : '👉';
         fingerHint.classList.remove('hidden');
       } else {
@@ -1684,7 +1685,7 @@ function levelComplete() {
 
   // Show celebration
   showLevelComplete();
-  showPetReaction('celebrate', 'Level Complete! 🌟');
+  showPetReaction('celebrate', t('game.levelComplete'));
   spawnConfetti(gameState.canvasW/2, gameState.canvasH/2, 50);
   spawnParticles(gameState.canvasW/2, gameState.canvasH/2, 30);
   
@@ -1876,9 +1877,9 @@ export function startDailyMoment() {
     const subtitleEl = chapterOverlay.querySelector('.chapter-subtitle');
     const introEl = chapterOverlay.querySelector('.chapter-intro-text');
     const petLineEl = chapterOverlay.querySelector('.chapter-pet-line');
-    if (titleEl) titleEl.textContent = 'Daily Moment';
-    if (subtitleEl) subtitleEl.textContent = '60 seconds of focused typing';
-    if (introEl) introEl.textContent = 'No pressure. Type what you can. We will cheer you on!';
+    if (titleEl) titleEl.textContent = t('daily.title');
+    if (subtitleEl) subtitleEl.textContent = t('daily.subtitle');
+    if (introEl) introEl.textContent = t('daily.intro');
     if (petLineEl) petLineEl.textContent = '"I will be right here with you." — Bloom';
     chapterOverlay.classList.remove('hidden');
     const dismiss = () => chapterOverlay.classList.add('hidden');
@@ -1901,7 +1902,7 @@ export function startDailyMoment() {
 
   // Replace the level badge with a soft "Daily Moment" label
   const badge = document.getElementById('difficulty-badge');
-  if (badge) badge.textContent = '⚡ Daily Moment';
+  if (badge) badge.textContent = `⚡ ${t('daily.title')}`;
 
   animationId = requestAnimationFrame(gameLoop);
 
@@ -1973,7 +1974,7 @@ export function endDailyMoment({ reason } = {}) {
   const toast = document.getElementById('achievement-toast');
   if (toast) {
     document.getElementById('toast-icon').textContent = '⚡';
-    document.getElementById('toast-title').textContent = 'Daily Moment complete!';
+    document.getElementById('toast-title').textContent = t('daily.complete');
     document.getElementById('toast-desc').textContent =
       `${wordsCompleted} word${wordsCompleted === 1 ? '' : 's'} · ${wpm} WPM · ${accuracy}% accuracy`;
     toast.classList.remove('hidden');
@@ -2201,7 +2202,7 @@ function showGameOver() {
     drillBtn.classList.toggle('hidden', weakKeys.length === 0);
   }
   
-  showPetReaction('hurt', 'Game Over...');
+  showPetReaction('hurt', t('game.over'));
 }
 
 function showLevelComplete() {
@@ -2221,11 +2222,11 @@ function showLevelComplete() {
   if (combo) combo.textContent = gameState.maxCombo;
   
   if (isFinal) {
-    if (cardTitle) cardTitle.textContent = '🎉 Game Complete!';
-    if (nextBtn) { nextBtn.textContent = '🏆 Back to Menu'; nextBtn.classList.add('final'); }
+    if (cardTitle) cardTitle.textContent = `🎉 ${t('game.complete')}`;
+    if (nextBtn) { nextBtn.textContent = `🏆 ${t('game.quit')}`; nextBtn.classList.add('final'); }
   } else {
     if (cardTitle) cardTitle.innerHTML = `Level <span id="level-complete-num">${gameState.level}</span> Complete!`;
-    if (nextBtn) { nextBtn.textContent = 'Next Level →'; nextBtn.classList.remove('final'); }
+    if (nextBtn) { nextBtn.textContent = `${t('game.next')} →`; nextBtn.classList.remove('final'); }
   }
   
   if (overlay) overlay.classList.remove('hidden');

@@ -41,6 +41,7 @@ export default [
         confirm: 'readonly',
         prompt: 'readonly',
         performance: 'readonly',
+        Intl: 'readonly',
         crypto: 'readonly',
         WebSocket: 'readonly',
         AbortController: 'readonly',
