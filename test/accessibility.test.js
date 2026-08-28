@@ -88,6 +88,7 @@ describe('game accessibility contracts', () => {
   });
 
   it('defines 44px touch targets and top-aligned short-landscape scrolling', () => {
+    expect(css).toMatch(/\.screen\s*\{[^}]*justify-content:\s*safe center;/s);
     expect(css).toMatch(/\.btn-icon-only\s*\{[^}]*width:\s*44px;\s*height:\s*44px;/s);
     expect(css).toMatch(/\.menu-link\s*\{[^}]*min-height:\s*44px;/s);
     expect(css).toMatch(/@media \(max-height:\s*500px\) and \(orientation:\s*landscape\)[\s\S]*#menu-screen\s*\{\s*justify-content:\s*flex-start;/);

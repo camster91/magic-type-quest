@@ -125,6 +125,17 @@ test('a student can join and leave a local class that a teacher can review and e
   await page.locator('#btn-load-class').click();
   await expect(page.locator('#student-body tr')).toHaveCount(0);
   await expect(page.locator('#empty-state')).toContainText('No students have joined class AB12');
+
+  await page.goto('');
+  await page.locator('#btn-profile').click();
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.locator('#btn-delete-profile').click();
+  await expect(page.locator('#menu-screen')).toHaveClass(/active/);
+  expect(await page.evaluate(() => Object.keys(localStorage).filter((key) => (
+    key === 'bloomtype-profile'
+    || key.startsWith('bloomtype_profile_')
+    || key.startsWith('bloomtype-class-')
+  )))).toEqual([]);
 });
 
 test('production entry points and same-origin assets load without errors', async ({ browser, baseURL }) => {

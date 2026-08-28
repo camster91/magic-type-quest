@@ -9,7 +9,7 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 174 tests pass across 18 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 177 tests pass across 19 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -65,6 +65,11 @@ children.
    - Completed 2026-08-28: removed public/unrestricted Supabase policies,
      required authenticated cloud sessions, and added regression coverage for
      the RLS boundary. Production cloud credentials remain intentionally unset.
+   - Completed 2026-08-28: added per-student local deletion, stale profile-copy
+     cleanup, class-membership cleanup, a public plain-language data inventory,
+     and an explicit cloud activation record. Removed the nonfunctional email
+     capture and unsupported trial-enrollment promises. Cloud deletion, backup
+     expiry, assigned operational owners, and legal/school approval remain open.
 
 3. **Authenticated end-to-end QA**
    - Exercise class creation/join, student play, sync conflict recovery,

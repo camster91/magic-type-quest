@@ -88,3 +88,18 @@ export function removeStudent(code, studentId) {
   if (Object.keys(data).length === 0) localStorage.removeItem(key);
   else localStorage.setItem(key, JSON.stringify(data));
 }
+
+/** Remove one student from every local class, including stale legacy copies. */
+export function removeStudentFromAllClasses(studentId) {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key?.startsWith(`${PREFIX}-`)) keys.push(key);
+  }
+  for (const key of keys) {
+    const data = readClassData(key);
+    delete data[studentId];
+    if (Object.keys(data).length === 0) localStorage.removeItem(key);
+    else localStorage.setItem(key, JSON.stringify(data));
+  }
+}

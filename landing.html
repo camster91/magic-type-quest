@@ -4,12 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BloomType — Typing That Grows With Your Class</title>
-  <meta name="description" content="A garden-typing adventure for grades 2-6. Daily 60-second moments, class leaderboards, COPPA-safe. Free for students. $10/mo per teacher.">
+  <meta name="description" content="A local-first garden typing adventure for grades 2-6. Student play is free; supervised school pilots are available by request.">
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <link rel="manifest" href="manifest.json">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     /* ===== V2 DESIGN TOKENS (locked from bloomtype-v2-design-brief-2026-06-04.md) ===== */
     :root {
@@ -535,52 +532,17 @@
       margin: 0 auto 32px;
       font-size: 1.1rem;
     }
-    .signup-form {
-      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
-      max-width: 520px; margin: 0 auto;
+    .signup-mail-link {
+      display: inline-block; background: var(--streak-gold); color: var(--ink);
+      padding: 14px 24px; border-radius: 10px; font-weight: 900;
+      text-decoration: none; box-shadow: 0 8px 24px rgba(255,213,107,0.25);
     }
-    .signup-form input[type="email"] {
-      flex: 1 1 280px;
-      min-width: 240px;
-      padding: 16px 20px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
-      font-family: var(--font);
-      font-size: 1rem;
-      font-weight: 600;
-    }
-    .signup-form input[type="email"]::placeholder { color: rgba(240, 230, 255, 0.45); }
-    .signup-form input[type="email"]:focus {
-      outline: none;
-      border-color: var(--streak-gold);
-      background: rgba(255, 255, 255, 0.12);
-    }
-    .signup-form button {
-      padding: 16px 28px;
-      border: none;
-      border-radius: 12px;
-      background: var(--streak-gold);
-      color: var(--ink);
-      font-family: var(--display);
-      font-size: 1rem;
-      cursor: pointer;
-      transition: transform 0.15s;
-    }
-    .signup-form button:hover { transform: translateY(-2px); }
+    .signup-mail-link:hover { transform: translateY(-2px); }
     .signup-foot {
       margin-top: 16px;
       color: rgba(240, 230, 255, 0.5);
       font-size: 0.85rem;
     }
-    .signup-msg {
-      margin-top: 16px;
-      min-height: 24px;
-      color: var(--green-ok);
-      font-weight: 700;
-    }
-
     /* ===== FOOTER ===== */
     footer {
       padding: 40px 32px;
@@ -634,9 +596,9 @@
 
 <!-- ===== HERO ===== -->
 <header class="hero">
-  <div class="hero-eyebrow">🌸 For grades 2-6 · COPPA-safe · Built by teachers, for teachers</div>
+  <div class="hero-eyebrow">🌸 For grades 2-6 · Local-first · No ads or behavioral tracking</div>
   <h1>Typing that <span>grows with your class</span> — one 60-second moment at a time</h1>
-  <p class="lede">BloomType turns keyboard practice into a calm, garden-typing adventure. Kids build a 7-day streak. Teachers get a class leaderboard and a real report. Free for students. Always.</p>
+  <p class="lede">BloomType turns keyboard practice into a calm, garden-typing adventure. Kids build a 7-day streak. Teachers can review and export progress stored on the same classroom browser.</p>
   <div class="hero-actions">
     <a href="./index.html" class="btn btn-primary">🌸 Try it free with your class</a>
     <a href="#demo" class="btn btn-secondary">▶ See it in action</a>
@@ -673,8 +635,8 @@
         <div class="bet-icon" aria-hidden="true">
           <img src="assets/ui/badge-gold.png" alt="" onerror="this.parentElement.textContent='🏆'">
         </div>
-        <h3>Class leaderboard + this page</h3>
-        <p>Kid-facing: "My Class" rank, COPPA-safe (no global matchmaking, no real names). Adult-facing: this landing page — for teachers, parents, and district coordinators.</p>
+        <h3>Local class dashboard + this page</h3>
+        <p>Teacher-facing: a same-browser roster, progress summary, inactivity alert, and CSV/JSON export. Adult-facing: this public overview for teachers, parents, and district coordinators.</p>
         <span class="bet-tag">You're here</span>
       </article>
     </div>
@@ -686,7 +648,7 @@
   <div class="demo-inner">
     <div>
       <h2 id="demo-title">The <span>30-second loop</span> that makes typing feel like a verb, not a chore</h2>
-      <p>Words fall. You type. They burst. The pet celebrates. A new flower grows in your garden. The streak ticks up. The class leaderboard shakes.</p>
+      <p>Words fall. You type. They burst. The pet celebrates. A new flower grows in your garden, and the local progress record updates.</p>
       <ul>
         <li><strong>Word-as-enemy.</strong> Each word has 100→0 focus as it falls. Type it before it lands for a 1.0× score multiplier. After? 0.5×. Visible juice, not hidden math.</li>
         <li><strong>Pet-as-protagonist.</strong> Your pet cheers, worries, and celebrates with you. Idle, happy, hurt, celebrate, fire — five states, three evolution stages.</li>
@@ -724,8 +686,8 @@
     </article>
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">🏆</span>
-      <h4>Class leaderboard</h4>
-      <p>COPPA-safe class-only ranking. No global matchmaking. No real names exposed. Social motivation without stranger danger.</p>
+      <h4>Local class dashboard</h4>
+      <p>Teachers can review progress from students who use the same browser and class code. There is no global matchmaking or public ranking.</p>
     </article>
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">📥</span>
@@ -745,7 +707,7 @@
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">📴</span>
       <h4>Works offline</h4>
-      <p>Spots without wifi? BloomType keeps playing and syncs when the connection returns. No "lost progress" tears.</p>
+      <p>Spots without wifi? BloomType keeps playing and saves progress locally in the browser. Cloud synchronization is disabled in the public deployment.</p>
     </article>
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">🔒</span>
@@ -760,8 +722,8 @@
   <div class="pricing-inner">
     <div class="section-head">
       <span class="kicker">Pricing</span>
-      <h2 id="pricing-title">Free for students. $10/mo per teacher. $0 to try.</h2>
-      <p>B2B school licensing — the only model that respects kids and pays the bills. (Our T4 monetization analysis.)</p>
+      <h2 id="pricing-title">Student play is free. Supervised school pilots are available by request.</h2>
+      <p>Teacher pricing is a proposed model, not an open commercial offer, while privacy and pilot validation remain incomplete.</p>
     </div>
 
     <div class="price-table">
@@ -775,7 +737,7 @@
           <li>Full game, all 10 levels</li>
           <li>Pet evolution + garden</li>
           <li>Daily 60-second Moment</li>
-          <li>Class leaderboard (class-gated)</li>
+          <li>Optional local class-code membership</li>
           <li>Works on any device, offline</li>
         </ul>
         <a href="./index.html" class="price-cta ghost">🌸 Start playing free</a>
@@ -787,21 +749,21 @@
           <span class="num">$10</span>
           <span class="per">/month per teacher</span>
         </div>
-        <div class="price-tag">30-day free trial · cancel anytime</div>
+        <div class="price-tag">Proposed pilot pricing · not yet generally available</div>
         <ul class="price-features">
           <li>Everything in Student, plus:</li>
-          <li>Class dashboard + real-time progress</li>
+          <li>Same-browser class dashboard + exports</li>
           <li>CSV + JSON data export</li>
           <li>Red-flag alerts for inactive students</li>
           <li>Adaptive difficulty controls</li>
           <li>Priority support for your school</li>
         </ul>
-        <a href="#signup" class="price-cta gold">Start free trial</a>
+        <a href="#signup" class="price-cta gold">Request a supervised pilot</a>
       </article>
     </div>
 
     <p class="price-foot">
-      <strong>District pricing?</strong> We offer per-school and per-district rates for groups of 5+ teachers. <a href="#signup" style="color: var(--lavender-l);">Get in touch</a> and we'll send a quote within 48 hours.
+      <strong>Planning a district evaluation?</strong> <a href="#signup" style="color: var(--lavender-l);">Contact us</a> to discuss requirements; production enrollment is not open yet.
     </p>
   </div>
 </section>
@@ -839,13 +801,10 @@
 
 <!-- ===== SIGN-UP CTA ===== -->
 <section id="signup" class="signup" aria-labelledby="signup-title">
-  <h2 id="signup-title">Try BloomType free for 30 days</h2>
-  <p>Drop your school email. We'll send a class code and a 5-minute setup guide. No credit card, no sales call.</p>
-  <form class="signup-form" id="signup-form" novalidate>
-    <input type="email" name="email" id="signup-email" placeholder="teacher@school.ca" required aria-label="School email address">
-    <button type="submit">Start free trial</button>
-  </form>
-  <p class="signup-msg" id="signup-msg" role="status" aria-live="polite"></p>
+  <h2 id="signup-title">Request a supervised school pilot</h2>
+  <p>Cloud enrollment is not open yet. Email us to discuss a small, consented pilot after your school’s privacy review.</p>
+  <a class="signup-mail-link" href="mailto:cameron@ashbi.ca?subject=BloomType%20school%20pilot">Email Ashbi about a pilot</a>
+  <p class="signup-foot">This opens your email app. The BloomType website does not collect or store your address.</p>
   <p class="signup-foot">Or just <a href="./index.html" style="color: var(--lavender-l);">play the game</a> — students don't need an account to start.</p>
 </section>
 
@@ -1109,27 +1068,6 @@
   requestAnimationFrame(draw);
 })();
 
-/* ===== Signup form: graceful no-op (no backend yet) =====
-   T4 calls for a contact form. Backend wiring is a follow-up task.
-   For now: validate + show confirmation + log to console. */
-(() => {
-  const form = document.getElementById('signup-form');
-  if (!form) return;
-  const msg = document.getElementById('signup-msg');
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = document.getElementById('signup-email').value.trim();
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      msg.style.color = '#EF4444';
-      msg.textContent = 'Please enter a valid email address.';
-      return;
-    }
-    msg.style.color = '#34D399';
-    msg.textContent = '✓ Thanks! We\'ll send your class code within an hour.';
-    console.log('[BloomType] signup email:', email);
-    form.reset();
-  });
-})();
 </script>
 
 </body>

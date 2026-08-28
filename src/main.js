@@ -2,7 +2,7 @@
  * BloomType - Main Entry Point v2
  */
 import { LESSON_LEVELS, getLessonByLevel, getFingerHint, getLessonWordsForPractice, isLevelUnlocked } from './lessonLevels.js';
-import { gameState, loadProfile, saveProfile } from './state.js';
+import { deleteLocalProfile, gameState, loadProfile, saveProfile } from './state.js';
 import { init as initEngine, startGame, togglePause, showScreen, showKeyFeedback, highlightTargetKey, startDrillMode, startDailyMoment, onAvatarChanged } from './gameEngine.js';
 import { MENU_TAGLINES } from './story.js';
 import { getAchievementStats, getAllAchievements } from './achievements.js';
@@ -695,6 +695,17 @@ function bindEvents() {
   $('btn-save-profile')?.addEventListener('click', () => {
     saveProfileScreen();
     showScreen('menu');
+  });
+
+  $('btn-delete-profile')?.addEventListener('click', () => {
+    const confirmed = window.confirm(
+      'Delete this student’s BloomType progress from this browser? This cannot be undone.',
+    );
+    if (!confirmed) return;
+    deleteLocalProfile();
+    updateMenuStats();
+    showScreen('menu');
+    showAchievement('Progress deleted', 'This browser no longer stores the student profile.', '🗑️');
   });
 
   $('language-select')?.addEventListener('change', (event) => {

@@ -151,7 +151,7 @@ BloomType                  Purpose
 | Check | Result |
 |-------|--------|
 | Build | ✅ `vite build` succeeds (4 HTML pages) |
-| Tests | ✅ 174 vitest tests pass across 18 files |
+| Tests | ✅ 177 vitest tests pass across 19 files |
 | Browser journeys | ✅ 8 Playwright tests cover classroom join/export/leave, responsive home actions, keyboard onboarding, the production build, PWA scope, offline reload, and cache cleanup |
 | Remote CI | ✅ Core checks run on the repository-scoped Ashbi VPS runner |
 | npm audit | ✅ 0 vulnerabilities |

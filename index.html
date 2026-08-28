@@ -9,11 +9,8 @@
   <title>🌸 BloomType - Garden Typing Adventure</title>
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <meta name="theme-color" content="#8B5CF6">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https:; media-src 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; media-src 'self';">
   <link rel="manifest" href="manifest.json">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -531,6 +528,8 @@
       <input type="checkbox" id="voice-toggle"> 🗣 <span data-i18n="profile.voice">Voice Narration</span>
     </label>
     <button type="button" id="btn-save-profile" class="btn btn-primary" data-i18n="profile.save">Save Profile</button>
+    <button type="button" id="btn-delete-profile" class="btn btn-danger">Delete local progress</button>
+    <p class="profile-delete-hint">Removes this student’s profile, progress, and class membership from this browser. It does not delete school cloud data.</p>
   </div>
 </div>
 

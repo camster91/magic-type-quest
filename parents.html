@@ -6,7 +6,6 @@
   <title>BloomType — Help Your Child Learn to Type at Home</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="assets/icon-192.png">
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&family=Fredoka+One&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #0f0d2e; --text: #f0e6ff; --text-dim: #a78bfa;
@@ -100,6 +99,14 @@
     .parent-preview p { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 16px; }
     .stat-row { display: flex; gap: 16px; flex-wrap: wrap; }
     .stat-pill { background: rgba(139,92,246,0.2); border: 1px solid rgba(139,92,246,0.3); border-radius: 10px; padding: 8px 16px; font-weight: 700; font-size: 0.85rem; }
+    .privacy-details {
+      background: var(--glass); border: 1px solid var(--glass-border);
+      border-radius: 16px; padding: 24px; margin-top: 24px;
+    }
+    .privacy-details h3 { margin: 20px 0 8px; color: var(--accent); }
+    .privacy-details h3:first-child { margin-top: 0; }
+    .privacy-details p, .privacy-details li { color: var(--text-dim); font-size: 0.9rem; }
+    .privacy-details ul { padding-left: 22px; }
   </style>
 </head>
 <body>
@@ -190,13 +197,33 @@
     </div>
 
     <!-- TRUST -->
+    <div class="section" id="privacy">
+      <h2>What BloomType Stores</h2>
+      <div class="privacy-details">
+        <h3>Default local play</h3>
+        <p>BloomType stores the student’s chosen display name and avatar, scores, lesson progress, achievements, garden, practice history, class code, and accessibility preferences in this browser. It does not send that progress to BloomType or Ashbi while cloud sync is disabled.</p>
+
+        <h3>What we do not collect</h3>
+        <p>The game has no advertising, analytics, behavioral profiling, or third-party tracking SDKs. It does not ask students for an email address, birth date, home address, precise location, or free-form messages.</p>
+
+        <h3>Delete local progress</h3>
+        <p>Open <strong>Profile</strong> in the game and choose <strong>Delete local progress</strong>. This removes that student’s profile, progress, and local class membership from this browser. Clearing site data in the browser provides a second deletion path.</p>
+
+        <h3>School cloud deployments</h3>
+        <p>Cloud sync remains disabled in the public deployment. A future school deployment must complete its consent, retention, access, deletion, security, and account-isolation review before storing real student data. Local deletion does not delete school cloud records; the participating school must provide that process.</p>
+
+        <h3>Questions</h3>
+        <p>Email <a href="mailto:cameron@ashbi.ca?subject=BloomType%20privacy">cameron@ashbi.ca</a>. These product controls reduce risk but are not a claim of legal compliance for every school or region.</p>
+      </div>
+    </div>
+
     <div class="section">
       <h2>Built for Peace of Mind</h2>
       <div class="trust-badges">
         <div class="trust-badge"><span class="emoji">🔒</span><span>No Personal Info Required</span></div>
         <div class="trust-badge"><span class="emoji">🚫</span><span>No Ads, No Tracking</span></div>
         <div class="trust-badge"><span class="emoji">💾</span><span>Saves Locally On Device</span></div>
-        <div class="trust-badge"><span class="emoji">🆓</span><span>Free Forever</span></div>
+        <div class="trust-badge"><span class="emoji">🆓</span><span>Student Play Is Free</span></div>
         <div class="trust-badge"><span class="emoji">🌐</span><span>Works in Any Browser</span></div>
       </div>
     </div>

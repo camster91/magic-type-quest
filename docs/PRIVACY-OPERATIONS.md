@@ -40,8 +40,41 @@ until all approvals and account-isolation tests above are complete.
 
 ## Local deletion
 
-The teacher dashboard's **Delete all local data** action removes BloomType
-local-storage records from that browser. Browser/site-data controls provide a
-second deletion path. Cloud deletion and backup expiry must be implemented and
-tested before cloud sync is enabled.
+The game profile's **Delete local progress** action removes the current
+student's profile, progress, and class memberships from that browser. The
+teacher dashboard's **Clear All** action removes all BloomType profiles and
+class records from that browser. Browser/site-data controls provide a second
+deletion path. Automated tests cover individual deletion, stale profile-copy
+cleanup, class removal, and preservation of unrelated local-storage keys.
 
+Local deletion does not delete school cloud records. Cloud deletion, auth-user
+deletion, and backup expiry must be implemented and tested before cloud sync is
+enabled.
+
+## Public communication boundary
+
+The parent page lists the local data inventory and deletion path in plain
+language. The marketing page does not accept or log email addresses; its pilot
+link opens the visitor's email application. Pricing and enrollment are labeled
+as proposed and unavailable for general production use.
+
+## Activation record
+
+Cloud sync may be enabled only after every row below has an owner, approval
+date, evidence link or ticket, and an explicit approved result. A blank row is
+a failed gate.
+
+| Gate | Owner | Approval date | Evidence | Result |
+|---|---|---|---|---|
+| Lawful basis and age/region consent | Unassigned | — | — | Not approved |
+| Controller/processor roles and agreements | Unassigned | — | — | Not approved |
+| Profile/session/roster/export retention | Unassigned | — | — | Not approved |
+| Access, correction, export, and deletion drill | Unassigned | — | — | Not approved |
+| Supabase region, administrators, MFA, recovery | Unassigned | — | — | Not approved |
+| Incident owner, contact, and notification timeline | Unassigned | — | — | Not approved |
+| Teacher/student cross-account isolation test | Unassigned | — | — | Not approved |
+
+When all rows are approved, record the Supabase project reference and schema
+migration revision without committing secrets. After activation, run the
+authenticated browser suite and deletion drill before admitting real student
+data. Any failed gate requires cloud credentials to remain unset or be removed.

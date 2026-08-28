@@ -1,7 +1,7 @@
 /**
  * BloomType - Game State Management
  */
-import { syncToClass } from './classroom.js';
+import { removeStudentFromAllClasses, syncToClass } from './classroom.js';
 import { syncProfile, logSession } from './sync.js';
 
 // ===== DEFAULT STATE =====
@@ -118,6 +118,7 @@ export function saveProfile() {
     // Save to app key
     localStorage.setItem('bloomtype-profile', JSON.stringify(p));
     // Also save to teacher-readable key
+    removeProfileCopies(p.uuid);
     const name = (p.name || 'Anonymous').replace(/[^a-zA-Z0-9]/g, '_');
     localStorage.setItem(`bloomtype_profile_${name}`, JSON.stringify(p));
     
@@ -143,4 +144,36 @@ export function saveProfile() {
   } catch (e) {
     console.warn('Failed to save profile:', e);
   }
+}
+
+function removeProfileCopies(profileId) {
+  if (!profileId) return;
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (!key?.startsWith('bloomtype_profile_')) continue;
+    try {
+      if (JSON.parse(localStorage.getItem(key))?.uuid === profileId) keys.push(key);
+    } catch {
+      // A corrupt legacy copy is ignored rather than blocking the current save.
+    }
+  }
+  keys.forEach((key) => localStorage.removeItem(key));
+}
+
+/** Delete the current student's progress from this browser only. */
+export function deleteLocalProfile() {
+  const profileId = gameState.profile?.uuid;
+  if (profileId) {
+    removeStudentFromAllClasses(profileId);
+    removeProfileCopies(profileId);
+  }
+  localStorage.removeItem('bloomtype-profile');
+  gameState.profile = {
+    ...defaultState.profile,
+    completedLevels: [],
+    seenEvolutions: [],
+    garden: [],
+    keySR: {},
+  };
 }
