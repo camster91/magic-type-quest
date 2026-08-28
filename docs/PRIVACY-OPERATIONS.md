@@ -2,6 +2,9 @@
 
 Status: **not approved for collection of real student data**.
 
+The consolidated owner, access, pilot, and release gate register is
+`docs/LAUNCH-READINESS.md`.
+
 BloomType currently runs local-first. The production deployment does not set
 Supabase credentials, so profiles and play history remain in each browser's
 local storage. There are no analytics or advertising SDKs.

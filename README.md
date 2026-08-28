@@ -15,7 +15,7 @@ npm run dev
 ## 🎮 Features
 
 ### Game Modes
-- **Play Quest** — 10+ levels with progressively harder words and faster falling stars
+- **Play Quest** — 10 progressive touch-typing levels
 - **Practice Letters** — A-Z letter practice mode for building fundamentals
 - **Daily Challenges** — Speedster, Combo Master, Perfect Aim, Alphabet Ace
 
@@ -60,8 +60,9 @@ npm run dev
 | `parents.html` — Parent info page (curriculum + privacy) |
 | `teacher.html` — Teacher dashboard (class analytics, optional Supabase) |
 | `styles.css` — Full design system (Canvas-independent styles) |
-| `src/` — Modular Vite source (18 ES modules, ~5,300 lines) |
+| `src/` — Modular Vite source (28 ES modules, ~7,600 lines) |
 | `supabase/schema.sql` — Cloud sync schema (profiles, sessions, class roster) |
+| `docs/LAUNCH-READINESS.md` — Pilot gates, evidence, owners, and release record |
 | `public/manifest.json` — PWA manifest |
 | `public/sw.js` — Service worker for offline play |
 | `public/assets/` — AI-generated art + icons |
@@ -106,14 +107,12 @@ Generated using the nano-banana-2 skill at resolution 1K for crisp web display.
 - **Space bar** — skip a tricky word and pick a new one
 - **Escape** — pause/resume game
 
-## 📝 Word Lists
+## 📝 Curriculum
 
-Five difficulty tiers:
-- **Level 1**: cat, dog, sun, hat, cup (3-4 letters)
-- **Level 2**: cake, fish, door, tree, unicorn (4-8 letters)
-- **Level 3**: rainbow, flower, garden, magical, mermaid (5-8 letters)
-- **Level 4**: fireworks, beautiful, chocolate, butterfly, friendship (8-11 letters)
-- **Level 5**: fantastical, marvellous, marshmallow, jellybeans (11-13 letters)
+Ten progressive levels cover home row, top row, bottom row, all letters,
+capitals, numbers, speed, accuracy, combined mastery, and a final no-looking
+challenge. The authoritative lesson names, keys, word lists, and completion
+settings live in `src/lessonLevels.js`.
 
 ## 🏗️ Architecture
 
@@ -156,7 +155,7 @@ BloomType                  Purpose
 | Check | Result |
 |-------|--------|
 | Build | ✅ `vite build` succeeds (4 HTML pages) |
-| Tests | ✅ 217 vitest tests pass across 28 files |
+| Tests | ✅ 220 vitest tests pass across 29 files |
 | Browser journeys | ✅ 9 Playwright tests cover classroom join/export/leave, responsive home actions, keyboard onboarding, ten-level progression, the production build, PWA scope, offline reload, and cache cleanup |
 | Remote CI | ✅ Core checks run on the repository-scoped Ashbi VPS runner |
 | npm audit | ✅ 0 vulnerabilities |

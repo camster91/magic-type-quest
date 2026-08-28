@@ -9,7 +9,7 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 217 tests pass across 28 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 220 tests pass across 29 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -88,6 +88,9 @@ children.
    - Run with a small, consented cohort before a school-wide rollout.
    - Measure completion, accuracy, WPM progression, confusion points,
      accessibility barriers, and support burden.
+   - Proposed cohort, manual metrics, go thresholds, stop conditions, access
+     owners, and release-decision fields are defined in
+     `docs/LAUNCH-READINESS.md`; they still require owner and school approval.
 
 ### P1 — product quality after launch gates
 
@@ -194,3 +197,5 @@ children.
   pointing back to this roadmap.
 - School readiness is a launch-gate claim requiring operational evidence, not a
   checklist inferred solely from source files.
+- `docs/LAUNCH-READINESS.md` is the operating gate/evidence register; proposed
+  pilot thresholds are not customer validation until approved and observed.

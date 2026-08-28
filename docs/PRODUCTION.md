@@ -7,6 +7,9 @@ Ashbi VPS. The checked-in production definitions are:
   loopback port 3055.
 - `deploy/traefik-bloomtype.yml` — HTTPS routing and security headers.
 
+Do not execute a release until the applicable approval and evidence fields in
+`docs/LAUNCH-READINESS.md` are complete.
+
 ## Deploy
 
 After the `Build and Push Image` workflow succeeds, copy the definitions to the
@@ -42,4 +45,3 @@ docker compose up -d --pull always
 Confirm the image and health with `docker compose ps` and rerun the production
 browser suite. Removing `/opt/traefik/dynamic/bloomtype.yml` disables public
 routing without deleting the application container.
-
