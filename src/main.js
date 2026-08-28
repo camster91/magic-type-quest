@@ -13,6 +13,7 @@ import { joinClass } from './classroom.js';
 import { escapeHTML } from './utils.js';
 import { applyTranslations, formatDate, formatNumber, setLocale, t } from './i18n.js';
 import { localizeAchievement, localizeAchievementCategory, localizeLesson, localizeQuest } from './contentTranslations.js';
+import { getCurriculumProgress } from './progression.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -358,18 +359,18 @@ const LEVEL_INFO = [
   { id: 4, name: 'All Letters', keys: [...HOME_ROW_KEYS, ...TOP_ROW_KEYS, ...BOTTOM_ROW_KEYS] },
   { id: 5, name: 'Capitals',   keys: null },
   { id: 6, name: 'Numbers',    keys: null },
+  { id: 7, name: 'Speed Builder', keys: null },
+  { id: 8, name: 'Sentence Flow', keys: null },
+  { id: 9, name: 'Accuracy Challenge', keys: null },
+  { id: 10, name: 'Typing Master', keys: null },
 ];
 
 function getCurrentLevelInfo() {
   const completed = gameState.profile?.completedLevels || [];
-  let current = 1;
-  for (const lv of [1,2,3,4,5,6]) {
-    if (completed.includes(lv)) current = lv + 1;
-  }
-  if (current > 6) current = 6;
-  const info = LEVEL_INFO.find(l => l.id === current) || LEVEL_INFO[0];
+  const progress = getCurriculumProgress(completed, Object.keys(LESSON_LEVELS).length);
+  const info = LEVEL_INFO.find(l => l.id === progress.currentLevel) || LEVEL_INFO[0];
   const lesson = localizeLesson(getLessonByLevel(info.id));
-  return { ...info, name: lesson?.name || info.name };
+  return { ...info, name: lesson?.name || info.name, ...progress };
 }
 
 function updateHomeProgressCard() {
@@ -380,8 +381,7 @@ function updateHomeProgressCard() {
   if (!badge || !mini) return;
 
   const level = getCurrentLevelInfo();
-  const completed = gameState.profile?.completedLevels || [];
-  const isComplete = completed.includes(level.id);
+  const isComplete = level.isComplete;
   const masteredSet = new Set();
   // Everything in levels 1..level.id-1 is mastered
   for (let i = 1; i < level.id; i++) {
@@ -400,9 +400,7 @@ function updateHomeProgressCard() {
     }
   }
   if (fill) {
-    // Progress: % of completed levels out of 6
-    const pct = (completed.length / 6) * 100;
-    fill.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+    fill.style.width = `${Math.min(100, Math.max(0, level.percent))}%`;
   }
 
   // Mini-keyboard: show the active level's keys (or all if no specific keys)

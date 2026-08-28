@@ -9,21 +9,21 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 179 tests pass across 20 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 183 tests pass across 21 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
   quests, garden progression, classroom codes, teacher reporting, optional
   Supabase sync, PWA support, and core English/French/Spanish localization.
 - Deployment fixes: public assets work under the configured
-  `/magic-type-quest/` base path and are regression-tested. Eight Playwright
+  `/magic-type-quest/` base path and are regression-tested. Nine Playwright
   tests verify responsive home actions, a local student-to-teacher classroom
   journey with exports, the keyboard-only first-time student journey, all production
   entry points, same-origin assets, manifest scope, service-worker registration,
   persisted localization, offline app-shell reload, and stale-cache cleanup.
 - Production: `https://bloomtype.ashbi.ca/magic-type-quest/` serves the prior
   approved GHCR image through Traefik with trusted HTTPS and security headers.
-  The current eight-journey candidate image is published but intentionally not
+  The current nine-journey candidate image is published but intentionally not
   deployed without explicit release approval. Deploy and rollback operations
   are documented in `docs/PRODUCTION.md`.
 - Automation: repository Actions are enabled and core CI passes on the
@@ -137,6 +137,8 @@ children.
 - Core localization infrastructure with persisted English, French, and Spanish
   selection, locale-aware number/date formatting, exact dictionary parity, and
   translated curriculum, chapter, quest, achievement, tutorial, and game UI.
+- Home progression derives from the full ten-level curriculum, normalizes
+  malformed legacy completion data, and is regression-tested beyond level six.
 - Game dialogs expose names and modal semantics, keep focus inside the active
   dialog, pause gameplay while instructions are open, and restore a useful
   focus target when the student resumes or exits.

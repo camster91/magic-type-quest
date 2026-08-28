@@ -210,6 +210,20 @@ test('language selection applies immediately and persists after reload', async (
   await expect(page.locator('#profile-screen h2')).toContainText('Mon profil');
 });
 
+test('home progress continues through the complete ten-level curriculum', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.clear();
+    localStorage.setItem('bloomtype-profile', JSON.stringify({
+      completedLevels: [1, 2, 3, 4, 5, 6],
+    }));
+  });
+  await page.goto('');
+
+  await expect(page.locator('#menu-level-badge')).toContainText('Level 7');
+  await expect(page.locator('#menu-level-fill')).toHaveAttribute('style', /width:\s*60%/);
+  await expect(page.locator('#menu-keyboard-mini')).not.toContainText('All levels cleared');
+});
+
 test('the installed app shell reloads while offline', async ({ context, page }) => {
   await page.goto('');
   await page.evaluate(async () => navigator.serviceWorker.ready);
