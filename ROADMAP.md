@@ -9,7 +9,7 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 183 tests pass across 21 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 188 tests pass across 22 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -94,12 +94,14 @@ children.
 1. Complete French and Spanish localization.
    - Completed 2026-08-28: enforced exact core-dictionary parity; translated
      lesson, chapter, quest, achievement, tutorial, practice, garden, profile,
-     game-result, and core accessibility content; and added unit coverage for
-     every dynamic content ID plus browser coverage for immediate and persisted
-     language changes.
-   - Still required: translate the parent and teacher pages, pet personality
-     lines, rotating menu taglines, and finger-name vocabulary; then have fluent
-     French and Spanish reviewers check the complete learner experience.
+     game-result, core accessibility content, parent guidance/privacy content,
+     and the static and dynamic teacher dashboard; and added unit coverage for
+     every dynamic content ID and exact page-dictionary parity plus browser
+     coverage for immediate and persisted language changes across all three
+     product surfaces.
+   - Still required: translate pet personality lines, rotating menu taglines,
+     and finger-name vocabulary; then have fluent French and Spanish reviewers
+     check the complete learner, parent, and teacher experience.
 2. Complete keyboard-only, screen-reader, contrast, reduced-motion, touch
    keyboard, and small-screen QA.
    - Completed 2026-08-28: keyboard-only first-time start, tutorial, finger
@@ -136,7 +138,8 @@ children.
   production-build browser smoke tests.
 - Core localization infrastructure with persisted English, French, and Spanish
   selection, locale-aware number/date formatting, exact dictionary parity, and
-  translated curriculum, chapter, quest, achievement, tutorial, and game UI.
+  translated curriculum, chapter, quest, achievement, tutorial, game UI, parent
+  guidance/privacy content, and dynamic teacher reporting UI.
 - Home progression derives from the full ten-level curriculum, normalizes
   malformed legacy completion data, and is regression-tested beyond level six.
 - Game dialogs expose names and modal semantics, keep focus inside the active

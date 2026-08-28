@@ -208,6 +208,18 @@ test('language selection applies immediately and persists after reload', async (
 
   await expect(page.locator('#language-select')).toHaveValue('fr');
   await expect(page.locator('#profile-screen h2')).toContainText('Mon profil');
+
+  await page.goto('parents.html');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+  await expect(page.locator('.hero h1')).toContainText('Aidez votre enfant');
+  await expect(page.locator('#privacy h2')).toHaveText('Ce que BloomType conserve');
+
+  await page.goto('teacher.html');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+  await expect(page.locator('h1')).toContainText('Tableau de bord enseignant');
+  await expect(page.locator('#btn-load-class')).toHaveText('🔍 Charger la classe');
+  await expect(page.locator('thead th').first()).toHaveText('Élève');
+  await expect(page.locator('.stat-label').first()).toHaveText('Élèves');
 });
 
 test('home progress continues through the complete ten-level curriculum', async ({ page }) => {

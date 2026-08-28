@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-page-title="teacher.title">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -113,23 +113,23 @@
   </style>
 </head>
 <body>
-  <h1>🌸 BloomType Teacher Dashboard</h1>
-  <p class="subtitle">Track typing progress for your classroom.</p>
+  <h1 data-page-i18n="teacher.heading">🌸 BloomType Teacher Dashboard</h1>
+  <p class="subtitle" data-page-i18n="teacher.subtitle">Track typing progress for your classroom.</p>
 
   <div class="mode-bar">
-    <button class="mode-btn active" id="btn-local-mode" data-mode="local">💾 Local</button>
-    <button class="mode-btn" id="btn-cloud-mode" data-mode="cloud">☁️ Cloud</button>
+    <button class="mode-btn active" id="btn-local-mode" data-mode="local" data-page-i18n="teacher.local">💾 Local</button>
+    <button class="mode-btn" id="btn-cloud-mode" data-mode="cloud" data-page-i18n="teacher.cloud">☁️ Cloud</button>
   </div>
 
   <div class="toolbar">
-    <label for="class-code-input" class="sr-only">Class Code</label>
-    <input type="text" id="class-code-input" class="input-code" placeholder="Class code (e.g. ABC123)" maxlength="10">
-    <button class="btn btn-primary" id="btn-load-class">🔍 Load Class</button>
-    <button class="btn btn-primary" id="btn-all-students">🔄 All Students</button>
-    <button class="btn btn-export" id="btn-export-csv">📊 Export CSV</button>
-    <button class="btn btn-export" id="btn-export-json">📋 Export JSON</button>
-    <button class="btn btn-danger" id="btn-clear-data">🗑 Clear All</button>
-    <span class="class-badge" id="class-code-display">All Students (Local)</span>
+    <label for="class-code-input" class="sr-only" data-page-i18n="teacher.classCode">Class Code</label>
+    <input type="text" id="class-code-input" class="input-code" placeholder="Class code (e.g. ABC123)" data-page-i18n-placeholder="teacher.classPlaceholder" maxlength="10">
+    <button class="btn btn-primary" id="btn-load-class" data-page-i18n="teacher.load">🔍 Load Class</button>
+    <button class="btn btn-primary" id="btn-all-students" data-page-i18n="teacher.all">🔄 All Students</button>
+    <button class="btn btn-export" id="btn-export-csv" data-page-i18n="teacher.exportCsv">📊 Export CSV</button>
+    <button class="btn btn-export" id="btn-export-json" data-page-i18n="teacher.exportJson">📋 Export JSON</button>
+    <button class="btn btn-danger" id="btn-clear-data" data-page-i18n="teacher.clear">🗑 Clear All</button>
+    <span class="class-badge" id="class-code-display" data-page-i18n="teacher.allLocal">All Students (Local)</span>
   </div>
 
   <div id="alert-panel" class="alert-panel hidden"></div>
@@ -140,13 +140,13 @@
     <table>
       <thead>
         <tr>
-          <th>Student</th>
-          <th>Level</th>
-          <th>Words</th>
-          <th>Score</th>
-          <th>Stars</th>
-          <th>Status</th>
-          <th>Source</th>
+          <th data-page-i18n="teacher.student">Student</th>
+          <th data-page-i18n="teacher.level">Level</th>
+          <th data-page-i18n="teacher.words">Words</th>
+          <th data-page-i18n="teacher.score">Score</th>
+          <th data-page-i18n="teacher.stars">Stars</th>
+          <th data-page-i18n="teacher.status">Status</th>
+          <th data-page-i18n="teacher.source">Source</th>
         </tr>
       </thead>
       <tbody id="student-body"></tbody>
@@ -154,8 +154,8 @@
   </div>
 
   <div id="empty-state" class="empty-state hidden">
-    <h2>No data yet</h2>
-    <p>Students will appear here after they play BloomType. 🌸</p>
+    <h2 data-page-i18n="teacher.noData">No data yet</h2>
+    <p data-page-i18n="teacher.emptyHint">Students will appear here after they play BloomType. 🌸</p>
   </div>
 
   <script type="module" src="/src/teacher.js"></script>

@@ -8,6 +8,8 @@ import { fetchClassRoster } from './sync.js';
 import { normalizeClassCode } from './classroom.js';
 import { createRosterCSV, createRosterExport } from './reporting.js';
 import { escapeHTML } from './utils.js';
+import { formatNumber } from './i18n.js';
+import { initializePageTranslations, pageT } from './pageTranslations.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -15,6 +17,7 @@ let currentMode = 'local';
 let currentClassCode = '';
 
 function init() {
+  initializePageTranslations();
   renderToolbar();
   bindEvents();
   loadLocalData();
@@ -49,21 +52,21 @@ async function loadClass(code) {
   if (currentMode === 'cloud') {
     const roster = await fetchClassRoster(currentClassCode);
     if (roster?.length) renderRoster(roster, true);
-    else showEmpty('No cloud data for this class. Students may not have synced yet.');
+    else showEmpty(pageT('teacher.noCloud'));
   } else {
     const data = getLocalClassData(currentClassCode);
     const students = data ? Object.values(data) : [];
     if (students.length) renderRoster(students, false);
-    else showEmpty(`No students have joined class ${currentClassCode} on this device yet.`);
+    else showEmpty(pageT('teacher.noClass', { code: currentClassCode }));
   }
 }
 
 function loadLocalData() {
   currentClassCode = '';
-  $('class-code-display').textContent = 'All Students (Local)';
+  $('class-code-display').textContent = pageT('teacher.allLocal');
   const students = getAllLocalStudents();
   if (students.length > 0) renderRoster(students, false);
-  else showEmpty('No student data on this device yet.');
+  else showEmpty(pageT('teacher.noLocal'));
 }
 
 function getLocalClassData(code) {
@@ -110,11 +113,11 @@ function renderRoster(students, isCloud) {
   }).length;
   
   stats.innerHTML = `
-    <div class="stat-card"><div class="stat-value">${students.length}</div><div class="stat-label">Students</div></div>
-    <div class="stat-card"><div class="stat-value">${totalStars}</div><div class="stat-label">Total Stars</div></div>
-    <div class="stat-card"><div class="stat-value">${totalWords}</div><div class="stat-label">Words Typed</div></div>
-    <div class="stat-card"><div class="stat-value">${avgLevel.toFixed(1)}</div><div class="stat-label">Avg Level</div></div>
-    <div class="stat-card"><div class="stat-value">${activeToday}</div><div class="stat-label">Active Today</div></div>
+    <div class="stat-card"><div class="stat-value">${formatNumber(students.length)}</div><div class="stat-label">${pageT('teacher.students')}</div></div>
+    <div class="stat-card"><div class="stat-value">${formatNumber(totalStars)}</div><div class="stat-label">${pageT('teacher.totalStars')}</div></div>
+    <div class="stat-card"><div class="stat-value">${formatNumber(totalWords)}</div><div class="stat-label">${pageT('teacher.wordsTyped')}</div></div>
+    <div class="stat-card"><div class="stat-value">${formatNumber(avgLevel, { maximumFractionDigits: 1 })}</div><div class="stat-label">${pageT('teacher.avgLevel')}</div></div>
+    <div class="stat-card"><div class="stat-value">${formatNumber(activeToday)}</div><div class="stat-label">${pageT('teacher.activeToday')}</div></div>
   `;
   
   // Red-flag alerts
@@ -128,7 +131,7 @@ function renderRoster(students, isCloud) {
     alerts.innerHTML = `
       <div class="alert-banner">
         <span class="alert-icon">⚠️</span>
-        <span>${redFlags.length} student${redFlags.length > 1 ? 's' : ''} haven't played in 7+ days.</span>
+        <span>${pageT(redFlags.length === 1 ? 'teacher.inactiveOne' : 'teacher.inactiveMany', { count: redFlags.length })}</span>
       </div>
     `;
     alerts.classList.remove('hidden');
@@ -140,23 +143,24 @@ function renderRoster(students, isCloud) {
   tbody.innerHTML = students.map(st => {
     const cl = st.completed_levels ?? st.completedLevels ?? [];
     const level = Array.isArray(cl) ? cl.length : 0;
-    const status = level >= 10 ? 'Completed!' : level >= 5 ? 'On Track' : level > 0 ? 'Getting Started' : 'Not Started';
+    const statusKey = level >= 10 ? 'teacher.completed' : level >= 5 ? 'teacher.onTrack' : level > 0 ? 'teacher.gettingStarted' : 'teacher.notStarted';
+    const status = pageT(statusKey);
     const badgeClass = level >= 10 ? 'badge-green' : level >= 5 ? 'badge-yellow' : 'badge-red';
     const avatar = escapeHTML(st.avatar || '🌸');
-    const name = escapeHTML(st.name || 'Anonymous');
-    const words = escapeHTML(st.total_words ?? st.totalWords ?? 0);
-    const score = escapeHTML(st.high_score ?? st.highScore ?? 0);
-    const stars = escapeHTML(st.total_stars ?? st.totalStars ?? 0);
+    const name = escapeHTML(st.name || pageT('teacher.anonymous'));
+    const words = escapeHTML(formatNumber(st.total_words ?? st.totalWords ?? 0));
+    const score = escapeHTML(formatNumber(st.high_score ?? st.highScore ?? 0));
+    const stars = escapeHTML(formatNumber(st.total_stars ?? st.totalStars ?? 0));
     
     return `
       <tr>
         <td><span class="student-avatar">${avatar}</span> <strong>${name}</strong></td>
-        <td>Level ${escapeHTML(level)}</td>
+        <td>${pageT('teacher.level')} ${escapeHTML(formatNumber(level))}</td>
         <td>${words}</td>
         <td>${score}</td>
         <td>${stars} ⭐</td>
         <td><span class="badge ${badgeClass}">${escapeHTML(status)}</span></td>
-        <td>${isCloud ? '☁️ Cloud' : '💾 Local'}</td>
+        <td>${isCloud ? pageT('teacher.cloud') : pageT('teacher.local')}</td>
       </tr>
     `;
   }).join('');
@@ -172,7 +176,7 @@ function showEmpty(msg) {
   if (alerts) alerts.classList.add('hidden');
   if (empty) {
     // msg is often from class code input, so we escape it
-    empty.innerHTML = `<h2>No data yet</h2><p>${escapeHTML(msg)}</p><p>Students will appear here after they play BloomType. 🌸</p>`;
+    empty.innerHTML = `<h2>${pageT('teacher.noData')}</h2><p>${escapeHTML(msg)}</p><p>${pageT('teacher.emptyHint')}</p>`;
     empty.classList.remove('hidden');
   }
 }
@@ -185,7 +189,7 @@ function renderToolbar() {
 
 function exportCSV() {
   const students = getRenderedStudents();
-  if (students.length === 0) { alert('No data to export'); return; }
+  if (students.length === 0) { alert(pageT('teacher.noExport')); return; }
 
   const csv = createRosterCSV(students);
   const blob = new Blob([csv], { type: 'text/csv' });
@@ -194,7 +198,7 @@ function exportCSV() {
 
 function exportJSON() {
   const students = getRenderedStudents();
-  if (students.length === 0) { alert('No data to export'); return; }
+  if (students.length === 0) { alert(pageT('teacher.noExport')); return; }
 
   const payload = createRosterExport(currentClassCode, students);
 
@@ -227,7 +231,7 @@ function downloadBlob(blob, extension) {
 }
 
 function clearAllData() {
-  if (!confirm('⚠️ Delete ALL local student data? Cannot be undone!')) return;
+  if (!confirm(pageT('teacher.clearConfirm'))) return;
   const keys = [];
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);

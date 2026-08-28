@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-page-title="parent.title">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -110,7 +110,7 @@
   </style>
 </head>
 <body>
-  <div class="hero">
+  <div class="hero" data-page-i18n-html="parent.hero">
     <div class="free-badge">✨ Completely Free — No Credit Card Required</div>
     <h1>Help Your Child Learn to Type with <span>BloomType</span></h1>
     <p>A magical garden typing adventure for kids ages 6–11. No boring drills — just flowers, pets, and fun word games that build real keyboard skills.</p>
@@ -120,8 +120,8 @@
   <div class="container">
     <!-- THE PROBLEM -->
     <div class="section">
-      <h2>Why Typing Matters Now</h2>
-      <div class="problem-cards">
+      <h2 data-page-i18n="parent.problemTitle">Why Typing Matters Now</h2>
+      <div class="problem-cards" data-page-i18n-html="parent.problems">
         <div class="problem-card">
           <div class="emoji">📚</div>
           <h4>Schools Assume They Know</h4>
@@ -143,8 +143,8 @@
 
     <!-- HOW IT WORKS -->
     <div class="section">
-      <h2>How BloomType Works</h2>
-      <div class="solution-features">
+      <h2 data-page-i18n="parent.howTitle">How BloomType Works</h2>
+      <div class="solution-features" data-page-i18n-html="parent.features">
         <div class="feature">
           <h4>🌸 Words Fall From the Sky</h4>
           <p>Your child types words before they reach the ground. Miss a word? A flower wilts. Type it right? A new flower blooms in their garden.</p>
@@ -166,8 +166,8 @@
 
     <!-- CURRICULUM -->
     <div class="section">
-      <h2>What They'll Learn (10 Levels)</h2>
-      <div class="levels-grid">
+      <h2 data-page-i18n="parent.curriculumTitle">What They'll Learn (10 Levels)</h2>
+      <div class="levels-grid" data-page-i18n-html="parent.curriculum">
         <div class="level-preview"><div class="level-icon">🌸</div><h5>Home Row Garden</h5><p>ASDF JKL; — finger placement</p></div>
         <div class="level-preview"><div class="level-icon">⬆️</div><h5>Top Row Sky</h5><p>QWERTYUIOP — reaching up</p></div>
         <div class="level-preview"><div class="level-icon">⬇️</div><h5>Bottom Row Ocean</h5><p>ZXCVBNM — reaching down</p></div>
@@ -183,7 +183,7 @@
 
     <!-- PARENT PREVIEW -->
     <div class="section">
-      <div class="parent-preview">
+      <div class="parent-preview" data-page-i18n-html="parent.preview">
         <h3>📊 Parents Can Track Progress</h3>
         <p>When your child plays on this device, you'll see their WPM (words per minute), accuracy, and which levels they've completed. No account needed — it saves automatically.</p>
         <div class="stat-row">
@@ -198,8 +198,8 @@
 
     <!-- TRUST -->
     <div class="section" id="privacy">
-      <h2>What BloomType Stores</h2>
-      <div class="privacy-details">
+      <h2 data-page-i18n="parent.privacyTitle">What BloomType Stores</h2>
+      <div class="privacy-details" data-page-i18n-html="parent.privacy">
         <h3>Default local play</h3>
         <p>BloomType stores the student’s chosen display name and avatar, scores, lesson progress, achievements, garden, practice history, class code, and accessibility preferences in this browser. It does not send that progress to BloomType or Ashbi while cloud sync is disabled.</p>
 
@@ -218,8 +218,8 @@
     </div>
 
     <div class="section">
-      <h2>Built for Peace of Mind</h2>
-      <div class="trust-badges">
+      <h2 data-page-i18n="parent.trustTitle">Built for Peace of Mind</h2>
+      <div class="trust-badges" data-page-i18n-html="parent.trust">
         <div class="trust-badge"><span class="emoji">🔒</span><span>No Personal Info Required</span></div>
         <div class="trust-badge"><span class="emoji">🚫</span><span>No Ads, No Tracking</span></div>
         <div class="trust-badge"><span class="emoji">💾</span><span>Saves Locally On Device</span></div>
@@ -229,7 +229,7 @@
     </div>
 
     <!-- CTA -->
-    <div class="section" style="text-align:center; padding-bottom:60px;">
+    <div class="section" style="text-align:center; padding-bottom:60px;" data-page-i18n-html="parent.cta">
       <h2 style="margin-bottom:12px;">Ready to Start?</h2>
       <p style="color:var(--text-dim); margin-bottom:24px;">Takes 2 minutes. No setup. Works on laptops, Chromebooks, and tablets with keyboards.</p>
       <a href="./index.html" class="cta-btn" style="font-size:1.4rem; padding:18px 48px;">🌸 Play BloomType Now</a>
@@ -237,10 +237,14 @@
     </div>
   </div>
 
-  <div class="footer">
+  <div class="footer" data-page-i18n-html="parent.footer">
     <p>BloomType — made for kids who deserve better than boring typing drills.</p>
     <p>Teachers: assign levels by having students visit this page from your classroom computers. Data stays on your school's devices.</p>
   </div>
 </body>
+<script type="module">
+  import { initializePageTranslations } from './src/pageTranslations.js';
+  initializePageTranslations();
+</script>
 <script>if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');</script>
 </html>
