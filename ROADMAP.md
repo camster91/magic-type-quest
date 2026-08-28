@@ -19,8 +19,10 @@ school-scale launch readiness is not yet proven by real-world operations.
   `/magic-type-quest/` base path and are regression-tested.
 - Automation boundary: workflow files are active, but repository-level GitHub
   Actions permission currently reports `enabled: false`; no remote checks can
-  run until an owner explicitly enables Actions. The local Docker daemon is
-  also unavailable, so the container build remains remotely unverified.
+  run until an owner explicitly enables Actions. GitHub code scanning and
+  secret scanning are also disabled. The local Docker daemon is unavailable,
+  so the container build remains remotely unverified. Dependabot currently
+  reports zero open alerts.
 - Not yet proven: production Supabase configuration, authenticated teacher and
   student journeys, privacy/consent operations, offline install/update behavior
   on target devices, accessibility, classroom usability, and retention.
@@ -36,6 +38,7 @@ children.
 1. **Production deployment verification**
    - Decide whether to enable repository-level GitHub Actions. If enabled,
      verify CI and container workflows and confirm registry credentials/costs.
+   - Decide whether to enable GitHub code scanning and secret scanning.
    - Validate the hosted base path, manifest, service-worker scope, offline
      reload, cache updates, and all four HTML entry points.
    - Record the production URL and rollback procedure.
