@@ -228,6 +228,48 @@ test('language selection applies immediately and persists after reload', async (
   await expect(page.locator('.stat-label').first()).toHaveText('Élèves');
 });
 
+test('a weak-key drill finishes without changing curriculum progress', async ({ page }) => {
+  await page.addInitScript(() => localStorage.clear());
+  await page.goto('');
+
+  await page.evaluate(() => {
+    window.gameState.profile.completedLevels = [1];
+    window.gameState.profile.totalStars = 10;
+    window.gameState.keyAccuracy = { a: { correct: 0, wrong: 4 } };
+    document.getElementById('btn-drill').classList.remove('hidden');
+  });
+  await page.evaluate(() => document.getElementById('btn-drill').click());
+
+  await expect.poll(() => page.evaluate(() => window.gameState.level)).toBe('drill');
+  const drillWord = await page.evaluate(() => window.gameState.targetWord?.text);
+  expect(drillWord).toBeTruthy();
+  await page.keyboard.type(drillWord);
+  await expect.poll(() => page.evaluate(() => window.gameState.wordsCompleted)).toBe(1);
+  await expect.poll(() => page.evaluate(() => Number.isFinite(window.gameState.score))).toBe(true);
+  const starsAfterWord = await page.evaluate(() => window.gameState.profile.totalStars);
+  await page.evaluate(() => {
+    const { drillLesson } = window.gameState;
+    window.gameState.activeWords = [];
+    window.gameState.targetWord = null;
+    window.gameState.wordsSpawned = drillLesson.wordsPerLevel;
+  });
+
+  await expect(page.locator('#menu-screen')).toHaveClass(/active/);
+  await expect(page.locator('#toast-title')).toHaveText('Weak-key drill complete!');
+  const result = await page.evaluate(() => ({
+    completedLevels: window.gameState.profile.completedLevels,
+    totalStars: window.gameState.profile.totalStars,
+    scoreIsFinite: Number.isFinite(window.gameState.score),
+    drillLesson: window.gameState.drillLesson,
+  }));
+  expect(result).toEqual({
+    completedLevels: [1],
+    totalStars: starsAfterWord,
+    scoreIsFinite: true,
+    drillLesson: null,
+  });
+});
+
 test('home progress continues through the complete ten-level curriculum', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.clear();

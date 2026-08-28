@@ -38,6 +38,7 @@ describe('localization', () => {
     expect(t('game.levelCompleteNamed', { level: 6 })).toBe('¡Nivel 6 completado!');
     expect(t('daily.summaryMany', { count: 3, wpm: 16, accuracy: 92 }))
       .toBe('3 palabras · 16 PPM · 92 % de precisión');
+    expect(t('drill.complete')).toBe('¡Práctica de teclas débiles completada!');
   });
 
   it('formats numbers and dates with the active locale', () => {

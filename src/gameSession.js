@@ -16,6 +16,8 @@ export function resetGameSession(state, {
     combo: 0,
     maxCombo: 0,
     wordsTyped: 0,
+    savedWordsTyped: 0,
+    savedScoreStars: 0,
     wordsCompleted: 0,
     wordsSpawned: 0,
     totalKeystrokes: 0,
@@ -43,4 +45,9 @@ export function resetGameSession(state, {
     dailyMoment: dailyMoment || { ...(state.dailyMoment || {}), active: false },
   });
   return state;
+}
+
+/** Curriculum levels earn a small level bonus; named modes never do. */
+export function getLevelScoreBonus(level) {
+  return Number.isInteger(level) && level > 0 ? level * 2 : 0;
 }

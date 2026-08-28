@@ -9,21 +9,22 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 220 tests pass across 29 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 222 tests pass across 29 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
   quests, garden progression, classroom codes, teacher reporting, optional
   Supabase sync, PWA support, and core English/French/Spanish localization.
 - Deployment fixes: public assets work under the configured
-  `/magic-type-quest/` base path and are regression-tested. Nine Playwright
+  `/magic-type-quest/` base path and are regression-tested. Ten Playwright
   tests verify responsive home actions, a local student-to-teacher classroom
   journey with exports, the keyboard-only first-time student journey, all production
   entry points, same-origin assets, manifest scope, service-worker registration,
-  persisted localization, offline app-shell reload, and stale-cache cleanup.
+  persisted localization, isolated weak-key drill completion, offline app-shell
+  reload, and stale-cache cleanup.
 - Production: `https://bloomtype.ashbi.ca/magic-type-quest/` serves the prior
   approved GHCR image through Traefik with trusted HTTPS and security headers.
-  The current nine-journey candidate image is published but intentionally not
+  The current candidate image is published but intentionally not
   deployed without explicit release approval. Deploy and rollback operations
   are documented in `docs/PRODUCTION.md`.
 - Automation: repository Actions are enabled and core CI passes on the
@@ -182,6 +183,9 @@ children.
   across both practice and gameplay keyboards; sound effects use one audio API.
 - Session initialization is isolated and directly tested across normal, Daily
   Moment, and weak-key drill modes.
+- Weak-key drills use finite mode-safe scoring, retry their own lesson, return
+  through a localized completion path without mutating curriculum completion,
+  and cannot double-count session words or score stars across repeated saves.
 - Desktop and mobile gameplay input share a directly tested controller, including
   Shift lessons, one-character words, skip/pause routing, and dialog focus wrap.
 - Common canvas effects are isolated and directly tested, including reduced-motion

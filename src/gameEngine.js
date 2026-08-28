@@ -14,7 +14,7 @@ import { formatNumber, localizeFingerLabel, t } from './i18n.js';
 import { localizeAchievement, localizeChapter, localizeLesson, localizeQuest } from './contentTranslations.js';
 import { highlightTargetKey, showKeyFeedback } from './gamePresentation.js';
 import { GameWord } from './gameWord.js';
-import { resetGameSession } from './gameSession.js';
+import { getLevelScoreBonus, resetGameSession } from './gameSession.js';
 import { createGameInputController, trapDialogFocus } from './gameInput.js';
 import { createCanvasEffects } from './gameCanvas.js';
 
@@ -397,7 +397,7 @@ function completeWord() {
   const baseScore = word.text.length * 10;
   const focusBonus = Math.round(baseScore * (focusMultiplier - 0.5));
   const comboBonus = gameState.combo * 5;
-  const levelBonus = gameState.level * 2;
+  const levelBonus = getLevelScoreBonus(gameState.level);
   const totalPoints = baseScore + focusBonus + comboBonus + levelBonus;
   gameState.score += totalPoints;
   gameState.totalFocusBonus = (gameState.totalFocusBonus || 0) + focusBonus;
@@ -530,7 +530,6 @@ function gameOver() {
   gameState.gameOver = true;
   cancelAnimationFrame(animationId);
   stopAmbient();
-  gameState.drillLesson = null;
   saveProfile();
   showGameOver();
 }
@@ -998,6 +997,11 @@ function checkLevelComplete() {
 }
 
 function levelComplete() {
+  if (gameState.drillLesson?.isDrill) {
+    finishDrill();
+    return;
+  }
+
   gameState.gameOver = true;
   playSound('level');
 
@@ -1044,6 +1048,38 @@ function levelComplete() {
   if (newStage && wasFirstCompletion) {
     setTimeout(() => showEvolutionOverlay(newStage), 800);
   }
+}
+
+function finishDrill() {
+  const wordsCompleted = gameState.wordsCompleted;
+  const elapsedMs = Math.max(0, performance.now() - (gameState.levelStartTime || performance.now()));
+  const elapsedMin = Math.max(elapsedMs / 60_000, 1 / 60);
+  const wpm = Math.round((gameState.correctKeystrokes / 5) / elapsedMin);
+  const accuracy = gameState.totalKeystrokes > 0
+    ? Math.round((gameState.correctKeystrokes / gameState.totalKeystrokes) * 100)
+    : 100;
+
+  gameState.gameOver = true;
+  cancelAnimationFrame(animationId);
+  stopAmbient();
+  gameState.drillLesson = null;
+
+  const toast = document.getElementById('achievement-toast');
+  if (toast) {
+    document.getElementById('toast-icon').textContent = '🎯';
+    document.getElementById('toast-title').textContent = t('drill.complete');
+    document.getElementById('toast-desc').textContent = t(
+      wordsCompleted === 1 ? 'drill.summaryOne' : 'drill.summaryMany',
+      { count: wordsCompleted, wpm, accuracy },
+    );
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), 4000);
+  }
+
+  playSound('word');
+  showScreen('menu');
+  window.__petHeroState = 'celebrate';
+  if (typeof window.__refreshMenuStats === 'function') window.__refreshMenuStats();
 }
 
 function checkEvolution() {

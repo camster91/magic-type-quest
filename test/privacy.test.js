@@ -22,6 +22,8 @@ describe('privacy operations', () => {
     vi.stubGlobal('localStorage', memoryStorage());
     gameState.score = 0;
     gameState.wordsTyped = 0;
+    gameState.savedWordsTyped = 0;
+    gameState.savedScoreStars = 0;
     gameState.levelWPM = 0;
     gameState.profile = {
       name: 'Ada', avatar: '🌸', uuid: 'student-1', classCode: 'ABC123',
@@ -36,6 +38,21 @@ describe('privacy operations', () => {
     const profileKeys = Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index))
       .filter((key) => key.startsWith('bloomtype_profile_'));
     expect(profileKeys).toEqual(['bloomtype_profile_Grace']);
+  });
+
+  it('counts session words and score stars once across repeated saves', () => {
+    gameState.wordsTyped = 2;
+    gameState.score = 29;
+    saveProfile();
+    saveProfile();
+    expect(gameState.profile.totalWords).toBe(2);
+    expect(gameState.profile.totalStars).toBe(2);
+
+    gameState.wordsTyped = 3;
+    gameState.score = 35;
+    saveProfile();
+    expect(gameState.profile.totalWords).toBe(3);
+    expect(gameState.profile.totalStars).toBe(3);
   });
 
   it('deletes the current profile and class membership without clearing unrelated site data', () => {

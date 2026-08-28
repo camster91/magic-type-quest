@@ -765,7 +765,8 @@ function bindEvents() {
     $('gameover-overlay').classList.add('hidden');
     $('gameover-overlay').setAttribute('aria-hidden', 'true');
     showScreen('game');
-    startGame(gameState.level);
+    if (gameState.drillLesson?.isDrill) startDrillMode(gameState.drillLesson);
+    else startGame(gameState.level);
   });
 
   $('btn-drill')?.addEventListener('click', () => {

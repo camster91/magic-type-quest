@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resetGameSession } from '../src/gameSession.js';
+import { getLevelScoreBonus, resetGameSession } from '../src/gameSession.js';
 
 function dirtyState() {
   return {
@@ -25,7 +25,8 @@ describe('game session initialization', () => {
 
     expect(state).toMatchObject({
       screen: 'game', level: 4, health: 5, score: 0, combo: 0,
-      wordsCompleted: 0, totalKeystrokes: 0, gameOver: false,
+      wordsCompleted: 0, savedWordsTyped: 0, savedScoreStars: 0,
+      totalKeystrokes: 0, gameOver: false,
       paused: false, levelStartTime: 1234, adaptiveSpeed: 1,
       totalFocusBonus: 0, lastFocus: null, drillLesson: null,
     });
@@ -63,5 +64,13 @@ describe('game session initialization', () => {
     resetGameSession(state, { level: 2, health: 4, now: 2 });
     expect(state.activeWords).not.toBe(firstWords);
     expect(state.keyAccuracy).not.toBe(firstAccuracy);
+  });
+});
+
+describe('level score bonus', () => {
+  it('awards curriculum levels without turning named modes into NaN', () => {
+    expect(getLevelScoreBonus(4)).toBe(8);
+    expect(getLevelScoreBonus('drill')).toBe(0);
+    expect(getLevelScoreBonus(undefined)).toBe(0);
   });
 });

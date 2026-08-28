@@ -12,6 +12,8 @@ export const defaultState = {
   combo: 0,
   maxCombo: 0,
   wordsTyped: 0,
+  savedWordsTyped: 0,
+  savedScoreStars: 0,
   wordsCompleted: 0,
   wordsSpawned: 0,
   totalKeystrokes: 0,
@@ -96,8 +98,12 @@ export function saveProfile() {
   try {
     const p = gameState.profile;
     if (gameState.score > p.highScore) p.highScore = gameState.score;
-    p.totalWords += gameState.wordsTyped || 0;
-    p.totalStars += Math.floor((gameState.score || 0) / 10);
+    const wordsTyped = gameState.wordsTyped || 0;
+    const scoreStars = Math.floor((gameState.score || 0) / 10);
+    p.totalWords += Math.max(0, wordsTyped - (gameState.savedWordsTyped || 0));
+    p.totalStars += Math.max(0, scoreStars - (gameState.savedScoreStars || 0));
+    gameState.savedWordsTyped = wordsTyped;
+    gameState.savedScoreStars = scoreStars;
     p.lastPlayed = new Date().toISOString();
     
     // Save level analytics if level was completed

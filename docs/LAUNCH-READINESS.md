@@ -1,7 +1,7 @@
 # Launch readiness control
 
 Status: **candidate verified; school launch not approved**  
-Last reconciled: **2026-08-28** at commit `6b4603c`
+Last reconciled: **2026-08-28** against the current `main` candidate
 
 This is the operating register for moving BloomType from a technically verified
 candidate to an approved, supervised school pilot. `ROADMAP.md` remains the
@@ -12,7 +12,7 @@ to close its launch gates. Blank evidence or ownership means the gate fails.
 
 | Control | State | Current evidence |
 |---|---|---|
-| Local and remote quality gates | Verified | 217 unit tests across 28 files, 9 Playwright journeys, ESLint, Vite build, and zero-vulnerability audit |
+| Local and remote quality gates | Verified locally; remote refresh pending | 222 unit tests across 29 files, 10 Playwright journeys, ESLint, Vite build, and zero-vulnerability audit |
 | Ashbi CI | Verified | [CI run 33212651881](https://github.com/camster91/magic-type-quest/actions/runs/33212651881), runner `ashbi-vps-magic-type-quest` |
 | Candidate container | Verified, not released | [Image run 33212651857](https://github.com/camster91/magic-type-quest/actions/runs/33212651857) |
 | Production operation and rollback | Documented | `docs/PRODUCTION.md`; production remains on the prior approved image |
