@@ -36,6 +36,7 @@ describe('deployment base paths', () => {
     const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
 
     expect(dockerfile).toContain('return 302 /magic-type-quest/');
+    expect(dockerfile).toContain('absolute_redirect off');
     expect(dockerfile).toContain('location ^~ /magic-type-quest/');
     expect(dockerfile).toContain('rewrite ^/magic-type-quest/(.*)$ /$1 break');
   });

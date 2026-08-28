@@ -20,6 +20,10 @@ school-scale launch readiness is not yet proven by real-world operations.
   smoke tests verify all production entry points, same-origin assets, manifest
   scope, service-worker registration, persisted localization, and offline app
   shell reload and stale-cache cleanup.
+- Production: `https://bloomtype.ashbi.ca/magic-type-quest/` serves the current
+  GHCR image through Traefik with trusted HTTPS and security headers. The same
+  five Playwright checks pass against the live deployment; deploy and rollback
+  operations are documented in `docs/PRODUCTION.md`.
 - Automation: repository Actions are enabled and core CI passes on the
   repository-scoped `ashbi-vps-magic-type-quest` self-hosted runner. The image
   publishing workflow also targets Ashbi Docker. GitHub CodeQL is manually
@@ -27,7 +31,8 @@ school-scale launch readiness is not yet proven by real-world operations.
   disabled. Dependabot currently reports zero open alerts.
 - Not yet proven: production Supabase configuration, authenticated teacher and
   student journeys, privacy/consent operations, offline install/update behavior
-  on target devices, accessibility, classroom usability, and retention.
+  on target physical devices, accessibility, classroom usability, and
+  retention.
 
 “Feature complete” therefore means the planned application features exist. It
 does not mean the product is validated for unattended use by schools or 1,000+
@@ -41,9 +46,11 @@ children.
    - Decide whether to enable GitHub code scanning and secret scanning.
    - Maintain the Ashbi runner and verify its container publishing/registry
      credentials after workflow or host changes.
-   - Validate the hosted base path, manifest, service-worker scope, offline
-     reload, cache updates, and all four HTML entry points.
-   - Record the production URL and rollback procedure.
+   - Completed 2026-08-28: validated trusted HTTPS, hosted base path, manifest,
+     service-worker scope, offline reload, cache updates, and all four HTML
+     entry points.
+   - Completed 2026-08-28: recorded the production URL, checked-in deployment
+     definitions, and rollback procedure in `docs/PRODUCTION.md`.
 
 2. **Production data and privacy readiness**
    - Provision the intended Supabase project and apply `supabase/schema.sql`.

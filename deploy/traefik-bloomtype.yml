@@ -1,0 +1,27 @@
+http:
+  middlewares:
+    bloomtype-security:
+      headers:
+        contentTypeNosniff: true
+        frameDeny: true
+        referrerPolicy: strict-origin-when-cross-origin
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        customResponseHeaders:
+          Permissions-Policy: "camera=(), geolocation=(), microphone=(), payment=(), usb=()"
+  routers:
+    bloomtype:
+      rule: "Host(`bloomtype.ashbi.ca`)"
+      entryPoints:
+        - websecure
+      service: bloomtype
+      middlewares:
+        - bloomtype-security
+      tls:
+        certResolver: letsencrypt
+  services:
+    bloomtype:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:3055"
+

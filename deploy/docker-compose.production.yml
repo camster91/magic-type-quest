@@ -1,0 +1,8 @@
+services:
+  bloomtype:
+    image: ghcr.io/camster91/magic-type-quest:main
+    container_name: bloomtype
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3055:80"
+

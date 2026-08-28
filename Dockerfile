@@ -15,6 +15,7 @@ COPY --from=build /app/dist /usr/share/nginx/html/
 RUN echo 'server { \
     listen 80; \
     server_name localhost; \
+    absolute_redirect off; \
     root /usr/share/nginx/html; \
     index index.html; \
     location = / { \
