@@ -3,7 +3,8 @@
  */
 import { LESSON_LEVELS, getLessonByLevel, getFingerHint, getLessonWordsForPractice, isLevelUnlocked } from './lessonLevels.js';
 import { deleteLocalProfile, gameState, loadProfile, saveProfile } from './state.js';
-import { init as initEngine, startGame, togglePause, showScreen, showKeyFeedback, highlightTargetKey, startDrillMode, startDailyMoment, onAvatarChanged } from './gameEngine.js';
+import { init as initEngine, startGame, togglePause, showScreen, startDrillMode, startDailyMoment, onAvatarChanged } from './gameEngine.js';
+import { highlightTargetKey, showKeyFeedback } from './gamePresentation.js';
 import { getAchievementStats, getAllAchievements } from './achievements.js';
 import { getTodaysQuests, isStreakAtRisk } from './quests.js';
 import { getWeakKeys, buildDrillLesson } from './drills.js';

@@ -7,12 +7,13 @@ import { gameState, loadProfile, saveProfile } from './state.js';
 import { say, getChapter, PET_NAME_DEFAULT } from './story.js';
 import { checkAchievements as checkAchievementsNew } from './achievements.js';
 import { evaluateQuests, bumpStreakIfToday } from './quests.js';
-import { playAmbient, stopAmbient, audioCtx, initAudio } from './audio.js';
+import { playAmbient, playSound, stopAmbient, initAudio } from './audio.js';
 import { getWeakKeys } from './drills.js';
 import { recordKeyPractice } from './spacedRep.js';
 import { hexToRgba } from './utils.js';
 import { formatNumber, localizeFingerLabel, t } from './i18n.js';
 import { localizeAchievement, localizeChapter, localizeLesson, localizeQuest } from './contentTranslations.js';
+import { highlightTargetKey, showKeyFeedback } from './gamePresentation.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -46,43 +47,6 @@ function currentLesson() {
   if (gameState.drillLesson) return gameState.drillLesson;
   return localizeLesson(getLessonByLevel(gameState.level));
 }
-
-// ===== AUDIO SYSTEM =====
-// NOTE: initAudio is imported from audio.js — do NOT duplicate here
-
-function playTone(frequency, duration, type = 'sine') {
-  if (!audioCtx) return;
-  try {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.type = type;
-    osc.frequency.value = frequency;
-    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
-  } catch {}
-}
-
-const sounds = {
-  correct: () => playTone(880, 0.1, 'sine'),
-  wrong: () => playTone(200, 0.15, 'sawtooth'),
-  word: () => {
-    [659, 784, 1047].forEach((freq, i) => {
-      setTimeout(() => playTone(freq, 0.2, 'sine'), i * 100);
-    });
-  },
-  combo: () => playTone(440 + Math.min(gameState.combo, 8) * 65, 0.1, 'triangle'),
-  level: () => {
-    [523, 659, 784, 1047, 1318].forEach((freq, i) => {
-      setTimeout(() => playTone(freq, 0.25, 'sine'), i * 120);
-    });
-  },
-  heart: () => playTone(523, 0.25, 'sine'),
-};
 
 // ===== WORD CLASS =====
 class Word {
@@ -570,7 +534,7 @@ function onCorrectKeystroke(key) {
   // Spaced repetition tracking
   recordKeyPractice(gameState.profile, k, true);
 
-  sounds.correct();
+  playSound('correct');
   showKeyFeedback(key, true);
   // T26: tactile feedback on every keystroke — pressed key glows + scales
   // for 200ms (covers ALL keys, not just the target), target word pulses
@@ -602,7 +566,7 @@ function onWrongKeystroke(key) {
   // Spaced repetition tracking
   recordKeyPractice(gameState.profile, k, false);
 
-  sounds.wrong();
+  playSound('wrong');
   showKeyFeedback(key, false);
   // T26: pressed-pulse on the wrong key + a sharper 200ms red flash so the
   // kid feels a "nope" without it reading as punishment.
@@ -683,7 +647,7 @@ function completeWord() {
   if (!word) return;
   
   // Effects
-  sounds.word();
+  playSound('word');
   spawnParticles(word.x + word.width/2, word.y, 15);
   
   // Score — base × focus multiplier (0.5x to 1.0x) × (1 + combo/10)
@@ -712,7 +676,7 @@ function completeWord() {
   // Combo
   gameState.combo++;
   gameState.maxCombo = Math.max(gameState.maxCombo, gameState.combo);
-  if (gameState.combo >= 2) sounds.combo();
+  if (gameState.combo >= 2) playSound('combo');
   // T26: COMBO x5 / x10 / x15 milestone callout floats up for 800ms.
   showComboFloater(gameState.combo);
   
@@ -809,7 +773,7 @@ function loseHealth() {
 
   gameState.health--;
   gameState.combo = 0;
-  sounds.heart();
+  playSound('heart');
   spawnParticles(gameState.canvasW/2, gameState.canvasH - 100, 15, COLORS.danger);
   showPetReaction('hurt');
   updateHearts();
@@ -995,50 +959,6 @@ function updateTargetDisplay() {
 function updateKeyboardHighlight() {
   const nextChar = gameState.targetWord?.text?.[gameState.targetIndex];
   highlightTargetKey(nextChar);
-}
-
-// ===== KEYBOARD HIGHLIGHT =====
-export function highlightTargetKey(char) {
-  // T19: there are TWO keyboards on the page (practice + game). querySelector
-  // returned only the FIRST match, so the practice key lit up while the game
-  // key stayed dark. Use querySelectorAll so both keyboards stay in sync.
-  document.querySelectorAll('.key').forEach(k => k.classList.remove('target'));
-
-  if (!char) return;
-
-  const lower = char.toLowerCase();
-  const keyEls = document.querySelectorAll(`.key[data-key="${lower}"]`);
-  keyEls.forEach(keyEl => {
-    keyEl.classList.add('target');
-    // Only scrollIntoView the game keyboard (the visible one during play).
-    // Practice keyboard is hidden so scrolling it does nothing useful.
-    if (keyEl.closest('#virtual-keyboard-game')) {
-      keyEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  });
-
-  // Show finger hint
-  const hint = getFingerHint(char);
-  if (hint) {
-    showFingerHint(localizeFingerLabel(hint.label), hint.color);
-  }
-}
-
-function showFingerHint(text, color) {
-  const hintEl = document.getElementById('finger-hint');
-  if (hintEl) {
-    hintEl.textContent = text;
-    hintEl.style.color = color;
-    hintEl.style.display = 'block';
-  }
-}
-
-export function showKeyFeedback(key, correct) {
-  const keyEl = document.querySelector(`.key[data-key="${key.toLowerCase()}"]`);
-  if (keyEl) {
-    keyEl.classList.add(correct ? 'correct' : 'wrong');
-    setTimeout(() => keyEl.classList.remove('correct', 'wrong'), 300);
-  }
 }
 
 // ===== T26: PER-KEYPRESS FEEDBACK =====
@@ -1693,7 +1613,7 @@ function checkLevelComplete() {
 
 function levelComplete() {
   gameState.gameOver = true;
-  sounds.level();
+  playSound('level');
 
   // T26: soft pink 300ms screen flash (was: harsh white 800ms). Pink reads
   // as celebratory, not jarring — and 300ms is short enough to feel snappy
@@ -2038,7 +1958,7 @@ export function endDailyMoment({ reason } = {}) {
   }
 
   // Play a gentle completion sound (reuse "word" arpeggio at lower gain)
-  sounds.word();
+  playSound('word');
 
   // Return to menu
   showScreen('menu');
