@@ -9,7 +9,7 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 202 tests pass across 26 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 203 tests pass across 26 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -104,6 +104,9 @@ children.
      bubbles, lesson locks, evolution copy, and keyboard accessibility states.
      Removed the obsolete rotating-tagline generator left behind by the focused
      home redesign because it had no rendered target.
+   - Completed 2026-08-28: localized numbered level-completion titles and Daily
+     Moment result summaries, including singular/plural wording and localized
+     speed/accuracy labels in French and Spanish.
    - Still required: have fluent French and Spanish reviewers check the complete
      learner, parent, and teacher experience.
 2. Complete keyboard-only, screen-reader, contrast, reduced-motion, touch

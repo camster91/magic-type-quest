@@ -1799,13 +1799,14 @@ export function endDailyMoment({ reason } = {}) {
   chapterOverlay?.classList.add('hidden');
   chapterOverlay?.setAttribute('aria-hidden', 'true');
 
-  // Toast: "Daily Moment complete — N words, X% accuracy!"
   const toast = document.getElementById('achievement-toast');
   if (toast) {
     document.getElementById('toast-icon').textContent = '⚡';
     document.getElementById('toast-title').textContent = t('daily.complete');
-    document.getElementById('toast-desc').textContent =
-      `${wordsCompleted} word${wordsCompleted === 1 ? '' : 's'} · ${wpm} WPM · ${accuracy}% accuracy`;
+    document.getElementById('toast-desc').textContent = t(
+      wordsCompleted === 1 ? 'daily.summaryOne' : 'daily.summaryMany',
+      { count: wordsCompleted, wpm, accuracy },
+    );
     toast.classList.remove('hidden');
     setTimeout(() => toast.classList.add('hidden'), 4000);
   }
@@ -2014,7 +2015,7 @@ function showLevelComplete() {
     if (cardTitle) cardTitle.textContent = `🎉 ${t('game.complete')}`;
     if (nextBtn) { nextBtn.textContent = `🏆 ${t('game.quit')}`; nextBtn.classList.add('final'); }
   } else {
-    if (cardTitle) cardTitle.innerHTML = `Level <span id="level-complete-num">${gameState.level}</span> Complete!`;
+    if (cardTitle) cardTitle.textContent = t('game.levelCompleteNamed', { level: gameState.level });
     if (nextBtn) { nextBtn.textContent = `${t('game.next')} →`; nextBtn.classList.remove('final'); }
   }
   

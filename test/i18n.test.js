@@ -27,6 +27,19 @@ describe('localization', () => {
     expect(t('game.level', { level: '<script>' })).toBe('Level <script>');
   });
 
+  it('localizes level completion and singular/plural Daily Moment results', () => {
+    setLocale('fr');
+    expect(t('game.levelCompleteNamed', { level: 4 })).toBe('Niveau 4 terminé !');
+    expect(t('daily.summaryOne', { wpm: 12, accuracy: 98 })).toBe('1 mot · 12 MPM · 98 % de précision');
+    expect(t('daily.summaryMany', { count: 7, wpm: 18, accuracy: 95 }))
+      .toBe('7 mots · 18 MPM · 95 % de précision');
+
+    setLocale('es');
+    expect(t('game.levelCompleteNamed', { level: 6 })).toBe('¡Nivel 6 completado!');
+    expect(t('daily.summaryMany', { count: 3, wpm: 16, accuracy: 92 }))
+      .toBe('3 palabras · 16 PPM · 92 % de precisión');
+  });
+
   it('formats numbers and dates with the active locale', () => {
     setLocale('fr');
     expect(formatNumber(1234)).toMatch(/1[\s\u202f]234/);
