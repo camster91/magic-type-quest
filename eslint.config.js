@@ -44,6 +44,7 @@ export default [
         process: 'readonly',
         Intl: 'readonly',
         crypto: 'readonly',
+        caches: 'readonly',
         WebSocket: 'readonly',
         AbortController: 'readonly',
       },

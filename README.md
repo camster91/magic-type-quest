@@ -152,7 +152,7 @@ BloomType                  Purpose
 |-------|--------|
 | Build | ✅ `vite build` succeeds (4 HTML pages) |
 | Tests | ✅ 156 vitest tests pass across 13 files |
-| Browser smoke | ✅ 3 Playwright tests cover the production build and PWA scope |
+| Browser smoke | ✅ 5 Playwright tests cover the production build, PWA scope, offline reload, and cache cleanup |
 | npm audit | ✅ 0 vulnerabilities |
 | ESLint | ✅ 0 errors via `npm run lint` |
 

@@ -68,3 +68,47 @@ test('language selection applies immediately and persists after reload', async (
   await expect(page.locator('#language-select')).toHaveValue('fr');
   await expect(page.locator('#profile-screen h2')).toContainText('Mon profil');
 });
+
+test('the installed app shell reloads while offline', async ({ context, page }) => {
+  await page.goto('');
+  await page.evaluate(async () => navigator.serviceWorker.ready);
+
+  // Reload once online so the active worker controls this page and its runtime
+  // cache contains the generated JS, CSS, and visible image assets.
+  await page.reload();
+  await page.waitForLoadState('networkidle');
+  expect(await page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
+
+  await context.setOffline(true);
+  try {
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.menu-brand')).toHaveText('BloomType');
+    await expect(page.locator('#pet-hero-img')).toHaveJSProperty('complete', true);
+    expect(await page.locator('#pet-hero-img').evaluate((image) => image.naturalWidth)).toBeGreaterThan(0);
+  } finally {
+    await context.setOffline(false);
+  }
+});
+
+test('service-worker activation removes stale BloomType caches', async ({ page }) => {
+  await page.goto('');
+  await page.evaluate(async () => {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(registrations.map((registration) => registration.unregister()));
+    await caches.open('bloomtype-stale-verification');
+    const registration = await navigator.serviceWorker.register('sw.js?cache-cleanup-verification=1');
+    const worker = registration.installing || registration.waiting || registration.active;
+    if (worker?.state !== 'activated') {
+      await new Promise((resolve) => {
+        worker.addEventListener('statechange', () => {
+          if (worker.state === 'activated') resolve();
+        });
+      });
+    }
+  });
+
+  await expect.poll(async () => page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+    return caches.keys();
+  })).not.toContain('bloomtype-stale-verification');
+});
