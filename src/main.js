@@ -169,6 +169,7 @@ function showTutorial() {
   tutorialSlide = 0;
   const overlay = $('tutorial-overlay');
   overlay.classList.remove('hidden');
+  overlay.setAttribute('aria-hidden', 'false');
   showTutorialSlide(0);
 }
 
@@ -176,6 +177,9 @@ function showTutorialSlide(n) {
   document.querySelectorAll('.tutorial-slide').forEach(s => s.classList.remove('active'));
   const slide = document.querySelector(`.tutorial-slide[data-slide="${n}"]`);
   if (slide) slide.classList.add('active');
+  const overlay = $('tutorial-overlay');
+  overlay?.setAttribute('aria-labelledby', `tutorial-title-${n}`);
+  setTimeout(() => slide?.querySelector('button')?.focus(), 0);
   
   document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === n));
 }
@@ -183,7 +187,9 @@ function showTutorialSlide(n) {
 function nextTutorialSlide() {
   tutorialSlide++;
   if (tutorialSlide >= 3) {
-    $('tutorial-overlay').classList.add('hidden');
+    const overlay = $('tutorial-overlay');
+    overlay.classList.add('hidden');
+    overlay.setAttribute('aria-hidden', 'true');
     startGame(1);
     return;
   }
@@ -776,11 +782,17 @@ function bindEvents() {
   
   // Finger guide close
   $('btn-close-finger-guide')?.addEventListener('click', () => {
-    $('finger-guide')?.classList.add('hidden');
+    const guide = $('finger-guide');
+    guide?.classList.add('hidden');
+    guide?.setAttribute('aria-hidden', 'true');
+    gameState.paused = false;
+    $('game-screen')?.focus();
   });
   
   $('btn-start-game')?.addEventListener('click', () => {
-    $('tutorial-overlay').classList.add('hidden');
+    const overlay = $('tutorial-overlay');
+    overlay.classList.add('hidden');
+    overlay.setAttribute('aria-hidden', 'true');
     startGame(1);
   });
 

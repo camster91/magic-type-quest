@@ -9,14 +9,14 @@ export default defineConfig({
   workers: 1,
   reporter: 'line',
   use: {
-    baseURL: deployedBaseURL || 'http://127.0.0.1:4173/magic-type-quest/',
+    baseURL: deployedBaseURL || 'http://127.0.0.1:4175/magic-type-quest/',
     browserName: 'chromium',
     trace: 'retain-on-failure',
   },
   webServer: deployedBaseURL ? undefined : {
-    command: 'npm run preview -- --host 127.0.0.1',
-    url: 'http://127.0.0.1:4173/magic-type-quest/',
-    reuseExistingServer: !process.env.CI,
+    command: 'npm run preview -- --host 127.0.0.1 --port 4175 --strictPort',
+    url: 'http://127.0.0.1:4175/magic-type-quest/',
+    reuseExistingServer: false,
     timeout: 30_000,
   },
 });

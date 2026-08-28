@@ -389,21 +389,49 @@ function spawnWord() {
 }
 
 // ===== INPUT HANDLING =====
+function trapDialogFocus(e) {
+  if (e.key !== 'Tab') return;
+  const dialogs = [...document.querySelectorAll('[role="dialog"][aria-hidden="false"]')];
+  const dialog = dialogs.at(-1);
+  if (!dialog) return;
+  const focusable = [...dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])')]
+    .filter((element) => element.getClientRects().length > 0);
+  if (focusable.length === 0) return;
+  const first = focusable[0];
+  const last = focusable.at(-1);
+  if (!dialog.contains(document.activeElement)) {
+    e.preventDefault();
+    (e.shiftKey ? last : first).focus();
+  } else if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
 function handleKey(e) {
-  if (gameState.screen !== 'game' || gameState.paused || gameState.gameOver) return;
+  if (gameState.screen !== 'game' || gameState.gameOver) return;
   if (e.repeat) return;
+
+  // Escape must work in both directions. Previously the paused guard returned
+  // before this branch, even though the UI promises “Resume (Esc)”.
+  if (e.key === 'Escape') {
+    const openDialog = document.querySelector('[role="dialog"][aria-hidden="false"]');
+    if (openDialog && openDialog.id !== 'pause-overlay') return;
+    e.preventDefault();
+    togglePause();
+    return;
+  }
+
+  if (gameState.paused) return;
   
   // Bail only on real text fields — #mobile-input is a hidden virtual-keyboard
   // sink on touch devices and must NOT block desktop keyboard input.
   const active = document.activeElement;
   const activeId = active?.id;
   if (activeId !== 'mobile-input' && (active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA')) return;
-
-  // Pause with Escape
-  if (e.key === 'Escape') {
-    togglePause();
-    return;
-  }
 
   // Space to skip word
   if (e.key === ' ') {
@@ -1882,9 +1910,9 @@ export function startDailyMoment() {
     if (introEl) introEl.textContent = t('daily.intro');
     if (petLineEl) petLineEl.textContent = '"I will be right here with you." — Bloom';
     chapterOverlay.classList.remove('hidden');
-    const dismiss = () => chapterOverlay.classList.add('hidden');
-    setTimeout(dismiss, 3500);
-    chapterOverlay.addEventListener('click', dismiss, { once: true });
+    chapterOverlay.setAttribute('aria-hidden', 'false');
+    gameState.paused = true;
+    document.getElementById('btn-chapter-continue')?.focus();
   }
 
   resizeCanvas();
@@ -1912,11 +1940,12 @@ export function startDailyMoment() {
     mobileInput.focus();
   }
 
-  // End the session after the duration, regardless of progress
+}
+
+function beginDailyMomentCountdown() {
+  gameState.dailyMoment.startTime = performance.now();
   if (dailyMomentTimerId) clearTimeout(dailyMomentTimerId);
   dailyMomentTimerId = setTimeout(() => endDailyMoment({ reason: 'timeUp' }), 60_000);
-
-  // Tick the HUD countdown once per second
   if (dailyMomentCountdownId) clearInterval(dailyMomentCountdownId);
   dailyMomentCountdownId = setInterval(updateDailyMomentHUD, 250);
   updateDailyMomentHUD();
@@ -1968,7 +1997,9 @@ export function endDailyMoment({ reason } = {}) {
   gameState.gameOver = true; // suppress the normal level/gameover overlays
 
   // Hide the chapter intro if it was still up
-  document.getElementById('chapter-intro')?.classList.add('hidden');
+  const chapterOverlay = document.getElementById('chapter-intro');
+  chapterOverlay?.classList.add('hidden');
+  chapterOverlay?.setAttribute('aria-hidden', 'true');
 
   // Toast: "Daily Moment complete — N words, X% accuracy!"
   const toast = document.getElementById('achievement-toast');
@@ -2033,10 +2064,13 @@ export function startGame(level = 1) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('game-screen').classList.add('active');
   
-  // Show chapter intro overlay for non-replayed levels
+  const shouldShowFingerGuide = level === 1 && !gameState.profile?.seenFingerGuide;
+
+  // Show chapter intro overlay for non-replayed levels. The first-time finger
+  // guide takes precedence so two modal dialogs are never exposed at once.
   const chapter = getChapter(level);
   const chapterOverlay = document.getElementById('chapter-intro');
-  if (chapterOverlay && chapter && !gameState.profile?.completedLevels?.includes(level)) {
+  if (chapterOverlay && chapter && !shouldShowFingerGuide && !gameState.profile?.completedLevels?.includes(level)) {
     const titleEl = chapterOverlay.querySelector('.chapter-title');
     const subtitleEl = chapterOverlay.querySelector('.chapter-subtitle');
     const introEl = chapterOverlay.querySelector('.chapter-intro-text');
@@ -2046,16 +2080,19 @@ export function startGame(level = 1) {
     if (introEl) introEl.textContent = chapter.intro;
     if (petLineEl) petLineEl.textContent = `"${chapter.petLine}" — ${PET_NAME_DEFAULT}`;
     chapterOverlay.classList.remove('hidden');
-    // Auto-dismiss after 4s or on click
-    setTimeout(() => chapterOverlay.classList.add('hidden'), 4500);
-    chapterOverlay.addEventListener('click', () => chapterOverlay.classList.add('hidden'), { once: true });
+    chapterOverlay.setAttribute('aria-hidden', 'false');
+    gameState.paused = true;
+    document.getElementById('btn-chapter-continue')?.focus();
   }
   
   // Show finger guide on level 1 for first-time players
-  if (level === 1 && !gameState.profile?.seenFingerGuide) {
+  if (shouldShowFingerGuide) {
     const guide = document.getElementById('finger-guide');
     if (guide) {
       guide.classList.remove('hidden');
+      guide.setAttribute('aria-hidden', 'false');
+      gameState.paused = true;
+      document.getElementById('btn-close-finger-guide')?.focus();
       gameState.profile.seenFingerGuide = true;
       saveProfile();
     }
@@ -2178,10 +2215,14 @@ export function togglePause() {
   const overlay = document.getElementById('pause-overlay');
   if (gameState.paused) {
     overlay.classList.remove('hidden');
+    overlay.setAttribute('aria-hidden', 'false');
     canvas.classList.add('blurred');
+    document.getElementById('btn-resume')?.focus();
   } else {
     overlay.classList.add('hidden');
+    overlay.setAttribute('aria-hidden', 'true');
     canvas.classList.remove('blurred');
+    document.getElementById('game-screen')?.focus();
   }
 }
 
@@ -2264,7 +2305,16 @@ export function init() {
   // Expose for testing
   window.gameState = gameState;
   // Desktop keyboard
+  document.addEventListener('keydown', trapDialogFocus, true);
   document.addEventListener('keydown', handleKey);
+  document.getElementById('btn-chapter-continue')?.addEventListener('click', () => {
+    const overlay = document.getElementById('chapter-intro');
+    overlay?.classList.add('hidden');
+    overlay?.setAttribute('aria-hidden', 'true');
+    gameState.paused = false;
+    if (gameState.dailyMoment?.active) beginDailyMomentCountdown();
+    document.getElementById('game-screen')?.focus();
+  });
   // Mobile virtual keyboard
   const mobileInput = document.getElementById('mobile-input');
   if (mobileInput) {
@@ -2288,5 +2338,16 @@ export function showScreen(name) {
   gameState.screen = name;
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const target = document.getElementById(`${name}-screen`);
-  if (target) target.classList.add('active');
+  if (target) {
+    target.classList.add('active');
+    const focusTargets = {
+      menu: 'btn-start',
+      'lesson-select': 'btn-lesson-back',
+      practice: 'btn-practice-back',
+      profile: 'btn-profile-back',
+      garden: 'btn-garden-back',
+      game: 'game-screen',
+    };
+    document.getElementById(focusTargets[name])?.focus();
+  }
 }

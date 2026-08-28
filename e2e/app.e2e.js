@@ -2,6 +2,55 @@ import { expect, test } from '@playwright/test';
 
 const entryPoints = ['', 'parents.html', 'teacher.html', 'landing.html'];
 
+test('a first-time student can start, learn, pause, resume, and quit with the keyboard', async ({ page }) => {
+  await page.addInitScript(() => localStorage.clear());
+  await page.goto('');
+
+  await page.locator('#btn-start').focus();
+  await page.keyboard.press('Enter');
+
+  const tutorial = page.locator('#tutorial-overlay');
+  await expect(tutorial).toHaveAttribute('aria-hidden', 'false');
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: 'Next →' })).toBeFocused();
+
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('heading', { name: 'How to Play' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Next →' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('button', { name: 'Begin! 🌸' })).toBeFocused();
+  await page.keyboard.press('Enter');
+
+  const fingerGuide = page.locator('#finger-guide');
+  await expect(fingerGuide).toHaveAttribute('aria-hidden', 'false');
+  await expect.poll(() => page.evaluate(() => window.gameState.paused)).toBe(true);
+  await expect(page.getByRole('button', { name: 'Got it! ✨' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => window.gameState.paused)).toBe(false);
+  await expect(page.locator('#game-screen')).toBeFocused();
+
+  await page.keyboard.press('Escape');
+  const pauseDialog = page.locator('#pause-overlay');
+  await expect(pauseDialog).toHaveAttribute('aria-hidden', 'false');
+  await expect(page.locator('#btn-resume')).toBeFocused();
+
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#btn-quit')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#btn-resume')).toBeFocused();
+
+  await page.keyboard.press('Escape');
+  await expect(pauseDialog).toHaveAttribute('aria-hidden', 'true');
+  await expect(page.locator('#game-screen')).toBeFocused();
+
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#btn-resume')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#menu-screen')).toHaveClass(/active/);
+  await expect(page.locator('#btn-start')).toBeFocused();
+});
+
 test('production entry points and same-origin assets load without errors', async ({ browser, baseURL }) => {
   for (const entryPoint of entryPoints) {
     const page = await browser.newPage();

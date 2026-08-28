@@ -205,7 +205,7 @@
 </div>
 
 <!-- ===== GAME SCREEN ===== -->
-<div id="game-screen" class="screen">
+<div id="game-screen" class="screen" tabindex="-1" aria-label="Typing game">
   <canvas id="game-canvas"></canvas>
   <input type="text" id="mobile-input" inputmode="text" autocapitalize="off" autocomplete="off" spellcheck="false" aria-hidden="true" style="position:fixed;bottom:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1;">
 
@@ -319,23 +319,24 @@
   </div>
 
   <!-- Pause Overlay -->
-  <div id="pause-overlay" class="overlay hidden">
+  <div id="pause-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="pause-title">
     <div class="overlay-card">
-      <h2>⏸️ <span data-i18n="game.paused">Paused</span></h2>
+      <h2 id="pause-title">⏸️ <span data-i18n="game.paused">Paused</span></h2>
       <button type="button" id="btn-resume" class="btn btn-primary">▶ <span data-i18n="game.resume">Resume</span> <span class="btn-shortcut">(Esc)</span></button>
       <button type="button" id="btn-quit" class="btn btn-danger">🏠 <span data-i18n="game.quit">Quit to Menu</span></button>
     </div>
   </div>
 
   <!-- Chapter Intro Overlay -->
-  <div id="chapter-intro" class="overlay hidden chapter-intro-overlay">
+  <div id="chapter-intro" class="overlay hidden chapter-intro-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="chapter-title">
     <div class="overlay-card chapter-card">
       <div class="chapter-badge">New Chapter</div>
-      <h2 class="chapter-title">The Garden Awakens</h2>
+      <h2 id="chapter-title" class="chapter-title">The Garden Awakens</h2>
       <p class="chapter-subtitle">Home Row Garden</p>
       <p class="chapter-intro-text">Bloom has been sleeping all winter. Wake them up by typing home row letters!</p>
       <p class="chapter-pet-line">"First letters of the season! Let's wake this garden up!" — Bloom</p>
-      <div class="chapter-tap-hint">(tap to start)</div>
+      <div class="chapter-tap-hint">Ready when you are.</div>
+      <button type="button" id="btn-chapter-continue" class="btn btn-primary">Start lesson</button>
     </div>
   </div>
 
@@ -387,9 +388,9 @@
   </div>
 
   <!-- Finger Guide Overlay -->
-  <div id="finger-guide" class="finger-guide hidden">
+  <div id="finger-guide" class="finger-guide hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="finger-guide-title">
     <div class="finger-guide-card">
-      <h3>👐 Home Row Position</h3>
+      <h3 id="finger-guide-title">👐 Home Row Position</h3>
       <div class="finger-hands">
         <div class="hand left-hand">
           <div class="finger pinky active">A</div>
@@ -411,12 +412,12 @@
   </div>
 
   <!-- Tutorial Overlay -->
-  <div id="tutorial-overlay" class="overlay tutorial hidden">
+  <div id="tutorial-overlay" class="overlay tutorial hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="tutorial-title-0">
     <div class="tutorial-card">
       <div class="tutorial-slides">
         <div class="tutorial-slide active" data-slide="0">
           <div class="tutorial-emoji">🌸</div>
-          <h2>Welcome to BloomType!</h2>
+          <h2 id="tutorial-title-0">Welcome to BloomType!</h2>
           <p>Words bloom into flowers as you type them!</p>
           <p>Type each letter before the word reaches the bottom.</p>
           <div class="tutorial-dots">
@@ -426,7 +427,7 @@
         </div>
         <div class="tutorial-slide" data-slide="1">
           <div class="tutorial-emoji">⌨️</div>
-          <h2>How to Play</h2>
+          <h2 id="tutorial-title-1">How to Play</h2>
           <p>Look at the word at the top of the screen.</p>
           <p>Press ONE key at a time on your keyboard.</p>
           <p>Watch the keyboard light up to show you which finger to use!</p>
@@ -437,7 +438,7 @@
         </div>
         <div class="tutorial-slide" data-slide="2">
           <div class="tutorial-emoji">🎯</div>
-          <h2>Get High Scores!</h2>
+          <h2 id="tutorial-title-2">Get High Scores!</h2>
           <p>Chain words for COMBO bonuses! 🔥</p>
           <p>Each word plants a flower in your garden! 🌺</p>
           <p>Press <kbd>Space</kbd> to skip a tricky word.</p>
