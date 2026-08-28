@@ -10,13 +10,14 @@
   --z-bg: 0; --z-canvas: 1; --z-hud: 5; --z-target: 6;
   --z-pet: 7; --z-keyboard: 10; --z-popup: 15; --z-overlay: 20;
   --primary: #8B5CF6;
-  --primary-light: #A78BFA;
+  --primary-light: #DDD6FE;
   --primary-dark: #6D28D9;
   --accent: #EC4899;
-  --accent-light: #F472B6;
-  --success: #34D399;
+  --accent-light: #FBCFE8;
+  --success: #6EE7B7;
   --warning: #FBBF24;
-  --danger: #EF4444;
+  --danger: #DC2626;
+  --danger-text: #FECACA;
   --bg-1: #1E1B4B;
   --bg-2: #312E81;
   --bg-3: #4338CA;
@@ -24,7 +25,7 @@
   --card-border: rgba(255,255,255,0.12);
   --text: #F8FAFC;
   --text-dim: #CBD5E1;
-  --text-mute: rgba(255,255,255,0.55);
+  --text-mute: #CBD5E1;
   --radius: 16px;
   --radius-sm: 10px;
   --shadow-cta: 0 8px 24px rgba(139,92,246,0.45), 0 0 0 1px rgba(255,255,255,0.08) inset;
@@ -51,8 +52,8 @@ button {
 }
 button:hover { transform: scale(1.03); }
 button:active { transform: scale(0.97); }
-*:focus-visible { outline: 2px solid var(--primary-light); outline-offset: 2px; border-radius: 4px; }
-button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { outline: 2px solid var(--primary-light); outline-offset: 2px; }
+*:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; border-radius: 4px; }
+button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
 
 /* ===== SCREENS ===== */
 .screen {
@@ -65,11 +66,13 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .screen.active { opacity: 1; visibility: visible; pointer-events: auto; transform: scale(1) translateY(0); z-index: 1; transition-delay: 0s; }
 
 /* ===== MENU BG — single subtle gradient, no busy forest ===== */
-.menu-bg {
-  position: absolute; inset: 0; z-index: -1;
+#menu-screen {
   background:
     radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.35) 0%, transparent 55%),
     linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 50%, var(--bg-3) 100%);
+}
+.menu-bg {
+  position: fixed; inset: 0; z-index: -1;
 }
 .menu-bg::after {
   content: '';
@@ -125,7 +128,7 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .streak-prominent.streak-at-risk {
   background: rgba(239,68,68,0.15);
   border-color: rgba(239,68,68,0.5);
-  color: var(--danger);
+  color: var(--danger-text);
   animation: streakAtRiskPulse 1.4s ease-in-out infinite;
 }
 .streak-chip {
@@ -151,7 +154,7 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .streak-chip.streak-at-risk {
   background: rgba(239,68,68,0.15);
   border-color: rgba(239,68,68,0.5);
-  color: var(--danger);
+  color: var(--danger-text);
   animation: streakAtRiskPulse 1.4s ease-in-out infinite;
 }
 @keyframes streakAtRiskPulse {
@@ -483,24 +486,24 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
   z-index: 2;
   transition: opacity 0.25s ease, max-height 0.25s ease, margin 0.25s ease;
 }
-/* T17: when the kid has no stats yet, hide the bottom row so the home
-   screen doesn't show three zeroes. */
+/* T17: when the kid has no stats yet, hide only the zero-value stats.
+   Parent, progress, and school links remain available on first use. */
 .menu-bottom.menu-bottom-empty {
-  opacity: 0;
-  max-height: 0;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  pointer-events: none;
+  opacity: 1;
 }
+.menu-bottom.menu-bottom-empty .menu-stat,
+.menu-bottom.menu-bottom-empty .menu-divider { display: none; }
 .menu-stat { display: inline-flex; align-items: center; gap: 3px; }
 .menu-stat .ms-icon { font-size: 0.85rem; }
 .menu-divider {
   width: 1px; height: 12px; background: var(--card-border); display: inline-block;
 }
 .menu-link {
-  color: var(--text-dim); text-decoration: none; padding: 2px 4px;
+  color: var(--text-dim); text-decoration: none; padding: 8px 6px;
   border-radius: 4px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   transition: color 0.15s ease, background 0.15s ease;
 }
 .menu-link:hover { color: var(--text); background: rgba(255,255,255,0.05); }
@@ -646,7 +649,7 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .level-unlock-hint {
   font-size: 0.65rem;
   font-weight: 700;
-  color: rgba(226, 232, 240, 0.78);
+  color: #E2E8F0;
   margin-top: 2px;
   letter-spacing: 0.01em;
 }
@@ -797,7 +800,7 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
   position: fixed; left: 50%; top: calc(32% + 56px);
   transform: translateX(-50%);
   display: flex; align-items: center; gap: 6px;
-  font-size: 0.95rem; font-weight: 700; color: var(--primary-light);
+  font-size: 0.95rem; font-weight: 700; color: var(--text) !important;
   z-index: var(--z-target);
   background: var(--card);
   border: 1px solid var(--card-border);
@@ -900,7 +903,7 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .key.wrong {
   background: rgba(239,68,68,0.3);
   border-color: var(--danger);
-  color: var(--danger);
+  color: var(--danger-text);
   transform: translateY(3px) scale(0.92);
   box-shadow: 0 1px 0 rgba(15,12,40,0.6), 0 0 18px rgba(239,68,68,0.6);
   animation: shake 0.3s;
@@ -952,10 +955,10 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
   letter-spacing: 0.02em;
   box-shadow: 0 2px 6px rgba(0,0,0,0.4);
 }
-.key[data-finger="lp"]::after, .key[data-finger="rp"]::after { background: #EF4444; }
-.key[data-finger="lr"]::after, .key[data-finger="rr"]::after { background: #F97316; }
+.key[data-finger="lp"]::after, .key[data-finger="rp"]::after { background: #B91C1C; }
+.key[data-finger="lr"]::after, .key[data-finger="rr"]::after { background: #C2410C; }
 .key[data-finger="lm"]::after, .key[data-finger="rm"]::after { background: #EAB308; color: #1e1b4b; }
-.key[data-finger="li"]::after, .key[data-finger="ri"]::after { background: #22C55E; }
+.key[data-finger="li"]::after, .key[data-finger="ri"]::after { background: #15803D; }
 .key.target::after { opacity: 1; transform: translateX(-50%) translateY(-2px); }
 
 /* T19: permanent finger-zone dot on EVERY key that has a data-finger.
@@ -1027,13 +1030,13 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .profile-label { font-size: 0.72rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
 .profile-input { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 8px 12px; color: var(--text); font-size: 0.9rem; font-weight: 700; text-align: center; width: 100%; outline: none; font-family: 'Nunito', sans-serif; }
 .profile-input:focus { border-color: var(--primary-light); }
-.profile-hint { font-size: 0.68rem; color: var(--text-dim); opacity: 0.7; text-align: center; }
+.profile-hint { font-size: 0.68rem; color: var(--text-dim); text-align: center; }
 
 .garden-stats { font-size: 0.85rem; color: var(--text-dim); margin: 6px 0 10px; }
 .garden-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; width: min(420px, 92vw); max-height: 55vh; overflow-y: auto; padding: 4px; }
 .garden-empty { text-align: center; padding: 30px 16px; color: var(--text-dim); }
 .garden-empty-emoji { font-size: 2.4rem; margin-bottom: 8px; }
-.garden-empty-hint { font-size: 0.75rem; opacity: 0.6; }
+.garden-empty-hint { font-size: 0.75rem; }
 .garden-item { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 8px 4px; border-radius: 12px; background: var(--card); border: 1px solid var(--card-border); transition: transform 0.2s ease; }
 .garden-item:hover { transform: scale(1.06); }
 .garden-flower { font-size: 1.8rem; margin-bottom: 2px; }
@@ -1056,18 +1059,18 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 /* ===== SCREEN HEADER ===== */
 .screen-header { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 720px; padding: 12px 16px; z-index: 2; }
 .screen-header h2 { font-size: 1.3rem; }
-.btn-back { background: var(--card); color: var(--text); border: 1px solid var(--card-border); border-radius: 10px; padding: 6px 12px; font-size: 0.85rem; font-weight: 700; }
+.btn-back { background: var(--card); color: var(--text); border: 1px solid var(--card-border); border-radius: 10px; padding: 6px 12px; min-height: 44px; font-size: 0.85rem; font-weight: 700; }
 
 /* ===== BUTTONS (kept for non-menu screens) ===== */
-.btn { padding: 10px 20px; border-radius: 12px; font-size: 0.95rem; font-weight: 700; }
-.btn-primary { background: var(--primary); color: var(--text); }
-.btn-primary:hover { background: var(--primary-dark); }
+.btn { padding: 10px 20px; min-height: 44px; border-radius: 12px; font-size: 0.95rem; font-weight: 700; }
+.btn-primary { background: var(--primary-dark); color: var(--text); }
+.btn-primary:hover { background: #5B21B6; }
 .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--card-border); }
 .btn-secondary:hover { background: rgba(255,255,255,0.1); }
 .btn-danger { background: var(--danger); color: var(--text); }
 .btn-lg { padding: 14px 32px; font-size: 1.1rem; }
 .btn-glow { box-shadow: 0 0 20px rgba(139,92,246,0.5); }
-.btn-icon-only { background: var(--card); color: var(--text); border: 1px solid var(--card-border); border-radius: 10px; width: 36px; height: 36px; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
+.btn-icon-only { background: var(--card); color: var(--text); border: 1px solid var(--card-border); border-radius: 10px; width: 44px; height: 44px; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
 .btn-icon { margin-right: 4px; }
 .btn-shortcut { font-size: 0.75rem; opacity: 0.7; margin-left: 6px; font-weight: 400; }
 
@@ -1363,6 +1366,31 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
   .finger-hint { top: calc(30% + 48px); font-size: 0.85rem; }
   .overlay-card { min-width: auto; width: 90%; padding: 18px; }
   .km-key { width: 18px; height: 18px; font-size: 0.62rem; }
+}
+
+/* Short landscape screens must start at the top of their scroll container.
+   Centering content taller than the viewport makes the first controls
+   unreachable because the negative overflow cannot be scrolled into view. */
+@media (max-height: 500px) and (orientation: landscape) {
+  #menu-screen { justify-content: flex-start; }
+  .pet-bubble { right: 52px; }
+}
+
+/* Respect reduced-motion preferences across the whole product. Essential
+   falling-word gameplay remains; decorative loops, flashes, shake, and
+   animated transitions are removed. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+  .screen { transform: none; }
+  .plus-one-floater,
+  .combo-floater,
+  .level-flash { display: none !important; }
 }
 
 /* ===== SCROLLBAR ===== */

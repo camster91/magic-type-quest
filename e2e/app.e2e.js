@@ -2,6 +2,35 @@ import { expect, test } from '@playwright/test';
 
 const entryPoints = ['', 'parents.html', 'teacher.html', 'landing.html'];
 
+test('home actions reflow and remain reachable on portrait and short landscape screens', async ({ page }) => {
+  await page.addInitScript(() => localStorage.clear());
+  await page.setViewportSize({ width: 375, height: 667 });
+  await page.goto('');
+
+  await expect(page.locator('#btn-start')).toBeVisible();
+  await expect(page.locator('#btn-lesson-select')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Parents' })).toBeVisible();
+  expect(await page.getByRole('link', { name: 'Parents' }).evaluate((link) => link.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+
+  await page.setViewportSize({ width: 667, height: 375 });
+  const menu = page.locator('#menu-screen');
+  await expect(menu).toBeVisible();
+  const initial = await page.evaluate(() => ({
+    headingTop: document.querySelector('.menu-brand').getBoundingClientRect().top,
+    scrollHeight: document.getElementById('menu-screen').scrollHeight,
+    clientHeight: document.getElementById('menu-screen').clientHeight,
+  }));
+  expect(initial.headingTop).toBeGreaterThanOrEqual(0);
+  expect(initial.scrollHeight).toBeGreaterThan(initial.clientHeight);
+
+  await menu.evaluate((element) => { element.scrollTop = element.scrollHeight; });
+  await expect(page.locator('#btn-start')).toBeVisible();
+  await expect(page.locator('#btn-lesson-select')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'BloomType for schools' })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(667);
+});
+
 test('a first-time student can start, learn, pause, resume, and quit with the keyboard', async ({ page }) => {
   await page.addInitScript(() => localStorage.clear());
   await page.goto('');

@@ -23,6 +23,14 @@ const COLORS = {
   warning: '#FBBF24',
 };
 
+const reducedMotionQuery = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+  ? window.matchMedia('(prefers-reduced-motion: reduce)')
+  : null;
+
+function prefersReducedMotion() {
+  return reducedMotionQuery?.matches === true;
+}
+
 // ===== TOUCH DETECTION =====
 function isTouchDevice() {
   return (
@@ -608,8 +616,10 @@ function onWrongKeystroke(key) {
   updateWPM();
 
   // Screen shake on wrong answer
-  document.body.classList.add('screen-shake');
-  setTimeout(() => document.body.classList.remove('screen-shake'), 400);
+  if (!prefersReducedMotion()) {
+    document.body.classList.add('screen-shake');
+    setTimeout(() => document.body.classList.remove('screen-shake'), 400);
+  }
 
   // T22: pet shake + short "Try again!" bubble. Held briefly so the kid
   // sees the pet react, then the bubble clears itself after 900ms (shorter
@@ -1075,6 +1085,7 @@ function flashWrongKey(key) {
 // anchor to #score — instead we anchor to .target-word, which is the single
 // thing the kid is looking at. Floats up 32px and fades out in 800ms.
 function showPlusOneFloater() {
+  if (prefersReducedMotion()) return;
   const el = document.createElement('div');
   el.className = 'plus-one-floater';
   el.textContent = '+1';
@@ -1094,6 +1105,7 @@ function showPlusOneFloater() {
 // Combo milestone callout. Fires at combos 5, 10, 15 — matches the brief.
 const COMBO_MILESTONES = new Set([5, 10, 15]);
 function showComboFloater(combo) {
+  if (prefersReducedMotion()) return;
   if (!COMBO_MILESTONES.has(combo)) return;
   const el = document.createElement('div');
   el.className = 'combo-floater';
@@ -1105,6 +1117,7 @@ function showComboFloater(combo) {
 // Soft pink 300ms screen flash on level complete — replaces the existing
 // white 0.8s flash. Pink (var(--accent)) reads as celebratory, not jarring.
 function showLevelFlash() {
+  if (prefersReducedMotion()) return;
   const flash = document.createElement('div');
   flash.className = 'level-flash';
   document.body.appendChild(flash);
@@ -1132,6 +1145,7 @@ function showWordPopup(word) {
 
 // ===== SCORE POPUP =====
 function showScorePopup(points, x, y) {
+  if (prefersReducedMotion()) return;
   const popup = document.createElement('div');
   popup.textContent = `+${points}`;
   popup.style.cssText = `
@@ -1422,12 +1436,12 @@ function drawStars(groundY) {
   const canvasW = gameState.canvasW;
 
   for (const star of stars) {
-    star.twinkle += star.speed;
+    if (!prefersReducedMotion()) star.twinkle += star.speed;
 
     // ⚡ Optimization: Viewport culling
     if (star.x < 0 || star.x > canvasW) continue;
 
-    ctx.globalAlpha = 0.3 + Math.sin(star.twinkle) * 0.3;
+    ctx.globalAlpha = prefersReducedMotion() ? 0.45 : 0.3 + Math.sin(star.twinkle) * 0.3;
     ctx.beginPath();
     ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
     ctx.fill();
@@ -1471,7 +1485,7 @@ function drawPet() {
   const baseY = gameState.canvasH - 260;
   
   // Idle breathing animation
-  petBounceY = Math.sin(gameState.currentTime / 500) * 3;
+  petBounceY = prefersReducedMotion() ? 0 : Math.sin(gameState.currentTime / 500) * 3;
   
   ctx.drawImage(img, x, baseY + petBounceY, w, h);
   
@@ -1554,7 +1568,7 @@ function drawFlowerImage(flower, groundY) {
   ctx.scale(scale, scale);
 
   // Gentle sway
-  const sway = Math.sin(gameState.currentTime / 800 + flower.x) * 3;
+  const sway = prefersReducedMotion() ? 0 : Math.sin(gameState.currentTime / 800 + flower.x) * 3;
   ctx.rotate(sway * Math.PI / 180);
 
   ctx.drawImage(img, -size/2, -size/2, size, size);
@@ -1609,6 +1623,7 @@ function drawTexturedParticles() {
 const particles = [];
 
 function spawnParticles(x, y, count, color = COLORS.success) {
+  if (prefersReducedMotion()) return;
   for (let i = 0; i < count; i++) {
     const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
     const speed = 2 + Math.random() * 4;
@@ -1819,6 +1834,7 @@ function checkAchievements() {
 
 // ===== LEVEL COMPLETE CONFETTI =====
 function spawnConfetti(x, y, count) {
+  if (prefersReducedMotion()) return;
   const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#FFD93D', '#A78BFA', '#F472B6', '#34D399'];
   for (let i = 0; i < count; i++) {
     const angle = Math.random() * Math.PI * 2;

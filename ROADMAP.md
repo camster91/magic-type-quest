@@ -9,20 +9,20 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 163 tests pass across 15 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 166 tests pass across 15 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
   quests, garden progression, classroom codes, teacher reporting, optional
   Supabase sync, PWA support, and core English/French/Spanish localization.
 - Deployment fixes: public assets work under the configured
-  `/magic-type-quest/` base path and are regression-tested. Six Playwright
-  tests verify the keyboard-only first-time student journey, all production
+  `/magic-type-quest/` base path and are regression-tested. Seven Playwright
+  tests verify responsive home actions, the keyboard-only first-time student journey, all production
   entry points, same-origin assets, manifest scope, service-worker registration,
   persisted localization, offline app-shell reload, and stale-cache cleanup.
 - Production: `https://bloomtype.ashbi.ca/magic-type-quest/` serves the current
   GHCR image through Traefik with trusted HTTPS and security headers. The same
-  five Playwright checks pass against the live deployment; deploy and rollback
+  seven Playwright checks pass against the live deployment; deploy and rollback
   operations are documented in `docs/PRODUCTION.md`.
 - Automation: repository Actions are enabled and core CI passes on the
   repository-scoped `ashbi-vps-magic-type-quest` self-hosted runner. The image
@@ -84,8 +84,13 @@ children.
      guide, pause/resume, focus containment, and quit-to-menu are covered by a
      production-build browser test. Game result, chapter, and evolution dialogs
      expose stable accessible names; the mobile typing input is named and kept
-     out of desktop tab order. Remaining accessibility modes still need
-     dedicated QA.
+     out of desktop tab order.
+   - Completed 2026-08-28: automated contrast contracts cover the core text and
+     compact-control palette; decorative CSS and canvas motion respect reduced
+     motion; core controls meet a 44px target; and 375x667 portrait plus 667x375
+     landscape home layouts are regression-tested for overflow and reachable
+     actions. Physical-device touch keyboard and screen-reader QA still need
+     dedicated testing.
 3. Split the 2,000+ line `src/gameEngine.js` into input, rendering, session, and
    presentation modules with behavioral coverage.
 4. Add privacy-conscious product analytics only after the privacy model is
