@@ -31,4 +31,12 @@ describe('deployment base paths', () => {
     const manifest = JSON.parse(readFileSync(resolve(root, 'public/manifest.json'), 'utf8'));
     expect(manifest.start_url).toBe('./');
   });
+
+  it('the production container serves the configured deployment scope', () => {
+    const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
+
+    expect(dockerfile).toContain('return 302 /magic-type-quest/');
+    expect(dockerfile).toContain('location ^~ /magic-type-quest/');
+    expect(dockerfile).toContain('rewrite ^/magic-type-quest/(.*)$ /$1 break');
+  });
 });

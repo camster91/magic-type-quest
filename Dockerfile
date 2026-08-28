@@ -17,8 +17,14 @@ RUN echo 'server { \
     server_name localhost; \
     root /usr/share/nginx/html; \
     index index.html; \
-    location / { \
+    location = / { \
+        return 302 /magic-type-quest/; \
+    } \
+    location ^~ /magic-type-quest/ { \
+        rewrite ^/magic-type-quest/(.*)$ /$1 break; \
         try_files $uri $uri/ /index.html; \
+        expires 1y; \
+        add_header Cache-Control "public, immutable"; \
     } \
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|otf)$ { \
         expires 1y; \
