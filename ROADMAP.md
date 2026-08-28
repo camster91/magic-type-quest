@@ -9,7 +9,7 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 222 tests pass across 29 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 227 tests pass across 30 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -186,6 +186,10 @@ children.
 - Weak-key drills use finite mode-safe scoring, retry their own lesson, return
   through a localized completion path without mutating curriculum completion,
   and cannot double-count session words or score stars across repeated saves.
+- Routine profile autosaves no longer create duplicate cloud analytics rows.
+  Numbered curriculum attempts finalize once with an exact completed/failed
+  result without erasing prior mastery, while Daily Moment and drill modes are
+  excluded from the integer-only level-session schema.
 - Desktop and mobile gameplay input share a directly tested controller, including
   Shift lessons, one-character words, skip/pause routing, and dialog focus wrap.
 - Common canvas effects are isolated and directly tested, including reduced-motion

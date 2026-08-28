@@ -14,6 +14,7 @@ export const defaultState = {
   wordsTyped: 0,
   savedWordsTyped: 0,
   savedScoreStars: 0,
+  sessionLogged: false,
   wordsCompleted: 0,
   wordsSpawned: 0,
   totalKeystrokes: 0,
@@ -106,18 +107,6 @@ export function saveProfile() {
     gameState.savedScoreStars = scoreStars;
     p.lastPlayed = new Date().toISOString();
     
-    // Save level analytics if level was completed
-    if (!p.levelStats) p.levelStats = {};
-    if (gameState.levelWPM > 0) {
-      p.levelStats[gameState.level] = {
-        wpm: gameState.levelWPM,
-        accuracy: gameState.levelAccuracy,
-        score: gameState.score,
-        words: gameState.wordsCompleted,
-        completed: gameState.wordsCompleted >= (gameState.level <= 10 ? 5 : 0)
-      };
-    }
-    
     // Ensure uuid for class sync
     if (!p.uuid) p.uuid = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     
@@ -135,20 +124,46 @@ export function saveProfile() {
     
     // Fire-and-forget cloud sync (offline-first — never blocks)
     syncProfile(p).catch(() => {});
-    if (gameState.levelWPM > 0) {
-      logSession(p, {
-        level: gameState.level,
-        score: gameState.score,
-        wpm: gameState.levelWPM,
-        accuracy: gameState.levelAccuracy,
-        wordsTyped: gameState.wordsTyped,
-        wordsCompleted: gameState.wordsCompleted,
-        maxCombo: gameState.maxCombo,
-        skipsUsed: gameState.skipsUsed,
-      }).catch(() => {});
-    }
   } catch (e) {
     console.warn('Failed to save profile:', e);
+  }
+}
+
+export function buildLevelSessionSnapshot(state, completed = false) {
+  if (!Number.isInteger(state.level) || state.level < 1 || state.level > 10) return null;
+  return {
+    level: state.level,
+    score: state.score || 0,
+    wpm: state.levelWPM || 0,
+    accuracy: state.levelAccuracy || 0,
+    wordsTyped: state.wordsTyped || 0,
+    wordsCompleted: state.wordsCompleted || 0,
+    maxCombo: state.maxCombo || 0,
+    skipsUsed: state.skipsUsed || 0,
+    completed: Boolean(completed),
+  };
+}
+
+/** Persist one terminal curriculum attempt without logging routine autosaves. */
+export function finalizeLevelSession({ completed = false } = {}) {
+  const snapshot = buildLevelSessionSnapshot(gameState, completed);
+  if (snapshot) {
+    const p = gameState.profile;
+    if (!p.levelStats) p.levelStats = {};
+    const wasCompleted = p.levelStats[snapshot.level]?.completed === true;
+    p.levelStats[snapshot.level] = {
+      wpm: snapshot.wpm,
+      accuracy: snapshot.accuracy,
+      score: snapshot.score,
+      words: snapshot.wordsCompleted,
+      completed: snapshot.completed || wasCompleted,
+    };
+  }
+
+  saveProfile();
+  if (snapshot && !gameState.sessionLogged) {
+    gameState.sessionLogged = true;
+    logSession(gameState.profile, snapshot).catch(() => {});
   }
 }
 

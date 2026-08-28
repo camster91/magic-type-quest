@@ -3,7 +3,7 @@
  * A magical garden typing adventure for kids
  */
 import { getLessonByLevel, getFingerHint } from './lessonLevels.js';
-import { gameState, loadProfile, saveProfile } from './state.js';
+import { finalizeLevelSession, gameState, loadProfile, saveProfile } from './state.js';
 import { say, getChapter, PET_NAME_DEFAULT } from './story.js';
 import { checkAchievements as checkAchievementsNew } from './achievements.js';
 import { evaluateQuests, bumpStreakIfToday } from './quests.js';
@@ -530,7 +530,7 @@ function gameOver() {
   gameState.gameOver = true;
   cancelAnimationFrame(animationId);
   stopAmbient();
-  saveProfile();
+  finalizeLevelSession({ completed: false });
   showGameOver();
 }
 
@@ -1003,6 +1003,7 @@ function levelComplete() {
   }
 
   gameState.gameOver = true;
+  gameState.levelComplete = true;
   playSound('level');
 
   // T26: soft pink 300ms screen flash (was: harsh white 800ms). Pink reads
@@ -1023,10 +1024,9 @@ function levelComplete() {
   // Check pet evolution
   const newStage = checkEvolution();
   
-  saveProfile();
+  finalizeLevelSession({ completed: true });
   
   // Evaluate daily quests
-  gameState.levelComplete = true;
   const newlyCompletedQuests = evaluateQuests(gameState.profile, gameState);
   for (const q of newlyCompletedQuests) {
     // Show mini toast for quest completion (reuses achievement toast element)

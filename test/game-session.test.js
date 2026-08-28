@@ -25,7 +25,7 @@ describe('game session initialization', () => {
 
     expect(state).toMatchObject({
       screen: 'game', level: 4, health: 5, score: 0, combo: 0,
-      wordsCompleted: 0, savedWordsTyped: 0, savedScoreStars: 0,
+      wordsCompleted: 0, savedWordsTyped: 0, savedScoreStars: 0, sessionLogged: false,
       totalKeystrokes: 0, gameOver: false,
       paused: false, levelStartTime: 1234, adaptiveSpeed: 1,
       totalFocusBonus: 0, lastFocus: null, drillLesson: null,

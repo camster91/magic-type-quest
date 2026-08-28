@@ -18,6 +18,7 @@ export function resetGameSession(state, {
     wordsTyped: 0,
     savedWordsTyped: 0,
     savedScoreStars: 0,
+    sessionLogged: false,
     wordsCompleted: 0,
     wordsSpawned: 0,
     totalKeystrokes: 0,
