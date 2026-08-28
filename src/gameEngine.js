@@ -15,6 +15,7 @@ import { localizeAchievement, localizeChapter, localizeLesson, localizeQuest } f
 import { highlightTargetKey, showKeyFeedback } from './gamePresentation.js';
 import { GameWord } from './gameWord.js';
 import { resetGameSession } from './gameSession.js';
+import { createGameInputController, trapDialogFocus } from './gameInput.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -240,161 +241,6 @@ function spawnWord() {
   gameState.wordsSpawned++;
 }
 
-// ===== INPUT HANDLING =====
-function trapDialogFocus(e) {
-  if (e.key !== 'Tab') return;
-  const dialogs = [...document.querySelectorAll('[role="dialog"][aria-hidden="false"]')];
-  const dialog = dialogs.at(-1);
-  if (!dialog) return;
-  const focusable = [...dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])')]
-    .filter((element) => element.getClientRects().length > 0);
-  if (focusable.length === 0) return;
-  const first = focusable[0];
-  const last = focusable.at(-1);
-  if (!dialog.contains(document.activeElement)) {
-    e.preventDefault();
-    (e.shiftKey ? last : first).focus();
-  } else if (e.shiftKey && document.activeElement === first) {
-    e.preventDefault();
-    last.focus();
-  } else if (!e.shiftKey && document.activeElement === last) {
-    e.preventDefault();
-    first.focus();
-  }
-}
-
-function handleKey(e) {
-  if (gameState.screen !== 'game' || gameState.gameOver) return;
-  if (e.repeat) return;
-
-  // Escape must work in both directions. Previously the paused guard returned
-  // before this branch, even though the UI promises “Resume (Esc)”.
-  if (e.key === 'Escape') {
-    const openDialog = document.querySelector('[role="dialog"][aria-hidden="false"]');
-    if (openDialog && openDialog.id !== 'pause-overlay') return;
-    e.preventDefault();
-    togglePause();
-    return;
-  }
-
-  if (gameState.paused) return;
-  
-  // Bail only on real text fields — #mobile-input is a hidden virtual-keyboard
-  // sink on touch devices and must NOT block desktop keyboard input.
-  const active = document.activeElement;
-  const activeId = active?.id;
-  if (activeId !== 'mobile-input' && (active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA')) return;
-
-  // Space to skip word
-  if (e.key === ' ') {
-    e.preventDefault();
-    skipWord();
-    return;
-  }
-
-  processKeystroke(e.key, e.shiftKey);
-}
-
-/** Mobile virtual keyboard input handler. */
-function handleMobileInput(e) {
-  if (gameState.screen !== 'game' || gameState.paused || gameState.gameOver) return;
-  
-  const input = e.target;
-  const data = e.data;
-  
-  if (e.inputType === 'deleteContentBackward') {
-    // On mobile, backspace = skip word (no undo in this game)
-    skipWord();
-    input.value = '';
-    return;
-  }
-  
-  if (!data || data.length !== 1) {
-    input.value = '';
-    return;
-  }
-  
-  // Process the character
-  processKeystroke(data, false);
-  
-  // Clear so next char is fresh
-  input.value = '';
-}
-
-/** Core keystroke processing — shared by desktop and mobile. */
-function processKeystroke(rawKey, isShift) {
-  const lesson = currentLesson();
-  const requiresShift = lesson.requiresShift || false;
-  
-  let pressedKey = rawKey;
-  
-  // For shift-required levels (capitals), require shift + letter
-  if (requiresShift) {
-    if (rawKey.length === 1 && /[a-zA-Z]/.test(rawKey)) {
-      if (!isShift) {
-        onWrongKeystroke(pressedKey.toLowerCase());
-        showShiftHint();
-        return;
-      }
-      pressedKey = rawKey.toUpperCase();
-    }
-  } else {
-    // Normal levels — lowercase only
-    if (rawKey.length !== 1 || !/[a-z0-9]/.test(rawKey)) return;
-    pressedKey = rawKey.toLowerCase();
-  }
-
-  gameState.totalKeystrokes++;
-
-  // No target? Try to catch a word
-  if (!gameState.targetWord) {
-    const caught = gameState.activeWords.find(w => {
-      const firstChar = requiresShift ? w.text[0] : w.text[0].toLowerCase();
-      return firstChar === pressedKey && !w.isTarget;
-    });
-    if (caught) {
-      caught.isTarget = true;
-      caught.matched = 1;
-      // ⚡ Bolt: Update cached typedWidth when matched changes
-      ctx.font = '700 26px Nunito, sans-serif';
-      caught.typedWidth = ctx.measureText(caught.text.slice(0, 1)).width;
-      gameState.targetWord = caught;
-      gameState.targetIndex = 1;
-      gameState.correctKeystrokes++;
-      caught.glow = 1;
-      onCorrectKeystroke(pressedKey);
-    } else {
-      onWrongKeystroke(pressedKey);
-    }
-    return;
-  }
-
-  // Match against target
-  const expected = gameState.targetWord.text[gameState.targetIndex];
-  if (pressedKey === expected) {
-    // Correct!
-    gameState.targetIndex++;
-    gameState.targetWord.matched = gameState.targetIndex;
-    // ⚡ Bolt: Update cached typedWidth when matched changes
-    ctx.font = '700 26px Nunito, sans-serif';
-    gameState.targetWord.typedWidth = ctx.measureText(gameState.targetWord.text.slice(0, gameState.targetIndex)).width;
-    gameState.correctKeystrokes++;
-    gameState.targetWord.glow = 1;
-    onCorrectKeystroke(pressedKey);
-
-    // Word complete?
-    if (gameState.targetIndex >= gameState.targetWord.text.length) {
-      completeWord();
-    } else {
-      updateTargetDisplay();
-      updateKeyboardHighlight();
-    }
-  } else {
-    // Wrong!
-    onWrongKeystroke(pressedKey);
-  }
-}
-
 function showShiftHint() {
   const hint = document.getElementById('shift-hint');
   if (hint) {
@@ -403,6 +249,23 @@ function showShiftHint() {
     setTimeout(() => hint.classList.add('hidden'), 1500);
   }
 }
+
+const { handleKey, handleMobileInput } = createGameInputController({
+  state: gameState,
+  getLesson: currentLesson,
+  measureTypedWidth(text) {
+    ctx.font = '700 26px Nunito, sans-serif';
+    return ctx.measureText(text).width;
+  },
+  onCorrectKeystroke,
+  onWrongKeystroke,
+  completeWord,
+  skipWord,
+  togglePause,
+  showShiftHint,
+  updateTargetDisplay,
+  updateKeyboardHighlight,
+});
 
 function onCorrectKeystroke(key) {
   // Track per-key accuracy

@@ -9,7 +9,7 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 203 tests pass across 26 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 210 tests pass across 27 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -135,8 +135,12 @@ children.
      session initialization in `src/gameSession.js`; made drill ownership
      explicit; reset focus bonuses between sessions; and added direct coverage
      for mode configuration, preserved profile state, and fresh collections.
-   - Remaining: extract the input controller and broader canvas renderer;
-     `src/gameEngine.js` is now 2,105 lines, down from 2,386.
+   - Completed 2026-08-28: extracted desktop, mobile, and dialog keyboard routing
+     into `src/gameInput.js` with direct behavioral coverage. Fixed one-character
+     lesson words that could not complete, accepted uppercase mobile input in
+     Shift lessons, and stopped modifier-only keys from counting as mistakes.
+   - Remaining: extract the broader canvas renderer; `src/gameEngine.js` is now
+     1,969 lines, down from 2,386.
 4. Add privacy-conscious product analytics only after the privacy model is
    approved.
 
@@ -169,6 +173,8 @@ children.
   across both practice and gameplay keyboards; sound effects use one audio API.
 - Session initialization is isolated and directly tested across normal, Daily
   Moment, and weak-key drill modes.
+- Desktop and mobile gameplay input share a directly tested controller, including
+  Shift lessons, one-character words, skip/pause routing, and dialog focus wrap.
 
 ## Decision log
 
