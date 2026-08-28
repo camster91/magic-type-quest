@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { buildCloudProfileRow, buildCloudRosterRow } from '../src/sync.js';
+import { describe, expect, it, vi } from 'vitest';
+import { buildCloudProfileRow, buildCloudRosterRow, createLatestSyncQueue } from '../src/sync.js';
 
 describe('authenticated cloud row mapping', () => {
   const profile = {
@@ -33,5 +33,47 @@ describe('authenticated cloud row mapping', () => {
 
   it('does not create a roster row after the student leaves a class', () => {
     expect(buildCloudRosterRow({ ...profile, classCode: null }, 'auth-user-id')).toBeNull();
+  });
+});
+
+describe('latest profile sync queue', () => {
+  it('serializes the active write and coalesces queued values to the newest snapshot', async () => {
+    const releases = [];
+    const written = [];
+    const enqueue = createLatestSyncQueue(async (value) => {
+      written.push(value);
+      await new Promise((resolve) => releases.push(resolve));
+    });
+
+    const first = enqueue({ totalWords: 1 });
+    const second = enqueue({ totalWords: 2 });
+    const third = enqueue({ totalWords: 3 });
+    expect(written).toEqual([{ totalWords: 1 }]);
+
+    releases.shift()();
+    await vi.waitFor(() => {
+      expect(written).toEqual([{ totalWords: 1 }, { totalWords: 3 }]);
+    });
+    releases.shift()();
+    await Promise.all([first, second, third]);
+  });
+
+  it('continues with the newest pending value after an earlier write fails', async () => {
+    const written = [];
+    let releaseFirst;
+    const enqueue = createLatestSyncQueue(async (value) => {
+      written.push(value);
+      if (value === 'old') {
+        await new Promise((resolve) => { releaseFirst = resolve; });
+        throw new Error('offline');
+      }
+    });
+
+    const oldWrite = enqueue('old');
+    const newWrite = enqueue('new');
+    releaseFirst();
+    await expect(oldWrite).rejects.toThrow('offline');
+    await expect(newWrite).resolves.toBeUndefined();
+    expect(written).toEqual(['old', 'new']);
   });
 });

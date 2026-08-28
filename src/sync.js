@@ -7,6 +7,45 @@
 
 let supabaseClient = null;
 
+/**
+ * Serialize writes and coalesce anything queued behind the active request to
+ * the newest value. Every caller settles after the write that includes (or
+ * supersedes) its value, and one failed write never blocks a newer snapshot.
+ */
+export function createLatestSyncQueue(worker) {
+  let active = false;
+  let pendingValue;
+  let pendingWaiters = [];
+
+  async function drain() {
+    active = true;
+    while (pendingWaiters.length > 0) {
+      const value = pendingValue;
+      const waiters = pendingWaiters;
+      pendingValue = undefined;
+      pendingWaiters = [];
+      try {
+        await worker(value);
+        waiters.forEach(({ resolve }) => resolve());
+      } catch (error) {
+        waiters.forEach(({ reject }) => reject(error));
+      }
+    }
+    active = false;
+    // An enqueue can land after the loop condition but before active resets.
+    if (pendingWaiters.length > 0) void drain();
+  }
+
+  return function enqueue(value) {
+    pendingValue = value;
+    const completion = new Promise((resolve, reject) => {
+      pendingWaiters.push({ resolve, reject });
+    });
+    if (!active) void drain();
+    return completion;
+  };
+}
+
 /** Lazy-load Supabase client. Returns null if no credentials. */
 export async function getSupabase() {
   if (supabaseClient) return supabaseClient;
@@ -70,8 +109,7 @@ export function buildCloudRosterRow(profile, userId, updatedAt = new Date().toIS
   };
 }
 
-/** Background sync of profile + session snapshot. Fire-and-forget. */
-export async function syncProfile(profile) {
+async function syncProfileSnapshot(profile) {
   const cloud = await getAuthenticatedSupabase();
   if (!cloud) return;
   const { sb, user } = cloud;
@@ -102,6 +140,14 @@ export async function syncProfile(profile) {
   } catch (e) {
     console.warn('Sync failed:', e);
   }
+}
+
+const enqueueProfileSync = createLatestSyncQueue(syncProfileSnapshot);
+
+/** Background sync of the newest immutable profile snapshot. */
+export function syncProfile(profile) {
+  const snapshot = JSON.parse(JSON.stringify(profile));
+  return enqueueProfileSync(snapshot);
 }
 
 /** Log a game session to the cloud for analytics. */
