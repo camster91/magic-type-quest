@@ -1451,6 +1451,7 @@ export function startDrillMode(drillLesson) {
   // Focus mobile input for virtual keyboard (touch devices only)
   const mobileInput = document.getElementById('mobile-input');
   if (mobileInput && isTouchDevice()) mobileInput.focus();
+  else document.getElementById('game-screen')?.focus();
 }
 
 function preloadImages() {

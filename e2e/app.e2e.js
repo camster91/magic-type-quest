@@ -243,7 +243,11 @@ test('a weak-key drill finishes without changing curriculum progress', async ({ 
   await expect.poll(() => page.evaluate(() => window.gameState.level)).toBe('drill');
   const drillWord = await page.evaluate(() => window.gameState.targetWord?.text);
   expect(drillWord).toBeTruthy();
-  await page.keyboard.type(drillWord);
+  await page.evaluate((word) => {
+    for (const key of word) {
+      document.dispatchEvent(new window.KeyboardEvent('keydown', { key, bubbles: true }));
+    }
+  }, drillWord);
   await expect.poll(() => page.evaluate(() => window.gameState.wordsCompleted)).toBe(1);
   await expect.poll(() => page.evaluate(() => Number.isFinite(window.gameState.score))).toBe(true);
   const starsAfterWord = await page.evaluate(() => window.gameState.profile.totalStars);
