@@ -4,14 +4,13 @@
 import { LESSON_LEVELS, getLessonByLevel, getFingerHint, getLessonWordsForPractice, isLevelUnlocked } from './lessonLevels.js';
 import { deleteLocalProfile, gameState, loadProfile, saveProfile } from './state.js';
 import { init as initEngine, startGame, togglePause, showScreen, showKeyFeedback, highlightTargetKey, startDrillMode, startDailyMoment, onAvatarChanged } from './gameEngine.js';
-import { MENU_TAGLINES } from './story.js';
 import { getAchievementStats, getAllAchievements } from './achievements.js';
 import { getTodaysQuests, isStreakAtRisk } from './quests.js';
 import { getWeakKeys, buildDrillLesson } from './drills.js';
 import { getDueKeys } from './spacedRep.js';
 import { joinClass } from './classroom.js';
 import { escapeHTML } from './utils.js';
-import { applyTranslations, formatDate, formatNumber, setLocale, t } from './i18n.js';
+import { applyTranslations, formatDate, formatNumber, localizeFingerLabel, setLocale, t } from './i18n.js';
 import { localizeAchievement, localizeAchievementCategory, localizeLesson, localizeQuest } from './contentTranslations.js';
 import { getCurriculumProgress } from './progression.js';
 
@@ -83,7 +82,7 @@ function updatePracticeDisplay() {
 
   const nextChar = currentPracticeWord[currentWordIndex];
   const fingerHint = getFingerHint(nextChar);
-  fingerHintEl.textContent = fingerHint ? t('game.useFinger', { finger: fingerHint.label }) : '';
+  fingerHintEl.textContent = fingerHint ? t('game.useFinger', { finger: localizeFingerLabel(fingerHint.label) }) : '';
   
   const totalWords = gameState.currentPracticeWords.length;
   const wordsCompleted = gameState.practiceWordIndex;
@@ -235,15 +234,15 @@ function renderLevelCards() {
     // safety net; clamp in CSS keeps it to 2 lines.
     const teachesRaw = (lev.teaches || (lev.description || '').split(/[!?.]/)[0] || '').trim();
     const shortTeaches = teachesRaw.length > 90 ? teachesRaw.slice(0, 88) + '…' : teachesRaw;
-    const lockHint = lev.id > 1 ? `Complete level ${lev.id - 1} to unlock` : 'Locked';
+    const lockHint = lev.id > 1 ? t('lesson.completeToUnlock', { level: lev.id - 1 }) : t('lesson.locked');
 
     return `
-      <button type="button" class="level-card ${status}" data-level="${lev.id}" ${status === 'locked' ? 'disabled' : ''} aria-label="${lev.name}: ${shortTeaches}" title="${status === 'locked' ? lockHint : ''}">
+      <button type="button" class="level-card ${status}" data-level="${lev.id}" ${status === 'locked' ? 'disabled' : ''} aria-label="${escapeHTML(`${lev.name}: ${shortTeaches}`)}" title="${status === 'locked' ? escapeHTML(lockHint) : ''}">
         <div class="level-card-art">
           <img class="level-card-img" src="assets/levels/${imgName}" alt="" aria-hidden="true"
                onerror="this.style.display='none'">
           <div class="level-card-icon" aria-hidden="true">${lev.icon || '⌨️'}</div>
-          ${status === 'locked' ? `<div class="level-lock-art" aria-hidden="true"><span class="level-lock-icon">🔒</span><span class="level-lock-chip">LOCKED</span></div>` : ''}
+          ${status === 'locked' ? `<div class="level-lock-art" aria-hidden="true"><span class="level-lock-icon">🔒</span><span class="level-lock-chip">${escapeHTML(t('lesson.locked').toUpperCase())}</span></div>` : ''}
         </div>
         <div class="level-card-name">${lev.name}</div>
         <div class="level-card-sub">${shortTeaches}</div>
@@ -275,12 +274,6 @@ function updateMenuStats() {
                    + (gameState.profile?.totalWords || 0);
   const menuBottom = document.querySelector('#menu-screen .menu-bottom');
   if (menuBottom) menuBottom.classList.toggle('menu-bottom-empty', totalStats === 0);
-  // Rotate tagline
-  const tagline = document.querySelector('.tagline');
-  if (tagline && MENU_TAGLINES.length > 0) {
-    const idx = Math.floor(Math.random() * MENU_TAGLINES.length);
-    tagline.textContent = MENU_TAGLINES[idx];
-  }
   // Render daily quests
   const quests = getTodaysQuests(gameState.profile);
   const streak = gameState.profile.streak || 0;
@@ -410,14 +403,14 @@ function updateHomeProgressCard() {
     const span = document.createElement('span');
     span.className = 'km-key' + (masteredSet.has(k) ? ' mastered' : ' learning');
     span.textContent = k.toUpperCase();
-    span.setAttribute('aria-label', k.toUpperCase() + (masteredSet.has(k) ? ' mastered' : ' learning'));
+    span.setAttribute('aria-label', t(masteredSet.has(k) ? 'a11y.masteredKey' : 'a11y.learningKey', { key: k.toUpperCase() }));
     mini.appendChild(span);
   }
   if (keys.length === 0) {
     const span = document.createElement('span');
     span.className = 'km-key';
     span.style.cssText = 'width:auto;padding:2px 8px;font-size:0.7rem';
-    span.textContent = '🏆 All levels cleared!';
+    span.textContent = t('game.allLevelsCleared');
     mini.appendChild(span);
   }
 }
@@ -448,19 +441,19 @@ function updateHomePet() {
   if (window.__petHeroState === 'celebrate') {
     state = 'celebrate';
     window.__petHeroState = null; // single-shot
-    bubbleText = 'Yay! 🎉';
+    bubbleText = t('pet.celebrate');
   } else if (atRisk) {
     state = 'idle'; // base state; .warning class drives the shake + red glow
-    bubbleText = streak >= 7 ? 'Tap me! 🏃' : 'Play to keep me! 💪';
+    bubbleText = streak >= 7 ? t('pet.tap') : t('pet.playKeep');
   } else if (streak >= 7) {
     state = 'idle';
-    bubbleText = `🔥 ${streak} days!`;
+    bubbleText = t('pet.streak', { count: streak });
   } else if (streak >= 1) {
     state = 'idle';
-    bubbleText = `${streak} day${streak === 1 ? '' : 's'}! Keep going!`;
+    bubbleText = t(streak === 1 ? 'pet.keepStreakOne' : 'pet.keepStreakMany', { count: streak });
   } else {
     state = 'idle';
-    bubbleText = `Hi! I'm ${avatar} 🌸`;
+    bubbleText = t('pet.greeting', { pet: avatar });
   }
 
   // Apply class + image

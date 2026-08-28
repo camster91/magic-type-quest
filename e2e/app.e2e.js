@@ -200,9 +200,15 @@ test('language selection applies immediately and persists after reload', async (
   await expect(page.locator('#btn-delete-profile')).toHaveText('Supprimer les progrès locaux');
   await expect(page.locator('.ach-title').first()).toHaveText('Premiers pas');
   await page.click('#btn-save-profile');
+  await expect(page.locator('#pet-hero-bubble')).toHaveText(/Salut ! Je suis|jour ! Continue/);
   await page.click('#btn-lesson-select');
   await expect(page.locator('.level-card-name').first()).toContainText('Jardin de la rangée de repos');
+  await expect(page.locator('.level-card[data-level="2"] .level-lock-chip')).toHaveText('VERROUILLÉ');
+  await expect(page.locator('.level-card[data-level="2"]')).toHaveAttribute('title', 'Termine le niveau 1 pour débloquer');
   await page.click('#btn-lesson-back');
+  await page.click('#btn-practice');
+  await expect(page.locator('#practice-finger-hint')).toContainText('auriculaire gauche');
+  await page.click('#btn-practice-back');
   await page.reload();
   await page.click('#btn-profile');
 

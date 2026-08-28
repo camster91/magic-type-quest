@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { dictionaries, formatDate, formatNumber, getLocale, setLocale, supportedLocales, t } from '../src/i18n.js';
+import { dictionaries, formatDate, formatNumber, getLocale, localizeFingerLabel, setLocale, supportedLocales, t } from '../src/i18n.js';
 
 beforeEach(() => {
   globalThis.document = { documentElement: { lang: 'en' } };
@@ -31,5 +31,13 @@ describe('localization', () => {
     setLocale('fr');
     expect(formatNumber(1234)).toMatch(/1[\s\u202f]234/);
     expect(formatDate('2026-08-28T12:00:00Z', { year: 'numeric' })).toBe('2026');
+  });
+
+  it('localizes finger names and opposite-hand Shift instructions', () => {
+    setLocale('fr');
+    expect(localizeFingerLabel('Left Pinky')).toBe('auriculaire gauche');
+    expect(localizeFingerLabel('Right Index (hold LEFT Shift!)')).toBe('index droit (maintiens la touche Maj gauche !)');
+    setLocale('es');
+    expect(localizeFingerLabel('Right Ring')).toBe('anular derecho');
   });
 });

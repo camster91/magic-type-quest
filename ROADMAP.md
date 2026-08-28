@@ -9,7 +9,7 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 188 tests pass across 22 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 191 tests pass across 23 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -99,9 +99,13 @@ children.
      every dynamic content ID and exact page-dictionary parity plus browser
      coverage for immediate and persisted language changes across all three
      product surfaces.
-   - Still required: translate pet personality lines, rotating menu taglines,
-     and finger-name vocabulary; then have fluent French and Spanish reviewers
-     check the complete learner, parent, and teacher experience.
+   - Completed 2026-08-28: translated every pet-personality category with
+     line-count parity, finger and opposite-hand Shift guidance, streak/pet
+     bubbles, lesson locks, evolution copy, and keyboard accessibility states.
+     Removed the obsolete rotating-tagline generator left behind by the focused
+     home redesign because it had no rendered target.
+   - Still required: have fluent French and Spanish reviewers check the complete
+     learner, parent, and teacher experience.
 2. Complete keyboard-only, screen-reader, contrast, reduced-motion, touch
    keyboard, and small-screen QA.
    - Completed 2026-08-28: keyboard-only first-time start, tutorial, finger

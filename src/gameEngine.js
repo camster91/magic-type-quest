@@ -11,7 +11,7 @@ import { playAmbient, stopAmbient, audioCtx, initAudio } from './audio.js';
 import { getWeakKeys } from './drills.js';
 import { recordKeyPractice } from './spacedRep.js';
 import { hexToRgba } from './utils.js';
-import { formatNumber, t } from './i18n.js';
+import { formatNumber, localizeFingerLabel, t } from './i18n.js';
 import { localizeAchievement, localizeChapter, localizeLesson, localizeQuest } from './contentTranslations.js';
 
 // ===== CONSTANTS =====
@@ -627,7 +627,7 @@ function onWrongKeystroke(key) {
   // than showPetReaction's 2200ms default — wrong-key feedback should be
   // quick so it doesn't pile up if the kid is mistyping).
   pulsePetFace('wrong');
-  showPetBubble('Try again!', 900);
+  showPetBubble(t('pet.tryAgain'), 900);
   // T22: a wrong key still proves the kid is present. Reset the idle
   // timer so the "Don't forget me!" bubble doesn't fire immediately after.
   lastCorrectKeystrokeAt = performance.now();
@@ -977,7 +977,7 @@ function updateTargetDisplay() {
       const isLeft = 'asdfgqwertzxcvb'.includes(nextCh);
       if (nextCh) {
         const hint = getFingerHint(nextCh);
-        const label = hint ? hint.label : (isLeft ? 'left hand' : 'right hand');
+        const label = hint ? localizeFingerLabel(hint.label) : t(isLeft ? 'finger.leftHand' : 'finger.rightHand');
         fingerHintText.textContent = t('game.useFinger', { finger: label });
         if (fingerHintArrow) fingerHintArrow.textContent = isLeft ? '👈' : '👉';
         fingerHint.classList.remove('hidden');
@@ -1020,7 +1020,7 @@ export function highlightTargetKey(char) {
   // Show finger hint
   const hint = getFingerHint(char);
   if (hint) {
-    showFingerHint(hint.label, hint.color);
+    showFingerHint(localizeFingerLabel(hint.label), hint.color);
   }
 }
 
@@ -1254,7 +1254,7 @@ function showPetReaction(type, text = '') {
     }
   }
   
-  bubbleEl.textContent = text || `${PET_NAME_DEFAULT} says: Type!`;
+  bubbleEl.textContent = text || t('pet.saysType');
   
   if (bubbleEl.textContent) {
     bubbleEl.classList.add('visible');
@@ -1297,7 +1297,7 @@ function checkPetIdleWarning() {
     // "the pet misses you" rather than the defeated/ghosted 'fire' PNG.
     // The .worried CSS filter (hue shift + desaturate) adds urgency on
     // top so the pet doesn't look totally broken.
-    showPetReaction('hurt', "Don't forget me!");
+    showPetReaction('hurt', t('pet.dontForget'));
     const petFace = document.getElementById('pet-img');
     if (petFace) petFace.classList.add('worried');
   }
@@ -1768,8 +1768,8 @@ function showEvolutionOverlay(stage) {
   if (!overlay) return;
   
   const stageData = {
-    2: { emoji: '🌿', title: 'Bloom is Growing!', desc: 'Your typing helped Bloom sprout new leaves!', line: '"I feel stronger! Let\'s type even faster!" — Bloom' },
-    3: { emoji: '👑', title: 'Legend Bloom!', desc: 'Bloom has fully bloomed! A true typing legend!', line: '"We\'re UNSTOPPABLE together!" — Bloom' }
+    2: { emoji: '🌿', title: t('evolution.2.title'), desc: t('evolution.2.desc'), line: t('evolution.2.line') },
+    3: { emoji: '👑', title: t('evolution.3.title'), desc: t('evolution.3.desc'), line: t('evolution.3.line') }
   };
   
   const data = stageData[stage];
@@ -1930,7 +1930,7 @@ export function startDailyMoment() {
     if (titleEl) titleEl.textContent = t('daily.title');
     if (subtitleEl) subtitleEl.textContent = t('daily.subtitle');
     if (introEl) introEl.textContent = t('daily.intro');
-    if (petLineEl) petLineEl.textContent = '"I will be right here with you." — Bloom';
+    if (petLineEl) petLineEl.textContent = t('pet.dailySupport');
     chapterOverlay.classList.remove('hidden');
     chapterOverlay.setAttribute('aria-hidden', 'false');
     gameState.paused = true;

@@ -50,6 +50,21 @@ export const dictionaries = {
     'tutorial.scoreLine2': 'Each word plants a flower in your garden! 🌺',
     'tutorial.scoreLine3': 'Press Space to skip a tricky word.', 'tutorial.next': 'Next', 'tutorial.begin': 'Begin! 🌸',
     'finger.title': 'Home Row Position', 'finger.text': 'Rest your fingers here! 🏠', 'finger.gotIt': 'Got it! ✨',
+    'finger.lp': 'left pinky', 'finger.lr': 'left ring finger', 'finger.lm': 'left middle finger', 'finger.li': 'left index finger',
+    'finger.ri': 'right index finger', 'finger.rm': 'right middle finger', 'finger.rr': 'right ring finger', 'finger.rp': 'right pinky',
+    'finger.leftHand': 'left hand', 'finger.rightHand': 'right hand',
+    'finger.useLeftPinky': 'Use your left pinky', 'finger.useLeftHand': 'Use your left hand',
+    'finger.withShift': '{finger} (hold the {side} Shift key!)', 'finger.leftShift': 'left', 'finger.rightShift': 'right',
+    'lesson.completeToUnlock': 'Complete level {level} to unlock', 'lesson.locked': 'Locked',
+    'a11y.masteredKey': '{key} mastered', 'a11y.learningKey': '{key} learning', 'game.allLevelsCleared': '🏆 All levels cleared!',
+    'pet.celebrate': 'Yay! 🎉', 'pet.tap': 'Tap me! 🏃', 'pet.playKeep': 'Play to keep me! 💪',
+    'pet.streak': '🔥 {count} days!', 'pet.keepStreakOne': '1 day! Keep going!', 'pet.keepStreakMany': '{count} days! Keep going!',
+    'pet.greeting': 'Hi! I’m {pet} 🌸', 'pet.tryAgain': 'Try again!', 'pet.dontForget': 'Don’t forget me!',
+    'pet.saysType': 'Bloom says: Type!', 'pet.dailySupport': '“I will be right here with you.” — Bloom',
+    'evolution.2.title': 'Bloom is Growing!', 'evolution.2.desc': 'Your typing helped Bloom sprout new leaves!',
+    'evolution.2.line': '“I feel stronger! Let’s type even faster!” — Bloom',
+    'evolution.3.title': 'Legend Bloom!', 'evolution.3.desc': 'Bloom has fully bloomed! A true typing legend!',
+    'evolution.3.line': '“We’re UNSTOPPABLE together!” — Bloom',
   },
   fr: {
     'nav.lessons': 'Leçons', 'nav.practice': 'Pratique', 'nav.garden': 'Jardin', 'nav.profile': 'Profil',
@@ -103,6 +118,21 @@ export const dictionaries = {
     'tutorial.scoreLine2': 'Chaque mot plante une fleur dans ton jardin ! 🌺',
     'tutorial.scoreLine3': 'Appuie sur Espace pour passer un mot difficile.', 'tutorial.next': 'Suivant', 'tutorial.begin': 'Commencer ! 🌸',
     'finger.title': 'Position sur la rangée de repos', 'finger.text': 'Pose tes doigts ici ! 🏠', 'finger.gotIt': 'Compris ! ✨',
+    'finger.lp': 'auriculaire gauche', 'finger.lr': 'annulaire gauche', 'finger.lm': 'majeur gauche', 'finger.li': 'index gauche',
+    'finger.ri': 'index droit', 'finger.rm': 'majeur droit', 'finger.rr': 'annulaire droit', 'finger.rp': 'auriculaire droit',
+    'finger.leftHand': 'main gauche', 'finger.rightHand': 'main droite',
+    'finger.useLeftPinky': 'Utilise ton auriculaire gauche', 'finger.useLeftHand': 'Utilise ta main gauche',
+    'finger.withShift': '{finger} (maintiens la touche Maj {side} !)', 'finger.leftShift': 'gauche', 'finger.rightShift': 'droite',
+    'lesson.completeToUnlock': 'Termine le niveau {level} pour débloquer', 'lesson.locked': 'Verrouillé',
+    'a11y.masteredKey': 'Touche {key} maîtrisée', 'a11y.learningKey': 'Touche {key} en apprentissage', 'game.allLevelsCleared': '🏆 Tous les niveaux sont terminés !',
+    'pet.celebrate': 'Youpi ! 🎉', 'pet.tap': 'Appuie sur moi ! 🏃', 'pet.playKeep': 'Joue pour me garder ! 💪',
+    'pet.streak': '🔥 {count} jours !', 'pet.keepStreakOne': '1 jour ! Continue !', 'pet.keepStreakMany': '{count} jours ! Continue !',
+    'pet.greeting': 'Salut ! Je suis {pet} 🌸', 'pet.tryAgain': 'Réessaie !', 'pet.dontForget': 'Ne m’oublie pas !',
+    'pet.saysType': 'Bloom dit : tape !', 'pet.dailySupport': '« Je resterai juste ici avec toi. » — Bloom',
+    'evolution.2.title': 'Bloom grandit !', 'evolution.2.desc': 'Ta frappe a aidé Bloom à faire pousser de nouvelles feuilles !',
+    'evolution.2.line': '« Je me sens plus fort ! Tapons encore plus vite ! » — Bloom',
+    'evolution.3.title': 'Bloom légendaire !', 'evolution.3.desc': 'Bloom a complètement fleuri ! Une véritable légende de la frappe !',
+    'evolution.3.line': '« Ensemble, nous sommes INARRÊTABLES ! » — Bloom',
   },
   es: {
     'nav.lessons': 'Lecciones', 'nav.practice': 'Práctica', 'nav.garden': 'Jardín', 'nav.profile': 'Perfil',
@@ -156,6 +186,21 @@ export const dictionaries = {
     'tutorial.scoreLine2': '¡Cada palabra planta una flor en tu jardín! 🌺',
     'tutorial.scoreLine3': 'Pulsa Espacio para saltar una palabra difícil.', 'tutorial.next': 'Siguiente', 'tutorial.begin': '¡Empezar! 🌸',
     'finger.title': 'Posición de la fila guía', 'finger.text': '¡Apoya los dedos aquí! 🏠', 'finger.gotIt': '¡Entendido! ✨',
+    'finger.lp': 'meñique izquierdo', 'finger.lr': 'anular izquierdo', 'finger.lm': 'corazón izquierdo', 'finger.li': 'índice izquierdo',
+    'finger.ri': 'índice derecho', 'finger.rm': 'corazón derecho', 'finger.rr': 'anular derecho', 'finger.rp': 'meñique derecho',
+    'finger.leftHand': 'mano izquierda', 'finger.rightHand': 'mano derecha',
+    'finger.useLeftPinky': 'Usa el meñique izquierdo', 'finger.useLeftHand': 'Usa la mano izquierda',
+    'finger.withShift': '{finger} (¡mantén la tecla Mayús {side}!)', 'finger.leftShift': 'izquierda', 'finger.rightShift': 'derecha',
+    'lesson.completeToUnlock': 'Completa el nivel {level} para desbloquear', 'lesson.locked': 'Bloqueado',
+    'a11y.masteredKey': 'Tecla {key} dominada', 'a11y.learningKey': 'Tecla {key} en aprendizaje', 'game.allLevelsCleared': '🏆 ¡Todos los niveles completados!',
+    'pet.celebrate': '¡Bien! 🎉', 'pet.tap': '¡Tócame! 🏃', 'pet.playKeep': '¡Juega para mantenerme! 💪',
+    'pet.streak': '🔥 ¡{count} días!', 'pet.keepStreakOne': '¡1 día! ¡Sigue así!', 'pet.keepStreakMany': '¡{count} días! ¡Sigue así!',
+    'pet.greeting': '¡Hola! Soy {pet} 🌸', 'pet.tryAgain': '¡Inténtalo otra vez!', 'pet.dontForget': '¡No te olvides de mí!',
+    'pet.saysType': 'Bloom dice: ¡escribe!', 'pet.dailySupport': '«Estaré aquí contigo.» — Bloom',
+    'evolution.2.title': '¡Bloom está creciendo!', 'evolution.2.desc': '¡Tu escritura ayudó a Bloom a sacar hojas nuevas!',
+    'evolution.2.line': '«¡Me siento más fuerte! ¡Escribamos aún más rápido!» — Bloom',
+    'evolution.3.title': '¡Bloom legendario!', 'evolution.3.desc': '¡Bloom ha florecido por completo! ¡Una leyenda de la mecanografía!',
+    'evolution.3.line': '«¡Juntos somos IMPARABLES!» — Bloom',
   },
 };
 
@@ -183,6 +228,20 @@ export function formatDate(value, options = { dateStyle: 'medium' }) {
   return new Intl.DateTimeFormat(activeLocale, options).format(new Date(value));
 }
 
+const fingerKeyByEnglishLabel = {
+  'Left Pinky': 'finger.lp', 'Left Ring': 'finger.lr', 'Left Middle': 'finger.lm', 'Left Index': 'finger.li',
+  'Right Index': 'finger.ri', 'Right Middle': 'finger.rm', 'Right Ring': 'finger.rr', 'Right Pinky': 'finger.rp',
+};
+
+export function localizeFingerLabel(label) {
+  const baseLabel = Object.keys(fingerKeyByEnglishLabel).find((candidate) => label?.startsWith(candidate));
+  if (!baseLabel) return label;
+  const finger = t(fingerKeyByEnglishLabel[baseLabel]);
+  if (label.includes('hold RIGHT Shift')) return t('finger.withShift', { finger, side: t('finger.rightShift') });
+  if (label.includes('hold LEFT Shift')) return t('finger.withShift', { finger, side: t('finger.leftShift') });
+  return finger;
+}
+
 export function applyTranslations(root = document) {
   root.querySelectorAll('[data-i18n]').forEach((element) => {
     element.textContent = t(element.dataset.i18n);
@@ -192,5 +251,9 @@ export function applyTranslations(root = document) {
   });
   root.querySelectorAll('[data-i18n-aria-label]').forEach((element) => {
     element.setAttribute('aria-label', t(element.dataset.i18nAriaLabel));
+  });
+  root.querySelectorAll('.key[data-finger]').forEach((element) => {
+    const key = `finger.${element.dataset.finger}`;
+    if (dictionaries.en[key]) element.dataset.fingerLabel = t(key);
   });
 }
