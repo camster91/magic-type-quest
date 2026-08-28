@@ -6,18 +6,19 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const enginePath = resolve(__dirname, '../src/gameEngine.js');
 const engineSrc = readFileSync(enginePath, 'utf-8');
+const wordSrc = readFileSync(resolve(__dirname, '../src/gameWord.js'), 'utf-8');
 
 describe('Focus mechanic - source contracts', () => {
   it('Word constructor initializes focus to 100', () => {
-    expect(engineSrc).toMatch(/this\.focus\s*=\s*100/);
+    expect(wordSrc).toMatch(/this\.focus\s*=\s*100/);
   });
 
   it('Word.update decays focus based on y / groundY', () => {
-    expect(engineSrc).toMatch(/this\.focus\s*=\s*Math\.max\(0,\s*Math\.min\(100,\s*100\s*\*\s*\(1\s*-\s*this\.y\s*\/\s*groundY\)\)\)/);
+    expect(wordSrc).toMatch(/this\.focus\s*=\s*Math\.max\(0,\s*Math\.min\(100,\s*100\s*\*\s*\(1\s*-\s*this\.y\s*\/\s*groundY\)\)\)/);
   });
 
   it('getScoreMultiplier returns 0.5x to 1.0x', () => {
-    expect(engineSrc).toMatch(/return\s+0\.5\s*\+\s*\(this\.focus\s*\/\s*100\)\s*\*\s*0\.5/);
+    expect(wordSrc).toMatch(/return\s+0\.5\s*\+\s*\(this\.focus\s*\/\s*100\)\s*\*\s*0\.5/);
   });
 
   it('completeWord applies focus multiplier to score', () => {
@@ -30,7 +31,7 @@ describe('Focus mechanic - source contracts', () => {
   });
 
   it('Word pill color is focus-driven (HSL hue from 0 to 120)', () => {
-    expect(engineSrc).toMatch(/hue\s*=\s*Math\.round\(\(this\.focus\s*\/\s*100\)\s*\*\s*120\)/);
+    expect(wordSrc).toMatch(/hue\s*=\s*Math\.round\(\(this\.focus\s*\/\s*100\)\s*\*\s*120\)/);
   });
 
   it('Background parallax uses a deployment-base-safe assets/backgrounds path', () => {

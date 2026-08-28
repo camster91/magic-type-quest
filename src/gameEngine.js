@@ -10,10 +10,10 @@ import { evaluateQuests, bumpStreakIfToday } from './quests.js';
 import { playAmbient, playSound, stopAmbient, initAudio } from './audio.js';
 import { getWeakKeys } from './drills.js';
 import { recordKeyPractice } from './spacedRep.js';
-import { hexToRgba } from './utils.js';
 import { formatNumber, localizeFingerLabel, t } from './i18n.js';
 import { localizeAchievement, localizeChapter, localizeLesson, localizeQuest } from './contentTranslations.js';
 import { highlightTargetKey, showKeyFeedback } from './gamePresentation.js';
+import { GameWord } from './gameWord.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -46,128 +46,6 @@ function isTouchDevice() {
 function currentLesson() {
   if (gameState.drillLesson) return gameState.drillLesson;
   return localizeLesson(getLessonByLevel(gameState.level));
-}
-
-// ===== WORD CLASS =====
-class Word {
-  constructor(text, speed) {
-    this.text = text;
-    this.speed = speed;
-    this.x = 0;
-    this.y = -50;
-    this.isTarget = false;
-    this.matched = 0;
-    this.typedWidth = 0; // ⚡ Bolt: Cache measurement to avoid redundant ctx.measureText
-    this.glow = 0;
-    this.shake = 0;
-    this.width = 0;
-    this.height = 36;
-    // Focus mechanic: 100 at spawn, decays to 0 as the word falls.
-    // Higher focus at completion = higher score multiplier.
-    this.focus = 100;
-  }
-
-  update(deltaTime) {
-    // T15: in overlay mode, the word doesn't fall — it sits centered
-    // while the kid types. No timer pressure, no missed-word penalty.
-    if (typeof window !== 'undefined' && window.__bloomtypeT15Overlay) {
-      // Park the word above the canvas so its isAtBottom() never fires
-      this.y = -200;
-      this.speed = 0;
-      if (this.glow > 0) this.glow -= deltaTime * 3;
-      if (this.shake > 0) this.shake -= deltaTime * 5;
-      return;
-    }
-    this.y += this.speed * 60 * deltaTime;
-    if (this.glow > 0) this.glow -= deltaTime * 3;
-    if (this.shake > 0) this.shake -= deltaTime * 5;
-    // Focus decays as the word falls. The groundY is ~220px from bottom;
-    // once y crosses that, the word is "missed" and focus is 0.
-    const groundY = gameState.canvasH - 220;
-    if (groundY > 0) {
-      this.focus = Math.max(0, Math.min(100, 100 * (1 - this.y / groundY)));
-    }
-  }
-
-  /** Multiplier applied to base score on completion. 1.0 at full focus, 0.5 at half. */
-  getScoreMultiplier() {
-    return 0.5 + (this.focus / 100) * 0.5; // 0.5x to 1.0x
-  }
-
-  draw(ctx) {
-    // T15: in overlay mode, the HTML .target-word shows the current word.
-    // The canvas still tracks the word for game logic (completion, focus,
-    // pet reactions) but we don't paint it on the canvas.
-    if (typeof window !== 'undefined' && window.__bloomtypeT15Overlay) {
-      return;
-    }
-    const shakeX = this.shake > 0 ? (Math.random() - 0.5) * 6 : 0;
-    const x = this.x + shakeX;
-    
-    // ⚡ Optimization: Replaced expensive shadowBlur with layered rects for glow effect
-    if (this.glow > 0 || this.isTarget) {
-      const alphaBase = this.isTarget ? 0.8 : this.glow * 0.6;
-      const glowColor = this.isTarget ? COLORS.success : COLORS.primary;
-
-      // Outer glow layer
-      ctx.fillStyle = hexToRgba(glowColor, alphaBase * 0.3);
-      ctx.beginPath();
-      ctx.roundRect(x - 16, this.y - this.height / 2 - 12, this.width + 32, this.height + 24, 20);
-      ctx.fill();
-
-      // Inner glow layer
-      ctx.fillStyle = hexToRgba(glowColor, alphaBase * 0.5);
-      ctx.beginPath();
-      ctx.roundRect(x - 12, this.y - this.height / 2 - 8, this.width + 24, this.height + 16, 18);
-      ctx.fill();
-    }
-
-    // Background pill — color reflects focus (green = high, orange = mid, red = low)
-    // isTarget always wins (green) so the active word stays readable.
-    let pillFill, pillStroke;
-    if (this.isTarget) {
-      pillFill = 'rgba(52, 211, 153, 0.35)';
-      pillStroke = COLORS.success;
-    } else {
-      // Hue shifts: focus 100 -> green (120), focus 50 -> yellow (60), focus 0 -> red (0)
-      const hue = Math.round((this.focus / 100) * 120);
-      pillFill = `hsla(${hue}, 70%, 50%, 0.30)`;
-      pillStroke = `hsla(${hue}, 70%, 70%, 0.8)`;
-    }
-    ctx.fillStyle = pillFill;
-    ctx.strokeStyle = pillStroke;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.roundRect(x - 8, this.y - this.height/2 - 4, this.width + 16, this.height + 8, 16);
-    ctx.fill();
-    ctx.stroke();
-
-    // Text
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '700 26px Nunito, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(this.text, x + 10, this.y);
-
-    // Typed progress underline
-    if (this.matched > 0) {
-      // ⚡ Bolt: Use cached typedWidth to save on ctx.measureText calls in the animation loop
-      ctx.fillStyle = COLORS.success;
-      ctx.fillRect(x + 10, this.y + 12, this.typedWidth, 5);
-    }
-
-    // Target indicator arrow
-    if (this.isTarget) {
-      ctx.fillStyle = COLORS.success;
-      ctx.font = '14px Nunito';
-      ctx.textAlign = 'center';
-      ctx.fillText('▶', x + this.width / 2, this.y - this.height/2 - 12);
-    }
-  }
-
-  isAtBottom() {
-    return this.y > gameState.canvasH - 220;
-  }
 }
 
 // ===== GAME STATE =====
@@ -336,7 +214,7 @@ function spawnWord() {
   const words = lesson.words;
   const text = words[Math.floor(Math.random() * words.length)];
   
-  const word = new Word(text, lesson.speed * gameState.adaptiveSpeed);
+  const word = new GameWord(text, lesson.speed * gameState.adaptiveSpeed);
   // Set font BEFORE measuring so pills fit words
   ctx.font = '700 26px Nunito, sans-serif';
   word.width = ctx.measureText(text).width + 40;
@@ -2113,7 +1991,7 @@ export function startDrillMode(drillLesson) {
   
   // Force first word with drill lesson data
   const text = drillLesson.words[Math.floor(Math.random() * drillLesson.words.length)];
-  const word = new Word(text, drillLesson.speed);
+  const word = new GameWord(text, drillLesson.speed);
   ctx.font = '700 26px Nunito, sans-serif';
   word.width = ctx.measureText(text).width + 40;
   word.x = 80 + Math.random() * (gameState.canvasW - 200);

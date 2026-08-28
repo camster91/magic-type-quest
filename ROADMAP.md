@@ -9,7 +9,7 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 193 tests pass across 24 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 198 tests pass across 25 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -125,8 +125,11 @@ children.
      `src/gamePresentation.js`, added DOM-level behavioral tests, fixed key
      feedback so both rendered keyboards update consistently, and consolidated
      duplicate game-engine tones onto the existing `src/audio.js` API.
+   - Completed 2026-08-28: extracted the canvas word model and renderer into
+     `src/gameWord.js` with direct coverage for movement, focus scoring,
+     boundaries, overlay mode, and drawing behavior.
    - Remaining: extract the input controller, canvas renderer, and session
-     lifecycle; `src/gameEngine.js` is now 2,306 lines, down from 2,386.
+     lifecycle; `src/gameEngine.js` is now 2,184 lines, down from 2,386.
 4. Add privacy-conscious product analytics only after the privacy model is
    approved.
 
