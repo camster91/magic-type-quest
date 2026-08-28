@@ -773,7 +773,6 @@ function bindEvents() {
     if (weakKeys.length === 0) return;
     const drillLesson = buildDrillLesson(weakKeys);
     if (!drillLesson) return;
-    gameState.drillLesson = drillLesson;
     $('gameover-overlay').classList.add('hidden');
     $('gameover-overlay').setAttribute('aria-hidden', 'true');
     showScreen('game');

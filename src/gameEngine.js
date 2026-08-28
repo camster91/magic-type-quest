@@ -14,6 +14,7 @@ import { formatNumber, localizeFingerLabel, t } from './i18n.js';
 import { localizeAchievement, localizeChapter, localizeLesson, localizeQuest } from './contentTranslations.js';
 import { highlightTargetKey, showKeyFeedback } from './gamePresentation.js';
 import { GameWord } from './gameWord.js';
+import { resetGameSession } from './gameSession.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -1673,44 +1674,18 @@ export function startDailyMoment() {
     : 1);
   const lesson = getLessonByLevel(level);
 
-  // Reset the same fields startGame resets, but with a daily-moment flag.
-  gameState.screen = 'game';
-  gameState.level = level;
-  gameState.score = 0;
-  gameState.combo = 0;
-  gameState.maxCombo = 0;
-  gameState.wordsTyped = 0;
-  gameState.wordsCompleted = 0;
-  gameState.wordsSpawned = 0;
-  gameState.totalKeystrokes = 0;
-  gameState.correctKeystrokes = 0;
-  gameState.health = 999; // sentinel: never drain to 0 during daily moment
-  gameState.activeWords = [];
-  gameState.targetWord = null;
-  gameState.targetIndex = 0;
-  gameState.gameOver = false;
-  gameState.paused = false;
-  gameState.lastSpawn = 0;
-  gameState.lastFrameTime = 0;
-  gameState.garden = [];
-  gameState.levelStartTime = performance.now();
-  gameState.keyAccuracy = {};
-  gameState.levelWPM = 0;
-  gameState.levelAccuracy = 0;
-  gameState.levelComplete = false;
-  gameState.skipsUsed = 0;
-  gameState.adaptiveSpeed = 1.0;
-  gameState.lastAdaptiveCheck = 0;
-
-  // Activate daily-moment mode (consulted by loseHealth + completeWord)
-  gameState.dailyMoment = {
-    active: true,
-    startTime: performance.now(),
-    durationMs: 60_000,
-    wordsTarget: 12,
-    lessonSpeed: lesson?.speed || 0.4,
-    lessonWords: (lesson?.words || []).slice(),
-  };
+  resetGameSession(gameState, {
+    level,
+    health: 999,
+    dailyMoment: {
+      active: true,
+      startTime: performance.now(),
+      durationMs: 60_000,
+      wordsTarget: 12,
+      lessonSpeed: lesson?.speed || 0.4,
+      lessonWords: (lesson?.words || []).slice(),
+    },
+  });
   achievementQueue = [];
   achievementShowing = false;
 
@@ -1853,33 +1828,7 @@ export function startGame(level = 1) {
 
   const lesson = getLessonByLevel(level);
   
-  gameState.screen = 'game';
-  gameState.level = level;
-  gameState.score = 0;
-  gameState.combo = 0;
-  gameState.maxCombo = 0;
-  gameState.wordsTyped = 0;
-  gameState.wordsCompleted = 0;
-  gameState.wordsSpawned = 0;
-  gameState.totalKeystrokes = 0;
-  gameState.correctKeystrokes = 0;
-  gameState.health = lesson.health || 5;
-  gameState.activeWords = [];
-  gameState.targetWord = null;
-  gameState.targetIndex = 0;
-  gameState.gameOver = false;
-  gameState.paused = false;
-  gameState.lastSpawn = 0;
-  gameState.lastFrameTime = 0;
-  gameState.garden = [];
-  gameState.levelStartTime = performance.now();
-  gameState.keyAccuracy = {};
-  gameState.levelWPM = 0;
-  gameState.levelAccuracy = 0;
-  gameState.levelComplete = false;
-  gameState.skipsUsed = 0;
-  gameState.adaptiveSpeed = 1.0; // Multiplier applied to base lesson speed
-  gameState.lastAdaptiveCheck = 0;
+  resetGameSession(gameState, { level, health: lesson.health || 5 });
   achievementQueue = [];
   achievementShowing = false;
   
@@ -1946,41 +1895,13 @@ export function startGame(level = 1) {
 export function startDrillMode(drillLesson) {
   initAudio();
   playAmbient();
-  gameState.screen = 'game';
-  gameState.level = 'drill';
-  gameState.score = 0;
-  gameState.combo = 0;
-  gameState.maxCombo = 0;
-  gameState.wordsTyped = 0;
-  gameState.wordsCompleted = 0;
-  gameState.wordsSpawned = 0;
-  gameState.totalKeystrokes = 0;
-  gameState.correctKeystrokes = 0;
-  gameState.health = drillLesson.health || 5;
-  gameState.activeWords = [];
-  gameState.targetWord = null;
-  gameState.targetIndex = 0;
-  gameState.gameOver = false;
-  gameState.paused = false;
-  gameState.lastSpawn = 0;
-  gameState.lastFrameTime = 0;
-  gameState.garden = [];
-  gameState.levelStartTime = performance.now();
-  gameState.levelWPM = 0;
-  gameState.levelAccuracy = 0;
-  gameState.levelComplete = false;
-  gameState.skipsUsed = 0;
-  gameState.adaptiveSpeed = 1.0;
-  gameState.lastAdaptiveCheck = 0;
+  resetGameSession(gameState, {
+    level: 'drill',
+    health: drillLesson.health || 5,
+    drillLesson,
+  });
   achievementQueue = [];
   achievementShowing = false;
-  
-  // Override getLessonByLevel temporarily for drill
-  const originalGetLesson = getLessonByLevel;
-  window._originalGetLesson = originalGetLesson;
-  
-  // Patch getLessonByLevel to return drill lesson for 'drill'
-  // We do this by setting gameState.level to a string that the patched function checks
   
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('game-screen').classList.add('active');
