@@ -9,7 +9,7 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 160 tests pass across 14 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 163 tests pass across 15 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -82,7 +82,9 @@ children.
    keyboard, and small-screen QA.
    - Completed 2026-08-28: keyboard-only first-time start, tutorial, finger
      guide, pause/resume, focus containment, and quit-to-menu are covered by a
-     production-build browser test. Remaining accessibility modes still need
+     production-build browser test. Game result, chapter, and evolution dialogs
+     expose stable accessible names; the mobile typing input is named and kept
+     out of desktop tab order. Remaining accessibility modes still need
      dedicated QA.
 3. Split the 2,000+ line `src/gameEngine.js` into input, rendering, session, and
    presentation modules with behavioral coverage.
@@ -107,9 +109,9 @@ children.
   production-build browser smoke tests.
 - Core localization infrastructure with persisted English, French, and Spanish
   selection plus locale-aware number/date formatting.
-- First-time game dialogs expose names and modal semantics, keep focus inside
-  the active dialog, pause gameplay while instructions are open, and restore a
-  useful focus target when the student resumes or exits.
+- Game dialogs expose names and modal semantics, keep focus inside the active
+  dialog, pause gameplay while instructions are open, and restore a useful
+  focus target when the student resumes or exits.
 
 ## Decision log
 

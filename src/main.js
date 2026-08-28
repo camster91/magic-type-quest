@@ -727,6 +727,7 @@ function bindEvents() {
 
   $('btn-next-level')?.addEventListener('click', () => {
     $('level-overlay').classList.add('hidden');
+    $('level-overlay').setAttribute('aria-hidden', 'true');
     if (gameState.level >= 10) {
       showScreen('menu');
       updateMenuStats();
@@ -738,18 +739,21 @@ function bindEvents() {
 
   $('btn-replay')?.addEventListener('click', () => {
     $('level-overlay').classList.add('hidden');
+    $('level-overlay').setAttribute('aria-hidden', 'true');
     showScreen('game');
     startGame(gameState.level);
   });
 
   $('btn-level-menu')?.addEventListener('click', () => {
     $('level-overlay').classList.add('hidden');
+    $('level-overlay').setAttribute('aria-hidden', 'true');
     showScreen('lesson-select');
     renderLevelCards();
   });
 
   $('btn-retry')?.addEventListener('click', () => {
     $('gameover-overlay').classList.add('hidden');
+    $('gameover-overlay').setAttribute('aria-hidden', 'true');
     showScreen('game');
     startGame(gameState.level);
   });
@@ -761,16 +765,23 @@ function bindEvents() {
     if (!drillLesson) return;
     gameState.drillLesson = drillLesson;
     $('gameover-overlay').classList.add('hidden');
+    $('gameover-overlay').setAttribute('aria-hidden', 'true');
     showScreen('game');
     startDrillMode(drillLesson);
   });
 
   $('btn-evolution-continue')?.addEventListener('click', () => {
-    $('evolution-overlay')?.classList.add('hidden');
+    const evolution = $('evolution-overlay');
+    evolution?.classList.add('hidden');
+    evolution?.setAttribute('aria-hidden', 'true');
+    const levelDialog = $('level-overlay');
+    levelDialog?.setAttribute('aria-hidden', 'false');
+    $('btn-next-level')?.focus();
   });
 
   $('btn-menu')?.addEventListener('click', () => {
     $('gameover-overlay').classList.add('hidden');
+    $('gameover-overlay').setAttribute('aria-hidden', 'true');
     showScreen('menu');
     updateMenuStats();
   });

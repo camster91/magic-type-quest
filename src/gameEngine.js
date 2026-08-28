@@ -1768,7 +1768,10 @@ function showEvolutionOverlay(stage) {
   if (descEl) descEl.textContent = data.desc;
   if (lineEl) lineEl.textContent = data.line;
   
+  document.getElementById('level-overlay')?.setAttribute('aria-hidden', 'true');
   overlay.classList.remove('hidden');
+  overlay.setAttribute('aria-hidden', 'false');
+  document.getElementById('btn-evolution-continue')?.focus();
   
   // Extra confetti for evolution
   spawnConfetti(gameState.canvasW/2, gameState.canvasH/2, 80);
@@ -1925,8 +1928,11 @@ export function startDailyMoment() {
   updateLessonInfo();
 
   // Hide level-complete / gameover overlays if they were open
-  document.getElementById('level-overlay')?.classList.add('hidden');
-  document.getElementById('gameover-overlay')?.classList.add('hidden');
+  ['level-overlay', 'gameover-overlay'].forEach((id) => {
+    const overlay = document.getElementById(id);
+    overlay?.classList.add('hidden');
+    overlay?.setAttribute('aria-hidden', 'true');
+  });
 
   // Replace the level badge with a soft "Daily Moment" label
   const badge = document.getElementById('difficulty-badge');
@@ -2234,7 +2240,11 @@ function showGameOver() {
   if (score) score.textContent = gameState.score;
   if (combo) combo.textContent = gameState.maxCombo;
   if (words) words.textContent = gameState.wordsTyped;
-  if (overlay) overlay.classList.remove('hidden');
+  if (overlay) {
+    overlay.classList.remove('hidden');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.getElementById('btn-retry')?.focus();
+  }
   
   // Show drill button if there are weak keys
   const drillBtn = document.getElementById('btn-drill');
@@ -2270,7 +2280,11 @@ function showLevelComplete() {
     if (nextBtn) { nextBtn.textContent = `${t('game.next')} →`; nextBtn.classList.remove('final'); }
   }
   
-  if (overlay) overlay.classList.remove('hidden');
+  if (overlay) {
+    overlay.classList.remove('hidden');
+    overlay.setAttribute('aria-hidden', 'false');
+    nextBtn?.focus();
+  }
 }
 
 function speakWord(word) {
