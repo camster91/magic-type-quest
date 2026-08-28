@@ -16,7 +16,9 @@ school-scale launch readiness is not yet proven by real-world operations.
   quests, garden progression, classroom codes, teacher reporting, optional
   Supabase sync, PWA support, and core English/French/Spanish localization.
 - Deployment fixes: public assets work under the configured
-  `/magic-type-quest/` base path and are regression-tested.
+  `/magic-type-quest/` base path and are regression-tested. Three Playwright
+  smoke tests verify all production entry points, same-origin assets, manifest
+  scope, service-worker registration, and persisted localization.
 - Automation boundary: workflow files are active, but repository-level GitHub
   Actions permission currently reports `enabled: false`; no remote checks can
   run until an owner explicitly enables Actions. GitHub code scanning and
@@ -84,7 +86,8 @@ children.
 - Classroom codes, teacher dashboard, optional Supabase sync, RLS schema, and
   CSV/JSON export implementation.
 - Deployment-safe asset loading, avatar cache refresh, clean lint baseline,
-  dependency/security updates, and base-path regression coverage.
+  dependency/security updates, base-path regression coverage, and repeatable
+  production-build browser smoke tests.
 - Core localization infrastructure with persisted English, French, and Spanish
   selection plus locale-aware number/date formatting.
 

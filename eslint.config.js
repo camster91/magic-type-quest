@@ -6,7 +6,7 @@ export default [
   },
   js.configs.recommended,
   {
-    files: ['src/**/*.js', 'test/**/*.js'],
+    files: ['src/**/*.js', 'test/**/*.js', 'e2e/**/*.js', 'playwright.config.js'],
     languageOptions: {
       ecmaVersion: 2024,
       sourceType: 'module',
@@ -41,6 +41,7 @@ export default [
         confirm: 'readonly',
         prompt: 'readonly',
         performance: 'readonly',
+        process: 'readonly',
         Intl: 'readonly',
         crypto: 'readonly',
         WebSocket: 'readonly',
