@@ -6,10 +6,10 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
-        parents: resolve(__dirname, 'parents.html'),
-        teacher: resolve(__dirname, 'teacher.html'),
-        landing: resolve(__dirname, 'landing.html'),
+        main: resolve(import.meta.dirname, 'index.html'),
+        parents: resolve(import.meta.dirname, 'parents.html'),
+        teacher: resolve(import.meta.dirname, 'teacher.html'),
+        landing: resolve(import.meta.dirname, 'landing.html'),
       },
     },
   },
