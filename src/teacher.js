@@ -5,6 +5,8 @@
  */
 
 import { fetchClassRoster } from './sync.js';
+import { normalizeClassCode } from './classroom.js';
+import { createRosterCSV, createRosterExport } from './reporting.js';
 import { escapeHTML } from './utils.js';
 
 const $ = (id) => document.getElementById(id);
@@ -41,17 +43,18 @@ function toggleMode(mode) {
 }
 
 async function loadClass(code) {
-  currentClassCode = code;
-  $('class-code-display').textContent = code.toUpperCase();
+  currentClassCode = normalizeClassCode(code);
+  $('class-code-display').textContent = currentClassCode;
   
   if (currentMode === 'cloud') {
-    const roster = await fetchClassRoster(code);
-    if (roster) renderRoster(roster, true);
+    const roster = await fetchClassRoster(currentClassCode);
+    if (roster?.length) renderRoster(roster, true);
     else showEmpty('No cloud data for this class. Students may not have synced yet.');
   } else {
-    const data = getLocalClassData(code);
-    if (data) renderRoster(Object.values(data), false);
-    else showEmpty(`No students have joined class ${code} on this device yet.`);
+    const data = getLocalClassData(currentClassCode);
+    const students = data ? Object.values(data) : [];
+    if (students.length) renderRoster(students, false);
+    else showEmpty(`No students have joined class ${currentClassCode} on this device yet.`);
   }
 }
 
@@ -64,7 +67,7 @@ function loadLocalData() {
 }
 
 function getLocalClassData(code) {
-  const key = 'bloomtype-class-' + code.toUpperCase().trim().replace(/\s+/g, '');
+  const key = 'bloomtype-class-' + normalizeClassCode(code);
   const raw = localStorage.getItem(key);
   if (!raw) return null;
   try { return JSON.parse(raw); } catch { return null; }
@@ -181,30 +184,26 @@ function renderToolbar() {
 }
 
 function exportCSV() {
-  const rows = Array.from(document.querySelectorAll('#student-body tr'));
-  if (rows.length === 0) { alert('No data to export'); return; }
-  
-  const headers = ['Name', 'Level', 'Words', 'Score', 'Stars', 'Status', 'Source'];
-  const data = rows.map(row => {
-    const tds = row.querySelectorAll('td');
-    return Array.from(tds).map(td => td.textContent.trim()).join(',');
-  });
-  
-  const csv = [headers.join(','), ...data].join('\n');
+  const students = getRenderedStudents();
+  if (students.length === 0) { alert('No data to export'); return; }
+
+  const csv = createRosterCSV(students);
   const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `bloomtype-class-${currentClassCode || 'all'}-${new Date().toISOString().split('T')[0]}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadBlob(blob, 'csv');
 }
 
 function exportJSON() {
-  const rows = Array.from(document.querySelectorAll('#student-body tr'));
-  if (rows.length === 0) { alert('No data to export'); return; }
-  
-  const students = rows.map(row => {
+  const students = getRenderedStudents();
+  if (students.length === 0) { alert('No data to export'); return; }
+
+  const payload = createRosterExport(currentClassCode, students);
+
+  const blob = new Blob([payload], { type: 'application/json' });
+  downloadBlob(blob, 'json');
+}
+
+function getRenderedStudents() {
+  return Array.from(document.querySelectorAll('#student-body tr')).map(row => {
     const tds = row.querySelectorAll('td');
     return {
       name: tds[0]?.textContent?.trim() || '',
@@ -216,18 +215,13 @@ function exportJSON() {
       source: tds[6]?.textContent?.trim() || '',
     };
   });
-  
-  const payload = {
-    classCode: currentClassCode || 'all',
-    exportedAt: new Date().toISOString(),
-    students,
-  };
-  
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+}
+
+function downloadBlob(blob, extension) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `bloomtype-class-${currentClassCode || 'all'}-${new Date().toISOString().split('T')[0]}.json`;
+  a.download = `bloomtype-class-${currentClassCode || 'all'}-${new Date().toISOString().split('T')[0]}.${extension}`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -237,7 +231,7 @@ function clearAllData() {
   const keys = [];
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key?.startsWith('bloomtype_')) keys.push(key);
+    if (key?.startsWith('bloomtype_') || key?.startsWith('bloomtype-class-')) keys.push(key);
   }
   keys.forEach(k => localStorage.removeItem(k));
   loadLocalData();

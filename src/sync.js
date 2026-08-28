@@ -38,28 +38,67 @@ async function getAuthenticatedSupabase() {
   return { sb, user: data.session.user };
 }
 
+export function buildCloudProfileRow(profile, userId, updatedAt = new Date().toISOString()) {
+  return {
+    id: userId,
+    name: profile.name,
+    avatar: profile.avatar,
+    high_score: profile.highScore || 0,
+    total_words: profile.totalWords || 0,
+    total_stars: profile.totalStars || 0,
+    completed_levels: profile.completedLevels || [],
+    achievements: profile.achievements || [],
+    garden: profile.garden || [],
+    key_sr: profile.keySR || {},
+    class_code: profile.classCode || null,
+    updated_at: updatedAt,
+  };
+}
+
+export function buildCloudRosterRow(profile, userId, updatedAt = new Date().toISOString()) {
+  if (!profile.classCode) return null;
+  return {
+    class_code: profile.classCode,
+    profile_id: userId,
+    name: profile.name,
+    avatar: profile.avatar,
+    total_words: profile.totalWords || 0,
+    total_stars: profile.totalStars || 0,
+    high_score: profile.highScore || 0,
+    completed_levels: profile.completedLevels || [],
+    updated_at: updatedAt,
+  };
+}
+
 /** Background sync of profile + session snapshot. Fire-and-forget. */
 export async function syncProfile(profile) {
   const cloud = await getAuthenticatedSupabase();
   if (!cloud) return;
   const { sb, user } = cloud;
-  if (!navigator.onLine) return; // Queue handled by syncPending
+  if (!navigator.onLine) return; // Local state remains authoritative; a later save retries.
   try {
-    const { error } = await sb.from('profiles').upsert({
-      id: user.id,
-      name: profile.name,
-      avatar: profile.avatar,
-      high_score: profile.highScore || 0,
-      total_words: profile.totalWords || 0,
-      total_stars: profile.totalStars || 0,
-      completed_levels: profile.completedLevels || [],
-      achievements: profile.achievements || [],
-      garden: profile.garden || [],
-      key_sr: profile.keySR || {},
-      class_code: profile.classCode || null,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'id' });
+    const updatedAt = new Date().toISOString();
+    const { error } = await sb.from('profiles').upsert(
+      buildCloudProfileRow(profile, user.id, updatedAt),
+      { onConflict: 'id' },
+    );
     if (error) throw error;
+
+    // Keep exactly one self-owned roster membership in sync with the profile.
+    // RLS restricts both deletion and insertion to the authenticated user ID.
+    const { error: deleteError } = await sb
+      .from('class_roster')
+      .delete()
+      .eq('profile_id', user.id);
+    if (deleteError) throw deleteError;
+
+    const rosterRow = buildCloudRosterRow(profile, user.id, updatedAt);
+    if (rosterRow) {
+      const { error: rosterError } = await sb
+        .from('class_roster')
+        .upsert(rosterRow, { onConflict: 'class_code,profile_id' });
+      if (rosterError) throw rosterError;
+    }
   } catch (e) {
     console.warn('Sync failed:', e);
   }
@@ -86,30 +125,6 @@ export async function logSession(profile, session) {
     if (error) throw error;
   } catch (e) {
     console.warn('Session log failed:', e);
-  }
-}
-
-/** Sync class roster to cloud (teacher-side). */
-export async function syncClassRoster(classCode, students) {
-  const cloud = await getAuthenticatedSupabase();
-  if (!cloud || !navigator.onLine) return;
-  const { sb } = cloud;
-  try {
-    const rows = Object.values(students).map(st => ({
-      class_code: classCode,
-      profile_id: st.id || st.name,
-      name: st.name,
-      avatar: st.avatar,
-      total_words: st.totalWords || 0,
-      total_stars: st.totalStars || 0,
-      high_score: st.highScore || 0,
-      completed_levels: st.completedLevels || [],
-      updated_at: new Date().toISOString(),
-    }));
-    const { error } = await sb.from('class_roster').upsert(rows, { onConflict: 'class_code,profile_id' });
-    if (error) throw error;
-  } catch (e) {
-    console.warn('Class sync failed:', e);
   }
 }
 

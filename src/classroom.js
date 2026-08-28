@@ -6,14 +6,30 @@
 
 const PREFIX = 'bloomtype-class';
 
+function readClassData(key) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || '{}');
+  } catch {
+    return {};
+  }
+}
+
 /** Normalize class code to uppercase, trim whitespace. */
-function normalizeCode(code) {
+export function normalizeClassCode(code) {
   return (code || '').toUpperCase().trim().replace(/\s+/g, '');
 }
 
 /** Join a class: attach code to profile, do initial sync. */
 export function joinClass(profile, rawCode) {
-  const code = normalizeCode(rawCode);
+  const code = normalizeClassCode(rawCode);
+  const previousCode = normalizeClassCode(profile.classCode);
+  if (!profile.uuid) {
+    profile.uuid = crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  }
+  const studentId = profile.uuid;
+  if (previousCode && previousCode !== code) removeStudent(previousCode, studentId);
   if (!code) {
     delete profile.classCode;
     return null;
@@ -27,13 +43,14 @@ export function joinClass(profile, rawCode) {
 export function syncToClass(profile) {
   if (!profile.classCode) return;
   const key = `${PREFIX}-${profile.classCode}`;
-  const data = JSON.parse(localStorage.getItem(key) || '{}');
+  const data = readClassData(key);
   const id = profile.uuid || profile.name || 'unknown';
   data[id] = {
     name: profile.name || 'Player',
     avatar: profile.avatar || '🌸',
     classCode: profile.classCode,
     updatedAt: new Date().toISOString(),
+    lastPlayed: profile.lastPlayed || null,
     totalStars: profile.totalStars || 0,
     highScore: profile.highScore || 0,
     totalWords: profile.totalWords || 0,
@@ -46,14 +63,9 @@ export function syncToClass(profile) {
 
 /** Get class roster from localStorage. */
 export function getClassData(code) {
-  const key = `${PREFIX}-${normalizeCode(code)}`;
-  const raw = localStorage.getItem(key);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
+  const key = `${PREFIX}-${normalizeClassCode(code)}`;
+  if (!localStorage.getItem(key)) return null;
+  return readClassData(key);
 }
 
 /** Export class data as downloadable JSON blob. */
@@ -61,7 +73,7 @@ export function exportClassData(code) {
   const data = getClassData(code);
   if (!data) return null;
   const payload = {
-    classCode: normalizeCode(code),
+    classCode: normalizeClassCode(code),
     exportedAt: new Date().toISOString(),
     students: Object.values(data),
   };
@@ -70,8 +82,9 @@ export function exportClassData(code) {
 
 /** Remove a student from class data (teacher action). */
 export function removeStudent(code, studentId) {
-  const key = `${PREFIX}-${normalizeCode(code)}`;
-  const data = JSON.parse(localStorage.getItem(key) || '{}');
+  const key = `${PREFIX}-${normalizeClassCode(code)}`;
+  const data = readClassData(key);
   delete data[studentId];
-  localStorage.setItem(key, JSON.stringify(data));
+  if (Object.keys(data).length === 0) localStorage.removeItem(key);
+  else localStorage.setItem(key, JSON.stringify(data));
 }

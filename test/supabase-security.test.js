@@ -22,9 +22,12 @@ describe('Supabase privacy boundary', () => {
 
   it('binds player writes and teacher reads to authenticated identities', () => {
     expect(schema).toContain('with check (auth.uid() = profile_id)');
+    expect(schema).toContain('create policy "Roster self delete" on class_roster for delete');
+    expect(schema).toContain('using (auth.uid() = profile_id)');
     expect(schema).toContain('tc.teacher_id = auth.uid()');
     expect(syncSource).toContain('sb.auth.getSession()');
     expect(syncSource).toContain('if (!data.session?.user) return null');
+    expect(syncSource).toContain(".eq('profile_id', user.id)");
+    expect(syncSource).not.toContain('st.id || st.name');
   });
 });
-

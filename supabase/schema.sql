@@ -84,6 +84,7 @@ drop policy if exists "Student update" on class_roster;
 drop policy if exists "Roster self read" on class_roster;
 drop policy if exists "Roster self insert" on class_roster;
 drop policy if exists "Roster self update" on class_roster;
+drop policy if exists "Roster self delete" on class_roster;
 
 -- ===== TEACHER CODES =====
 create table if not exists teacher_codes (
@@ -115,6 +116,8 @@ create policy "Roster self insert" on class_roster for insert
 create policy "Roster self update" on class_roster for update
   using (auth.uid() = profile_id)
   with check (auth.uid() = profile_id);
+create policy "Roster self delete" on class_roster for delete
+  using (auth.uid() = profile_id);
 create policy "Teacher class read" on profiles for select
   using (
     auth.uid() = id or exists (

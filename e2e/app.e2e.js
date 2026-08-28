@@ -80,6 +80,53 @@ test('a first-time student can start, learn, pause, resume, and quit with the ke
   await expect(page.locator('#btn-start')).toBeFocused();
 });
 
+test('a student can join and leave a local class that a teacher can review and export', async ({ page }) => {
+  await page.goto('');
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+
+  await page.locator('#btn-profile').click();
+  await page.locator('#player-name').fill('Ada, Jr');
+  await page.locator('#class-code').fill(' ab 12 ');
+  await page.locator('#btn-save-profile').click();
+
+  await page.goto('teacher.html');
+  await page.locator('#class-code-input').fill('ab 12');
+  await page.locator('#btn-load-class').click();
+  await expect(page.locator('#class-code-display')).toHaveText('AB12');
+  await expect(page.locator('#student-body')).toContainText('Ada, Jr');
+  await expect(page.locator('#stats-grid')).toContainText('1');
+  await expect(page.locator('#alert-panel')).toHaveClass(/hidden/);
+
+  const csvDownload = page.waitForEvent('download');
+  await page.locator('#btn-export-csv').click();
+  await expect((await csvDownload).suggestedFilename()).toMatch(/^bloomtype-class-AB12-\d{4}-\d{2}-\d{2}\.csv$/);
+
+  const jsonDownload = page.waitForEvent('download');
+  await page.locator('#btn-export-json').click();
+  await expect((await jsonDownload).suggestedFilename()).toMatch(/^bloomtype-class-AB12-\d{4}-\d{2}-\d{2}\.json$/);
+
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.locator('#btn-clear-data').click();
+  await page.locator('#class-code-input').fill('AB12');
+  await page.locator('#btn-load-class').click();
+  await expect(page.locator('#student-body tr')).toHaveCount(0);
+
+  await page.goto('');
+  await page.locator('#btn-profile').click();
+  await page.locator('#player-name').fill('Ada, Jr');
+  await page.locator('#class-code').fill('AB12');
+  await page.locator('#btn-save-profile').click();
+  await page.locator('#btn-profile').click();
+  await page.locator('#class-code').fill('');
+  await page.locator('#btn-save-profile').click();
+  await page.goto('teacher.html');
+  await page.locator('#class-code-input').fill('AB12');
+  await page.locator('#btn-load-class').click();
+  await expect(page.locator('#student-body tr')).toHaveCount(0);
+  await expect(page.locator('#empty-state')).toContainText('No students have joined class AB12');
+});
+
 test('production entry points and same-origin assets load without errors', async ({ browser, baseURL }) => {
   for (const entryPoint of entryPoints) {
     const page = await browser.newPage();

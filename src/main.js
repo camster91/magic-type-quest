@@ -588,7 +588,7 @@ function saveProfileScreen() {
   p.locale = setLocale($('language-select')?.value || 'en');
   applyTranslations();
   const code = $('class-code')?.value?.trim();
-  if (code) joinClass(p, code);
+  joinClass(p, code);
   saveProfile();
   updateMenuStats();
   // If the avatar changed, invalidate pet image cache and reload for current state

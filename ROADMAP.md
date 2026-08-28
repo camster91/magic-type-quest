@@ -9,21 +9,23 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 166 tests pass across 15 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 174 tests pass across 18 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
   quests, garden progression, classroom codes, teacher reporting, optional
   Supabase sync, PWA support, and core English/French/Spanish localization.
 - Deployment fixes: public assets work under the configured
-  `/magic-type-quest/` base path and are regression-tested. Seven Playwright
-  tests verify responsive home actions, the keyboard-only first-time student journey, all production
+  `/magic-type-quest/` base path and are regression-tested. Eight Playwright
+  tests verify responsive home actions, a local student-to-teacher classroom
+  journey with exports, the keyboard-only first-time student journey, all production
   entry points, same-origin assets, manifest scope, service-worker registration,
   persisted localization, offline app-shell reload, and stale-cache cleanup.
-- Production: `https://bloomtype.ashbi.ca/magic-type-quest/` serves the current
-  GHCR image through Traefik with trusted HTTPS and security headers. The same
-  seven Playwright checks pass against the live deployment; deploy and rollback
-  operations are documented in `docs/PRODUCTION.md`.
+- Production: `https://bloomtype.ashbi.ca/magic-type-quest/` serves the prior
+  approved GHCR image through Traefik with trusted HTTPS and security headers.
+  The current eight-journey candidate image is published but intentionally not
+  deployed without explicit release approval. Deploy and rollback operations
+  are documented in `docs/PRODUCTION.md`.
 - Automation: repository Actions are enabled and core CI passes on the
   repository-scoped `ashbi-vps-magic-type-quest` self-hosted runner. The image
   publishing workflow also targets Ashbi Docker. GitHub CodeQL is manually
@@ -68,6 +70,14 @@ children.
    - Exercise class creation/join, student play, sync conflict recovery,
      teacher roster/alerts, exports, and account/session failure paths.
    - Add browser automation for the stable portions of those journeys.
+   - Completed 2026-08-28: browser automation covers joining and leaving a
+     normalized local class, teacher roster/stats visibility, CSV/JSON download,
+     and stale-membership cleanup. Authenticated sync now writes each roster row
+     with the current Supabase user ID and removes obsolete self-owned class
+     memberships under an explicit RLS delete policy.
+   - Still required: provision production credentials and separate teacher and
+     student test accounts, claim a teacher-owned class code, and exercise the
+     real hosted auth/session, conflict, roster, alert, and export paths.
 
 4. **Small supervised pilot**
    - Run with a small, consented cohort before a school-wide rollout.
