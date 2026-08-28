@@ -8,7 +8,8 @@ name: Build and Push Image
 #
 # Conventions:
 #   - Image: ghcr.io/camster91/<repo>:main (or :<tag> for releases)
-#   - Multi-arch: linux/amd64 + linux/arm64 (Raspberry Pi, Apple Silicon hosts)
+#   - Native default: linux/amd64 for the Ashbi VPS runner
+#   - Reusable callers can still request additional platforms explicitly
 #   - Buildx cache pushed to GHCR type=cache (saves ~3min per build)
 #   - SBOM + provenance attestations enabled (for supply-chain trust)
 
@@ -30,10 +31,10 @@ on:
         type: string
         default: 'Dockerfile'
       platforms:
-        description: 'Buildx platforms (default: amd64 + arm64)'
+        description: 'Buildx platforms (default: amd64 for Ashbi VPS)'
         required: false
         type: string
-        default: 'linux/amd64,linux/arm64'
+        default: 'linux/amd64'
 
 permissions:
   contents: read
@@ -104,7 +105,7 @@ jobs:
         with:
           context: .
           file: ${{ inputs.dockerfile || 'Dockerfile' }}
-          platforms: ${{ inputs.platforms || 'linux/amd64,linux/arm64' }}
+          platforms: ${{ inputs.platforms || 'linux/amd64' }}
           push: true
           tags: |
             ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}
@@ -128,5 +129,5 @@ jobs:
           echo "**Pull:** \`docker pull ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Run:** \`docker run -d -p 3000:3000 --name ${{ github.event.repository.name }} ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Platforms:** ${{ inputs.platforms || 'linux/amd64,linux/arm64' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Platforms:** ${{ inputs.platforms || 'linux/amd64' }}" >> $GITHUB_STEP_SUMMARY
           echo "**SHA:** ${{ steps.meta.outputs.sha }}" >> $GITHUB_STEP_SUMMARY
