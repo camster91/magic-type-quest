@@ -1,5 +1,8 @@
 # BloomType: Kid-Friendly Difficulty Adaptation
 
+> **Historical plan:** The adaptive-difficulty work has shipped. Use
+> `ROADMAP.md` for current status and priorities.
+
 ## Problem
 The adaptive difficulty exists but:
 1. Changes are invisible to the player

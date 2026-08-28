@@ -1,6 +1,10 @@
 # BloomType — School Readiness Audit
 ## For Deployment with 100+ Students
 
+> **Historical snapshot:** Several implementation gaps identified below were
+> subsequently addressed. The operational cautions remain useful, but
+> `ROADMAP.md` is the current source of truth for launch gates.
+
 ---
 
 ## 1. WHAT IS THIS APP? (Current State)

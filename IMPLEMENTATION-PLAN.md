@@ -1,5 +1,8 @@
 # BloomType Asset Implementation Plan
 
+> **Historical plan:** The implementation described here has largely shipped.
+> Use `ROADMAP.md` for current status and priorities.
+
 ## Overview
 Transform BloomType from a simple typing game into a professional, structured typing education platform with progressive lessons, finger guides, achievement tracking, and engaging visuals.
 

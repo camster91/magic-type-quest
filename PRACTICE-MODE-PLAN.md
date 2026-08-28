@@ -1,5 +1,8 @@
 # BloomType Practice Mode Enhancement Plan
 
+> **Historical plan:** Retained for pedagogy and design context. Use
+> `ROADMAP.md` for the current prioritized backlog.
+
 ## Research Summary: Best Practices for Teaching Kids Typing
 
 Based on research from BBC Dance Mat Typing, TypingFlo, How-to-Type.com, and TypingZen:

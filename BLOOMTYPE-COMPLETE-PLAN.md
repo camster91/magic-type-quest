@@ -1,5 +1,8 @@
 # BLOOMTYPE - Complete Development Plan
 
+> **Historical plan:** This is an original design blueprint, not a live task
+> list. Use `ROADMAP.md` as the source of truth.
+
 ## 🎯 Vision
 A magical garden typing adventure where children learn proper touch typing through play. As players type words correctly, flowers bloom, pets celebrate, and gardens flourish. The game teaches finger placement through visual hints, color-coded keys, and progressive lessons embedded in each game level.
 

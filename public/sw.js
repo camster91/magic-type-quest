@@ -1,5 +1,5 @@
 // BloomType service worker — cache app shell + offline fallback
-const CACHE_NAME = "bloomtype-v18";
+const CACHE_NAME = "bloomtype-v19";
 const PRECACHE_ASSETS = [
   "./",
   "index.html",
@@ -58,4 +58,3 @@ self.addEventListener("fetch", (event) => {
     })
   );
 });
-

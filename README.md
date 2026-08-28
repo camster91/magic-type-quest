@@ -6,12 +6,10 @@ A beautiful, immersive typing game for kids — built for the web with gorgeous 
 
 ## 🚀 Play Now
 
-Open `index.html` in any modern browser. No server required!
-
-Or serve locally:
+Install the locked dependencies and start the Vite development server:
 ```bash
-python3 -m http.server 8080
-# Visit http://localhost:8080
+npm ci
+npm run dev
 ```
 
 ## 🎮 Features
@@ -152,8 +150,8 @@ BloomType                  Purpose
 
 | Check | Result |
 |-------|--------|
-| Build | ✅ `vite build` succeeds (3 HTML pages) |
-| Tests | ✅ 6/6 vitest pass (`data.js` module) |
+| Build | ✅ `vite build` succeeds (4 HTML pages) |
+| Tests | ✅ 156 vitest tests pass across 13 files |
 | npm audit | ✅ 0 vulnerabilities |
 | ESLint | ✅ 0 errors via `npm run lint` |
 
@@ -164,7 +162,7 @@ BloomType                  Purpose
 - More AI-generated backgrounds per level theme
 - Voice narration of words
 - Leaderboards
-- Internationalization (i18n) — see open issues #13 / #14 / #6
+- Expand French and Spanish translations beyond the localized core UI
 
 ---
 

@@ -26,4 +26,9 @@ describe('deployment base paths', () => {
     expect(source).toContain('rel="manifest" href="manifest.json"');
     expect(source).not.toContain('href="/manifest.json"');
   });
+
+  it('the installed PWA starts inside the repository deployment scope', () => {
+    const manifest = JSON.parse(readFileSync(resolve(root, 'public/manifest.json'), 'utf8'));
+    expect(manifest.start_url).toBe('./');
+  });
 });
