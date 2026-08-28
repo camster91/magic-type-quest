@@ -17,9 +17,15 @@ create table if not exists profiles (
   updated_at timestamptz default now()
 );
 
--- RLS: users can read/write their own profile
+-- RLS: players own their profile; a teacher can read profiles in a class code
+-- they own. Cloud sync must never be used without an authenticated session.
 alter table profiles enable row level security;
-create policy "Public read" on profiles for select using (true);
+drop policy if exists "Public read" on profiles;
+drop policy if exists "Owner read" on profiles;
+drop policy if exists "Teacher class read" on profiles;
+drop policy if exists "Self update" on profiles;
+drop policy if exists "Self insert" on profiles;
+create policy "Owner read" on profiles for select using (auth.uid() = id);
 create policy "Self update" on profiles for update using (auth.uid() = id);
 create policy "Self insert" on profiles for insert with check (auth.uid() = id);
 
@@ -42,15 +48,23 @@ create table if not exists game_sessions (
 create index if not exists idx_sessions_profile on game_sessions(profile_id, created_at desc);
 create index if not exists idx_profiles_class on profiles(class_code) where class_code is not null;
 
--- RLS: anyone can insert (anonymous play), only profile owner can read
-create policy "Open insert" on game_sessions for insert with check (true);
-create policy "Owner read" on game_sessions for select using (auth.uid() = profile_id);
+-- RLS: authenticated players may write/read only their own sessions. Teacher
+-- access is added after teacher_codes exists below.
+alter table game_sessions enable row level security;
+drop policy if exists "Open insert" on game_sessions;
+drop policy if exists "Owner insert" on game_sessions;
+drop policy if exists "Owner read" on game_sessions;
+drop policy if exists "Teacher session read" on game_sessions;
+create policy "Owner insert" on game_sessions for insert
+  with check (auth.uid() = profile_id);
+create policy "Owner read" on game_sessions for select
+  using (auth.uid() = profile_id);
 
 -- ===== CLASS ROSTER =====
 create table if not exists class_roster (
   id bigserial primary key,
   class_code text not null,
-  profile_id text not null,
+  profile_id uuid not null references profiles(id) on delete cascade,
   name text,
   avatar text,
   total_words integer default 0,
@@ -64,10 +78,12 @@ create table if not exists class_roster (
 -- RLS must be enabled for policies to take effect
 alter table class_roster enable row level security;
 
--- Teacher: read by class_code
-create policy "Class read" on class_roster for select using (true);
-create policy "Student upsert" on class_roster for insert with check (true);
-create policy "Student update" on class_roster for update using (true);
+drop policy if exists "Class read" on class_roster;
+drop policy if exists "Student upsert" on class_roster;
+drop policy if exists "Student update" on class_roster;
+drop policy if exists "Roster self read" on class_roster;
+drop policy if exists "Roster self insert" on class_roster;
+drop policy if exists "Roster self update" on class_roster;
 
 -- ===== TEACHER CODES =====
 create table if not exists teacher_codes (
@@ -79,7 +95,43 @@ create table if not exists teacher_codes (
 -- RLS must be enabled for policies to take effect
 alter table teacher_codes enable row level security;
 
-create policy "Teacher own codes" on teacher_codes for all using (auth.uid() = teacher_id);
+drop policy if exists "Teacher own codes" on teacher_codes;
+create policy "Teacher own codes" on teacher_codes for all
+  using (auth.uid() = teacher_id)
+  with check (auth.uid() = teacher_id);
+
+-- Student roster writes are self-scoped. Teachers may read roster and session
+-- data only where teacher_codes proves ownership of the requested class.
+create policy "Roster self read" on class_roster for select
+  using (
+    auth.uid() = profile_id or exists (
+      select 1 from teacher_codes tc
+      where tc.class_code = class_roster.class_code
+        and tc.teacher_id = auth.uid()
+    )
+  );
+create policy "Roster self insert" on class_roster for insert
+  with check (auth.uid() = profile_id);
+create policy "Roster self update" on class_roster for update
+  using (auth.uid() = profile_id)
+  with check (auth.uid() = profile_id);
+create policy "Teacher class read" on profiles for select
+  using (
+    auth.uid() = id or exists (
+      select 1 from teacher_codes tc
+      where tc.class_code = profiles.class_code
+        and tc.teacher_id = auth.uid()
+    )
+  );
+create policy "Teacher session read" on game_sessions for select
+  using (
+    auth.uid() = profile_id or exists (
+      select 1 from profiles p
+      join teacher_codes tc on tc.class_code = p.class_code
+      where p.id = game_sessions.profile_id
+        and tc.teacher_id = auth.uid()
+    )
+  );
 
 -- ===== FUNCTIONS (Analytics) =====
 -- Average WPM per class per day

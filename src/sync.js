@@ -25,17 +25,28 @@ export async function getSupabase() {
 /** Check if we have Supabase configured. */
 export async function hasCloudSync() {
   const sb = await getSupabase();
-  return !!sb;
+  if (!sb) return false;
+  const { data } = await sb.auth.getSession();
+  return Boolean(data.session?.user);
+}
+
+async function getAuthenticatedSupabase() {
+  const sb = await getSupabase();
+  if (!sb) return null;
+  const { data } = await sb.auth.getSession();
+  if (!data.session?.user) return null;
+  return { sb, user: data.session.user };
 }
 
 /** Background sync of profile + session snapshot. Fire-and-forget. */
 export async function syncProfile(profile) {
-  const sb = await getSupabase();
-  if (!sb) return;
+  const cloud = await getAuthenticatedSupabase();
+  if (!cloud) return;
+  const { sb, user } = cloud;
   if (!navigator.onLine) return; // Queue handled by syncPending
   try {
-    await sb.from('profiles').upsert({
-      id: profile.uuid,
+    const { error } = await sb.from('profiles').upsert({
+      id: user.id,
       name: profile.name,
       avatar: profile.avatar,
       high_score: profile.highScore || 0,
@@ -48,6 +59,7 @@ export async function syncProfile(profile) {
       class_code: profile.classCode || null,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'id' });
+    if (error) throw error;
   } catch (e) {
     console.warn('Sync failed:', e);
   }
@@ -55,11 +67,12 @@ export async function syncProfile(profile) {
 
 /** Log a game session to the cloud for analytics. */
 export async function logSession(profile, session) {
-  const sb = await getSupabase();
-  if (!sb || !navigator.onLine) return;
+  const cloud = await getAuthenticatedSupabase();
+  if (!cloud || !navigator.onLine) return;
+  const { sb, user } = cloud;
   try {
-    await sb.from('game_sessions').insert({
-      profile_id: profile.uuid,
+    const { error } = await sb.from('game_sessions').insert({
+      profile_id: user.id,
       level: session.level,
       score: session.score || 0,
       wpm: session.wpm || 0,
@@ -70,6 +83,7 @@ export async function logSession(profile, session) {
       skips_used: session.skipsUsed || 0,
       created_at: new Date().toISOString(),
     });
+    if (error) throw error;
   } catch (e) {
     console.warn('Session log failed:', e);
   }
@@ -77,8 +91,9 @@ export async function logSession(profile, session) {
 
 /** Sync class roster to cloud (teacher-side). */
 export async function syncClassRoster(classCode, students) {
-  const sb = await getSupabase();
-  if (!sb || !navigator.onLine) return;
+  const cloud = await getAuthenticatedSupabase();
+  if (!cloud || !navigator.onLine) return;
+  const { sb } = cloud;
   try {
     const rows = Object.values(students).map(st => ({
       class_code: classCode,
@@ -91,7 +106,8 @@ export async function syncClassRoster(classCode, students) {
       completed_levels: st.completedLevels || [],
       updated_at: new Date().toISOString(),
     }));
-    await sb.from('class_roster').upsert(rows, { onConflict: 'class_code,profile_id' });
+    const { error } = await sb.from('class_roster').upsert(rows, { onConflict: 'class_code,profile_id' });
+    if (error) throw error;
   } catch (e) {
     console.warn('Class sync failed:', e);
   }
@@ -99,14 +115,16 @@ export async function syncClassRoster(classCode, students) {
 
 /** Teacher: fetch class roster from cloud. */
 export async function fetchClassRoster(classCode) {
-  const sb = await getSupabase();
-  if (!sb) return null;
+  const cloud = await getAuthenticatedSupabase();
+  if (!cloud) return null;
+  const { sb } = cloud;
   try {
-    const { data } = await sb
+    const { data, error } = await sb
       .from('class_roster')
       .select('*')
       .eq('class_code', classCode)
       .order('total_stars', { ascending: false });
+    if (error) throw error;
     return data;
   } catch (e) {
     console.warn('Fetch class failed:', e);

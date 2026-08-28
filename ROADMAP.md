@@ -43,7 +43,10 @@ children.
 ### P0 — launch gates
 
 1. **Production deployment verification**
-   - Decide whether to enable GitHub code scanning and secret scanning.
+   - Decision recorded 2026-08-28: CodeQL and secret scanning remain disabled
+     because GitHub reports both features unavailable for this private
+     repository. Revisit if the repository becomes public or receives GitHub
+     Advanced Security.
    - Maintain the Ashbi runner and verify its container publishing/registry
      credentials after workflow or host changes.
    - Completed 2026-08-28: validated trusted HTTPS, hosted base path, manifest,
@@ -57,6 +60,9 @@ children.
    - Verify row-level security with separate teacher/student accounts and
      document data retention, deletion, consent, and incident ownership.
    - Do not collect real student data before this gate is signed off.
+   - Completed 2026-08-28: removed public/unrestricted Supabase policies,
+     required authenticated cloud sessions, and added regression coverage for
+     the RLS boundary. Production cloud credentials remain intentionally unset.
 
 3. **Authenticated end-to-end QA**
    - Exercise class creation/join, student play, sync conflict recovery,
