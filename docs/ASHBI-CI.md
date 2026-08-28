@@ -8,6 +8,7 @@ BloomType CI runs on the repository-scoped self-hosted runner
 - GitHub labels: `self-hosted`, `Linux`, `X64`, `ashbi-vps`,
   `magic-type-quest`
 - Host service user: `magicci`
+- Host service UID/GID: `986:986` (also used by the CI job container)
 - Runner directory: `/opt/actions-runner`
 - Work directory: `/opt/actions-runner/_work`
 - systemd service:
@@ -60,6 +61,10 @@ that file during upgrades or the systemd service will fail at startup.
 Update the Playwright container tag together with the `playwright` and
 `@playwright/test` package versions so browser binaries and the test library
 remain compatible.
+
+The CI container must run with `--user 986:986`. Running it as container root
+leaves the shared `_work` checkout root-owned and prevents the following
+host-level image workflow from cleaning or checking out the repository.
 
 ## Removal
 
