@@ -197,7 +197,12 @@ test('language selection applies immediately and persists after reload', async (
   await page.selectOption('#language-select', 'fr');
 
   await expect(page.locator('#btn-save-profile')).toHaveText('Enregistrer le profil');
+  await expect(page.locator('#btn-delete-profile')).toHaveText('Supprimer les progrès locaux');
+  await expect(page.locator('.ach-title').first()).toHaveText('Premiers pas');
   await page.click('#btn-save-profile');
+  await page.click('#btn-lesson-select');
+  await expect(page.locator('.level-card-name').first()).toContainText('Jardin de la rangée de repos');
+  await page.click('#btn-lesson-back');
   await page.reload();
   await page.click('#btn-profile');
 

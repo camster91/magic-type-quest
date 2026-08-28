@@ -12,6 +12,7 @@ import { getWeakKeys } from './drills.js';
 import { recordKeyPractice } from './spacedRep.js';
 import { hexToRgba } from './utils.js';
 import { formatNumber, t } from './i18n.js';
+import { localizeAchievement, localizeChapter, localizeLesson, localizeQuest } from './contentTranslations.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -43,7 +44,7 @@ function isTouchDevice() {
 // ===== LESSON RESOLVER =====
 function currentLesson() {
   if (gameState.drillLesson) return gameState.drillLesson;
-  return getLessonByLevel(gameState.level);
+  return localizeLesson(getLessonByLevel(gameState.level));
 }
 
 // ===== AUDIO SYSTEM =====
@@ -1719,7 +1720,8 @@ function levelComplete() {
   const newlyCompletedQuests = evaluateQuests(gameState.profile, gameState);
   for (const q of newlyCompletedQuests) {
     // Show mini toast for quest completion (reuses achievement toast element)
-    achievementQueue.push({ title: '📅 Quest Done!', desc: q.desc, icon: q.icon });
+    const localizedQuest = localizeQuest(q);
+    achievementQueue.push({ title: `📅 ${t('daily.questDone')}`, desc: localizedQuest.desc, icon: q.icon });
   }
   if (newlyCompletedQuests.length > 0) {
     showNextAchievement();
@@ -1822,7 +1824,8 @@ function checkAchievements() {
   
   const newlyUnlocked = checkAchievementsNew(gameState.profile, gameState);
   
-  for (const ach of newlyUnlocked) {
+  for (const achievement of newlyUnlocked) {
+    const ach = localizeAchievement(achievement);
     achievementQueue.push({ title: ach.title, desc: ach.desc, icon: ach.icon });
   }
   
@@ -2090,7 +2093,7 @@ export function startGame(level = 1) {
 
   // Show chapter intro overlay for non-replayed levels. The first-time finger
   // guide takes precedence so two modal dialogs are never exposed at once.
-  const chapter = getChapter(level);
+  const chapter = localizeChapter(getChapter(level), level);
   const chapterOverlay = document.getElementById('chapter-intro');
   if (chapterOverlay && chapter && !shouldShowFingerGuide && !gameState.profile?.completedLevels?.includes(level)) {
     const titleEl = chapterOverlay.querySelector('.chapter-title');

@@ -12,6 +12,7 @@ import { getDueKeys } from './spacedRep.js';
 import { joinClass } from './classroom.js';
 import { escapeHTML } from './utils.js';
 import { applyTranslations, formatDate, formatNumber, setLocale, t } from './i18n.js';
+import { localizeAchievement, localizeAchievementCategory, localizeLesson, localizeQuest } from './contentTranslations.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -137,7 +138,7 @@ function handlePracticeKey(e) {
       if (gameState.practiceWordIndex >= gameState.currentPracticeWords.length) {
         // Lesson complete
         clearInterval(practiceInterval);
-        showAchievement('Practice Master', `Lesson ${practiceLesson.name} Complete!`, '🎯');
+        showAchievement(t('practice.master'), t('practice.lessonComplete', { name: practiceLesson.name }), '🎯');
         // Reset and go back to menu after a delay
         setTimeout(() => {
           showScreen('menu');
@@ -148,7 +149,7 @@ function handlePracticeKey(e) {
       } else {
         currentPracticeWord = gameState.currentPracticeWords[gameState.practiceWordIndex];
         currentWordIndex = 0;
-        showAchievement('Word Typed!', `You typed "${currentPracticeWord}"!`, '✅');
+        showAchievement(t('practice.wordTyped'), t('practice.typedWord', { word: currentPracticeWord }), '✅');
       }
     }
     updatePracticeDisplay();
@@ -221,7 +222,8 @@ function renderLevelCards() {
     7: 'master.png', 8: 'master.png', 9: 'master.png', 10: 'master.png'
   };
 
-  container.innerHTML = Object.values(LESSON_LEVELS).map(lev => {
+  container.innerHTML = Object.values(LESSON_LEVELS).map(rawLesson => {
+    const lev = localizeLesson(rawLesson);
     const unlocked = isLevelUnlocked(lev.id, gameState.profile);
     const done = completed.includes(lev.id);
     const status = done ? 'completed' : !unlocked ? 'locked' : 'play';
@@ -314,7 +316,8 @@ function updateMenuStats() {
   const list = document.getElementById('quests-list');
   if (list) {
     list.innerHTML = '';
-    for (const q of quests) {
+    for (const rawQuest of quests) {
+      const q = localizeQuest(rawQuest);
       const item = document.createElement('div');
       item.className = `quest-item ${q.completed ? 'completed' : ''}`;
       item.innerHTML = `
@@ -364,7 +367,9 @@ function getCurrentLevelInfo() {
     if (completed.includes(lv)) current = lv + 1;
   }
   if (current > 6) current = 6;
-  return LEVEL_INFO.find(l => l.id === current) || LEVEL_INFO[0];
+  const info = LEVEL_INFO.find(l => l.id === current) || LEVEL_INFO[0];
+  const lesson = localizeLesson(getLessonByLevel(info.id));
+  return { ...info, name: lesson?.name || info.name };
 }
 
 function updateHomeProgressCard() {
@@ -534,7 +539,8 @@ function loadProfileScreen() {
   const catContainer = document.getElementById('achievements-categories');
   if (catContainer) {
     catContainer.innerHTML = '';
-    for (const cat of Object.values(stats.byCategory)) {
+    for (const [key, rawCategory] of Object.entries(stats.byCategory)) {
+      const cat = localizeAchievementCategory(key, rawCategory);
       const pill = document.createElement('div');
       pill.className = 'cat-pill';
       pill.innerHTML = `
@@ -549,7 +555,7 @@ function loadProfileScreen() {
   const grid = document.getElementById('achievements-grid');
   if (grid) {
     grid.innerHTML = '';
-    const all = getAllAchievements(p);
+    const all = getAllAchievements(p).map(localizeAchievement);
     for (const ach of all) {
       const item = document.createElement('div');
       item.className = `achievement-item ${ach.unlocked ? 'unlocked' : ''}`;
@@ -616,8 +622,8 @@ function loadGardenScreen() {
     grid.innerHTML = `
       <div class="garden-empty">
         <div class="garden-empty-emoji">🌱</div>
-        <p>Your garden is empty!</p>
-        <p class="garden-empty-hint">Play levels to plant flowers here.</p>
+        <p>${t('garden.empty')}</p>
+        <p class="garden-empty-hint">${t('garden.emptyHint')}</p>
       </div>
     `;
     return;
@@ -698,19 +704,20 @@ function bindEvents() {
   });
 
   $('btn-delete-profile')?.addEventListener('click', () => {
-    const confirmed = window.confirm(
-      'Delete this student’s BloomType progress from this browser? This cannot be undone.',
-    );
+    const confirmed = window.confirm(t('profile.deleteConfirm'));
     if (!confirmed) return;
     deleteLocalProfile();
     updateMenuStats();
     showScreen('menu');
-    showAchievement('Progress deleted', 'This browser no longer stores the student profile.', '🗑️');
+    showAchievement(t('profile.deleted'), t('profile.deletedDesc'), '🗑️');
   });
 
   $('language-select')?.addEventListener('change', (event) => {
-    setLocale(event.target.value);
+    gameState.profile.locale = setLocale(event.target.value);
     applyTranslations();
+    updateMenuStats();
+    renderLevelCards();
+    loadProfileScreen();
   });
   
   // Avatar picker

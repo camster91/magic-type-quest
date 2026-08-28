@@ -47,7 +47,7 @@ describe('F3 — Pet hero: DOM scaffolding in index.html', () => {
     expect(indexHtml).toMatch(/<div class="pet-hero-stage">/);
     expect(indexHtml).toMatch(/<img id="pet-hero-img" class="pet-hero-img" src="assets\/pets\/flower-idle\.png"/);
     expect(indexHtml).toMatch(/<div id="pet-hero-bubble" class="pet-hero-bubble" aria-live="polite">/);
-    expect(indexHtml).toMatch(/<div class="pet-evolution" id="pet-evolution" aria-label="Pet evolution stage">/);
+    expect(indexHtml).toMatch(/<div class="pet-evolution" id="pet-evolution" aria-label="Pet evolution stage"[^>]*>/);
   });
 
   it('evolution dots render all 3 stages (sprout / bud / bloom)', () => {

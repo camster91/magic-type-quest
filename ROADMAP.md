@@ -9,7 +9,7 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 177 tests pass across 19 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 179 tests pass across 20 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -91,8 +91,15 @@ children.
 
 ### P1 — product quality after launch gates
 
-1. Translate lesson names, narrative content, achievements, quests, parent and
-   teacher pages; have fluent reviewers check French and Spanish.
+1. Complete French and Spanish localization.
+   - Completed 2026-08-28: enforced exact core-dictionary parity; translated
+     lesson, chapter, quest, achievement, tutorial, practice, garden, profile,
+     game-result, and core accessibility content; and added unit coverage for
+     every dynamic content ID plus browser coverage for immediate and persisted
+     language changes.
+   - Still required: translate the parent and teacher pages, pet personality
+     lines, rotating menu taglines, and finger-name vocabulary; then have fluent
+     French and Spanish reviewers check the complete learner experience.
 2. Complete keyboard-only, screen-reader, contrast, reduced-motion, touch
    keyboard, and small-screen QA.
    - Completed 2026-08-28: keyboard-only first-time start, tutorial, finger
@@ -128,7 +135,8 @@ children.
   dependency/security updates, base-path regression coverage, and repeatable
   production-build browser smoke tests.
 - Core localization infrastructure with persisted English, French, and Spanish
-  selection plus locale-aware number/date formatting.
+  selection, locale-aware number/date formatting, exact dictionary parity, and
+  translated curriculum, chapter, quest, achievement, tutorial, and game UI.
 - Game dialogs expose names and modal semantics, keep focus inside the active
   dialog, pause gameplay while instructions are open, and restore a useful
   focus target when the student resumes or exits.

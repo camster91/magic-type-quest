@@ -24,7 +24,7 @@
   <!-- Compact top bar: brand left, streak right. ONE thing per side. -->
   <header class="menu-top">
     <h1 class="menu-brand">BloomType</h1>
-    <div id="streak-prominent" class="streak-prominent streak-chip streak-hidden" role="status" aria-live="polite" aria-label="Daily streak">
+    <div id="streak-prominent" class="streak-prominent streak-chip streak-hidden" role="status" aria-live="polite" aria-label="Daily streak" data-i18n-aria-label="a11y.dailyStreak">
       <span class="streak-icon" aria-hidden="true">🔥</span>
       <span class="streak-value"><span id="streak-count">0</span></span>
     </div>
@@ -34,7 +34,7 @@
        T29: a small "60s" pill sits on the right of the progress bar so the
        Daily Moment is reachable in 1 tap from the home screen (not just
        behind the at-risk streak warning). -->
-  <div class="progress-card" aria-label="Your progress">
+  <div class="progress-card" aria-label="Your progress" data-i18n-aria-label="a11y.yourProgress">
     <div class="progress-row">
       <span class="progress-level" id="menu-level-badge">Level 1 · Home Row</span>
       <span class="progress-next" id="menu-level-next">Type 5 more words to unlock Lv 2</span>
@@ -43,24 +43,24 @@
       <div class="progress-bar">
         <div class="progress-fill" id="menu-level-fill" style="width:0%"></div>
       </div>
-      <button type="button" id="btn-dm-pill" class="dm-pill" aria-label="Start a 60-second Daily Moment">
+      <button type="button" id="btn-dm-pill" class="dm-pill" aria-label="Start a 60-second Daily Moment" data-i18n-aria-label="a11y.startDaily">
         <span class="dm-pill-icon" aria-hidden="true">⚡</span>
         <span class="dm-pill-text">60s</span>
       </button>
     </div>
-    <div class="keyboard-mini" id="menu-keyboard-mini" aria-label="Keys you've learned">
+    <div class="keyboard-mini" id="menu-keyboard-mini" aria-label="Keys you've learned" data-i18n-aria-label="a11y.keysLearned">
       <!-- populated by main.js: mastered keys highlighted -->
     </div>
   </div>
 
   <!-- Pet: the brand. Centered, single focal point with the CTA. -->
   <!-- F3 contract: must contain #pet-hero with .pet-hero-img, .pet-hero-bubble, and .pet-evolution -->
-  <div id="pet-hero" class="pet-hero" aria-label="Your pet companion">
+  <div id="pet-hero" class="pet-hero" aria-label="Your pet companion" data-i18n-aria-label="a11y.petCompanion">
     <div class="pet-hero-stage">
       <img id="pet-hero-img" class="pet-hero-img" src="assets/pets/flower-idle.png" alt="Your pet" />
       <div id="pet-hero-bubble" class="pet-hero-bubble" aria-live="polite">Hi! I'm Bloom 🌸</div>
     </div>
-    <div class="pet-evolution" id="pet-evolution" aria-label="Pet evolution stage">
+    <div class="pet-evolution" id="pet-evolution" aria-label="Pet evolution stage" data-i18n-aria-label="a11y.petEvolution">
       <span class="evo-dot active" data-stage="1" title="Sprout">🌱</span>
       <span class="evo-dot" data-stage="2" title="Bud">🌿</span>
       <span class="evo-dot" data-stage="3" title="Bloom">🌸</span>
@@ -71,7 +71,7 @@
        Surfaces as a streak warning (amber + pulse) when isStreakAtRisk is true:
        streak >= 2 AND lastDailyMoment > 20h ago. T25. -->
   <div id="daily-moment-warning" class="daily-moment-warning" hidden>
-    <button type="button" id="btn-daily-moment" class="btn-daily-moment" aria-label="Start a 60-second Daily Moment to keep your streak">
+    <button type="button" id="btn-daily-moment" class="btn-daily-moment" aria-label="Start a 60-second Daily Moment" data-i18n-aria-label="a11y.startDaily">
       <span class="btn-icon">⚡</span>
       <span class="btn-text">
         <span class="btn-title" data-i18n="menu.daily">60-second Daily Moment</span>
@@ -82,7 +82,7 @@
   </div>
 
   <!-- SINGLE primary CTA. The biggest, brightest thing on the screen. -->
-  <button type="button" id="btn-start" class="btn-cta-primary" aria-label="Start typing to plant flowers">
+  <button type="button" id="btn-start" class="btn-cta-primary" aria-label="Start typing to plant flowers" data-i18n-aria-label="a11y.startTyping">
     <span class="cta-emoji">🌱</span>
     <span class="cta-text" data-i18n="menu.cta">Type to plant</span>
   </button>
@@ -90,7 +90,7 @@
   <!-- Small icon row: modes, not parallel choices. -->
   <!-- F3 contract: <div class="menu-dock"> with 8+ .menu-dock-item children.
        T15 visual: a 4-icon row. Hidden 8-item dock is in DOM for contract. -->
-  <div class="menu-dock" aria-label="Other screens">
+  <div class="menu-dock" aria-label="Other screens" data-i18n-aria-label="a11y.otherScreens">
     <button type="button" class="menu-dock-item menu-icon" aria-label="Lessons" id="btn-lesson-select">
       <span class="mi-emoji">📚</span><span class="mi-label" data-i18n="nav.lessons">Lessons</span>
     </button>
@@ -124,7 +124,7 @@
   <!-- Daily Quests: collapsible, hidden by default unless streak/quest is active. -->
   <div class="daily-quests" id="daily-quests" style="display:none">
     <div class="quests-header">
-      <span>📅 Daily Quests</span>
+      <span>📅 <span data-i18n="menu.dailyQuests">Daily Quests</span></span>
       <span class="streak-badge" id="quest-streak">🔥 0</span>
     </div>
     <div class="quests-list" id="quests-list"></div>
@@ -136,7 +136,7 @@
   <div class="menu-bg"></div>
   <div class="screen-header">
     <button type="button" id="btn-lesson-back" class="btn-back">← <span data-i18n="nav.back">Back</span></button>
-    <h2>📚 Pick Your Adventure!</h2>
+    <h2>📚 <span data-i18n="lesson.pick">Pick Your Adventure!</span></h2>
   </div>
   <div id="level-cards" class="level-grid"></div>
 </div>
@@ -146,7 +146,7 @@
   <div class="menu-bg"></div>
   <div class="screen-header">
     <button type="button" id="btn-practice-back" class="btn-back">← <span data-i18n="nav.back">Back</span></button>
-    <h2>🎯 Practice Power!</h2>
+    <h2>🎯 <span data-i18n="practice.title">Practice Power!</span></h2>
   </div>
   <div class="practice-viewport">
     <div id="practice-char-display" class="practice-char-display">A</div>
@@ -154,7 +154,7 @@
     <div id="practice-finger-hint" class="practice-finger-hint">Use your LEFT PINKY</div>
   </div>
   <div class="practice-progress">
-    <div class="practice-bar" id="practice-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Practice Progress"><div id="practice-fill" class="practice-fill"></div></div>
+    <div class="practice-bar" id="practice-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Practice Progress" data-i18n-aria-label="a11y.practiceProgress"><div id="practice-fill" class="practice-fill"></div></div>
     <span id="practice-count">1 / 26</span>
   </div>
   <div class="practice-stats">
@@ -202,9 +202,9 @@
 </div>
 
 <!-- ===== GAME SCREEN ===== -->
-<div id="game-screen" class="screen" tabindex="-1" aria-label="Typing game">
+<div id="game-screen" class="screen" tabindex="-1" aria-label="Typing game" data-i18n-aria-label="a11y.typingGame">
   <canvas id="game-canvas"></canvas>
-  <input type="text" id="mobile-input" inputmode="text" autocapitalize="off" autocomplete="off" spellcheck="false" aria-label="Type the current word" tabindex="-1" style="position:fixed;bottom:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1;">
+  <input type="text" id="mobile-input" inputmode="text" autocapitalize="off" autocomplete="off" spellcheck="false" aria-label="Type the current word" data-i18n-aria-label="a11y.typeCurrentWord" tabindex="-1" style="position:fixed;bottom:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1;">
 
   <!-- HUD -->
   <div class="hud">
@@ -226,13 +226,13 @@
         <span id="heart-4" class="heart">❤</span>
         <span id="heart-5" class="heart">❤</span>
       </div>
-      <button type="button" id="btn-pause" class="btn-icon-only" aria-label="Pause Game" title="Pause Game (Esc)">⏸</button>
+      <button type="button" id="btn-pause" class="btn-icon-only" aria-label="Pause game" data-i18n-aria-label="a11y.pauseGame" title="Pause Game (Esc)">⏸</button>
     </div>
   </div>
 
   <!-- T30: live gameplay HUD — WPM, accuracy, words done. Subtle pill, top-left, -->
   <!-- small + low-opacity so the centered word stays the dominant focal point.   -->
-  <div id="live-hud" class="live-hud" aria-live="polite" aria-label="Live typing progress">
+  <div id="live-hud" class="live-hud" aria-live="polite" aria-label="Live typing progress" data-i18n-aria-label="a11y.liveProgress">
     <div class="lh-row lh-stats"><span class="lh-emoji">⚡</span> <span id="live-wpm">0</span> <span class="lh-unit">wpm</span> <span class="lh-dot">·</span> <span id="live-accuracy">100</span><span class="lh-unit">%</span></div>
     <div class="lh-row lh-words"><span class="lh-emoji">🌸</span> <span id="live-words">0</span><span class="lh-unit"> / </span><span id="live-words-target">5</span></div>
     <div class="lh-progress" aria-hidden="true"><div class="lh-progress-fill" id="live-progress-fill"></div></div>
@@ -263,7 +263,7 @@
   </div>
 
   <!-- Level Progress Bar -->
-  <div class="level-progress-wrap" id="level-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Level Progress">
+  <div class="level-progress-wrap" id="level-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Level Progress" data-i18n-aria-label="a11y.levelProgress">
     <div class="level-progress-fill" id="level-progress-fill" style="width:0%"></div>
   </div>
 
@@ -310,7 +310,7 @@
   <div id="achievement-toast" class="achievement-toast hidden">
     <div class="toast-icon" id="toast-icon">🏆</div>
     <div class="toast-text">
-      <div class="toast-title" id="toast-title">Achievement Unlocked!</div>
+      <div class="toast-title" id="toast-title" data-i18n="achievement.unlocked">Achievement Unlocked!</div>
       <div class="toast-desc" id="toast-desc"></div>
     </div>
   </div>
@@ -327,25 +327,25 @@
   <!-- Chapter Intro Overlay -->
   <div id="chapter-intro" class="overlay hidden chapter-intro-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="chapter-title">
     <div class="overlay-card chapter-card">
-      <div class="chapter-badge">New Chapter</div>
+      <div class="chapter-badge" data-i18n="chapter.new">New Chapter</div>
       <h2 id="chapter-title" class="chapter-title">The Garden Awakens</h2>
       <p class="chapter-subtitle">Home Row Garden</p>
       <p class="chapter-intro-text">Bloom has been sleeping all winter. Wake them up by typing home row letters!</p>
       <p class="chapter-pet-line">"First letters of the season! Let's wake this garden up!" — Bloom</p>
-      <div class="chapter-tap-hint">Ready when you are.</div>
-      <button type="button" id="btn-chapter-continue" class="btn btn-primary">Start lesson</button>
+      <div class="chapter-tap-hint" data-i18n="chapter.ready">Ready when you are.</div>
+      <button type="button" id="btn-chapter-continue" class="btn btn-primary" data-i18n="chapter.start">Start lesson</button>
     </div>
   </div>
 
   <!-- Pet Evolution Overlay -->
   <div id="evolution-overlay" class="overlay hidden evolution-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="evolution-title">
     <div class="overlay-card evolution-card">
-      <div class="evolution-badge">🌟 Evolution!</div>
+      <div class="evolution-badge">🌟 <span data-i18n="evolution.badge">Evolution!</span></div>
       <div class="evolution-stage" id="evolution-stage-img">🌱</div>
       <h2 id="evolution-title">Baby Bloom!</h2>
       <p id="evolution-desc">Your typing has helped Bloom grow!</p>
       <p class="evolution-pet-line" id="evolution-pet-line">"I'm getting stronger thanks to you!"</p>
-      <button type="button" id="btn-evolution-continue" class="btn btn-primary btn-lg">Continue →</button>
+      <button type="button" id="btn-evolution-continue" class="btn btn-primary btn-lg"><span data-i18n="common.continue">Continue</span> →</button>
     </div>
   </div>
 
@@ -357,10 +357,10 @@
       <div class="level-stats">
         <p><span data-i18n="metric.score">Score</span>: <span id="level-score">0</span></p>
         <p><span data-i18n="metric.words">Words</span>: <span id="level-words">0</span></p>
-        <p>Best Combo: <span id="level-combo">0</span></p>
+        <p><span data-i18n="game.bestCombo">Best Combo</span>: <span id="level-combo">0</span></p>
       </div>
-      <button type="button" id="btn-next-level" class="btn btn-primary">Next Level →</button>
-      <button type="button" id="btn-replay" class="btn btn-secondary">Replay</button>
+      <button type="button" id="btn-next-level" class="btn btn-primary"><span data-i18n="game.next">Next Level</span> →</button>
+      <button type="button" id="btn-replay" class="btn btn-secondary" data-i18n="game.replay">Replay</button>
       <button type="button" id="btn-level-menu" class="btn btn-secondary">📚 <span data-i18n="nav.allLessons">All Lessons</span></button>
     </div>
   </div>
@@ -369,17 +369,17 @@
   <div id="gameover-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="gameover-title">
     <div class="overlay-card gameover-card">
       <div class="gameover-emoji">😢</div>
-      <h2 id="gameover-title">Almost!</h2>
-      <p class="gameover-message">The words snuck past us! Bloom believes in you — try again!</p>
+      <h2 id="gameover-title" data-i18n="game.almost">Almost!</h2>
+      <p class="gameover-message" data-i18n="game.overMessage">The words snuck past us! Bloom believes in you — try again!</p>
       <div class="gameover-stats">
         <p>🌸 <span data-i18n="metric.finalScore">Final Score</span>: <span id="final-score">0</span></p>
-        <p>🔥 Best Combo: <span id="final-combo">0</span></p>
+        <p>🔥 <span data-i18n="game.bestCombo">Best Combo</span>: <span id="final-combo">0</span></p>
         <p>📝 <span data-i18n="metric.wordsTyped">Words Typed</span>: <span id="final-words">0</span></p>
       </div>
       <div class="gameover-buttons">
-        <button type="button" id="btn-retry" class="btn btn-primary">Try Again</button>
-        <button type="button" id="btn-drill" class="btn btn-accent hidden">🎯 Drill Weak Keys</button>
-        <button type="button" id="btn-menu" class="btn btn-secondary">Main Menu</button>
+        <button type="button" id="btn-retry" class="btn btn-primary" data-i18n="game.tryAgain">Try Again</button>
+        <button type="button" id="btn-drill" class="btn btn-accent hidden">🎯 <span data-i18n="game.drillWeak">Drill Weak Keys</span></button>
+        <button type="button" id="btn-menu" class="btn btn-secondary" data-i18n="game.mainMenu">Main Menu</button>
       </div>
     </div>
   </div>
@@ -387,7 +387,7 @@
   <!-- Finger Guide Overlay -->
   <div id="finger-guide" class="finger-guide hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="finger-guide-title">
     <div class="finger-guide-card">
-      <h3 id="finger-guide-title">👐 Home Row Position</h3>
+      <h3 id="finger-guide-title">👐 <span data-i18n="finger.title">Home Row Position</span></h3>
       <div class="finger-hands">
         <div class="hand left-hand">
           <div class="finger pinky active">A</div>
@@ -403,8 +403,8 @@
           <div class="finger pinky active">;</div>
         </div>
       </div>
-      <p class="finger-guide-text">Rest your fingers here! 🏠</p>
-      <button type="button" id="btn-close-finger-guide" class="btn btn-primary">Got it! ✨</button>
+      <p class="finger-guide-text" data-i18n="finger.text">Rest your fingers here! 🏠</p>
+      <button type="button" id="btn-close-finger-guide" class="btn btn-primary" data-i18n="finger.gotIt">Got it! ✨</button>
     </div>
   </div>
 
@@ -414,35 +414,35 @@
       <div class="tutorial-slides">
         <div class="tutorial-slide active" data-slide="0">
           <div class="tutorial-emoji">🌸</div>
-          <h2 id="tutorial-title-0">Welcome to BloomType!</h2>
-          <p>Words bloom into flowers as you type them!</p>
-          <p>Type each letter before the word reaches the bottom.</p>
+          <h2 id="tutorial-title-0" data-i18n="tutorial.welcome">Welcome to BloomType!</h2>
+          <p data-i18n="tutorial.welcomeLine1">Words bloom into flowers as you type them!</p>
+          <p data-i18n="tutorial.welcomeLine2">Type each letter before the word reaches the bottom.</p>
           <div class="tutorial-dots">
             <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
           </div>
-          <button type="button" class="btn btn-tutorial-next">Next →</button>
+          <button type="button" class="btn btn-tutorial-next"><span data-i18n="tutorial.next">Next</span> →</button>
         </div>
         <div class="tutorial-slide" data-slide="1">
           <div class="tutorial-emoji">⌨️</div>
-          <h2 id="tutorial-title-1">How to Play</h2>
-          <p>Look at the word at the top of the screen.</p>
-          <p>Press ONE key at a time on your keyboard.</p>
-          <p>Watch the keyboard light up to show you which finger to use!</p>
+          <h2 id="tutorial-title-1" data-i18n="tutorial.how">How to Play</h2>
+          <p data-i18n="tutorial.howLine1">Look at the word at the top of the screen.</p>
+          <p data-i18n="tutorial.howLine2">Press ONE key at a time on your keyboard.</p>
+          <p data-i18n="tutorial.howLine3">Watch the keyboard light up to show you which finger to use!</p>
           <div class="tutorial-dots">
             <span class="dot"></span><span class="dot active"></span><span class="dot"></span>
           </div>
-          <button type="button" class="btn btn-tutorial-next">Next →</button>
+          <button type="button" class="btn btn-tutorial-next"><span data-i18n="tutorial.next">Next</span> →</button>
         </div>
         <div class="tutorial-slide" data-slide="2">
           <div class="tutorial-emoji">🎯</div>
-          <h2 id="tutorial-title-2">Get High Scores!</h2>
-          <p>Chain words for COMBO bonuses! 🔥</p>
-          <p>Each word plants a flower in your garden! 🌺</p>
-          <p>Press <kbd>Space</kbd> to skip a tricky word.</p>
+          <h2 id="tutorial-title-2" data-i18n="tutorial.scores">Get High Scores!</h2>
+          <p data-i18n="tutorial.scoreLine1">Chain words for COMBO bonuses! 🔥</p>
+          <p data-i18n="tutorial.scoreLine2">Each word plants a flower in your garden! 🌺</p>
+          <p data-i18n="tutorial.scoreLine3">Press Space to skip a tricky word.</p>
           <div class="tutorial-dots">
             <span class="dot"></span><span class="dot"></span><span class="dot active"></span>
           </div>
-          <button type="button" id="btn-start-game" class="btn btn-primary btn-lg btn-glow">Begin! 🌸</button>
+          <button type="button" id="btn-start-game" class="btn btn-primary btn-lg btn-glow" data-i18n="tutorial.begin">Begin! 🌸</button>
         </div>
       </div>
     </div>
@@ -493,7 +493,7 @@
       <div class="profile-stat">
         <span class="ps-icon">🏆</span>
         <span class="ps-num" id="profile-achievements">0</span>
-        <span class="ps-label">Achvmts</span>
+        <span class="ps-label" data-i18n="profile.achievements">Achievements</span>
       </div>
     </div>
     <div class="profile-achievements-section">
@@ -528,8 +528,8 @@
       <input type="checkbox" id="voice-toggle"> 🗣 <span data-i18n="profile.voice">Voice Narration</span>
     </label>
     <button type="button" id="btn-save-profile" class="btn btn-primary" data-i18n="profile.save">Save Profile</button>
-    <button type="button" id="btn-delete-profile" class="btn btn-danger">Delete local progress</button>
-    <p class="profile-delete-hint">Removes this student’s profile, progress, and class membership from this browser. It does not delete school cloud data.</p>
+    <button type="button" id="btn-delete-profile" class="btn btn-danger" data-i18n="profile.delete">Delete local progress</button>
+    <p class="profile-delete-hint" data-i18n="profile.deleteHint">Removes this student’s profile, progress, and class membership from this browser. It does not delete school cloud data.</p>
   </div>
 </div>
 
@@ -541,7 +541,7 @@
     <h2>🌺 <span data-i18n="garden.title">My Garden</span></h2>
   </div>
   <div class="garden-stats" id="garden-stats">
-    <span>🌸 <span id="garden-count">0</span> flowers planted</span>
+    <span>🌸 <span id="garden-count">0</span> <span data-i18n="garden.plantedLabel">flowers planted</span></span>
   </div>
   <div class="garden-grid" id="garden-grid">
     <!-- Populated by JS -->

@@ -151,7 +151,7 @@ BloomType                  Purpose
 | Check | Result |
 |-------|--------|
 | Build | ✅ `vite build` succeeds (4 HTML pages) |
-| Tests | ✅ 177 vitest tests pass across 19 files |
+| Tests | ✅ 179 vitest tests pass across 20 files |
 | Browser journeys | ✅ 8 Playwright tests cover classroom join/export/leave, responsive home actions, keyboard onboarding, the production build, PWA scope, offline reload, and cache cleanup |
 | Remote CI | ✅ Core checks run on the repository-scoped Ashbi VPS runner |
 | npm audit | ✅ 0 vulnerabilities |
@@ -164,7 +164,8 @@ BloomType                  Purpose
 - More AI-generated backgrounds per level theme
 - Voice narration of words
 - Leaderboards
-- Expand French and Spanish translations beyond the localized core UI
+- Translate the parent/teacher pages and remaining personality, tagline, and
+  finger-name copy; then complete fluent French and Spanish review
 
 ---
 

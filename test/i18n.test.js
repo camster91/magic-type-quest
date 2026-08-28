@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { formatDate, formatNumber, getLocale, setLocale, supportedLocales, t } from '../src/i18n.js';
+import { dictionaries, formatDate, formatNumber, getLocale, setLocale, supportedLocales, t } from '../src/i18n.js';
 
 beforeEach(() => {
   globalThis.document = { documentElement: { lang: 'en' } };
@@ -7,11 +7,14 @@ beforeEach(() => {
 });
 
 describe('localization', () => {
-  it('supports English, French, and Spanish with English fallback', () => {
+  it('supports English, French, and Spanish without missing core keys', () => {
     expect(supportedLocales).toEqual(['en', 'fr', 'es']);
+    const englishKeys = Object.keys(dictionaries.en).sort();
+    expect(Object.keys(dictionaries.fr).sort()).toEqual(englishKeys);
+    expect(Object.keys(dictionaries.es).sort()).toEqual(englishKeys);
     setLocale('fr');
     expect(t('nav.lessons')).toBe('Leçons');
-    expect(t('profile.classHint')).toBe('Ask your teacher for a class code to share your progress.');
+    expect(t('profile.classHint')).toContain('enseignant');
   });
 
   it('falls back to English for unsupported locales', () => {
