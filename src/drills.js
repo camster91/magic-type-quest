@@ -35,7 +35,7 @@ export function generateDrillWords(weakKeys, allWords, count = 20) {
 }
 
 /** Build a drill lesson object from weak keys. */
-export function buildDrillLesson(weakKeys, profile) {
+export function buildDrillLesson(weakKeys) {
   if (!weakKeys || weakKeys.length === 0) return null;
   const allWords = [];
   // Collect words from all levels

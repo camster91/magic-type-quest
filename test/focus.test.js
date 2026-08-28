@@ -33,8 +33,9 @@ describe('Focus mechanic - source contracts', () => {
     expect(engineSrc).toMatch(/hue\s*=\s*Math\.round\(\(this\.focus\s*\/\s*100\)\s*\*\s*120\)/);
   });
 
-  it('Background parallax loads from /assets/backgrounds/ not -new suffix', () => {
-    expect(engineSrc).toMatch(/loadImg\(['"]\/assets\/backgrounds\/magical_garden-sky\.png['"]\)/);
+  it('Background parallax uses a deployment-base-safe assets/backgrounds path', () => {
+    expect(engineSrc).toMatch(/loadImg\(['"]assets\/backgrounds\/magical_garden-sky\.png['"]\)/);
+    expect(engineSrc).not.toMatch(/loadImg\(['"]\/assets\//);
     expect(engineSrc).not.toMatch(/backgrounds-new\/magical_garden/);
   });
 });

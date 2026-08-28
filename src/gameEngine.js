@@ -2,9 +2,9 @@
  * BloomType - Core Game Engine
  * A magical garden typing adventure for kids
  */
-import { LESSON_LEVELS, getLessonByLevel, getFingerHint } from './lessonLevels.js';
+import { getLessonByLevel, getFingerHint } from './lessonLevels.js';
 import { gameState, loadProfile, saveProfile } from './state.js';
-import { say, getChapter, getEvolutionStage, PET_NAME_DEFAULT } from './story.js';
+import { say, getChapter, PET_NAME_DEFAULT } from './story.js';
 import { checkAchievements as checkAchievementsNew } from './achievements.js';
 import { evaluateQuests, bumpStreakIfToday } from './quests.js';
 import { playAmbient, stopAmbient, audioCtx, initAudio } from './audio.js';
@@ -54,7 +54,7 @@ function playTone(frequency, duration, type = 'sine') {
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
     osc.start();
     osc.stop(audioCtx.currentTime + duration);
-  } catch (e) {}
+  } catch {}
 }
 
 const sounds = {
@@ -602,7 +602,6 @@ function pulsePetFace(cls) {
   if (!petFace) return;
   petFace.classList.remove('correct', 'wrong', 'celebrate');
   // Force reflow so the next add re-fires the animation
-  // eslint-disable-next-line no-unused-expressions
   void petFace.offsetWidth;
   petFace.classList.add(cls);
   setTimeout(() => petFace.classList.remove(cls), 500);
@@ -1125,7 +1124,7 @@ function showScorePopup(points, x, y) {
 }
 
 // ===== PET REACTIONS =====
-import { PET_EMOJI_TO_NAME, getPetPath, PET_STATES, PET_NAME_LIST } from './assets.js';
+import { getPetPath } from './assets.js';
 
 let petCurrentState = 'idle';
 // T22: timestamp of the last correct keystroke, used by the idle warning
@@ -1152,8 +1151,6 @@ function setPetImage() {
 
 function showPetReaction(type, text = '') {
   const bubbleEl = document.getElementById('pet-bubble');
-  const evolution = getEvolutionStage(gameState.level || 1);
-
   // Map reaction type -> pet state
   let newState;
   switch(type) {
@@ -1296,10 +1293,10 @@ function loadBgImages() {
   // New parallax layer pack: 3 layers per scene (sky / mid / foreground).
   // Files were merged into the existing /backgrounds/ directory during cleanup,
   // so we read from there now (no -new suffix).
-  bgLayers.sky.img = loadImg('/assets/backgrounds/magical_garden-sky.png');
-  bgLayers.trees.img = loadImg('/assets/backgrounds/magical_garden-mid.png');
-  bgLayers.hills.img = loadImg('/assets/backgrounds/magical_garden-foreground.png');
-  bgLayers.grass.img = loadImg('/assets/backgrounds/magical_garden-foreground.png');
+  bgLayers.sky.img = loadImg('assets/backgrounds/magical_garden-sky.png');
+  bgLayers.trees.img = loadImg('assets/backgrounds/magical_garden-mid.png');
+  bgLayers.hills.img = loadImg('assets/backgrounds/magical_garden-foreground.png');
+  bgLayers.grass.img = loadImg('assets/backgrounds/magical_garden-foreground.png');
 }
 
 function drawBgLayer(layer, w, h, time, heightScale) {
@@ -1466,7 +1463,7 @@ function setPetFrame(frame) {
 
 // Called when the player picks a new avatar. Invalidate cached pet images
 // and refresh both the DOM avatar and the canvas in-canvas pet.
-function onAvatarChanged() {
+export function onAvatarChanged() {
   // Clear cached images so the next state change fetches the new pet
   for (const state of ['idle', 'happy', 'hurt', 'celebrate', 'fire']) {
     petFrames[state] = null;
@@ -1488,8 +1485,8 @@ function loadFlowerImages() {
     img.src = src;
     return img;
   };
-  flowerImages.bud = loadImg('/assets/pro/flowers/bud.png');
-  flowerImages.sprout = loadImg('/assets/pro/flowers/sprout.png');
+  flowerImages.bud = loadImg('assets/pro/flowers/bud.png');
+  flowerImages.sprout = loadImg('assets/pro/flowers/sprout.png');
 }
 
 function drawFlowerImage(flower, groundY) {
@@ -1537,7 +1534,7 @@ function drawFlowerImage(flower, groundY) {
 
 // ===== TEXTURED PARTICLES =====
 const particleTexture = new Image();
-particleTexture.src = '/assets/pro/particles/sparkle.png';
+particleTexture.src = 'assets/pro/particles/sparkle.png';
 
 function drawTexturedParticles() {
   if (!particleTexture.complete) {
@@ -1599,7 +1596,7 @@ function spawnParticles(x, y, count, color = COLORS.success) {
   }
 }
 
-function updateParticles(deltaTime) {
+function updateParticles() {
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
     p.x += p.vx;
@@ -1936,6 +1933,7 @@ function updateDailyMomentHUD() {
 
 export function endDailyMoment({ reason } = {}) {
   if (!gameState.dailyMoment?.active) return;
+  void reason;
 
   // Clear timers
   if (dailyMomentTimerId) { clearTimeout(dailyMomentTimerId); dailyMomentTimerId = null; }
@@ -2156,10 +2154,10 @@ function preloadImages() {
   const images = [];
   
   // Collect all image URLs
-  const bgUrls = ['/assets/pro/bg/sky.png','/assets/pro/bg/trees.png','/assets/pro/bg/hills.png','/assets/pro/bg/grass.png'];
-  const petUrls = ['/assets/pro/pet/idle.png','/assets/pro/pet/happy.png','/assets/pro/pet/hurt.png','/assets/pro/pet/celebrate.png','/assets/pro/pet/fire.png'];
-  const flowerUrls = ['/assets/pro/flowers/bud.png','/assets/pro/flowers/sprout.png'];
-  const particleUrls = ['/assets/pro/particles/sparkle.png'];
+  const bgUrls = ['assets/pro/bg/sky.png','assets/pro/bg/trees.png','assets/pro/bg/hills.png','assets/pro/bg/grass.png'];
+  const petUrls = ['assets/pro/pet/idle.png','assets/pro/pet/happy.png','assets/pro/pet/hurt.png','assets/pro/pet/celebrate.png','assets/pro/pet/fire.png'];
+  const flowerUrls = ['assets/pro/flowers/bud.png','assets/pro/flowers/sprout.png'];
+  const particleUrls = ['assets/pro/particles/sparkle.png'];
   
   [...bgUrls, ...petUrls, ...flowerUrls, ...particleUrls].forEach(url => {
     const img = new Image();

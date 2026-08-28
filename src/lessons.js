@@ -52,7 +52,7 @@ export const LESSON_STRUCTURE = {
 		requiredWPM: 8,
 		badge: "bronze",
 		estimatedTime: "5-10 min",
-		icon: "/assets/levels/home-row.png",
+		icon: "assets/levels/home-row.png",
 	},
 	2: {
 		id: 2,
@@ -105,7 +105,7 @@ export const LESSON_STRUCTURE = {
 		requiredWPM: 12,
 		badge: "bronze",
 		estimatedTime: "8-12 min",
-		icon: "/assets/levels/top-row.png",
+		icon: "assets/levels/top-row.png",
 	},
 	3: {
 		id: 3,
@@ -156,7 +156,7 @@ export const LESSON_STRUCTURE = {
 		requiredWPM: 15,
 		badge: "silver",
 		estimatedTime: "10-15 min",
-		icon: "/assets/levels/bottom-row.png",
+		icon: "assets/levels/bottom-row.png",
 	},
 	4: {
 		id: 4,
@@ -218,7 +218,7 @@ export const LESSON_STRUCTURE = {
 		requiredWPM: 18,
 		badge: "silver",
 		estimatedTime: "12-18 min",
-		icon: "/assets/levels/capitals.png",
+		icon: "assets/levels/capitals.png",
 	},
 	5: {
 		id: 5,
@@ -271,7 +271,7 @@ export const LESSON_STRUCTURE = {
 		requiredWPM: 20,
 		badge: "gold",
 		estimatedTime: "15-20 min",
-		icon: "/assets/levels/numbers.png",
+		icon: "assets/levels/numbers.png",
 	},
 	6: {
 		id: 6,
@@ -338,7 +338,7 @@ export const LESSON_STRUCTURE = {
 		requiredWPM: 25,
 		badge: "platinum",
 		estimatedTime: "20-30 min",
-		icon: "/assets/levels/master.png",
+		icon: "assets/levels/master.png",
 	},
 };
 

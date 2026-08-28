@@ -175,7 +175,6 @@ function showEmpty(msg) {
 }
 
 function renderToolbar() {
-  const isCloud = currentMode === 'cloud';
   document.querySelectorAll('.mode-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.mode === currentMode);
   });

@@ -3,10 +3,10 @@
  */
 import { LESSON_LEVELS, getLessonByLevel, getFingerHint, getLessonWordsForPractice, isLevelUnlocked } from './lessonLevels.js';
 import { gameState, loadProfile, saveProfile } from './state.js';
-import { init as initEngine, startGame, togglePause, showScreen, showKeyFeedback, highlightTargetKey, startDrillMode, startDailyMoment } from './gameEngine.js';
-import { MENU_TAGLINES, say, PET_NAME_DEFAULT } from './story.js';
+import { init as initEngine, startGame, togglePause, showScreen, showKeyFeedback, highlightTargetKey, startDrillMode, startDailyMoment, onAvatarChanged } from './gameEngine.js';
+import { MENU_TAGLINES } from './story.js';
 import { getAchievementStats, getAllAchievements } from './achievements.js';
-import { getTodaysQuests, getQuestCompletion, isStreakAtRisk } from './quests.js';
+import { getTodaysQuests, isStreakAtRisk } from './quests.js';
 import { getWeakKeys, buildDrillLesson } from './drills.js';
 import { getDueKeys } from './spacedRep.js';
 import { joinClass } from './classroom.js';
@@ -199,16 +199,6 @@ function showAchievement(title, desc, icon) {
   setTimeout(() => toast.classList.add('hidden'), 3000);
 }
 
-// ===== WORD POPUP =====
-function showWordPopup(word) {
-  const emojis = { flower: '🌸', cat: '🐱', dog: '🐶', sun: '☀️', star: '⭐', moon: '🌙', tree: '🌳', bird: '🐦' };
-  const emoji = emojis[word.toLowerCase()] || '✨';
-  $('word-popup-emoji').textContent = emoji;
-  $('word-popup-text').textContent = word;
-  $('word-popup').classList.remove('hidden');
-  setTimeout(() => $('word-popup').classList.add('hidden'), 1000);
-}
-
 // ===== LEVEL CARDS =====
 function renderLevelCards() {
   const container = $('level-cards');
@@ -240,7 +230,7 @@ function renderLevelCards() {
     return `
       <button type="button" class="level-card ${status}" data-level="${lev.id}" ${status === 'locked' ? 'disabled' : ''} aria-label="${lev.name}: ${shortTeaches}" title="${status === 'locked' ? lockHint : ''}">
         <div class="level-card-art">
-          <img class="level-card-img" src="/assets/levels/${imgName}" alt="" aria-hidden="true"
+          <img class="level-card-img" src="assets/levels/${imgName}" alt="" aria-hidden="true"
                onerror="this.style.display='none'">
           <div class="level-card-icon" aria-hidden="true">${lev.icon || '⌨️'}</div>
           ${status === 'locked' ? `<div class="level-lock-art" aria-hidden="true"><span class="level-lock-icon">🔒</span><span class="level-lock-chip">LOCKED</span></div>` : ''}
@@ -438,7 +428,6 @@ function updateHomePet() {
   const profile = gameState.profile || {};
   const avatar = profile.avatar || '🌸';
   const streak = profile.streak || 0;
-  const lastDM = profile.lastDailyMomentDate;
   const atRisk = streak >= 1 && isStreakAtRisk(profile);
 
   // Pick the pet state. Celebrate flag is a transient window signal set
@@ -537,7 +526,7 @@ function loadProfileScreen() {
   const catContainer = document.getElementById('achievements-categories');
   if (catContainer) {
     catContainer.innerHTML = '';
-    for (const [key, cat] of Object.entries(stats.byCategory)) {
+    for (const cat of Object.values(stats.byCategory)) {
       const pill = document.createElement('div');
       pill.className = 'cat-pill';
       pill.innerHTML = `
@@ -593,7 +582,7 @@ function saveProfileScreen() {
   saveProfile();
   updateMenuStats();
   // If the avatar changed, invalidate pet image cache and reload for current state
-  if (oldAvatar !== p.avatar && typeof onAvatarChanged === 'function') {
+  if (oldAvatar !== p.avatar) {
     onAvatarChanged();
   }
 }
@@ -753,7 +742,7 @@ function bindEvents() {
   $('btn-drill')?.addEventListener('click', () => {
     const weakKeys = getWeakKeys(gameState.keyAccuracy, 3);
     if (weakKeys.length === 0) return;
-    const drillLesson = buildDrillLesson(weakKeys, gameState.profile);
+    const drillLesson = buildDrillLesson(weakKeys);
     if (!drillLesson) return;
     gameState.drillLesson = drillLesson;
     $('gameover-overlay').classList.add('hidden');

@@ -172,7 +172,7 @@ export const PET_EVOLUTION = {
 };
 
 // Utility: pick random line from array
-export function say(category, evolutionStage = 1) {
+export function say(category) {
   const pool = PET_PERSONALITY[category];
   if (!pool) return '';
   const lines = Array.isArray(pool) ? pool : [pool];
