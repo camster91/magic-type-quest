@@ -1,5 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildCloudProfileRow, buildCloudRosterRow, buildCloudSessionRow, createLatestSyncQueue } from '../src/sync.js';
+import {
+  buildCloudProfileRow,
+  buildCloudRosterRow,
+  buildCloudSessionRow,
+  createCloudProfileController,
+  createLatestSyncQueue,
+  deleteAuthenticatedCloudProfile,
+  deleteCloudProfileRows,
+} from '../src/sync.js';
 
 describe('authenticated cloud row mapping', () => {
   const profile = {
@@ -85,5 +93,90 @@ describe('latest profile sync queue', () => {
     await expect(oldWrite).rejects.toThrow('offline');
     await expect(newWrite).resolves.toBeUndefined();
     expect(written).toEqual(['old', 'new']);
+  });
+});
+
+describe('cloud profile deletion', () => {
+  it('deletes only the authenticated profile row', async () => {
+    const eq = vi.fn().mockResolvedValue({ error: null });
+    const remove = vi.fn(() => ({ eq }));
+    const from = vi.fn(() => ({ delete: remove }));
+
+    await deleteCloudProfileRows({ from }, 'auth-user-id');
+
+    expect(from).toHaveBeenCalledWith('profiles');
+    expect(remove).toHaveBeenCalledOnce();
+    expect(eq).toHaveBeenCalledWith('id', 'auth-user-id');
+  });
+
+  it('surfaces a rejected profile deletion instead of reporting success', async () => {
+    const failure = { message: 'denied' };
+    const eq = vi.fn().mockResolvedValue({ error: failure });
+    const sb = { from: vi.fn(() => ({ delete: () => ({ eq }) })) };
+    await expect(deleteCloudProfileRows(sb, 'auth-user-id')).rejects.toBe(failure);
+  });
+
+  it('signs out only the current browser after deleting cloud learning data', async () => {
+    const eq = vi.fn().mockResolvedValue({ error: null });
+    const signOut = vi.fn().mockResolvedValue({ error: null });
+    const sb = { from: () => ({ delete: () => ({ eq }) }), auth: { signOut } };
+
+    await expect(deleteAuthenticatedCloudProfile(sb, 'auth-user-id')).resolves.toEqual({
+      deleted: true,
+      signedOut: true,
+    });
+    expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
+  });
+
+  it('reports deleted data truthfully when local sign-out fails', async () => {
+    const eq = vi.fn().mockResolvedValue({ error: null });
+    const sb = {
+      from: () => ({ delete: () => ({ eq }) }),
+      auth: { signOut: vi.fn().mockResolvedValue({ error: { message: 'network' } }) },
+    };
+
+    await expect(deleteAuthenticatedCloudProfile(sb, 'auth-user-id')).resolves.toEqual({
+      deleted: true,
+      signedOut: false,
+      reason: 'sign-out-failed',
+    });
+  });
+
+  it('runs deletion after an active save and blocks later profile recreation', async () => {
+    const events = [];
+    let releaseSave;
+    const controller = createCloudProfileController({
+      sync: async (profile) => {
+        events.push(`save:${profile.totalWords}`);
+        await new Promise((resolve) => { releaseSave = resolve; });
+      },
+      remove: async () => {
+        events.push('delete');
+        return { deleted: true, signedOut: true };
+      },
+    });
+
+    const save = controller.sync({ totalWords: 1 });
+    const deletion = controller.remove();
+    await expect(controller.sync({ totalWords: 2 })).resolves.toBe(false);
+    expect(events).toEqual(['save:1']);
+
+    releaseSave();
+    await save;
+    await expect(deletion).resolves.toEqual({ deleted: true, signedOut: true });
+    expect(events).toEqual(['save:1', 'delete']);
+    await expect(controller.sync({ totalWords: 3 })).resolves.toBe(false);
+  });
+
+  it('allows a later retry when deletion does not run', async () => {
+    const sync = vi.fn();
+    const controller = createCloudProfileController({
+      sync,
+      remove: vi.fn().mockResolvedValue({ deleted: false, reason: 'offline' }),
+    });
+
+    await expect(controller.remove()).resolves.toEqual({ deleted: false, reason: 'offline' });
+    await controller.sync({ totalWords: 4 });
+    expect(sync).toHaveBeenCalledWith({ totalWords: 4 });
   });
 });

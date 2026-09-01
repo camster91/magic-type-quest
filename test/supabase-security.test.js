@@ -31,6 +31,15 @@ describe('Supabase privacy boundary', () => {
     expect(syncSource).not.toContain('st.id || st.name');
   });
 
+  it('allows an authenticated student to delete only their own cascading profile', () => {
+    expect(schema).toContain('create policy "Self delete" on profiles for delete');
+    expect(schema).toContain('using (auth.uid() = id)');
+    expect(schema).toContain('profile_id uuid references profiles(id) on delete cascade');
+    expect(schema).toContain('profile_id uuid not null references profiles(id) on delete cascade');
+    expect(syncSource).toContain(".eq('id', userId)");
+    expect(syncSource).toContain("signOut({ scope: 'local' })");
+  });
+
   it('reserves teacher-code provisioning for a trusted administrative path', () => {
     expect(schema).not.toMatch(/create policy "Teacher own codes"[\s\S]*?for all/i);
     expect(schema).not.toMatch(/create policy [^\n]+ on teacher_codes for insert/i);

@@ -159,6 +159,10 @@ test('production entry points and same-origin assets load without errors', async
     expect(response?.status(), entryPoint || 'index.html').toBe(200);
     await page.waitForLoadState('networkidle');
     expect(failures, entryPoint || 'index.html').toEqual([]);
+    if (entryPoint === '') {
+      await page.locator('#btn-profile').click();
+      await expect(page.locator('#btn-delete-cloud-profile')).toBeHidden();
+    }
     await page.close();
   }
 });

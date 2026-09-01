@@ -54,8 +54,16 @@ class records from that browser. Browser/site-data controls provide a second
 deletion path. Automated tests cover individual deletion, stale profile-copy
 cleanup, class removal, and preservation of unrelated local-storage keys.
 
-Local deletion does not delete school cloud records. Cloud deletion, auth-user
-deletion, and backup expiry must be implemented and tested before cloud sync is
+Local deletion does not delete school cloud records. In an authenticated cloud
+deployment, the profile screen exposes a separate confirmed deletion action.
+That action is serialized after earlier saves, blocks later saves from
+recreating the profile, deletes the authenticated user's `profiles` row (which
+cascades to `game_sessions` and `class_roster`), and signs the current browser
+out. RLS permits deletion only where `auth.uid()` matches the profile ID.
+
+The source path and race behavior are automated-test verified, but no live
+Supabase deletion drill has run. Auth-user deletion, backup expiry, retention
+evidence, and the responsible operator remain required before cloud sync is
 enabled.
 
 ## Public communication boundary

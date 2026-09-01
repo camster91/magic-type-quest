@@ -84,5 +84,7 @@ describe('privacy operations', () => {
     expect(landing).toContain('The BloomType website does not collect or store your address.');
     expect(parents).toContain('Delete local progress');
     expect(index).toContain('id="btn-delete-profile"');
+    expect(index).toContain('id="btn-delete-cloud-profile"');
+    expect(index).toMatch(/id="btn-delete-cloud-profile"[^>]+hidden/);
   });
 });

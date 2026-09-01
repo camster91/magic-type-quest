@@ -25,9 +25,11 @@ drop policy if exists "Owner read" on profiles;
 drop policy if exists "Teacher class read" on profiles;
 drop policy if exists "Self update" on profiles;
 drop policy if exists "Self insert" on profiles;
+drop policy if exists "Self delete" on profiles;
 create policy "Owner read" on profiles for select using (auth.uid() = id);
 create policy "Self update" on profiles for update using (auth.uid() = id);
 create policy "Self insert" on profiles for insert with check (auth.uid() = id);
+create policy "Self delete" on profiles for delete using (auth.uid() = id);
 
 -- ===== GAME SESSIONS =====
 create table if not exists game_sessions (

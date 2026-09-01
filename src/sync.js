@@ -25,8 +25,8 @@ export function createLatestSyncQueue(worker) {
       pendingValue = undefined;
       pendingWaiters = [];
       try {
-        await worker(value);
-        waiters.forEach(({ resolve }) => resolve());
+        const result = await worker(value);
+        waiters.forEach(({ resolve }) => resolve(result));
       } catch (error) {
         waiters.forEach(({ reject }) => reject(error));
       }
@@ -65,16 +65,24 @@ export async function getSupabase() {
 export async function hasCloudSync() {
   const sb = await getSupabase();
   if (!sb) return false;
-  const { data } = await sb.auth.getSession();
-  return Boolean(data.session?.user);
+  try {
+    const { data } = await sb.auth.getSession();
+    return Boolean(data.session?.user);
+  } catch {
+    return false;
+  }
 }
 
 async function getAuthenticatedSupabase() {
   const sb = await getSupabase();
   if (!sb) return null;
-  const { data } = await sb.auth.getSession();
-  if (!data.session?.user) return null;
-  return { sb, user: data.session.user };
+  try {
+    const { data } = await sb.auth.getSession();
+    if (!data.session?.user) return null;
+    return { sb, user: data.session.user };
+  } catch {
+    return null;
+  }
 }
 
 export function buildCloudProfileRow(profile, userId, updatedAt = new Date().toISOString()) {
@@ -158,12 +166,81 @@ async function syncProfileSnapshot(profile) {
   }
 }
 
-const enqueueProfileSync = createLatestSyncQueue(syncProfileSnapshot);
+/** Delete all self-owned learning data. Foreign keys cascade sessions/roster. */
+export async function deleteCloudProfileRows(sb, userId) {
+  const { error } = await sb
+    .from('profiles')
+    .delete()
+    .eq('id', userId);
+  if (error) throw error;
+}
+
+export async function deleteAuthenticatedCloudProfile(sb, userId) {
+  await deleteCloudProfileRows(sb, userId);
+  const { error } = await sb.auth.signOut({ scope: 'local' });
+  return error
+    ? { deleted: true, signedOut: false, reason: 'sign-out-failed' }
+    : { deleted: true, signedOut: true };
+}
+
+async function deleteCloudProfileSnapshot() {
+  const cloud = await getAuthenticatedSupabase();
+  if (!cloud) return { deleted: false, reason: 'not-authenticated' };
+  if (!navigator.onLine) return { deleted: false, reason: 'offline' };
+  const { sb, user } = cloud;
+  try {
+    const result = await deleteAuthenticatedCloudProfile(sb, user.id);
+    if (!result.signedOut) console.warn('Cloud data deleted, but sign-out failed');
+    return result;
+  } catch (e) {
+    console.warn('Cloud deletion failed:', e);
+    return { deleted: false, reason: 'delete-failed' };
+  }
+}
+
+/**
+ * Serialize profile saves and deletion through one queue. Once deletion is
+ * requested, later saves are rejected so they cannot recreate the profile.
+ */
+export function createCloudProfileController({ sync, remove }) {
+  let deletionRequested = false;
+  const enqueue = createLatestSyncQueue((mutation) => (
+    mutation.type === 'delete' ? remove() : sync(mutation.profile)
+  ));
+
+  return {
+    sync(profile) {
+      if (deletionRequested) return Promise.resolve(false);
+      return enqueue({ type: 'sync', profile });
+    },
+    async remove() {
+      deletionRequested = true;
+      try {
+        const result = await enqueue({ type: 'delete' });
+        if (!result?.deleted) deletionRequested = false;
+        return result;
+      } catch (error) {
+        deletionRequested = false;
+        throw error;
+      }
+    },
+  };
+}
+
+const profileController = createCloudProfileController({
+  sync: syncProfileSnapshot,
+  remove: deleteCloudProfileSnapshot,
+});
 
 /** Background sync of the newest immutable profile snapshot. */
 export function syncProfile(profile) {
   const snapshot = JSON.parse(JSON.stringify(profile));
-  return enqueueProfileSync(snapshot);
+  return profileController.sync(snapshot);
+}
+
+/** Delete authenticated cloud learning data and prevent queued recreation. */
+export function deleteCloudProfile() {
+  return profileController.remove();
 }
 
 /** Log a game session to the cloud for analytics. */

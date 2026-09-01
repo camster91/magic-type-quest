@@ -12,6 +12,7 @@ import { getDueKeys } from './spacedRep.js';
 import { joinClass } from './classroom.js';
 import { escapeHTML } from './utils.js';
 import { applyTranslations, formatDate, formatNumber, localizeFingerLabel, setLocale, t } from './i18n.js';
+import { deleteCloudProfile, hasCloudSync } from './sync.js';
 import { localizeAchievement, localizeAchievementCategory, localizeLesson, localizeQuest } from './contentTranslations.js';
 import { getCurriculumProgress } from './progression.js';
 
@@ -518,6 +519,7 @@ function loadProfileScreen() {
   $('profile-achievements') && ($('profile-achievements').textContent = (p.achievements?.length) || 0);
   $('voice-toggle') && ($('voice-toggle').checked = p.voiceEnabled !== false);
   $('language-select') && ($('language-select').value = p.locale || 'en');
+  refreshCloudDeletionControl();
 
   document.querySelectorAll('.avatar-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.avatar === (p.avatar || '🌸'));
@@ -575,6 +577,17 @@ function loadProfileScreen() {
       reviewContainer.style.display = 'none';
     }
   }
+}
+
+async function refreshCloudDeletionControl() {
+  const button = $('btn-delete-cloud-profile');
+  const status = $('cloud-delete-status');
+  if (!button || !status) return;
+  button.hidden = true;
+  status.hidden = true;
+  status.textContent = '';
+  const enabled = await hasCloudSync();
+  button.hidden = !enabled;
 }
 
 function saveProfileScreen() {
@@ -702,6 +715,35 @@ function bindEvents() {
     updateMenuStats();
     showScreen('menu');
     showAchievement(t('profile.deleted'), t('profile.deletedDesc'), '🗑️');
+  });
+
+  $('btn-delete-cloud-profile')?.addEventListener('click', async () => {
+    const confirmed = window.confirm(t('profile.deleteCloudConfirm'));
+    if (!confirmed) return;
+    const button = $('btn-delete-cloud-profile');
+    const status = $('cloud-delete-status');
+    button.disabled = true;
+    status.hidden = false;
+    status.textContent = t('profile.deletingCloud');
+    let result;
+    try {
+      result = await deleteCloudProfile();
+    } catch {
+      result = { deleted: false, reason: 'delete-failed' };
+    }
+    if (!result.deleted) {
+      button.disabled = false;
+      status.textContent = t(`profile.deleteCloud.${result.reason || 'delete-failed'}`);
+      return;
+    }
+    deleteLocalProfile();
+    updateMenuStats();
+    showScreen('menu');
+    showAchievement(
+      t('profile.cloudDeleted'),
+      t(result.signedOut ? 'profile.cloudDeletedDesc' : 'profile.cloudDeletedSignoutWarning'),
+      '🗑️',
+    );
   });
 
   $('language-select')?.addEventListener('change', (event) => {
