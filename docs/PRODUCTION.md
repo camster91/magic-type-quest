@@ -13,13 +13,19 @@ Do not execute a release until the applicable approval and evidence fields in
 ## Deploy
 
 After the `Build and Push Image` workflow succeeds, copy the definitions to the
-VPS and apply them:
+VPS. This host accepts SSH but may reject SCP, so stream the checked-in files:
 
 ```sh
-scp deploy/docker-compose.production.yml root@vps.ashbi.ca:/opt/bloomtype/docker-compose.yml
-scp deploy/traefik-bloomtype.yml root@vps.ashbi.ca:/opt/traefik/dynamic/bloomtype.yml
+ssh root@vps.ashbi.ca 'tee /opt/bloomtype/docker-compose.yml >/dev/null' \
+  < deploy/docker-compose.production.yml
+ssh root@vps.ashbi.ca 'tee /opt/traefik/dynamic/bloomtype.yml >/dev/null' \
+  < deploy/traefik-bloomtype.yml
 ssh root@vps.ashbi.ca 'cd /opt/bloomtype && docker compose up -d --pull always'
 ```
+
+Before applying Compose, replace the mutable `main` tag on the VPS with the
+seven-character candidate SHA and verify the image's
+`org.opencontainers.image.revision` label matches the approved full commit.
 
 Traefik watches its dynamic directory, so the route does not require a proxy
 restart. Verify TLS and then run the browser suite against production:

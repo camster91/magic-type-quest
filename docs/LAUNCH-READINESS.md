@@ -1,7 +1,8 @@
 # Launch readiness control
 
-Status: **candidate verified; school launch not approved**  
-Last reconciled: **2026-08-31** against the current `main` candidate
+Status: **public local-only release verified; school launch not approved**
+
+Last reconciled: **2026-09-01** against released revision `1091e0d`
 
 This is the operating register for moving BloomType from a technically verified
 candidate to an approved, supervised school pilot. `ROADMAP.md` remains the
@@ -12,10 +13,10 @@ to close its launch gates. Blank evidence or ownership means the gate fails.
 
 | Control | State | Current evidence |
 |---|---|---|
-| Local and remote quality gates | Verified locally; remote refresh pending | 233 unit tests across 30 files, 10 Playwright journeys, ESLint, Vite build, and zero-vulnerability audit |
-| Ashbi CI | Verified | [CI run 33212651881](https://github.com/camster91/magic-type-quest/actions/runs/33212651881), runner `ashbi-vps-magic-type-quest` |
-| Candidate container | Verified, not released | [Image run 33212651857](https://github.com/camster91/magic-type-quest/actions/runs/33212651857) |
-| Production operation and rollback | Documented | `docs/PRODUCTION.md`; production remains on the prior approved image |
+| Local and remote quality gates | Verified | 233 unit tests across 30 files, 10 Playwright journeys, ESLint, Vite build, and zero-vulnerability audit |
+| Ashbi CI | Verified | [CI run 33460455116](https://github.com/camster91/magic-type-quest/actions/runs/33460455116), runner `ashbi-vps-magic-type-quest` |
+| Candidate container | Released | [Image run 33460455099](https://github.com/camster91/magic-type-quest/actions/runs/33460455099), immutable production tag `1091e0d` |
+| Production operation and rollback | Verified | `docs/releases/2026-09-01-1091e0d.md`; previous `5d00b77` image and server definitions retained |
 | Cloud privacy boundary | Implemented, not approved | `docs/PRIVACY-OPERATIONS.md`; production cloud variables remain unset |
 | Real-user evidence | Missing | No consented school pilot, retention result, or classroom usability evidence |
 
@@ -29,7 +30,7 @@ to close its launch gates. Blank evidence or ownership means the gate fails.
 | Physical-device accessibility | Named iOS Safari and Android Chrome devices complete touch-keyboard, screen-reader, install, update, offline, and recovery scripts | Accessibility reviewer | Not run |
 | Language review | Fluent French and Spanish reviewers sign off learner, parent, and teacher journeys or record corrections | Language reviewers | Not run |
 | Supervised pilot | Approved protocol below, consented cohort, completed observation log, and pass/stop decision | School pilot lead | Not run |
-| Release approval | Named approver records candidate SHA, evidence, rollback tag, decision, and date | Product owner | Not approved |
+| Public local-only release approval | Named approver records candidate SHA, evidence, rollback tag, decision, and date | Product owner | Approved 2026-09-01 for `1091e0d` |
 
 ## Access register
 

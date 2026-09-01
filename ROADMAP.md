@@ -4,7 +4,7 @@ This is the authoritative project roadmap. The older `*-PLAN.md` documents and
 `SCHOOL-READINESS-AUDIT.md` are historical design/audit inputs, not current task
 trackers.
 
-## Current status — 2026-08-31
+## Current status — 2026-09-01
 
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
@@ -22,11 +22,11 @@ school-scale launch readiness is not yet proven by real-world operations.
   entry points, same-origin assets, manifest scope, service-worker registration,
   persisted localization, isolated weak-key drill completion, offline app-shell
   reload, and stale-cache cleanup.
-- Production: `https://bloomtype.ashbi.ca/magic-type-quest/` serves the prior
-  approved GHCR image through Traefik with trusted HTTPS and security headers.
-  The current candidate image is published but intentionally not
-  deployed without explicit release approval. Deploy and rollback operations
-  are documented in `docs/PRODUCTION.md`.
+- Production: `https://bloomtype.ashbi.ca/magic-type-quest/` serves immutable
+  image tag `1091e0d` through Traefik with trusted HTTPS and security headers.
+  The approved 2026-09-01 public local-only release passed all ten browser
+  journeys against production. Deploy and rollback operations are documented
+  in `docs/PRODUCTION.md`.
 - Automation: repository Actions are enabled and core CI passes on the
   repository-scoped `ashbi-vps-magic-type-quest` self-hosted runner. The image
   publishing, stale-issue, and labeled auto-merge workflows also target Ashbi.
@@ -58,6 +58,9 @@ children.
      entry points.
    - Completed 2026-08-28: recorded the production URL, checked-in deployment
      definitions, and rollback procedure in `docs/PRODUCTION.md`.
+   - Completed 2026-09-01: released exact revision `1091e0d` to the public
+     local-only deployment and passed HTTPS, security-header, container-health,
+     and all ten production browser checks. School/cloud launch gates remain.
 
 2. **Production data and privacy readiness**
    - Provision the intended Supabase project and apply `supabase/schema.sql`.
