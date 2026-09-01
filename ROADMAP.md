@@ -178,8 +178,8 @@ children.
      scans for the learner home and profile, parent guidance, teacher dashboard,
      and school landing page. Fixed disabled browser zoom, an unfocusable
      achievements scroller, and confirmed contrast failures across parent,
-     teacher, and landing controls. Physical assistive-technology testing
-     remains a human gate.
+     teacher, landing, and locked-achievement interfaces. Physical assistive-
+     technology testing remains a human gate.
 3. Split the 2,000+ line `src/gameEngine.js` into input, rendering, session, and
    presentation modules with behavioral coverage.
    - Completed 2026-08-28: extracted the shared keyboard presentation API into
