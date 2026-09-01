@@ -7,6 +7,7 @@ import { syncProfile, logSession } from './sync.js';
 // ===== DEFAULT STATE =====
 export const defaultState = {
   screen: 'menu',
+  sessionId: null,
   level: 1,
   score: 0,
   combo: 0,
@@ -15,6 +16,7 @@ export const defaultState = {
   savedWordsTyped: 0,
   savedScoreStars: 0,
   sessionLogged: false,
+  sessionLogInFlight: false,
   wordsCompleted: 0,
   wordsSpawned: 0,
   totalKeystrokes: 0,
@@ -130,8 +132,9 @@ export function saveProfile() {
 }
 
 export function buildLevelSessionSnapshot(state, completed = false) {
-  if (!Number.isInteger(state.level) || state.level < 1 || state.level > 10) return null;
+  if (!state.sessionId || !Number.isInteger(state.level) || state.level < 1 || state.level > 10) return null;
   return {
+    sessionId: state.sessionId,
     level: state.level,
     score: state.score || 0,
     wpm: state.levelWPM || 0,
@@ -161,9 +164,12 @@ export function finalizeLevelSession({ completed = false } = {}) {
   }
 
   saveProfile();
-  if (snapshot && !gameState.sessionLogged) {
-    gameState.sessionLogged = true;
-    logSession(gameState.profile, snapshot).catch(() => {});
+  if (snapshot && !gameState.sessionLogged && !gameState.sessionLogInFlight) {
+    gameState.sessionLogInFlight = true;
+    logSession(gameState.profile, snapshot)
+      .then((saved) => { gameState.sessionLogged = saved === true; })
+      .catch(() => {})
+      .finally(() => { gameState.sessionLogInFlight = false; });
   }
 }
 

@@ -4,12 +4,12 @@ This is the authoritative project roadmap. The older `*-PLAN.md` documents and
 `SCHOOL-READINESS-AUDIT.md` are historical design/audit inputs, not current task
 trackers.
 
-## Current status — 2026-08-28
+## Current status — 2026-08-31
 
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 229 tests pass across 30 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 233 tests pass across 30 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -193,6 +193,9 @@ children.
 - Cloud profile and roster autosaves are serialized and coalesced to the newest
   immutable snapshot, preventing slow older writes from overwriting newer
   progress and allowing the queue to recover after an offline/write failure.
+- Curriculum attempts carry a stable client UUID and the cloud schema enforces
+  compatible partial uniqueness, so ambiguous insert retries cannot duplicate
+  teacher analytics; failed/offline inserts remain retryable until accepted.
 - Desktop and mobile gameplay input share a directly tested controller, including
   Shift lessons, one-character words, skip/pause routing, and dialog focus wrap.
 - Common canvas effects are isolated and directly tested, including reduced-motion

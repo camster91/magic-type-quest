@@ -32,6 +32,7 @@ create policy "Self insert" on profiles for insert with check (auth.uid() = id);
 -- ===== GAME SESSIONS =====
 create table if not exists game_sessions (
   id bigserial primary key,
+  session_id uuid,
   profile_id uuid references profiles(id) on delete cascade,
   level integer not null,
   score integer default 0,
@@ -43,6 +44,13 @@ create table if not exists game_sessions (
   skips_used integer default 0,
   created_at timestamptz default now()
 );
+
+-- Existing deployments gain the client-generated id without rewriting legacy
+-- rows. The partial unique index makes retries idempotent while allowing old
+-- rows (which have no session_id) to remain intact.
+alter table game_sessions add column if not exists session_id uuid;
+create unique index if not exists idx_sessions_session_id
+  on game_sessions(profile_id, session_id) where session_id is not null;
 
 -- Index for teacher analytics (joins to profiles.class_code)
 create index if not exists idx_sessions_profile on game_sessions(profile_id, created_at desc);

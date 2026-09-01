@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildCloudProfileRow, buildCloudRosterRow, createLatestSyncQueue } from '../src/sync.js';
+import { buildCloudProfileRow, buildCloudRosterRow, buildCloudSessionRow, createLatestSyncQueue } from '../src/sync.js';
 
 describe('authenticated cloud row mapping', () => {
   const profile = {
@@ -33,6 +33,16 @@ describe('authenticated cloud row mapping', () => {
 
   it('does not create a roster row after the student leaves a class', () => {
     expect(buildCloudRosterRow({ ...profile, classCode: null }, 'auth-user-id')).toBeNull();
+  });
+
+  it('maps a stable attempt id into an idempotent session row', () => {
+    expect(buildCloudSessionRow({
+      sessionId: '70d9e983-2c3a-4e0f-9a69-f4bd1099ff02',
+      level: 3, score: 90, wordsCompleted: 12,
+    }, 'auth-user-id', '2026-08-28T00:00:00.000Z')).toMatchObject({
+      session_id: '70d9e983-2c3a-4e0f-9a69-f4bd1099ff02',
+      profile_id: 'auth-user-id', level: 3, score: 90, words_completed: 12,
+    });
   });
 });
 

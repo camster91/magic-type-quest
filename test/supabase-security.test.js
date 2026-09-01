@@ -30,4 +30,11 @@ describe('Supabase privacy boundary', () => {
     expect(syncSource).toContain(".eq('profile_id', user.id)");
     expect(syncSource).not.toContain('st.id || st.name');
   });
+
+  it('deduplicates ambiguous session retries without rewriting legacy rows', () => {
+    expect(schema).toContain('alter table game_sessions add column if not exists session_id uuid');
+    expect(schema).toContain('create unique index if not exists idx_sessions_session_id');
+    expect(schema).toContain('where session_id is not null');
+    expect(syncSource).toContain("if (error?.code === '23505') return true");
+  });
 });

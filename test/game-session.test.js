@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getLevelScoreBonus, resetGameSession } from '../src/gameSession.js';
+import { createSessionId, getLevelScoreBonus, resetGameSession } from '../src/gameSession.js';
 
 function dirtyState() {
   return {
@@ -21,11 +21,12 @@ describe('game session initialization', () => {
     const state = dirtyState();
     const profile = state.profile;
 
-    resetGameSession(state, { level: 4, health: 5, now: 1234 });
+    resetGameSession(state, { level: 4, health: 5, now: 1234, sessionId: 'session-1' });
 
     expect(state).toMatchObject({
-      screen: 'game', level: 4, health: 5, score: 0, combo: 0,
-      wordsCompleted: 0, savedWordsTyped: 0, savedScoreStars: 0, sessionLogged: false,
+      screen: 'game', sessionId: 'session-1', level: 4, health: 5, score: 0, combo: 0,
+      wordsCompleted: 0, savedWordsTyped: 0, savedScoreStars: 0,
+      sessionLogged: false, sessionLogInFlight: false,
       totalKeystrokes: 0, gameOver: false,
       paused: false, levelStartTime: 1234, adaptiveSpeed: 1,
       totalFocusBonus: 0, lastFocus: null, drillLesson: null,
@@ -64,6 +65,13 @@ describe('game session initialization', () => {
     resetGameSession(state, { level: 2, health: 4, now: 2 });
     expect(state.activeWords).not.toBe(firstWords);
     expect(state.keyAccuracy).not.toBe(firstAccuracy);
+  });
+
+  it('creates a distinct UUID for every attempt by default', () => {
+    const first = createSessionId();
+    const second = createSessionId();
+    expect(first).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+    expect(second).not.toBe(first);
   });
 });
 

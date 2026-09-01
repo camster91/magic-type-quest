@@ -109,6 +109,22 @@ export function buildCloudRosterRow(profile, userId, updatedAt = new Date().toIS
   };
 }
 
+export function buildCloudSessionRow(session, userId, createdAt = new Date().toISOString()) {
+  return {
+    session_id: session.sessionId,
+    profile_id: userId,
+    level: session.level,
+    score: session.score || 0,
+    wpm: session.wpm || 0,
+    accuracy: session.accuracy || 0,
+    words_typed: session.wordsTyped || 0,
+    words_completed: session.wordsCompleted || 0,
+    max_combo: session.maxCombo || 0,
+    skips_used: session.skipsUsed || 0,
+    created_at: createdAt,
+  };
+}
+
 async function syncProfileSnapshot(profile) {
   const cloud = await getAuthenticatedSupabase();
   if (!cloud) return;
@@ -153,24 +169,19 @@ export function syncProfile(profile) {
 /** Log a game session to the cloud for analytics. */
 export async function logSession(profile, session) {
   const cloud = await getAuthenticatedSupabase();
-  if (!cloud || !navigator.onLine) return;
+  if (!cloud || !navigator.onLine) return false;
   const { sb, user } = cloud;
   try {
-    const { error } = await sb.from('game_sessions').insert({
-      profile_id: user.id,
-      level: session.level,
-      score: session.score || 0,
-      wpm: session.wpm || 0,
-      accuracy: session.accuracy || 0,
-      words_typed: session.wordsTyped || 0,
-      words_completed: session.wordsCompleted || 0,
-      max_combo: session.maxCombo || 0,
-      skips_used: session.skipsUsed || 0,
-      created_at: new Date().toISOString(),
-    });
+    const { error } = await sb.from('game_sessions').insert(
+      buildCloudSessionRow(session, user.id),
+    );
+    // A retry of an already accepted attempt is successful by definition.
+    if (error?.code === '23505') return true;
     if (error) throw error;
+    return true;
   } catch (e) {
     console.warn('Session log failed:', e);
+    return false;
   }
 }
 

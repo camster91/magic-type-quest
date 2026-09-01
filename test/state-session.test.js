@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { logSession } = vi.hoisted(() => ({ logSession: vi.fn(() => Promise.resolve()) }));
+const { logSession } = vi.hoisted(() => ({ logSession: vi.fn(() => Promise.resolve(true)) }));
 
 vi.mock('../src/sync.js', () => ({
   logSession,
@@ -27,8 +27,10 @@ function memoryStorage() {
 describe('terminal curriculum session persistence', () => {
   beforeEach(() => {
     vi.stubGlobal('localStorage', memoryStorage());
-    logSession.mockClear();
+    logSession.mockReset();
+    logSession.mockResolvedValue(true);
     Object.assign(gameState, {
+      sessionId: '70d9e983-2c3a-4e0f-9a69-f4bd1099ff02',
       level: 3,
       score: 420,
       levelWPM: 18,
@@ -40,6 +42,7 @@ describe('terminal curriculum session persistence', () => {
       savedWordsTyped: 0,
       savedScoreStars: 0,
       sessionLogged: false,
+      sessionLogInFlight: false,
       profile: {
         name: 'Ada', avatar: '🌸', uuid: 'student-1', classCode: null,
         totalStars: 0, totalWords: 0, highScore: 0, completedLevels: [],
@@ -49,6 +52,7 @@ describe('terminal curriculum session persistence', () => {
 
   it('builds snapshots only for numbered curriculum levels', () => {
     expect(buildLevelSessionSnapshot(gameState, true)).toMatchObject({
+      sessionId: '70d9e983-2c3a-4e0f-9a69-f4bd1099ff02',
       level: 3, wpm: 18, wordsCompleted: 12, completed: true,
     });
     expect(buildLevelSessionSnapshot({ ...gameState, level: 'drill' }, true)).toBeNull();
@@ -88,5 +92,17 @@ describe('terminal curriculum session persistence', () => {
     gameState.profile.levelStats = { 3: { completed: true, score: 500 } };
     finalizeLevelSession({ completed: false });
     expect(gameState.profile.levelStats[3].completed).toBe(true);
+  });
+
+  it('retries an attempt after an offline result but stops after acceptance', async () => {
+    logSession.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+    finalizeLevelSession({ completed: true });
+    await vi.waitFor(() => expect(gameState.sessionLogInFlight).toBe(false));
+    expect(gameState.sessionLogged).toBe(false);
+
+    finalizeLevelSession({ completed: true });
+    await vi.waitFor(() => expect(gameState.sessionLogged).toBe(true));
+    finalizeLevelSession({ completed: true });
+    expect(logSession).toHaveBeenCalledTimes(2);
   });
 });

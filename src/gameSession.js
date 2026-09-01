@@ -2,15 +2,25 @@
  * Reset mutable per-session state while preserving the learner profile and
  * long-lived canvas dimensions. Mode-specific data is supplied explicitly.
  */
+export function createSessionId() {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
+    const random = Math.floor(Math.random() * 16);
+    return (char === 'x' ? random : (random & 0x3) | 0x8).toString(16);
+  });
+}
+
 export function resetGameSession(state, {
   level,
   health,
   now = performance.now(),
+  sessionId = createSessionId(),
   drillLesson = null,
   dailyMoment = null,
 } = {}) {
   Object.assign(state, {
     screen: 'game',
+    sessionId,
     level,
     score: 0,
     combo: 0,
@@ -19,6 +29,7 @@ export function resetGameSession(state, {
     savedWordsTyped: 0,
     savedScoreStars: 0,
     sessionLogged: false,
+    sessionLogInFlight: false,
     wordsCompleted: 0,
     wordsSpawned: 0,
     totalKeystrokes: 0,
