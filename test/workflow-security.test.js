@@ -20,4 +20,9 @@ describe('container publication trust boundary', () => {
     expect(imageWorkflow).toContain('${{ steps.meta.outputs.image }}:latest');
     expect(imageWorkflow).not.toContain('github.event.pull_request');
   });
+
+  it('publishes a run command that maps a host port to nginx port 80', () => {
+    expect(imageWorkflow).toContain('docker run -d -p 8080:80');
+    expect(imageWorkflow).not.toContain('3000:3000');
+  });
 });

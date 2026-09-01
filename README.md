@@ -17,12 +17,13 @@ npm run dev
 ### Game Modes
 - **Play Quest** — 10 progressive touch-typing levels
 - **Practice Letters** — A-Z letter practice mode for building fundamentals
-- **Daily Challenges** — Speedster, Combo Master, Perfect Aim, Alphabet Ace
+- **Daily Moment** — a low-stress 60-second return path
+- **Weak-key drills** — focused practice derived from each learner's local history
 
 ### Visual System
 - 🌟 Custom Canvas particle engine (sparkle bursts, explosions, floating stars)
 - 🎨 Animated UI with CSS keyframe animations (bouncing title, floating island)
-- 🖼️ AI-generated character artwork using Google Gemini Nano Banana 2
+- 🖼️ Custom AI-assisted character and environment artwork
 - 💜 Glassmorphism cards with glow effects throughout
 - 📱 Fully responsive — works on phone, tablet, laptop
 
@@ -32,7 +33,7 @@ npm run dev
 - Health system (💜 hearts) — recover hearts via combo streaks
 - Star scoring — earn ⭐ based on accuracy each level
 - Level progression (unlocks saved across sessions)
-- Profile system with 8 unlockable avatars
+- Profile system with 10 selectable avatars
 - Persistent stats (high score, total words, play time, days played)
 
 ### Audio
@@ -60,7 +61,7 @@ npm run dev
 | `parents.html` — Parent info page (curriculum + privacy) |
 | `teacher.html` — Teacher dashboard (class analytics, optional Supabase) |
 | `styles.css` — Full design system (Canvas-independent styles) |
-| `src/` — Modular Vite source (28 ES modules, ~7,600 lines) |
+| `src/` — Modular Vite source (28 ES modules, ~7,800 lines) |
 | `supabase/schema.sql` — Cloud sync schema (profiles, sessions, class roster) |
 | `docs/LAUNCH-READINESS.md` — Pilot gates, evidence, owners, and release record |
 | `public/manifest.json` — PWA manifest |
@@ -69,12 +70,13 @@ npm run dev
 
 ## 🎨 AI Art Generation
 
-The game uses custom AI-generated character art created with Google Gemini Nano Banana 2:
+The game uses custom AI-assisted character art generated during development:
 - Hero flower garden scene
 - Celebration/confetti victory screen
 - Per-level backgrounds, badges, particles, pets, and UI assets
 
-Generated using the nano-banana-2 skill at resolution 1K for crisp web display.
+Generation credentials are operator-supplied and are never part of the browser
+application or tracked source. The checked-in artwork is served as static files.
 
 ## 🛠️ Tech Stack
 
@@ -99,7 +101,7 @@ Generated using the nano-banana-2 skill at resolution 1K for crisp web display.
 
 ### Windows / Mac
 1. Click the install icon in Chrome/Edge address bar
-2. Or use the "Add" button in the game
+2. Follow the browser's install prompt
 
 ## 🎵 Controls
 
@@ -120,7 +122,7 @@ settings live in `src/lessonLevels.js`.
 BloomType                  Purpose
 ├── index.html            — game entry (Vite)
 ├── parents.html          — parent info page
-├── teacher.html          — teacher dashboard (Supabase-backed)
+├── teacher.html          — local-first teacher dashboard (optional Supabase)
 ├── styles.css            — design system
 ├── src/                  — 28 ES modules (~7,700 lines)
 │   ├── main.js           — bootstrap + screen routing
@@ -155,19 +157,19 @@ BloomType                  Purpose
 | Check | Result |
 |-------|--------|
 | Build | ✅ `vite build` succeeds (4 HTML pages) |
-| Tests | ✅ 234 vitest tests pass across 30 files |
+| Tests | ✅ 253 vitest tests pass across 33 files |
 | Browser journeys | ✅ 10 Playwright tests cover classroom join/export/leave, responsive home actions, keyboard onboarding, isolated weak-key drill completion, ten-level progression, the production build, PWA scope, offline reload, and cache cleanup |
-| Remote CI | ✅ Core checks run on the repository-scoped Ashbi VPS runner |
+| Local-only release boundary | ✅ Built artifacts fail verification if Supabase configuration or client code is compiled in |
+| Remote CI | ✅ Core checks and the local-only artifact gate run on the repository-scoped Ashbi VPS runner |
 | npm audit | ✅ 0 vulnerabilities |
 | ESLint | ✅ 0 errors via `npm run lint` |
 
 ## 🎯 Future Ideas
 
 - Multiplayer racing mode (WebSocket)
-- Story campaign with chapters
 - More AI-generated backgrounds per level theme
-- Voice narration of words
 - Leaderboards
+- Supervised classroom pilot and retention validation
 - Complete fluent French and Spanish review across learner, parent, and teacher pages
 
 ---

@@ -1,6 +1,5 @@
 name: Build and Push Image
 
-# Reusable build workflow for camster91/* Node.js web apps.
 # Triggered on push to main and on tag. Builds a multi-stage Docker image
 # and pushes it to ghcr.io. The image becomes the canonical deployable
 # artifact — any host (Coolify, Hostinger, Render, Fly, local docker) can
@@ -9,7 +8,6 @@ name: Build and Push Image
 # Conventions:
 #   - Image: ghcr.io/camster91/<repo>:main (or :<tag> for releases)
 #   - Native default: linux/amd64 for the Ashbi VPS runner
-#   - Reusable callers can still request additional platforms explicitly
 #   - Buildx cache pushed to GHCR type=cache (saves ~3min per build)
 #   - SBOM + provenance attestations enabled (for supply-chain trust)
 
@@ -105,7 +103,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Image:** \`${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Pull:** \`docker pull ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "**Run:** \`docker run -d -p 3000:3000 --name ${{ github.event.repository.name }} ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Run:** \`docker run -d -p 8080:80 --name ${{ github.event.repository.name }} ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Platforms:** linux/amd64" >> $GITHUB_STEP_SUMMARY
           echo "**SHA:** ${{ steps.meta.outputs.sha }}" >> $GITHUB_STEP_SUMMARY
