@@ -174,6 +174,12 @@ children.
      landscape home layouts are regression-tested for overflow and reachable
      actions. Physical-device touch keyboard and screen-reader QA still need
      dedicated testing.
+   - Completed 2026-09-01: added axe-powered production-rendered WCAG A/AA
+     scans for the learner home and profile, parent guidance, teacher dashboard,
+     and school landing page. Fixed disabled browser zoom, an unfocusable
+     achievements scroller, and confirmed contrast failures across parent,
+     teacher, and landing controls. Physical assistive-technology testing
+     remains a human gate.
 3. Split the 2,000+ line `src/gameEngine.js` into input, rendering, session, and
    presentation modules with behavioral coverage.
    - Completed 2026-08-28: extracted the shared keyboard presentation API into

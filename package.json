@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/camster91/magic-type-quest#readme",
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.62.1",
     "eslint": "^10.9.1",
