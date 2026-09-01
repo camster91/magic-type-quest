@@ -14,6 +14,10 @@ describe('container publication trust boundary', () => {
     expect(imageWorkflow).not.toContain('refs/pull/');
   });
 
+  it('skips privileged image publication for documentation-only branch pushes', () => {
+    expect(imageWorkflow).toMatch(/paths-ignore:\s*\n\s+- ['"]\*\*\/\*\.md['"]/);
+  });
+
   it('keeps package publication and latest out of pull-request context', () => {
     expect(imageWorkflow).toContain('packages: write');
     expect(imageWorkflow).toContain('push: true');
