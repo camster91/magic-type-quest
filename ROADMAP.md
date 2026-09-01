@@ -32,7 +32,8 @@ school-scale launch readiness is not yet proven by real-world operations.
   publishing workflow also targets Ashbi. Repository housekeeping runs on
   GitHub-hosted infrastructure so third-party maintenance actions do not execute
   on the privileged VPS runner. The protected `main` branch strictly requires
-  the GitHub Actions `ci` context before ordinary merges.
+  the GitHub Actions `ci` context before ordinary merges, and repository Actions
+  reject workflow references that are not pinned to a full commit SHA.
   GitHub CodeQL is manually
   disabled because code scanning is unavailable, and secret scanning remains
   disabled. Dependabot currently reports zero open alerts.
@@ -84,7 +85,9 @@ children.
    - Completed 2026-09-01: restricted documentation-only branch pushes from the
      privileged image publisher, moved issue and merge housekeeping off the
      Ashbi VPS, disabled pull-request mutation in the issue-staleness workflow,
-     and pinned every third-party workflow action to an immutable commit.
+     pinned every workflow action to an immutable commit, and enabled GitHub's
+     repository-level SHA-pinning requirement so future mutable action tags are
+     rejected.
    - Completed 2026-09-01: made the Ashbi-backed GitHub Actions `ci` context a
      strict required status check on protected `main`, while preserving the
      existing pull-request, force-push, deletion, and administrator settings.

@@ -18,7 +18,7 @@ to close its launch gates. Blank evidence or ownership means the gate fails.
 | Candidate container | Verified, not released | [Image run 33504755951](https://github.com/camster91/magic-type-quest/actions/runs/33504755951), tag `main-29a1308`, index digest `sha256:710916c30a9cdd270348207a99e9de3401c10539571c7b6bc1d37906814689b5`; see `docs/releases/2026-09-01-29a1308-candidate.md` |
 | Repository housekeeping | Verified | [Stale Issues run 33500055154](https://github.com/camster91/magic-type-quest/actions/runs/33500055154) passed on GitHub-hosted Ubuntu 24.04; no third-party housekeeping action ran on Ashbi |
 | Production operation and rollback | Verified | `docs/releases/2026-09-01-1091e0d.md`; previous `5d00b77` image and server definitions retained |
-| Repository security | Source fixed; external closure pending | Four validated findings fixed at `ee9d5f2`; unused analytics RPCs retired; the removed Google credential still requires provider-side revocation or rotation |
+| Repository security | Source fixed; external closure pending | Four validated findings fixed at `ee9d5f2`; unused analytics RPCs retired; GitHub enforces full-SHA workflow action references; the removed Google credential still requires provider-side revocation or rotation |
 | Cloud privacy boundary | Implemented, not approved | `docs/PRIVACY-OPERATIONS.md`; production cloud variables remain unset |
 | Real-user evidence | Missing | No consented school pilot, retention result, or classroom usability evidence |
 
