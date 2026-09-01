@@ -16,12 +16,12 @@ school-scale launch readiness is not yet proven by real-world operations.
   quests, garden progression, classroom codes, teacher reporting, optional
   Supabase sync, PWA support, and core English/French/Spanish localization.
 - Deployment fixes: public assets work under the configured
-  `/magic-type-quest/` base path and are regression-tested. Ten Playwright
+  `/magic-type-quest/` base path and are regression-tested. Fifteen Playwright
   tests verify responsive home actions, a local student-to-teacher classroom
   journey with exports, the keyboard-only first-time student journey, all production
   entry points, same-origin assets, manifest scope, service-worker registration,
   persisted localization, isolated weak-key drill completion, offline app-shell
-  reload, and stale-cache cleanup.
+  reload, stale-cache cleanup, and five rendered WCAG A/AA surfaces.
 - Production: `https://bloomtype.ashbi.ca/magic-type-quest/` serves immutable
   image tag `1091e0d` through Traefik with trusted HTTPS and security headers.
   The approved 2026-09-01 public local-only release passed all ten browser
@@ -31,7 +31,8 @@ school-scale launch readiness is not yet proven by real-world operations.
   repository-scoped `ashbi-vps-magic-type-quest` self-hosted runner. The image
   publishing workflow also targets Ashbi. Repository housekeeping runs on
   GitHub-hosted infrastructure so third-party maintenance actions do not execute
-  on the privileged VPS runner.
+  on the privileged VPS runner. The protected `main` branch strictly requires
+  the GitHub Actions `ci` context before ordinary merges.
   GitHub CodeQL is manually
   disabled because code scanning is unavailable, and secret scanning remains
   disabled. Dependabot currently reports zero open alerts.
@@ -84,6 +85,9 @@ children.
      privileged image publisher, moved issue and merge housekeeping off the
      Ashbi VPS, disabled pull-request mutation in the issue-staleness workflow,
      and pinned every third-party workflow action to an immutable commit.
+   - Completed 2026-09-01: made the Ashbi-backed GitHub Actions `ci` context a
+     strict required status check on protected `main`, while preserving the
+     existing pull-request, force-push, deletion, and administrator settings.
    - Completed 2026-09-01: retired two unused Supabase analytics RPCs from both
      new and existing projects. The teacher dashboard already derives its
      summaries from the RLS-filtered roster, so removing the redundant functions
