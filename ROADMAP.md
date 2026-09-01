@@ -166,8 +166,13 @@ children.
    - Completed 2026-08-28: localized numbered level-completion titles and Daily
      Moment result summaries, including singular/plural wording and localized
      speed/accuracy labels in French and Spanish.
+   - Completed 2026-09-01: defined a fail-closed fluent-review protocol for the
+     complete learner, curriculum, gameplay, reward, profile, parent/privacy,
+     teacher, persistence, accessibility, layout, and fallback journeys, with
+     locale selection, severity, correction/re-review, evidence, and separate
+     French and Spanish sign-off.
    - Still required: have fluent French and Spanish reviewers check the complete
-     learner, parent, and teacher experience.
+     learner, parent, and teacher experience using that protocol.
 2. Complete keyboard-only, screen-reader, contrast, reduced-motion, touch
    keyboard, and small-screen QA.
    - Completed 2026-08-28: keyboard-only first-time start, tutorial, finger

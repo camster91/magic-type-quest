@@ -170,7 +170,7 @@ BloomType                  Purpose
 - More AI-generated backgrounds per level theme
 - Leaderboards
 - Supervised classroom pilot and retention validation
-- Complete fluent French and Spanish review across learner, parent, and teacher pages
+- Complete the fluent French and Spanish learner, parent, and teacher review in `docs/LANGUAGE-QA.md`
 
 ---
 
