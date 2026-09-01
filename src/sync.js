@@ -133,6 +133,70 @@ export function buildCloudSessionRow(session, userId, createdAt = new Date().toI
   };
 }
 
+export function buildLocalProgressExport(profile, exportedAt = new Date().toISOString()) {
+  return {
+    formatVersion: 1,
+    exportedAt,
+    source: 'local',
+    profile: JSON.parse(JSON.stringify(profile)),
+  };
+}
+
+/** Fetch every self-owned row without silently accepting Supabase row limits. */
+export async function fetchAllOwnedRows(sb, table, ownerColumn, userId, pageSize = 500) {
+  const rows = [];
+  for (let offset = 0; ; offset += pageSize) {
+    const { data, error } = await sb
+      .from(table)
+      .select('*')
+      .eq(ownerColumn, userId)
+      .order('id', { ascending: true })
+      .range(offset, offset + pageSize - 1);
+    if (error) throw error;
+    const page = data || [];
+    rows.push(...page);
+    if (page.length < pageSize) return rows;
+  }
+}
+
+export async function buildCloudProgressExport(
+  sb,
+  userId,
+  exportedAt = new Date().toISOString(),
+  pageSize = 500,
+) {
+  const [profiles, sessions, rosterMemberships] = await Promise.all([
+    fetchAllOwnedRows(sb, 'profiles', 'id', userId, pageSize),
+    fetchAllOwnedRows(sb, 'game_sessions', 'profile_id', userId, pageSize),
+    fetchAllOwnedRows(sb, 'class_roster', 'profile_id', userId, pageSize),
+  ]);
+  return {
+    formatVersion: 1,
+    exportedAt,
+    source: 'cloud',
+    accountId: userId,
+    profile: profiles[0] || null,
+    sessions,
+    rosterMemberships,
+  };
+}
+
+/** Export only the authenticated user's cloud learning data. */
+export async function exportCloudProgress() {
+  const cloud = await getAuthenticatedSupabase();
+  if (!cloud) return { exported: false, reason: 'not-authenticated' };
+  if (!navigator.onLine) return { exported: false, reason: 'offline' };
+  try {
+    return {
+      exported: true,
+      payload: await buildCloudProgressExport(cloud.sb, cloud.user.id),
+    };
+  } catch (error) {
+    console.warn('Cloud export failed:', error);
+    return { exported: false, reason: 'export-failed' };
+  }
+}
+
 async function syncProfileSnapshot(profile) {
   const cloud = await getAuthenticatedSupabase();
   if (!cloud) return;

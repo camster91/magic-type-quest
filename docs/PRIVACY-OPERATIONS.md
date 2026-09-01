@@ -66,6 +66,22 @@ Supabase deletion drill has run. Auth-user deletion, backup expiry, retention
 evidence, and the responsible operator remain required before cloud sync is
 enabled.
 
+## Access and export
+
+The profile screen always offers a JSON download of the current browser's
+student profile. In an authenticated cloud deployment it also offers a separate
+cloud export containing only the signed-in user's profile, complete paginated
+session history, and roster membership. Every cloud query includes the
+authenticated user ID in addition to RLS, uses deterministic pagination, and
+fails without downloading a partial file if any query fails. Authentication
+tokens and credentials are not part of either export format.
+
+The local-only browser journey verifies that local export is visible and cloud
+export remains hidden. The query scope, pagination, payload, and failure
+behavior are automated-test verified. A live authenticated access/export drill,
+approved recipient verification, secure delivery procedure, and retention of
+downloaded files remain required operational evidence.
+
 ## Public communication boundary
 
 The parent page lists the local data inventory and deletion path in plain

@@ -13,7 +13,7 @@ to close its launch gates. Blank evidence or ownership means the gate fails.
 
 | Control | State | Current evidence |
 |---|---|---|
-| Local and remote quality gates | Verified | 263 unit tests across 33 files, 10 Playwright journeys, ESLint, Vite build, local-only artifact verification, and zero-vulnerability audit |
+| Local and remote quality gates | Verified | 268 unit tests across 33 files, 10 Playwright journeys, ESLint, Vite build, local-only artifact verification, and zero-vulnerability audit |
 | Ashbi CI | Verified | [CI run 33500789138](https://github.com/camster91/magic-type-quest/actions/runs/33500789138) passed exact candidate `7228298`; runner `ashbi-vps-magic-type-quest` |
 | Candidate container | Verified, not released | [Image run 33500789294](https://github.com/camster91/magic-type-quest/actions/runs/33500789294), tag `main-7228298`, index digest `sha256:3087c3c5b5feac40926731359dc71dfeec6ff7c6a6e610c2e1feb4a3ac8e5849`; see `docs/releases/2026-09-01-7228298-candidate.md` |
 | Repository housekeeping | Verified | [Stale Issues run 33500055154](https://github.com/camster91/magic-type-quest/actions/runs/33500055154) passed on GitHub-hosted Ubuntu 24.04; no third-party housekeeping action ran on Ashbi |
@@ -29,7 +29,7 @@ to close its launch gates. Blank evidence or ownership means the gate fails.
 | Privacy and school approval | Every activation row in `PRIVACY-OPERATIONS.md` has an owner, approval date, evidence, and approved result | Product owner + participating school | Not approved |
 | Production Supabase | Approved region/project, applied schema revision, MFA/recovery evidence, and no committed secret | Product owner | Not provisioned |
 | Exposed provider credential | Provider evidence proves the removed Google key is revoked or rotated, replacement restrictions are recorded, and no replacement secret is committed | Product owner | Source removed; provider status unknown |
-| Account isolation | Separate teacher/student accounts prove cross-class denial plus approved export/deletion paths | Product owner + QA operator | Source deletion path verified; live drill not run |
+| Account isolation | Separate teacher/student accounts prove cross-class denial plus approved export/deletion paths | Product owner + QA operator | Source export/deletion paths verified; live drill not run |
 | Physical-device accessibility | Named iOS Safari and Android Chrome devices complete touch-keyboard, screen-reader, install, update, offline, and recovery scripts | Accessibility reviewer | Not run |
 | Language review | Fluent French and Spanish reviewers sign off learner, parent, and teacher journeys or record corrections | Language reviewers | Not run |
 | Supervised pilot | Approved protocol below, consented cohort, completed observation log, and pass/stop decision | School pilot lead | Not run |

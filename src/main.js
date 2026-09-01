@@ -12,7 +12,12 @@ import { getDueKeys } from './spacedRep.js';
 import { joinClass } from './classroom.js';
 import { escapeHTML } from './utils.js';
 import { applyTranslations, formatDate, formatNumber, localizeFingerLabel, setLocale, t } from './i18n.js';
-import { deleteCloudProfile, hasCloudSync } from './sync.js';
+import {
+  buildLocalProgressExport,
+  deleteCloudProfile,
+  exportCloudProgress,
+  hasCloudSync,
+} from './sync.js';
 import { localizeAchievement, localizeAchievementCategory, localizeLesson, localizeQuest } from './contentTranslations.js';
 import { getCurriculumProgress } from './progression.js';
 
@@ -519,7 +524,7 @@ function loadProfileScreen() {
   $('profile-achievements') && ($('profile-achievements').textContent = (p.achievements?.length) || 0);
   $('voice-toggle') && ($('voice-toggle').checked = p.voiceEnabled !== false);
   $('language-select') && ($('language-select').value = p.locale || 'en');
-  refreshCloudDeletionControl();
+  refreshCloudControls();
 
   document.querySelectorAll('.avatar-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.avatar === (p.avatar || '🌸'));
@@ -579,15 +584,26 @@ function loadProfileScreen() {
   }
 }
 
-async function refreshCloudDeletionControl() {
-  const button = $('btn-delete-cloud-profile');
-  const status = $('cloud-delete-status');
-  if (!button || !status) return;
-  button.hidden = true;
-  status.hidden = true;
-  status.textContent = '';
+async function refreshCloudControls() {
+  const buttons = [$('btn-export-cloud-profile'), $('btn-delete-cloud-profile')].filter(Boolean);
+  const statuses = [$('cloud-export-status'), $('cloud-delete-status')].filter(Boolean);
+  buttons.forEach((button) => { button.hidden = true; });
+  statuses.forEach((status) => {
+    status.hidden = true;
+    status.textContent = '';
+  });
   const enabled = await hasCloudSync();
-  button.hidden = !enabled;
+  buttons.forEach((button) => { button.hidden = !enabled; });
+}
+
+function downloadProgress(payload, source) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `bloomtype-${source}-progress-${new Date().toISOString().split('T')[0]}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 function saveProfileScreen() {
@@ -715,6 +731,31 @@ function bindEvents() {
     updateMenuStats();
     showScreen('menu');
     showAchievement(t('profile.deleted'), t('profile.deletedDesc'), '🗑️');
+  });
+
+  $('btn-export-local-profile')?.addEventListener('click', () => {
+    downloadProgress(buildLocalProgressExport(gameState.profile), 'local');
+  });
+
+  $('btn-export-cloud-profile')?.addEventListener('click', async () => {
+    const button = $('btn-export-cloud-profile');
+    const status = $('cloud-export-status');
+    button.disabled = true;
+    status.hidden = false;
+    status.textContent = t('profile.exportingCloud');
+    let result;
+    try {
+      result = await exportCloudProgress();
+    } catch {
+      result = { exported: false, reason: 'export-failed' };
+    }
+    button.disabled = false;
+    if (!result.exported) {
+      status.textContent = t(`profile.exportCloud.${result.reason || 'export-failed'}`);
+      return;
+    }
+    downloadProgress(result.payload, 'cloud');
+    status.textContent = t('profile.exportCloudDone');
   });
 
   $('btn-delete-cloud-profile')?.addEventListener('click', async () => {

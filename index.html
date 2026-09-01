@@ -528,6 +528,10 @@
       <input type="checkbox" id="voice-toggle"> 🗣 <span data-i18n="profile.voice">Voice Narration</span>
     </label>
     <button type="button" id="btn-save-profile" class="btn btn-primary" data-i18n="profile.save">Save Profile</button>
+    <button type="button" id="btn-export-local-profile" class="btn btn-secondary" data-i18n="profile.exportLocal">Download local progress</button>
+    <p class="profile-delete-hint" data-i18n="profile.exportLocalHint">Downloads this browser’s student profile as JSON.</p>
+    <button type="button" id="btn-export-cloud-profile" class="btn btn-secondary" data-i18n="profile.exportCloud" hidden>Download school cloud progress</button>
+    <p id="cloud-export-status" class="profile-delete-hint" role="status" aria-live="polite" hidden></p>
     <button type="button" id="btn-delete-profile" class="btn btn-danger" data-i18n="profile.delete">Delete local progress</button>
     <p class="profile-delete-hint" data-i18n="profile.deleteHint">Removes this student’s profile, progress, and class membership from this browser. It does not delete school cloud data.</p>
     <button type="button" id="btn-delete-cloud-profile" class="btn btn-danger" data-i18n="profile.deleteCloud" hidden>Delete cloud and local progress</button>

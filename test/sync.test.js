@@ -1,12 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   buildCloudProfileRow,
+  buildCloudProgressExport,
   buildCloudRosterRow,
   buildCloudSessionRow,
+  buildLocalProgressExport,
   createCloudProfileController,
   createLatestSyncQueue,
   deleteAuthenticatedCloudProfile,
   deleteCloudProfileRows,
+  fetchAllOwnedRows,
 } from '../src/sync.js';
 
 describe('authenticated cloud row mapping', () => {
@@ -178,5 +181,86 @@ describe('cloud profile deletion', () => {
     await expect(controller.remove()).resolves.toEqual({ deleted: false, reason: 'offline' });
     await controller.sync({ totalWords: 4 });
     expect(sync).toHaveBeenCalledWith({ totalWords: 4 });
+  });
+});
+
+describe('student progress export', () => {
+  it('creates a versioned immutable local profile export', () => {
+    const profile = { name: 'Ada', completedLevels: [1] };
+    const payload = buildLocalProgressExport(profile, '2026-09-01T00:00:00.000Z');
+    profile.completedLevels.push(2);
+    expect(payload).toEqual({
+      formatVersion: 1,
+      exportedAt: '2026-09-01T00:00:00.000Z',
+      source: 'local',
+      profile: { name: 'Ada', completedLevels: [1] },
+    });
+  });
+
+  it('paginates every owned row with stable inclusive ranges', async () => {
+    const ranges = [];
+    const pages = [[{ id: 1 }, { id: 2 }], [{ id: 3 }]];
+    const sb = {
+      from: () => ({
+        select() { return this; },
+        eq() { return this; },
+        order() { return this; },
+        range(from, to) {
+          ranges.push([from, to]);
+          return Promise.resolve({ data: pages.shift(), error: null });
+        },
+      }),
+    };
+
+    await expect(fetchAllOwnedRows(sb, 'game_sessions', 'profile_id', 'user-1', 2))
+      .resolves.toEqual([{ id: 1 }, { id: 2 }, { id: 3 }]);
+    expect(ranges).toEqual([[0, 1], [2, 3]]);
+  });
+
+  it('fails the export instead of silently returning a partial page', async () => {
+    const failure = { message: 'timeout' };
+    const sb = {
+      from: () => ({
+        select() { return this; }, eq() { return this; }, order() { return this; },
+        range: () => Promise.resolve({ data: [{ id: 1 }], error: failure }),
+      }),
+    };
+    await expect(fetchAllOwnedRows(sb, 'game_sessions', 'profile_id', 'user-1'))
+      .rejects.toBe(failure);
+  });
+
+  it('exports only the authenticated identity across profile, session, and roster queries', async () => {
+    const filters = [];
+    const rows = {
+      profiles: [{ id: 'user-1', name: 'Ada' }],
+      game_sessions: [{ id: 4, profile_id: 'user-1' }],
+      class_roster: [{ id: 7, profile_id: 'user-1' }],
+    };
+    const sb = {
+      from(table) {
+        return {
+          select() { return this; },
+          eq(column, value) { filters.push([table, column, value]); return this; },
+          order() { return this; },
+          range: () => Promise.resolve({ data: rows[table], error: null }),
+        };
+      },
+    };
+
+    await expect(buildCloudProgressExport(sb, 'user-1', '2026-09-01T00:00:00.000Z'))
+      .resolves.toEqual({
+        formatVersion: 1,
+        exportedAt: '2026-09-01T00:00:00.000Z',
+        source: 'cloud',
+        accountId: 'user-1',
+        profile: { id: 'user-1', name: 'Ada' },
+        sessions: [{ id: 4, profile_id: 'user-1' }],
+        rosterMemberships: [{ id: 7, profile_id: 'user-1' }],
+      });
+    expect(filters).toEqual([
+      ['profiles', 'id', 'user-1'],
+      ['game_sessions', 'profile_id', 'user-1'],
+      ['class_roster', 'profile_id', 'user-1'],
+    ]);
   });
 });

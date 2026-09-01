@@ -40,6 +40,14 @@ describe('Supabase privacy boundary', () => {
     expect(syncSource).toContain("signOut({ scope: 'local' })");
   });
 
+  it('scopes student cloud exports to the authenticated identity', () => {
+    expect(syncSource).toContain("fetchAllOwnedRows(sb, 'profiles', 'id', userId");
+    expect(syncSource).toContain("fetchAllOwnedRows(sb, 'game_sessions', 'profile_id', userId");
+    expect(syncSource).toContain("fetchAllOwnedRows(sb, 'class_roster', 'profile_id', userId");
+    expect(syncSource).toContain(".eq(ownerColumn, userId)");
+    expect(syncSource).not.toMatch(/access_token|refresh_token/);
+  });
+
   it('reserves teacher-code provisioning for a trusted administrative path', () => {
     expect(schema).not.toMatch(/create policy "Teacher own codes"[\s\S]*?for all/i);
     expect(schema).not.toMatch(/create policy [^\n]+ on teacher_codes for insert/i);

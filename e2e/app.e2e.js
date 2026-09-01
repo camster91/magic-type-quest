@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { readFileSync } from 'fs';
 
 const entryPoints = ['', 'parents.html', 'teacher.html', 'landing.html'];
 
@@ -161,7 +162,15 @@ test('production entry points and same-origin assets load without errors', async
     expect(failures, entryPoint || 'index.html').toEqual([]);
     if (entryPoint === '') {
       await page.locator('#btn-profile').click();
+      await expect(page.locator('#btn-export-local-profile')).toBeVisible();
+      await expect(page.locator('#btn-export-cloud-profile')).toBeHidden();
       await expect(page.locator('#btn-delete-cloud-profile')).toBeHidden();
+      const downloadPromise = page.waitForEvent('download');
+      await page.locator('#btn-export-local-profile').click();
+      const download = await downloadPromise;
+      expect(download.suggestedFilename()).toMatch(/^bloomtype-local-progress-\d{4}-\d{2}-\d{2}\.json$/);
+      const exported = JSON.parse(readFileSync(await download.path(), 'utf8'));
+      expect(exported).toMatchObject({ formatVersion: 1, source: 'local', profile: { name: 'Player' } });
     }
     await page.close();
   }
