@@ -78,6 +78,11 @@ children.
      and stopped pull requests from publishing GHCR images or moving `latest`.
      The exposed provider credential still requires provider-side revocation or
      rotation; production remains on the separately approved `1091e0d` release.
+   - Completed 2026-09-01: defined an exposed-Google-key closure playbook with
+     provider deletion/rotation, exposure-window usage and billing review,
+     replacement restrictions, non-restoration follow-up, redacted evidence,
+     repository rescanning, and owner sign-off. Authorized provider execution
+     remains required.
    - Completed 2026-09-01: added a fail-closed production-artifact check that
      rejects compiled Supabase project URLs, Vite cloud configuration names, or
      a bundled Supabase client. The local-only invariant now runs after every

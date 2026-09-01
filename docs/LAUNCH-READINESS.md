@@ -28,7 +28,7 @@ to close its launch gates. Blank evidence or ownership means the gate fails.
 |---|---|---|---|
 | Privacy and school approval | Every activation row in `PRIVACY-OPERATIONS.md` has an owner, approval date, evidence, and approved result | Product owner + participating school | Not approved |
 | Production Supabase | Approved region/project, applied schema revision, MFA/recovery evidence, and no committed secret | Product owner | Not provisioned |
-| Exposed provider credential | Provider evidence proves the removed Google key is revoked or rotated, replacement restrictions are recorded, and no replacement secret is committed | Product owner | Source removed; provider status unknown |
+| Exposed provider credential | Complete `GOOGLE-KEY-INCIDENT.md`: provider evidence proves the removed Google key is deleted, exposure-window usage is reviewed, replacement restrictions are recorded if applicable, and no replacement secret is committed | Product owner | Playbook ready; provider action not started |
 | Account isolation | Separate teacher/student accounts prove cross-class denial plus approved export/deletion paths | Product owner + QA operator | Source export/deletion paths verified; live drill not run |
 | Physical-device accessibility | Named iOS Safari and Android Chrome devices complete the touch-keyboard, screen-reader, install, update, offline, and recovery protocol in `DEVICE-ACCESSIBILITY-QA.md` | Accessibility reviewer | Protocol ready; human runs not started |
 | Language review | Fluent French and Spanish reviewers separately complete `LANGUAGE-QA.md`, close Critical/Major findings, and sign the learner, parent, and teacher journeys | Language reviewers | Protocol ready; human reviews not started |
@@ -41,7 +41,7 @@ to close its launch gates. Blank evidence or ownership means the gate fails.
 |---|---|---|---|
 | Repository and GitHub Actions | Available | Maintain repository-scoped Ashbi runner | Docker access is privileged; do not run untrusted forks |
 | GHCR candidate images | Available | Record immutable SHA before any release | Production release needs explicit approval |
-| Google Cloud credential administration | Unavailable | Revoke or rotate the removed key, restrict its replacement, and record non-secret evidence | Potential quota/billing exposure remains until closed |
+| Google Cloud credential administration | Unavailable | Assign an authorized administrator and execute `GOOGLE-KEY-INCIDENT.md` | Potential quota/billing exposure remains until closed |
 | Ashbi production host | Operator-controlled | Use `PRODUCTION.md` only after approval | Customer-visible and reversible by prior image tag |
 | Supabase production project | Unavailable | Provision only after privacy owners approve region and controls | May contain student data; approval required |
 | Teacher/student test accounts | Unavailable | Create isolated non-student QA accounts after Supabase approval | Credentials must not enter the repository or logs |

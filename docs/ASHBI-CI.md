@@ -27,10 +27,10 @@ condition in place whenever editing `.github/workflows/ci.yml` or
 `.github/workflows/build-and-push.yml`.
 
 The image publishing workflow also runs directly on this runner and uses its
-Docker daemon to build the multi-architecture GHCR image. Repository-owned
-stale-issue and labeled auto-merge maintenance jobs use the same scoped runner,
-so they do not depend on GitHub-hosted runner billing. Core CI remains
-isolated inside the digest-pinned Playwright container.
+Docker daemon to build the multi-architecture GHCR image. Stale-issue and
+labeled auto-merge maintenance jobs run on GitHub-hosted `ubuntu-latest`, so
+third-party maintenance actions do not execute on the privileged VPS. Core CI
+remains isolated inside the digest-pinned Playwright container.
 
 ## Routine checks
 
