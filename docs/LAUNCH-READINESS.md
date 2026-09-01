@@ -14,8 +14,8 @@ to close its launch gates. Blank evidence or ownership means the gate fails.
 | Control | State | Current evidence |
 |---|---|---|
 | Local and remote quality gates | Verified | 268 unit tests across 33 files, 10 Playwright journeys, ESLint, Vite build, local-only artifact verification, and zero-vulnerability audit |
-| Ashbi CI | Verified | [CI run 33500789138](https://github.com/camster91/magic-type-quest/actions/runs/33500789138) passed exact candidate `7228298`; runner `ashbi-vps-magic-type-quest` |
-| Candidate container | Verified, not released | [Image run 33500789294](https://github.com/camster91/magic-type-quest/actions/runs/33500789294), tag `main-7228298`, index digest `sha256:3087c3c5b5feac40926731359dc71dfeec6ff7c6a6e610c2e1feb4a3ac8e5849`; see `docs/releases/2026-09-01-7228298-candidate.md` |
+| Ashbi CI | Verified | [CI run 33501504657](https://github.com/camster91/magic-type-quest/actions/runs/33501504657) passed exact candidate `b87884e`; runner `ashbi-vps-magic-type-quest` |
+| Candidate container | Verified, not released | [Image run 33501504748](https://github.com/camster91/magic-type-quest/actions/runs/33501504748), tag `main-b87884e`, index digest `sha256:41e211432eacfa99e5aa3a2a1ef1bad44a13cece1746a6c637eb460da4479483`; see `docs/releases/2026-09-01-b87884e-candidate.md` |
 | Repository housekeeping | Verified | [Stale Issues run 33500055154](https://github.com/camster91/magic-type-quest/actions/runs/33500055154) passed on GitHub-hosted Ubuntu 24.04; no third-party housekeeping action ran on Ashbi |
 | Production operation and rollback | Verified | `docs/releases/2026-09-01-1091e0d.md`; previous `5d00b77` image and server definitions retained |
 | Repository security | Source fixed; external closure pending | Four validated findings fixed at `ee9d5f2`; the removed Google credential still requires provider-side revocation or rotation |
