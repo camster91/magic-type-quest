@@ -8,4 +8,5 @@ dist
 test
 README.md
 *.md
-deploy/
+deploy/*
+!deploy/nginx.conf

@@ -34,6 +34,7 @@ describe('deployment base paths', () => {
 
   it('the production container serves the configured deployment scope', () => {
     const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
+    const dockerignore = readFileSync(resolve(root, '.dockerignore'), 'utf8');
     const nginx = readFileSync(resolve(root, 'deploy/nginx.conf'), 'utf8');
     const compose = readFileSync(resolve(root, 'deploy/docker-compose.production.yml'), 'utf8');
 
@@ -41,6 +42,7 @@ describe('deployment base paths', () => {
     expect(dockerfile).toMatch(/FROM node:20-alpine@sha256:[a-f0-9]{64}/);
     expect(dockerfile).toMatch(/FROM nginx:1\.25-alpine@sha256:[a-f0-9]{64}/);
     expect(dockerfile).toContain('COPY deploy/nginx.conf');
+    expect(dockerignore).toContain('!deploy/nginx.conf');
     expect(dockerfile).toContain('http://127.0.0.1/healthz');
     expect(nginx).toContain('return 302 /magic-type-quest/');
     expect(nginx).toContain('absolute_redirect off');
