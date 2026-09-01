@@ -1051,8 +1051,9 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .achievements-categories .cat-pill .cat-bar { width: 30px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.15); overflow: hidden; }
 .achievements-categories .cat-pill .cat-bar-inner { height: 100%; border-radius: 2px; transition: width 0.3s ease; }
 .achievements-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; max-height: 240px; overflow-y: auto; padding-right: 4px; }
-.achievement-item { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 8px 4px; border-radius: 10px; background: var(--card); border: 1px solid var(--card-border); transition: all 0.2s ease; opacity: 0.45; }
-.achievement-item.unlocked { opacity: 1; background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.3); }
+.achievement-item { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 8px 4px; border-radius: 10px; background: rgba(15,23,42,0.28); border: 1px solid var(--card-border); transition: all 0.2s ease; }
+.achievement-item:not(.unlocked) .ach-icon { filter: grayscale(1); opacity: 0.7; }
+.achievement-item.unlocked { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.3); }
 .achievement-item .ach-icon { font-size: 1.4rem; margin-bottom: 2px; }
 .achievement-item .ach-title { font-size: 0.68rem; font-weight: 700; line-height: 1.2; }
 .achievement-item .ach-desc { font-size: 0.55rem; color: var(--text-dim); margin-top: 1px; }
