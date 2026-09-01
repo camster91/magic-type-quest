@@ -39,8 +39,8 @@ describe('deployment base paths', () => {
     const compose = readFileSync(resolve(root, 'deploy/docker-compose.production.yml'), 'utf8');
 
     expect(dockerfile).toContain('npm ci --ignore-scripts');
-    expect(dockerfile).toMatch(/FROM node:20-alpine@sha256:[a-f0-9]{64}/);
-    expect(dockerfile).toMatch(/FROM nginx:1\.25-alpine@sha256:[a-f0-9]{64}/);
+    expect(dockerfile).toMatch(/FROM node:24-alpine@sha256:[a-f0-9]{64}/);
+    expect(dockerfile).toMatch(/FROM nginx:1\.30-alpine@sha256:[a-f0-9]{64}/);
     expect(dockerfile).toContain('COPY deploy/nginx.conf');
     expect(dockerignore).toContain('!deploy/nginx.conf');
     expect(dockerfile).toContain('http://127.0.0.1/healthz');

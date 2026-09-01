@@ -62,7 +62,8 @@ children.
      local-only deployment and passed HTTPS, security-header, container-health,
      and all ten production browser checks. School/cloud launch gates remain.
    - Completed 2026-09-01: made image builds reproducible with locked lifecycle-
-     script-free installs and digest-pinned Node/nginx bases; added an explicit
+     script-free installs and digest-pinned supported Node 24 LTS/nginx 1.30
+     bases; added an explicit
      container health endpoint; and separated no-cache PWA shell/update files
      from immutable fingerprinted bundles. The new candidate is configuration-
      tested but requires a separately approved production promotion.
