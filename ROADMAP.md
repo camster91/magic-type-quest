@@ -29,7 +29,8 @@ school-scale launch readiness is not yet proven by real-world operations.
   are documented in `docs/PRODUCTION.md`.
 - Automation: repository Actions are enabled and core CI passes on the
   repository-scoped `ashbi-vps-magic-type-quest` self-hosted runner. The image
-  publishing workflow also targets Ashbi Docker. GitHub CodeQL is manually
+  publishing, stale-issue, and labeled auto-merge workflows also target Ashbi.
+  GitHub CodeQL is manually
   disabled because code scanning is unavailable, and secret scanning remains
   disabled. Dependabot currently reports zero open alerts.
 - Not yet proven: production Supabase configuration, authenticated teacher and
