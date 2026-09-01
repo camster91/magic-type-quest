@@ -31,6 +31,14 @@ describe('Supabase privacy boundary', () => {
     expect(syncSource).not.toContain('st.id || st.name');
   });
 
+  it('reserves teacher-code provisioning for a trusted administrative path', () => {
+    expect(schema).not.toMatch(/create policy "Teacher own codes"[\s\S]*?for all/i);
+    expect(schema).not.toMatch(/create policy [^\n]+ on teacher_codes for insert/i);
+    expect(schema).toContain('create policy "Teacher read own codes" on teacher_codes for select');
+    expect(schema).toContain('create policy "Teacher delete own codes" on teacher_codes for delete');
+    expect(schema).toContain('revoke insert, update on teacher_codes from authenticated');
+  });
+
   it('deduplicates ambiguous session retries without rewriting legacy rows', () => {
     expect(schema).toContain('alter table game_sessions add column if not exists session_id uuid');
     expect(schema).toContain('create unique index if not exists idx_sessions_session_id');

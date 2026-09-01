@@ -1,6 +1,7 @@
 /** Escape a value according to RFC 4180-style CSV rules. */
 export function csvCell(value) {
-  const text = String(value ?? '');
+  const raw = String(value ?? '');
+  const text = /^\s*[=+\-@]/u.test(raw) ? `'${raw}` : raw;
   return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
 

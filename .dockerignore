@@ -5,6 +5,9 @@ docker-compose.yml
 .gitignore
 node_modules
 dist
+.env
+.env.*
+!.env.example
 test
 README.md
 *.md

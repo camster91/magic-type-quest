@@ -1,12 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { writeFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
+import { getGoogleApiKey } from "./google-api-key.mjs";
 
-const API_KEY = "AIzaSyDNQmRXt4HEVLemjmMEKx0wlSZbkycrjYg";
 const GUIDES_DIR = "/home/camst/magic-type-quest/public/assets/guides";
 const PARTICLES_DIR = "/home/camst/magic-type-quest/public/assets/particles";
 
-const genAI = new GoogleGenerativeAI(API_KEY);
+const genAI = new GoogleGenerativeAI(getGoogleApiKey());
 const MODEL = "gemini-2.5-flash-image";
 
 // ============================

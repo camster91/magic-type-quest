@@ -3,11 +3,10 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { writeFileSync, existsSync, mkdirSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { getGoogleApiKey } from "./google-api-key.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASE_DIR = resolve(__dirname, "..", "public", "assets");
-
-const API_KEY = "AIzaSyDNQmRXt4HEVLemjmMEKx0wlSZbkycrjYg";
 
 // Ensure dirs exist
 const dirs = ["badges", "achievements"];
@@ -16,7 +15,7 @@ dirs.forEach(d => {
   if (!existsSync(p)) mkdirSync(p, { recursive: true });
 });
 
-const genAI = new GoogleGenerativeAI(API_KEY);
+const genAI = new GoogleGenerativeAI(getGoogleApiKey());
 
 // Use gemini-2.5-flash-image for native image generation
 const model = genAI.getGenerativeModel({

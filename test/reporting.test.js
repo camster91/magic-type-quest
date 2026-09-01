@@ -18,6 +18,19 @@ describe('teacher roster exports', () => {
     expect(csvCell('plain')).toBe('plain');
   });
 
+  it.each(['=1+1', '+SUM(A1:A2)', '-2+3', '@SUM(A1:A2)', '  =1+1', '\t=1+1', '\r=1+1'])(
+    'neutralizes spreadsheet formula input %j',
+    (value) => {
+      expect(csvCell(value)).toContain(`'${value}`);
+    },
+  );
+
+  it('preserves ordinary text, numbers, emoji, and JSON export values', () => {
+    expect(csvCell('🌸 Ada')).toBe('🌸 Ada');
+    expect(csvCell('120')).toBe('120');
+    expect(JSON.parse(createRosterExport('ABC123', [{ name: '=Ada' }])).students[0].name).toBe('=Ada');
+  });
+
   it('creates a standards-safe roster CSV', () => {
     const csv = createRosterCSV([student]);
     expect(csv).toContain('Name,Level,Words,Score,Stars,Status,Source\r\n');

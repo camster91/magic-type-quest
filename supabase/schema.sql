@@ -105,9 +105,16 @@ create table if not exists teacher_codes (
 alter table teacher_codes enable row level security;
 
 drop policy if exists "Teacher own codes" on teacher_codes;
-create policy "Teacher own codes" on teacher_codes for all
-  using (auth.uid() = teacher_id)
-  with check (auth.uid() = teacher_id);
+drop policy if exists "Teacher read own codes" on teacher_codes;
+drop policy if exists "Teacher delete own codes" on teacher_codes;
+create policy "Teacher read own codes" on teacher_codes for select
+  using (auth.uid() = teacher_id);
+create policy "Teacher delete own codes" on teacher_codes for delete
+  using (auth.uid() = teacher_id);
+
+-- Class ownership is provisioned only by a trusted administrator or service
+-- role. Authenticated browser clients must never claim or transfer codes.
+revoke insert, update on teacher_codes from authenticated;
 
 -- Student roster writes are self-scoped. Teachers may read roster and session
 -- data only where teacher_codes proves ownership of the requested class.

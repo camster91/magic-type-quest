@@ -1,13 +1,13 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { writeFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
+import { getGoogleApiKey } from "./google-api-key.mjs";
 
-const API_KEY = "AIzaSyDNQmRXt4HEVLemjmMEKx0wlSZbkycrjYg";
 const OUTPUT_DIR = "/home/camst/magic-type-quest/public/assets/backgrounds";
 const WIDTH = 1920;
 const HEIGHT = 1080;
 
-const genAI = new GoogleGenerativeAI(API_KEY);
+const genAI = new GoogleGenerativeAI(getGoogleApiKey());
 
 // Using gemini-2.5-flash-image-preview which supports image generation
 const MODEL = "gemini-2.5-flash-image-preview";

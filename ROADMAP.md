@@ -9,7 +9,7 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 234 tests pass across 30 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 247 tests pass across 32 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -67,6 +67,13 @@ children.
      container health endpoint; and separated no-cache PWA shell/update files
      from immutable fingerprinted bundles. The new candidate is configuration-
      tested but requires a separately approved production promotion.
+   - Completed 2026-09-01: audited all tracked non-binary source and fixed four
+     validated security boundaries: removed a committed Google AI credential
+     from generator scripts, reserved teacher-code provisioning for trusted
+     administrators, neutralized spreadsheet formulas in roster CSV exports,
+     and stopped pull requests from publishing GHCR images or moving `latest`.
+     The exposed provider credential still requires provider-side revocation or
+     rotation; production remains on the separately approved `1091e0d` release.
 
 2. **Production data and privacy readiness**
    - Provision the intended Supabase project and apply `supabase/schema.sql`.
