@@ -34,8 +34,12 @@ The product owner and participating school must record:
 
 `supabase/schema.sql` enables RLS on every student-data table. Player writes
 are bound to `auth.uid()`. Teacher reads require a `teacher_codes` row owned by
-that teacher. The browser sync layer refuses cloud operations without an
-authenticated session.
+that teacher, and authenticated browser clients cannot create or transfer
+teacher-code ownership. A trusted administrator or service role must provision
+those rows. The browser sync layer refuses cloud operations without an
+authenticated session. Ashbi CI also scans the built production artifact and
+fails if Supabase configuration or client code is compiled into the public
+local-only bundle.
 
 These controls reduce technical risk; they are not a claim of COPPA, FERPA,
 PIPEDA, or other legal compliance. Keep production Supabase variables unset

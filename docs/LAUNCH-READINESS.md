@@ -13,10 +13,11 @@ to close its launch gates. Blank evidence or ownership means the gate fails.
 
 | Control | State | Current evidence |
 |---|---|---|
-| Local and remote quality gates | Verified | 234 unit tests across 30 files, 10 Playwright journeys, ESLint, Vite build, and zero-vulnerability audit |
-| Ashbi CI | Verified | [CI run 33460455116](https://github.com/camster91/magic-type-quest/actions/runs/33460455116), runner `ashbi-vps-magic-type-quest` |
-| Candidate container | Released | [Image run 33460455099](https://github.com/camster91/magic-type-quest/actions/runs/33460455099), immutable production tag `1091e0d` |
+| Local and remote quality gates | Verified | 252 unit tests across 33 files, 10 Playwright journeys, ESLint, Vite build, local-only artifact verification, and zero-vulnerability audit |
+| Ashbi CI | Verified | [CI run 33497635650](https://github.com/camster91/magic-type-quest/actions/runs/33497635650) passed exact security candidate `ee9d5f2`; runner `ashbi-vps-magic-type-quest` |
+| Candidate container | Verified, not released | [Image run 33497635649](https://github.com/camster91/magic-type-quest/actions/runs/33497635649), tag `main-ee9d5f2`, digest `sha256:8a2319c7e8100dd655b9023d959ae4dc21d7075a09550f507713a3a7909edfcb` |
 | Production operation and rollback | Verified | `docs/releases/2026-09-01-1091e0d.md`; previous `5d00b77` image and server definitions retained |
+| Repository security | Source fixed; external closure pending | Four validated findings fixed at `ee9d5f2`; the removed Google credential still requires provider-side revocation or rotation |
 | Cloud privacy boundary | Implemented, not approved | `docs/PRIVACY-OPERATIONS.md`; production cloud variables remain unset |
 | Real-user evidence | Missing | No consented school pilot, retention result, or classroom usability evidence |
 
@@ -26,6 +27,7 @@ to close its launch gates. Blank evidence or ownership means the gate fails.
 |---|---|---|---|
 | Privacy and school approval | Every activation row in `PRIVACY-OPERATIONS.md` has an owner, approval date, evidence, and approved result | Product owner + participating school | Not approved |
 | Production Supabase | Approved region/project, applied schema revision, MFA/recovery evidence, and no committed secret | Product owner | Not provisioned |
+| Exposed provider credential | Provider evidence proves the removed Google key is revoked or rotated, replacement restrictions are recorded, and no replacement secret is committed | Product owner | Source removed; provider status unknown |
 | Account isolation | Separate teacher/student accounts prove cross-class denial plus approved export/deletion paths | Product owner + QA operator | Not run |
 | Physical-device accessibility | Named iOS Safari and Android Chrome devices complete touch-keyboard, screen-reader, install, update, offline, and recovery scripts | Accessibility reviewer | Not run |
 | Language review | Fluent French and Spanish reviewers sign off learner, parent, and teacher journeys or record corrections | Language reviewers | Not run |
@@ -38,6 +40,7 @@ to close its launch gates. Blank evidence or ownership means the gate fails.
 |---|---|---|---|
 | Repository and GitHub Actions | Available | Maintain repository-scoped Ashbi runner | Docker access is privileged; do not run untrusted forks |
 | GHCR candidate images | Available | Record immutable SHA before any release | Production release needs explicit approval |
+| Google Cloud credential administration | Unavailable | Revoke or rotate the removed key, restrict its replacement, and record non-secret evidence | Potential quota/billing exposure remains until closed |
 | Ashbi production host | Operator-controlled | Use `PRODUCTION.md` only after approval | Customer-visible and reversible by prior image tag |
 | Supabase production project | Unavailable | Provision only after privacy owners approve region and controls | May contain student data; approval required |
 | Teacher/student test accounts | Unavailable | Create isolated non-student QA accounts after Supabase approval | Credentials must not enter the repository or logs |

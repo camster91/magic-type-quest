@@ -9,7 +9,7 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 247 tests pass across 32 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 252 tests pass across 33 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -74,6 +74,10 @@ children.
      and stopped pull requests from publishing GHCR images or moving `latest`.
      The exposed provider credential still requires provider-side revocation or
      rotation; production remains on the separately approved `1091e0d` release.
+   - Completed 2026-09-01: added a fail-closed production-artifact check that
+     rejects compiled Supabase project URLs, Vite cloud configuration names, or
+     a bundled Supabase client. The local-only invariant now runs after every
+     production build in Ashbi CI and before every Playwright journey.
 
 2. **Production data and privacy readiness**
    - Provision the intended Supabase project and apply `supabase/schema.sql`.
