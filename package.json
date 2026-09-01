@@ -7,10 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "verify:local-only-build": "node scripts/verify-local-only-build.mjs dist",
+    "verify:cloud-boundary": "node scripts/verify-cloud-boundary.mjs",
     "preview": "vite preview",
     "test": "vitest",
     "test:e2e": "npm run build && npm run verify:local-only-build && playwright test",
-    "lint": "eslint src test e2e playwright.config.js"
+    "lint": "eslint src test e2e scripts/*.mjs playwright.config.js"
   },
   "repository": {
     "type": "git",

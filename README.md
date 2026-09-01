@@ -157,7 +157,7 @@ BloomType                  Purpose
 | Check | Result |
 |-------|--------|
 | Build | ✅ `vite build` succeeds (4 HTML pages) |
-| Tests | ✅ 269 vitest tests pass across 33 files |
+| Tests | ✅ 272 vitest tests pass across 34 files |
 | Browser journeys | ✅ 10 Playwright tests cover classroom join/export/leave, responsive home actions, keyboard onboarding, isolated weak-key drill completion, ten-level progression, the production build, PWA scope, offline reload, and cache cleanup |
 | Local-only release boundary | ✅ Built artifacts fail verification if Supabase configuration or client code is compiled in |
 | Remote CI | ✅ Core checks and the local-only artifact gate run on the repository-scoped Ashbi VPS runner |

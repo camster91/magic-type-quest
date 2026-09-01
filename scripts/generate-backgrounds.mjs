@@ -4,8 +4,6 @@ import { join } from "path";
 import { getGoogleApiKey } from "./google-api-key.mjs";
 
 const OUTPUT_DIR = "/home/camst/magic-type-quest/public/assets/backgrounds";
-const WIDTH = 1920;
-const HEIGHT = 1080;
 
 const genAI = new GoogleGenerativeAI(getGoogleApiKey());
 

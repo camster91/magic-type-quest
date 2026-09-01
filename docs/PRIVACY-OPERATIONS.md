@@ -109,3 +109,28 @@ When all rows are approved, record the Supabase project reference and schema
 migration revision without committing secrets. After activation, run the
 authenticated browser suite and deletion drill before admitting real student
 data. Any failed gate requires cloud credentials to remain unset or be removed.
+
+### Authenticated QA drill
+
+After an approved QA project, two student accounts, one teacher account, and a
+teacher-owned class code exist, run `npm run verify:cloud-boundary` from a
+trusted operator workstation. The script requires `BLOOMTYPE_QA_*` environment
+variables and the explicit acknowledgement
+`BLOOMTYPE_CLOUD_DRILL_CONFIRM=DELETE_QA_DATA`; `.env` is ignored by Git.
+
+Required configuration names are `BLOOMTYPE_QA_SUPABASE_URL`,
+`BLOOMTYPE_QA_SUPABASE_ANON_KEY`, email and password pairs for
+`BLOOMTYPE_QA_STUDENT_A`, `BLOOMTYPE_QA_STUDENT_B`, and
+`BLOOMTYPE_QA_TEACHER`, plus `BLOOMTYPE_QA_TEACHER_CLASS_CODE` and
+`BLOOMTYPE_QA_OTHER_CLASS_CODE`. Store their values only in an approved secret
+manager or ignored local environment file; `.env` and `.env.*` are excluded
+from version control.
+
+The drill creates disposable learning rows only for the designated QA students,
+then proves student-to-student denial, teacher owned-class access and
+foreign-class denial, complete self-export without token fields, and cascading
+profile/session/roster deletion. It deletes those QA learning rows in cleanup,
+does not delete Auth identities, does not print account credentials or emails,
+and must never be run with real student accounts. Record the command timestamp,
+project reference, schema revision, operator, and pass/fail output in the
+approved evidence system; do not commit its environment or raw account details.

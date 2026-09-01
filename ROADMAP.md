@@ -9,7 +9,7 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 269 tests pass across 33 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 272 tests pass across 34 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -127,6 +127,11 @@ children.
    - Still required: provision production credentials and separate teacher and
      student test accounts, claim a teacher-owned class code, and exercise the
      real hosted auth/session, conflict, roster, alert, and export paths.
+   - Completed 2026-09-01: added a fail-closed operator drill that uses three
+     designated QA accounts to verify student and teacher isolation, complete
+     self-export, and cascading learning-data deletion without logging
+     credentials. The approved project, accounts, and human-run evidence remain
+     external gates.
 
 4. **Small supervised pilot**
    - Run with a small, consented cohort before a school-wide rollout.
