@@ -25,7 +25,7 @@ describe('parent and teacher page localization', () => {
     const markup = ['parents.html', 'teacher.html']
       .map((file) => readFileSync(resolve(root, file), 'utf8'))
       .join('\n');
-    const referenced = [...markup.matchAll(/data-page-(?:title|i18n|i18n-html|i18n-placeholder)="([^"]+)"/g)]
+    const referenced = [...markup.matchAll(/data-page-(?:title|i18n|i18n-html|i18n-placeholder|i18n-aria-label)="([^"]+)"/g)]
       .map((match) => match[1]);
     expect(referenced.length).toBeGreaterThan(0);
     expect(referenced.filter((key) => !(key in pageDictionaries.en))).toEqual([]);

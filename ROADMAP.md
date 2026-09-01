@@ -16,12 +16,13 @@ school-scale launch readiness is not yet proven by real-world operations.
   quests, garden progression, classroom codes, teacher reporting, optional
   Supabase sync, PWA support, and core English/French/Spanish localization.
 - Deployment fixes: public assets work under the configured
-  `/magic-type-quest/` base path and are regression-tested. Fifteen Playwright
+  `/magic-type-quest/` base path and are regression-tested. Seventeen Playwright
   tests verify responsive home actions, a local student-to-teacher classroom
   journey with exports, the keyboard-only first-time student journey, all production
   entry points, same-origin assets, manifest scope, service-worker registration,
   persisted localization, isolated weak-key drill completion, offline app-shell
-  reload, stale-cache cleanup, and five rendered WCAG A/AA surfaces.
+  reload, stale-cache cleanup, five rendered WCAG A/AA surfaces, and enlarged
+  French/Spanish learner, parent, and teacher layouts at 320px.
 - Production: `https://bloomtype.ashbi.ca/magic-type-quest/` serves immutable
   image tag `1091e0d` through Traefik with trusted HTTPS and security headers.
   The approved 2026-09-01 public local-only release passed all ten browser
@@ -176,6 +177,12 @@ children.
      teacher, persistence, accessibility, layout, and fallback journeys, with
      locale selection, severity, correction/re-review, evidence, and separate
      French and Spanish sign-off.
+   - Completed 2026-09-01: added rendered French and Spanish regression checks
+     at 320px with 200% root text across learner profile, parent guidance, and
+     teacher reporting. Fixed oversized parent headings and long localized
+     words, clipped Spanish achievement copy, and the previously unreachable
+     off-screen teacher table columns with a localized, keyboard-focusable
+     horizontal region.
    - Still required: have fluent French and Spanish reviewers check the complete
      learner, parent, and teacher experience using that protocol.
 2. Complete keyboard-only, screen-reader, contrast, reduced-motion, touch

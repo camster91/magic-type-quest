@@ -16,7 +16,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text);
-      min-height: 100vh; padding: 20px;
+      min-height: 100vh; padding: 20px; overflow-wrap: anywhere;
     }
     h1 { font-family: 'Fredoka One', cursive; font-size: 2rem; margin-bottom: 8px; }
     .subtitle { color: var(--text-dim); margin-bottom: 24px; }
@@ -83,7 +83,7 @@
     /* Table */
     .table-wrap {
       background: var(--glass); border: 1px solid var(--glass-border);
-      border-radius: 12px; overflow: hidden; margin-bottom: 24px;
+      border-radius: 12px; overflow-x: auto; margin-bottom: 24px;
     }
     table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     th { background: rgba(139,92,246,0.2); padding: 12px 16px; text-align: left; font-weight: 700; }
@@ -136,7 +136,7 @@
 
   <div id="stats-grid" class="stats-grid"></div>
 
-  <div class="table-wrap">
+  <div class="table-wrap" tabindex="0" role="region" aria-label="Student progress table" data-page-i18n-aria-label="teacher.tableLabel">
     <table>
       <thead>
         <tr>

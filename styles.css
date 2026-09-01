@@ -1055,8 +1055,8 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .achievement-item:not(.unlocked) .ach-icon { filter: grayscale(1); opacity: 0.7; }
 .achievement-item.unlocked { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.3); }
 .achievement-item .ach-icon { font-size: 1.4rem; margin-bottom: 2px; }
-.achievement-item .ach-title { font-size: 0.68rem; font-weight: 700; line-height: 1.2; }
-.achievement-item .ach-desc { font-size: 0.55rem; color: var(--text-dim); margin-top: 1px; }
+.achievement-item .ach-title { font-size: 0.68rem; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
+.achievement-item .ach-desc { font-size: 0.55rem; color: var(--text-dim); overflow-wrap: anywhere; margin-top: 1px; }
 
 /* ===== SCREEN HEADER ===== */
 .screen-header { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 720px; padding: 12px 16px; z-index: 2; }

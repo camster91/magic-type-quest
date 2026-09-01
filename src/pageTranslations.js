@@ -22,6 +22,7 @@ export const pageDictionaries = {
     'teacher.classCode': 'Class Code', 'teacher.classPlaceholder': 'Class code (e.g. ABC123)',
     'teacher.load': '🔍 Load Class', 'teacher.all': '🔄 All Students', 'teacher.exportCsv': '📊 Export CSV',
     'teacher.exportJson': '📋 Export JSON', 'teacher.clear': '🗑 Clear All', 'teacher.allLocal': 'All Students (Local)',
+    'teacher.tableLabel': 'Student progress table',
     'teacher.student': 'Student', 'teacher.level': 'Level', 'teacher.words': 'Words', 'teacher.score': 'Score',
     'teacher.stars': 'Stars', 'teacher.status': 'Status', 'teacher.source': 'Source', 'teacher.noData': 'No data yet',
     'teacher.emptyHint': 'Students will appear here after they play BloomType. 🌸', 'teacher.students': 'Students',
@@ -56,6 +57,7 @@ export const pageDictionaries = {
     'teacher.classCode': 'Code de classe', 'teacher.classPlaceholder': 'Code de classe (ex. ABC123)',
     'teacher.load': '🔍 Charger la classe', 'teacher.all': '🔄 Tous les élèves', 'teacher.exportCsv': '📊 Exporter CSV',
     'teacher.exportJson': '📋 Exporter JSON', 'teacher.clear': '🗑 Tout effacer', 'teacher.allLocal': 'Tous les élèves (local)',
+    'teacher.tableLabel': 'Tableau de progression des élèves',
     'teacher.student': 'Élève', 'teacher.level': 'Niveau', 'teacher.words': 'Mots', 'teacher.score': 'Score',
     'teacher.stars': 'Étoiles', 'teacher.status': 'État', 'teacher.source': 'Source', 'teacher.noData': 'Aucune donnée',
     'teacher.emptyHint': 'Les élèves apparaîtront ici après avoir joué à BloomType. 🌸', 'teacher.students': 'Élèves',
@@ -90,6 +92,7 @@ export const pageDictionaries = {
     'teacher.classCode': 'Código de clase', 'teacher.classPlaceholder': 'Código de clase (p. ej., ABC123)',
     'teacher.load': '🔍 Cargar clase', 'teacher.all': '🔄 Todo el alumnado', 'teacher.exportCsv': '📊 Exportar CSV',
     'teacher.exportJson': '📋 Exportar JSON', 'teacher.clear': '🗑 Borrar todo', 'teacher.allLocal': 'Todo el alumnado (local)',
+    'teacher.tableLabel': 'Tabla de progreso del alumnado',
     'teacher.student': 'Estudiante', 'teacher.level': 'Nivel', 'teacher.words': 'Palabras', 'teacher.score': 'Puntuación',
     'teacher.stars': 'Estrellas', 'teacher.status': 'Estado', 'teacher.source': 'Origen', 'teacher.noData': 'Aún no hay datos',
     'teacher.emptyHint': 'El alumnado aparecerá aquí después de jugar a BloomType. 🌸', 'teacher.students': 'Estudiantes',
@@ -138,6 +141,9 @@ export function applyPageTranslations(root = document) {
   });
   root.querySelectorAll('[data-page-i18n-placeholder]').forEach((element) => {
     element.placeholder = pageT(element.dataset.pageI18nPlaceholder);
+  });
+  root.querySelectorAll('[data-page-i18n-aria-label]').forEach((element) => {
+    element.setAttribute('aria-label', pageT(element.dataset.pageI18nAriaLabel));
   });
   const titleKey = document.documentElement.dataset.pageTitle;
   if (titleKey) document.title = pageT(titleKey);
