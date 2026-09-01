@@ -56,6 +56,13 @@ describe('Supabase privacy boundary', () => {
     expect(schema).toContain('revoke insert, update on teacher_codes from authenticated');
   });
 
+  it('removes unused analytics RPCs instead of exposing redundant query paths', () => {
+    expect(schema).toContain('drop function if exists class_wpm_trends(text)');
+    expect(schema).toContain('drop function if exists red_flag_students(text)');
+    expect(schema).not.toMatch(/create or replace function\s+(?:class_wpm_trends|red_flag_students)/i);
+    expect(syncSource).not.toMatch(/\.rpc\(['"](?:class_wpm_trends|red_flag_students)/);
+  });
+
   it('deduplicates ambiguous session retries without rewriting legacy rows', () => {
     expect(schema).toContain('alter table game_sessions add column if not exists session_id uuid');
     expect(schema).toContain('create unique index if not exists idx_sessions_session_id');

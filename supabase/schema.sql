@@ -153,37 +153,9 @@ create policy "Teacher session read" on game_sessions for select
     )
   );
 
--- ===== FUNCTIONS (Analytics) =====
--- Average WPM per class per day
-create or replace function class_wpm_trends(p_class_code text)
-returns table(day date, avg_wpm decimal, total_sessions bigint) as $$
-begin
-  return query
-    select date(created_at) as day,
-           avg(wpm)::decimal(5,2) as avg_wpm,
-           count(*)::bigint as total_sessions
-    from game_sessions gs
-    join profiles p on p.id = gs.profile_id
-    where p.class_code = p_class_code
-    group by day
-    order by day desc
-    limit 30;
-end;
-$$ language plpgsql;
-
--- Red-flag students: accuracy < 60% in last 7 days
-create or replace function red_flag_students(p_class_code text)
-returns table(profile_id uuid, name text, avg_accuracy decimal, days_since_play bigint) as $$
-begin
-  return query
-    select p.id, p.name,
-           avg(gs.accuracy)::decimal(5,2) as avg_accuracy,
-           extract(day from now() - max(gs.created_at))::bigint as days_since_play
-    from profiles p
-    left join game_sessions gs on gs.profile_id = p.id and gs.created_at > now() - interval '7 days'
-    where p.class_code = p_class_code
-    group by p.id, p.name
-    having avg(gs.accuracy) < 60 or max(gs.created_at) < now() - interval '7 days'
-    order by avg_accuracy asc nulls last;
-end;
-$$ language plpgsql;
+-- ===== RETIRED ANALYTICS RPCS =====
+-- The browser dashboard derives its summaries from the RLS-filtered roster and
+-- does not call database RPCs. Remove the obsolete functions from existing
+-- projects so they cannot remain as an unnecessary PostgREST attack surface.
+drop function if exists class_wpm_trends(text);
+drop function if exists red_flag_students(text);

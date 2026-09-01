@@ -9,7 +9,7 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 268 tests pass across 33 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 269 tests pass across 33 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -84,6 +84,10 @@ children.
      privileged image publisher, moved issue and merge housekeeping off the
      Ashbi VPS, disabled pull-request mutation in the issue-staleness workflow,
      and pinned every third-party workflow action to an immutable commit.
+   - Completed 2026-09-01: retired two unused Supabase analytics RPCs from both
+     new and existing projects. The teacher dashboard already derives its
+     summaries from the RLS-filtered roster, so removing the redundant functions
+     narrows the future cloud API without changing product behavior.
 
 2. **Production data and privacy readiness**
    - Provision the intended Supabase project and apply `supabase/schema.sql`.
