@@ -28,11 +28,19 @@ seven-character candidate SHA and verify the image's
 `org.opencontainers.image.revision` label matches the approved full commit.
 
 Traefik watches its dynamic directory, so the route does not require a proxy
-restart. Verify TLS and then run the browser suite against production:
+restart. Compose and the image share a `/healthz` container health contract.
+The nginx policy requires the mutable HTML shell, manifest, and service worker
+to revalidate, while fingerprinted Vite JavaScript/CSS may be cached immutably.
+Verify health, cache headers, TLS, and then run the browser suite against
+production:
 
 ```sh
 curl --fail --silent --show-error --location --head \
   https://bloomtype.ashbi.ca/magic-type-quest/
+curl --fail --silent --show-error \
+  https://bloomtype.ashbi.ca/healthz
+curl --fail --silent --show-error --head \
+  https://bloomtype.ashbi.ca/magic-type-quest/sw.js
 PLAYWRIGHT_BASE_URL=https://bloomtype.ashbi.ca/magic-type-quest/ \
   npx playwright test
 ```

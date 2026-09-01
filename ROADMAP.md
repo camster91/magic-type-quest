@@ -9,7 +9,7 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 233 tests pass across 30 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 234 tests pass across 30 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -61,6 +61,11 @@ children.
    - Completed 2026-09-01: released exact revision `1091e0d` to the public
      local-only deployment and passed HTTPS, security-header, container-health,
      and all ten production browser checks. School/cloud launch gates remain.
+   - Completed 2026-09-01: made image builds reproducible with locked lifecycle-
+     script-free installs and digest-pinned Node/nginx bases; added an explicit
+     container health endpoint; and separated no-cache PWA shell/update files
+     from immutable fingerprinted bundles. The new candidate is configuration-
+     tested but requires a separately approved production promotion.
 
 2. **Production data and privacy readiness**
    - Provision the intended Supabase project and apply `supabase/schema.sql`.

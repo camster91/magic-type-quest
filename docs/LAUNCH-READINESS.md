@@ -13,7 +13,7 @@ to close its launch gates. Blank evidence or ownership means the gate fails.
 
 | Control | State | Current evidence |
 |---|---|---|
-| Local and remote quality gates | Verified | 233 unit tests across 30 files, 10 Playwright journeys, ESLint, Vite build, and zero-vulnerability audit |
+| Local and remote quality gates | Verified | 234 unit tests across 30 files, 10 Playwright journeys, ESLint, Vite build, and zero-vulnerability audit |
 | Ashbi CI | Verified | [CI run 33460455116](https://github.com/camster91/magic-type-quest/actions/runs/33460455116), runner `ashbi-vps-magic-type-quest` |
 | Candidate container | Released | [Image run 33460455099](https://github.com/camster91/magic-type-quest/actions/runs/33460455099), immutable production tag `1091e0d` |
 | Production operation and rollback | Verified | `docs/releases/2026-09-01-1091e0d.md`; previous `5d00b77` image and server definitions retained |
