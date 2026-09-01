@@ -9,7 +9,7 @@ trackers.
 The core product is implemented and the repository is technically clean, but
 school-scale launch readiness is not yet proven by real-world operations.
 
-- Local gates: 253 tests pass across 33 files, ESLint reports zero diagnostics, the Vite
+- Local gates: 256 tests pass across 33 files, ESLint reports zero diagnostics, the Vite
   production build succeeds, and `npm audit` reports zero vulnerabilities.
 - Repository backlog: zero open GitHub issues and zero open pull requests.
 - Product: ten progressive levels, practice, adaptive difficulty, achievements,
@@ -29,7 +29,9 @@ school-scale launch readiness is not yet proven by real-world operations.
   in `docs/PRODUCTION.md`.
 - Automation: repository Actions are enabled and core CI passes on the
   repository-scoped `ashbi-vps-magic-type-quest` self-hosted runner. The image
-  publishing, stale-issue, and labeled auto-merge workflows also target Ashbi.
+  publishing workflow also targets Ashbi. Repository housekeeping runs on
+  GitHub-hosted infrastructure so third-party maintenance actions do not execute
+  on the privileged VPS runner.
   GitHub CodeQL is manually
   disabled because code scanning is unavailable, and secret scanning remains
   disabled. Dependabot currently reports zero open alerts.
@@ -78,6 +80,10 @@ children.
      rejects compiled Supabase project URLs, Vite cloud configuration names, or
      a bundled Supabase client. The local-only invariant now runs after every
      production build in Ashbi CI and before every Playwright journey.
+   - Completed 2026-09-01: restricted documentation-only branch pushes from the
+     privileged image publisher, moved issue and merge housekeeping off the
+     Ashbi VPS, disabled pull-request mutation in the issue-staleness workflow,
+     and pinned every third-party workflow action to an immutable commit.
 
 2. **Production data and privacy readiness**
    - Provision the intended Supabase project and apply `supabase/schema.sql`.
