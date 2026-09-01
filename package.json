@@ -24,14 +24,14 @@
   "homepage": "https://github.com/camster91/magic-type-quest#readme",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@playwright/test": "^1.62.0",
-    "eslint": "^10.9.0",
-    "jsdom": "^29.1.1",
-    "playwright": "^1.62.0",
+    "@playwright/test": "^1.62.1",
+    "eslint": "^10.9.1",
+    "jsdom": "^30.0.1",
+    "playwright": "^1.62.1",
     "vite": "^8.2.2",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "optionalDependencies": {
-    "@supabase/supabase-js": "^2.110.8"
+    "@supabase/supabase-js": "^2.112.4"
   }
 }
