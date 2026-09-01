@@ -30,7 +30,7 @@ to close its launch gates. Blank evidence or ownership means the gate fails.
 | Production Supabase | Approved region/project, applied schema revision, MFA/recovery evidence, and no committed secret | Product owner | Not provisioned |
 | Exposed provider credential | Provider evidence proves the removed Google key is revoked or rotated, replacement restrictions are recorded, and no replacement secret is committed | Product owner | Source removed; provider status unknown |
 | Account isolation | Separate teacher/student accounts prove cross-class denial plus approved export/deletion paths | Product owner + QA operator | Source export/deletion paths verified; live drill not run |
-| Physical-device accessibility | Named iOS Safari and Android Chrome devices complete touch-keyboard, screen-reader, install, update, offline, and recovery scripts | Accessibility reviewer | Not run |
+| Physical-device accessibility | Named iOS Safari and Android Chrome devices complete the touch-keyboard, screen-reader, install, update, offline, and recovery protocol in `DEVICE-ACCESSIBILITY-QA.md` | Accessibility reviewer | Protocol ready; human runs not started |
 | Language review | Fluent French and Spanish reviewers sign off learner, parent, and teacher journeys or record corrections | Language reviewers | Not run |
 | Supervised pilot | Approved protocol below, consented cohort, completed observation log, and pass/stop decision | School pilot lead | Not run |
 | Public local-only release approval | Named approver records candidate SHA, evidence, rollback tag, decision, and date | Product owner | Approved 2026-09-01 for `1091e0d` |
@@ -45,7 +45,7 @@ to close its launch gates. Blank evidence or ownership means the gate fails.
 | Ashbi production host | Operator-controlled | Use `PRODUCTION.md` only after approval | Customer-visible and reversible by prior image tag |
 | Supabase production project | Unavailable | Provision only after privacy owners approve region and controls | May contain student data; approval required |
 | Teacher/student test accounts | Unavailable | Create isolated non-student QA accounts after Supabase approval | Credentials must not enter the repository or logs |
-| Physical iOS/Android devices | Unconfirmed | Assign devices and reviewers | Human accessibility evidence required |
+| Physical iOS/Android devices | Unconfirmed | Assign devices and reviewers, then execute `DEVICE-ACCESSIBILITY-QA.md` | Human accessibility evidence required |
 | Fluent French/Spanish review | Unassigned | Assign named reviewers | Human-language quality cannot be inferred from parity tests |
 | Pilot cohort and school contact | Unassigned | Recruit through an approved, consented school process | External communication and consent require owner approval |
 

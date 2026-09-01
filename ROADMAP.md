@@ -187,6 +187,11 @@ children.
      achievements scroller, and confirmed contrast failures across parent,
      teacher, landing, and locked-achievement interfaces. Physical assistive-
      technology testing remains a human gate.
+   - Completed 2026-09-01: defined a fail-closed physical-device protocol for
+     VoiceOver on iOS/iPadOS and TalkBack on Android, covering screen-reader
+     navigation, touch typing, text scaling, install, offline recovery, service-
+     worker update, rollback, evidence, severity, and sign-off. Named devices
+     and human execution remain required.
 3. Split the 2,000+ line `src/gameEngine.js` into input, rendering, session, and
    presentation modules with behavioral coverage.
    - Completed 2026-08-28: extracted the shared keyboard presentation API into
