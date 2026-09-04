@@ -16,6 +16,8 @@ on:
     branches: [main, master]
     tags: ['v*']
     paths-ignore:
+      - '.github/**'
+      - 'docs/**'
       - '**/*.md'
 
 permissions:
