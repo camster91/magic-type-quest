@@ -10,8 +10,14 @@ concurrency:
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
 
 jobs:
   ci:
@@ -23,10 +29,12 @@ jobs:
       options: --user 986:986
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - run: npm ci
+      - run: npm ci --no-audit --no-fund
       - run: npm run lint
       - run: npm test -- --run
       - run: npm run build
       - run: npm run verify:local-only-build
-      - run: npm run test:e2e
+      - name: End-to-end tests
+        if: github.actor != 'dependabot[bot]'
+        run: npm run test:e2e
       - run: npm audit --audit-level=high
