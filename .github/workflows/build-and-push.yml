@@ -17,6 +17,8 @@ on:
     tags: ['v*']
     paths-ignore:
       - '**/*.md'
+      - '.github/**'
+      - 'docs/**'
 
 permissions:
   contents: read
