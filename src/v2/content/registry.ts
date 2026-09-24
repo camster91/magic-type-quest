@@ -3,6 +3,8 @@ import type { BiomeId } from '../curriculum/biomeMapping';
 import type { LocaleId } from '../curriculum/domain';
 import type { BiomeDefinition, ContentData, MissionDefinition, RestorationStage, RewardDefinition, SpeciesId, WildlifeEntry } from './schema';
 import { STARTER_CONTENT } from './data';
+import { ASSET_MANIFEST, getAsset, validateAssetManifest, type AssetDefinition } from '../assets/manifest';
+import { BIOME_PALETTES } from '../assets/palettes';
 
 const locales: readonly LocaleId[] = ['en', 'fr', 'es'];
 const rewardTypes = ['habitatState', 'fieldGuideEntry', 'companionMilestone', 'badge'];
@@ -28,6 +30,12 @@ export function validateContent(input: unknown): readonly string[] {
   if (!data.strings || typeof data.strings !== 'object') failures.push('strings: expected a locale map');
   if (failures.length) return failures;
   if (data.releasePhase !== 'meadow' && data.releasePhase !== 'expanded') failures.push('releasePhase: expected meadow or expanded');
+  failures.push(...validateAssetManifest());
+  const manifest = new Map(ASSET_MANIFEST.map((entry) => [entry.id, entry]));
+  for (const [index, assetSlot] of data.assets.entries()) {
+    const entry = manifest.get(assetSlot?.id);
+    if (!entry || assetSlot.status !== entry.status || assetSlot.sourcePath !== entry.sourcePath) failures.push(`assets[${index}]: typed manifest mismatch for ${assetSlot?.id}`);
+  }
   const requiredArrays: Readonly<Record<string, readonly string[]>> = {
     biomes: ['lessonIds', 'restorationStageIds', 'missionIds', 'wildlifeDiscoveryIds'],
     stages: ['visibleLayers', 'hiddenLayers', 'propChanges', 'wildlifeArrivals'],
@@ -71,7 +79,7 @@ export function validateContent(input: unknown): readonly string[] {
     if (data.releasePhase === 'meadow' && biome.id !== 'meadow-base' && biome.status === 'implemented') failures.push(`${path}.status: later biome must remain planned before Meadow gate`);
     if (!Number.isInteger(biome.contentVersion) || biome.contentVersion < 1) failures.push(`${path}.contentVersion: expected positive integer`);
     key(biome.displayNameKey, `${path}.displayNameKey`); key(biome.shortDescriptionKey, `${path}.shortDescriptionKey`);
-    if (!biome.sceneKey || !biome.assetPackId || !biome.paletteToken || biome.unlockSelectorId !== 'canEnterBiome' || biome.completionSelectorId !== 'biomeMissionsComplete') failures.push(`${path}: missing scene, pack, palette or selector contract`);
+    if (!biome.sceneKey || !biome.assetPackId || biome.paletteToken !== BIOME_PALETTES[biome.id]?.token || biome.unlockSelectorId !== 'canEnterBiome' || biome.completionSelectorId !== 'biomeMissionsComplete') failures.push(`${path}: missing scene, pack, palette or selector contract`);
     const expectedLessons = Object.entries(LESSON_BIOMES).filter(([, id]) => id === biome.id).map(([id]) => id);
     if (JSON.stringify([...biome.lessonIds].sort()) !== JSON.stringify(expectedLessons.sort())) failures.push(`${path}.lessonIds: curriculum mapping mismatch`);
     for (const id of biome.missionIds) if (missions.get(id)?.biomeId !== biome.id) failures.push(`${path}.missionIds: missing or foreign ${id}`);
@@ -147,6 +155,7 @@ export class ContentRegistry {
   getRestorationStage(id: string): RestorationStage { const value = this.data.stages.find((entry) => entry.id === id); if (!value) throw new Error(`Unknown stage ${id}`); return value; }
   getWildlife(id: SpeciesId): WildlifeEntry { const value = this.data.wildlife.find((entry) => entry.id === id); if (!value) throw new Error(`Unknown species ${id}`); return value; }
   getReward(id: string): RewardDefinition { const value = this.data.rewards.find((entry) => entry.id === id); if (!value) throw new Error(`Unknown reward ${id}`); return value; }
+  getAsset(id: string): AssetDefinition { return getAsset(id); }
   getString(key: string, locale: LocaleId): string { const value = this.data.strings[locale][key]; if (!value) throw new Error(`Untranslated content ${locale}.${key}`); return value; }
   getImplementedBiomes(): readonly BiomeDefinition[] { return this.data.biomes.filter((entry) => entry.status === 'implemented'); }
 }
