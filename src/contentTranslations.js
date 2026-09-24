@@ -3,10 +3,10 @@ import { getLocale } from './i18n.js';
 const content = {
   fr: {
     lessons: {
-      1: { name: 'Jardin de la rangée de repos 🌸', subtitle: 'Mots du jardin', teaches: 'Apprends les touches de repos : a, s, d, f, j, k, l' },
+      1: { name: 'Jardin de la rangée de repos 🌸', subtitle: 'Mots du jardin', teaches: 'Apprends les touches de repos : a, s, d, f, j, k, l, ;' },
       2: { name: 'Ciel de la rangée supérieure ⬆️', subtitle: 'Mots du ciel', teaches: 'Monte pour taper : q, w, e, r, t, y, u, i, o, p' },
       3: { name: 'Océan de la rangée inférieure ⬇️', subtitle: 'Mots de l’océan', teaches: 'Descends pour taper : z, x, c, v, b, n, m' },
-      4: { name: 'Forêt de toutes les lettres 🌲', subtitle: 'Aventure en forêt', teaches: 'Mélange les 26 lettres dans de vrais mots' },
+      4: { name: 'Forêt de toutes les lettres 🌲', subtitle: 'Ajoute g et h, puis mélange les 26 lettres' },
       5: { name: 'Ville des majuscules 🏙️', subtitle: 'Mots de la ville', teaches: 'Tape des majuscules : A, B, C, D…' },
       6: { name: 'Galaxie des nombres 🚀', subtitle: 'Nombres de l’espace', teaches: 'Tape les nombres : 1, 2, 3, 4, 5, 6, 7, 8, 9, 0' },
       7: { name: 'Prairie de vitesse ⚡', subtitle: 'Course rapide', teaches: 'Tape plus vite et augmente tes MPM' },
@@ -18,7 +18,7 @@ const content = {
       1: { title: 'Le jardin s’éveille', subtitle: 'Jardin de la rangée de repos', intro: 'Bloom a dormi tout l’hiver. Réveille-le en tapant les lettres de la rangée de repos : A, S, D, F, J, K, L. Chaque mot plante une graine !', petLine: 'Les premières lettres de la saison ! Réveillons ce jardin !' },
       2: { title: 'Vers le ciel', subtitle: 'Ciel de la rangée supérieure', intro: 'Le soleil se lève ! Monte vers Q, W, E, R, T, Y, U, I, O, P. Plus tu tapes haut, plus le jardin brille !', petLine: 'Vise le ciel ! Ces touches sont tout là-haut !' },
       3: { title: 'Plonge en profondeur', subtitle: 'Océan de la rangée inférieure', intro: 'Les nuages arrivent ! Descends vers Z, X, C, V, B, N, M. Tape pour arroser les plantes assoiffées !', petLine: 'On descend ! Ces touches se cachent sous terre !' },
-      4: { title: 'Le clavier complet', subtitle: 'Aventure en forêt', intro: 'La forêt t’appelle ! Tu connais maintenant les trois rangées. Utilise toutes les lettres pour avancer entre les arbres.', petLine: 'Toutes les rangées ensemble ! Explorons cette immense forêt !' },
+      4: { title: 'Le clavier complet', subtitle: 'Aventure en forêt', intro: 'La forêt t’appelle ! Apprends g et h, puis utilise toutes les lettres pour avancer entre les arbres.', petLine: 'Ajoutons g et h avant de mélanger toutes les rangées !' },
       5: { title: 'Construis la ville', subtitle: 'Ville des majuscules', intro: 'Construisons en grand ! Maintiens Maj pour créer des lettres MAJUSCULES. Une ville a besoin de grands bâtiments !', petLine: 'Pouvoir Maj ! Construisons la plus haute tour !' },
       6: { title: 'Décollage !', subtitle: 'Galaxie des nombres', intro: '3… 2… 1… DÉCOLLAGE ! Les nombres de 0 à 9 alimentent la fusée. Tape-les pour envoyer Bloom dans l’espace !', petLine: 'Le carburant de la fusée, ce sont les nombres ! Comptons jusqu’aux étoiles !' },
       7: { title: 'Prairie de vitesse', subtitle: 'Course rapide', intro: 'Les fleurs font la course ! Peux-tu suivre ? Tape vite pour gagner le sprint de la prairie !', petLine: 'Plus vite ! Les fleurs s’enfuient vraiment !' },
@@ -54,10 +54,10 @@ const content = {
   },
   es: {
     lessons: {
-      1: { name: 'Jardín de la fila guía 🌸', subtitle: 'Palabras del jardín', teaches: 'Aprende las teclas guía: a, s, d, f, j, k, l' },
+      1: { name: 'Jardín de la fila guía 🌸', subtitle: 'Palabras del jardín', teaches: 'Aprende las teclas guía: a, s, d, f, j, k, l, ;' },
       2: { name: 'Cielo de la fila superior ⬆️', subtitle: 'Palabras del cielo', teaches: 'Sube para escribir: q, w, e, r, t, y, u, i, o, p' },
       3: { name: 'Océano de la fila inferior ⬇️', subtitle: 'Palabras del océano', teaches: 'Baja para escribir: z, x, c, v, b, n, m' },
-      4: { name: 'Bosque de todas las letras 🌲', subtitle: 'Aventura en el bosque', teaches: 'Mezcla las 26 letras en palabras reales' },
+      4: { name: 'Bosque de todas las letras 🌲', subtitle: 'Añade g y h, luego combina las 26 letras' },
       5: { name: 'Ciudad de mayúsculas 🏙️', subtitle: 'Palabras de la ciudad', teaches: 'Escribe mayúsculas: A, B, C, D…' },
       6: { name: 'Galaxia de números 🚀', subtitle: 'Números espaciales', teaches: 'Escribe los números: 1, 2, 3, 4, 5, 6, 7, 8, 9, 0' },
       7: { name: 'Pradera de velocidad ⚡', subtitle: 'Carrera rápida', teaches: 'Escribe más rápido y aumenta tus PPM' },
@@ -69,7 +69,7 @@ const content = {
       1: { title: 'El jardín despierta', subtitle: 'Jardín de la fila guía', intro: 'Bloom ha dormido todo el invierno. Despiértalo escribiendo A, S, D, F, J, K y L. ¡Cada palabra planta una semilla!', petLine: '¡Las primeras letras de la temporada! ¡Despertemos el jardín!' },
       2: { title: 'Alcanza el cielo', subtitle: 'Cielo de la fila superior', intro: '¡Sale el sol! Sube hasta Q, W, E, R, T, Y, U, I, O y P. Cuanto más alto escribas, más brillará el jardín.', petLine: '¡Alcanza el cielo! ¡Estas teclas están muy arriba!' },
       3: { title: 'Bucea profundo', subtitle: 'Océano de la fila inferior', intro: '¡Llegan nubes de lluvia! Baja hasta Z, X, C, V, B, N y M. Escribe para regar las plantas sedientas.', petLine: '¡Vamos abajo! ¡Estas teclas se esconden bajo tierra!' },
-      4: { title: 'El teclado completo', subtitle: 'Aventura en el bosque', intro: '¡El bosque te llama! Ya conoces las tres filas. Usa todas las letras para adentrarte entre los árboles.', petLine: '¡Todas las filas juntas! ¡Exploremos este bosque enorme!' },
+      4: { title: 'El teclado completo', subtitle: 'Aventura en el bosque', intro: '¡El bosque te llama! Aprende g y h, luego usa todas las letras para adentrarte entre los árboles.', petLine: '¡Sumemos g y h antes de combinar las tres filas!' },
       5: { title: 'Construye la ciudad', subtitle: 'Ciudad de mayúsculas', intro: '¡Construyamos a lo grande! Mantén Mayús para crear letras MAYÚSCULAS. ¡Una ciudad necesita edificios altos!', petLine: '¡Poder Mayús! ¡Construyamos la torre más alta!' },
       6: { title: '¡Despegue!', subtitle: 'Galaxia de números', intro: '3… 2… 1… ¡DESPEGUE! Los números del 0 al 9 impulsan el cohete. Escríbelos para llevar a Bloom al espacio.', petLine: '¡El combustible son los números! ¡Contemos hasta las estrellas!' },
       7: { title: 'Pradera de velocidad', subtitle: 'Carrera rápida', intro: '¡Las flores compiten! ¿Puedes seguirlas? Escribe rápido para ganar la carrera de la pradera.', petLine: '¡Más rápido! ¡Las flores se escapan de verdad!' },

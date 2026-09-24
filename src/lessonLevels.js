@@ -1,4 +1,5 @@
 import { ALL_WORDS, ALL_SENTENCES } from './words.js';
+import { filterLegacyContent } from './v2/curriculum/legacyAdapter.ts';
 // Each game level IS a typing lesson
 // Progressive curriculum that teaches proper touch typing
 
@@ -13,7 +14,7 @@ export const LESSON_LEVELS = {
     subtitle: "Garden Words",
     description: "Learn the foundation with fun garden words! Your fingers always return here.",
     // T28: "what this teaches" 1-line shown on the Lessons card
-    teaches: "Learn the home row keys: a, s, d, f, j, k, l",
+    teaches: "Learn the home row keys: a, s, d, f, j, k, l, ;",
     
     // Typing instruction
     keys: ["a", "s", "d", "f", "j", "k", "l", ";"],
@@ -173,14 +174,15 @@ export const LESSON_LEVELS = {
     name: "All Letters Forest 🌲",
     subtitle: "Forest Adventure",
     description: "Explore the enchanted forest! Use all the letters you've learned.",
-    teaches: "Mix all 26 letters in real words",
+    teaches: "Add g and h, then mix all 26 letters",
     
-    keys: ["a", "s", "d", "f", "j", "k", "l", ";", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "z", "x", "c", "v", "b", "n", "m"],
+    keys: ["a", "s", "d", "f", "j", "k", "l", ";", "g", "h", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "z", "x", "c", "v", "b", "n", "m"],
     keyboardRows: ["home", "top", "bottom"],
     
     fingerColors: {
       a: "#EF4444", s: "#F97316", d: "#EAB308", f: "#22C55E",
       j: "#22C55E", k: "#EAB308", l: "#F97316", ";": "#EF4444",
+      g: "#22C55E", h: "#22C55E",
       q: "#EF4444", w: "#F97316", e: "#EAB308", r: "#22C55E", t: "#22C55E",
       y: "#22C55E", u: "#22C55E", i: "#EAB308", o: "#F97316", p: "#EF4444",
       z: "#EF4444", x: "#F97316", c: "#EAB308", v: "#22C55E", b: "#22C55E",
@@ -189,6 +191,7 @@ export const LESSON_LEVELS = {
     fingerLabels: {
       a: "Left Pinky", s: "Left Ring", d: "Left Middle", f: "Left Index",
       j: "Right Index", k: "Right Middle", l: "Right Ring", ";": "Right Pinky",
+      g: "Left Index", h: "Right Index",
       q: "Left Pinky", w: "Left Ring", e: "Left Middle", r: "Left Index", t: "Left Index",
       y: "Right Index", u: "Right Index", i: "Right Middle", o: "Right Ring", p: "Right Pinky",
       z: "Left Pinky", x: "Left Ring", c: "Left Middle", v: "Left Index", b: "Left Index",
@@ -200,6 +203,8 @@ export const LESSON_LEVELS = {
       { key: "s", hint: "S key - LEFT RING 💍", color: "#F97316" },
       { key: "d", hint: "D key - LEFT MIDDLE ☝️", color: "#EAB308" },
       { key: "f", hint: "F key - LEFT INDEX ☝️", color: "#22C55E" },
+      { key: "g", hint: "G key - LEFT INDEX", color: "#22C55E" },
+      { key: "h", hint: "H key - RIGHT INDEX", color: "#22C55E" },
     ],
     
     words: ["fox", "tree", "run", "bear", "leaf", "jump", "deer", "wood", "owl", "grass", "acorn", "cub", "hide", "pond", "frog", "climb", "berry", "wolf", "moss", "bunny"],
@@ -228,9 +233,9 @@ export const LESSON_LEVELS = {
     name: "Capital City 🏙️",
     subtitle: "City Words",
     description: "Build a city with CAPITAL letters! Hold Shift with your opposite hand.",
-    teaches: "Type with capitals: A, B, C, D...",
+    teaches: "Use Shift for capital A–Z after learning all lowercase letters",
     
-    keys: ["A", "S", "D", "F", "J", "K", "L", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+    keys: "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""),
     keyboardRows: ["home", "top"],
     requiresShift: true,
     
@@ -441,18 +446,12 @@ export const LESSON_LEVELS = {
 // Get lesson by game level — injects expanded word bank dynamically
 export function getLessonByLevel(level) {
   const base = LESSON_LEVELS[level] || LESSON_LEVELS[1];
-  const expanded = ALL_WORDS[level];
-  const sentences = ALL_SENTENCES[level];
-  
-  // Merge expanded words (if available) into base lesson
-  if (expanded && expanded.length > 0) {
-    return {
-      ...base,
-      words: expanded,
-      sentences: sentences || [],
-    };
-  }
-  return base;
+  const safe = filterLegacyContent(base.id, {
+    words: ALL_WORDS[base.id]?.length ? ALL_WORDS[base.id] : base.words,
+    sentences: ALL_SENTENCES[base.id] || [],
+    practicePatterns: base.practicePatterns || [],
+  });
+  return { ...base, ...safe };
 }
 
 // Get words or practice patterns for a lesson in practice mode
