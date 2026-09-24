@@ -41,7 +41,7 @@ test('semantic navigation, settings, pause and return focus work by keyboard', a
   await expect(dialog).toBeVisible();
   if (process.env.CAPTURE_V2_SHELL === '1') await page.screenshot({ path: 'docs/v2/evidence/shell-settings-1366.png', fullPage: true });
   await expect(dialog.getByRole('checkbox', { name: 'Reduce motion' })).toBeFocused();
-  await dialog.getByRole('checkbox').check();
+  await dialog.getByRole('checkbox', { name: 'Reduce motion' }).check();
   await expect(page.locator('.v2-shell')).toHaveClass(/v2-reduced-motion/);
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);

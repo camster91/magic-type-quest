@@ -5,6 +5,9 @@ import type { LocalProfile } from '../persistence/model';
 import { V2_STORAGE_PREFIX } from '../persistence/legacySnapshot';
 import { downloadProgress, ProgressRepository } from '../persistence/repository';
 import type { TypingAttempt } from '../mastery/engine';
+import { AudioCueService } from '../audio/AudioCueService';
+import { CueDirector, type CueHost } from '../motion/cues';
+import type { BootScene as BootSceneType } from '../game/scenes/BootScene';
 
 type WorldLoader = () => Promise<{ Phaser: typeof Phaser; BootScene: typeof import('../game/scenes/BootScene').BootScene }>;
 export type RecoveryKind = 'corruptProgress' | 'storageUnavailable' | 'unsupportedGraphics' | 'offlineAsset';
@@ -112,7 +115,14 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
   let encounterStartedAt = performance.now();
   let encounterAttempts: TypingAttempt[] = [];
   let savedSessions = 0;
+  let cueHost: BootSceneType | null = null;
   const announce = (message: string): void => { live.textContent = message; };
+  const audio = new AudioCueService();
+  const host: CueHost = {
+    playWorldCue: (cue) => cueHost?.playWorldCue(cue), applyFinalState: (cue) => cueHost?.applyFinalState(cue),
+    pauseAmbient: () => cueHost?.pauseAmbient(), resumeAmbient: () => cueHost?.resumeAmbient(), dispose: () => cueHost?.disposeCues(),
+  };
+  const cues = new CueDirector(host, audio, announce);
   const fingerText = (key: string): string => {
     const guidance = getFingerGuidance(key);
     if (!guidance) return `Find ${key} on the keyboard.`;
@@ -120,6 +130,7 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
   };
   const onTypingEvent = (event: TypingEvent): void => {
     if (event.type === 'keyAttempt') {
+      audio.unlock();
       encounterAttempts.push({ lessonId: event.lessonId, targetKey: event.expectedKey.toLowerCase() as KeyId,
         correct: event.receivedKey === event.expectedKey && event.shiftUsed === event.shiftExpected,
         firstAttempt: !encounterAttempts.some((attempt) => attempt.targetKey === event.expectedKey && attempt.sessionId === encounterId),
@@ -130,15 +141,17 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
         ? 'Touch practice only. Physical-key mastery is not recorded.'
         : 'A physical keyboard is best for finger-placement lessons. Touch controls are a practice fallback.';
     }
-    if (event.type === 'correctKey') feedback.textContent = 'Correct key. Keep going.';
-    if (event.type === 'incorrectKey') feedback.textContent = `Try ${event.expectedKey} again. Take your time.`;
+    if (event.type === 'correctKey') { feedback.textContent = 'Correct key. Keep going.'; cues.request('input.correct'); }
+    if (event.type === 'incorrectKey') { feedback.textContent = `Try ${event.expectedKey} again. Take your time.`; cues.request('input.incorrect'); }
     if (event.type === 'sequenceProgress') {
       progress.textContent = `${event.position} of ${event.total} keys`;
       const next = inputService.getVisualState().target;
       if (next) { targetLabel.textContent = `Next key: ${next.toUpperCase()}`; fingerLabel.textContent = fingerText(next); }
     }
     if (event.type === 'sequenceComplete') {
+      cues.request('sequence.complete');
       targetLabel.textContent = 'F and J complete'; feedback.textContent = 'You found both home-position keys.';
+      worldSummary.textContent = 'A planting spot is marked in the meadow.';
       resumeTyping.hidden = true;
       const attempts = [...encounterAttempts]; const completedAt = Date.now();
       const completedEncounterId = encounterId;
@@ -149,7 +162,7 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
           summary: { correct: attempts.filter((attempt) => attempt.correct).length, incorrect: attempts.filter((attempt) => !attempt.correct).length,
             durationMs, completedAt,
             source: attempts.every((attempt) => attempt.source === 'touch') ? 'touch' : attempts.every((attempt) => attempt.source === 'physical') ? 'physical' : 'mixed' } });
-        if (result.applied && !disposed) { savedSessions++; worldSummary.textContent = `Home-position practice saved. ${savedSessions} practice ${savedSessions === 1 ? 'visit' : 'visits'} recorded.`; announce('Practice progress saved on this device.'); }
+        if (result.applied && !disposed) { savedSessions++; worldSummary.textContent = `A planting spot is marked. Home-position practice saved. ${savedSessions} practice ${savedSessions === 1 ? 'visit' : 'visits'} recorded.`; announce('Practice progress saved on this device.'); }
       }).catch(() => { if (!disposed) reportRecovery('storageUnavailable'); });
     }
     if (event.type === 'pauseRequested') {
@@ -185,6 +198,7 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
     touch.disabled = true;
     retryPractice.disabled = true;
     resizeObserver?.disconnect(); resizeObserver = null;
+    cueHost?.disposeCues(); cueHost = null;
     game?.destroy(true); game = null;
     stage.replaceChildren();
   };
@@ -208,9 +222,29 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
       checkbox.checked = shell.classList.contains('v2-reduced-motion') || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       checkbox.addEventListener('change', () => {
         shell.classList.toggle('v2-reduced-motion', checkbox.checked);
+        cues.setReducedMotion(checkbox.checked);
         if (repository && activeProfile) void repository.saveSettings(activeProfile.id, { reducedMotion: checkbox.checked }).catch(() => reportRecovery('storageUnavailable'));
       });
       label.prepend(checkbox); dialog.append(label);
+      const muteLabel = node('label', 'v2-setting', 'Mute all sound');
+      const mute = node('input', ''); mute.type = 'checkbox'; mute.checked = audio.getPreferences().muted;
+      const persistAudio = (): void => {
+        const prefs = audio.setPreferences({ muted: mute.checked });
+        if (repository && activeProfile) void repository.saveSettings(activeProfile.id, { soundEnabled: !prefs.muted,
+          effectsVolume: prefs.effectsVolume, ambienceVolume: prefs.ambienceVolume }).catch(() => reportRecovery('storageUnavailable'));
+      };
+      mute.addEventListener('change', persistAudio); muteLabel.prepend(mute); dialog.append(muteLabel);
+      for (const [caption, kind] of [['Effects volume', 'effectsVolume'], ['Ambience volume', 'ambienceVolume']] as const) {
+        const volumeLabel = node('label', 'v2-setting', caption);
+        const slider = node('input', ''); slider.type = 'range'; slider.min = '0'; slider.max = '100'; slider.step = '5';
+        slider.value = String(Math.round(audio.getPreferences()[kind] * 100));
+        slider.addEventListener('change', () => {
+          const prefs = audio.setPreferences({ [kind]: Number(slider.value) / 100 });
+          if (repository && activeProfile) void repository.saveSettings(activeProfile.id, { effectsVolume: prefs.effectsVolume,
+            ambienceVolume: prefs.ambienceVolume, soundEnabled: !prefs.muted }).catch(() => reportRecovery('storageUnavailable'));
+        });
+        volumeLabel.append(slider); dialog.append(volumeLabel);
+      }
       const settingAction = (caption: string, action: () => void): void => {
         const button = node('button', 'v2-text-button', caption);
         button.disabled = !repository || !activeProfile;
@@ -280,7 +314,7 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
       const height = Math.max(180, Math.round(bounds.height));
       game = new Engine.Game({ type: Engine.AUTO, parent: stage, width, height, backgroundColor: '#e5f3ec',
         scale: { mode: Engine.Scale.NONE, width, height }, audio: { noAudio: true },
-        scene: [new BootScene(() => {
+        scene: [cueHost = new BootScene(() => {
           if (disposed || request !== loadCounter || !game) return;
           game.canvas.setAttribute('role', 'img'); game.canvas.setAttribute('aria-label', 'Meadow environment');
           game.canvas.setAttribute('aria-describedby', 'v2-world-summary'); game.canvas.setAttribute('tabindex', '-1');
@@ -308,7 +342,7 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
     }
   };
 
-  start.addEventListener('click', () => { void openWorld(); });
+  start.addEventListener('click', () => { audio.unlock(); void openWorld(); });
   retry.addEventListener('click', () => {
     if (retryAction === 'dismiss') { error.hidden = true; announce('You can continue exploring.'); start.focus(); return; }
     if (!navigator.onLine) { announce('Reconnect before trying again.'); return; }
@@ -327,7 +361,9 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
   });
   settings.addEventListener('click', () => {
     if (!world.hidden) { inputService.suspend(); resumeTyping.hidden = false; }
-    openDialog('Settings', 'Choose how the Meadow environment moves.', [{ label: 'Done' }], settings, true);
+    void persistenceReady.then(() => {
+      if (!disposed) openDialog('Settings', 'Choose how the Meadow environment moves and sounds.', [{ label: 'Done' }], settings, true);
+    });
   });
   touch.addEventListener('click', () => inputService.enableTouchFallback());
   resumeTyping.addEventListener('click', () => { inputService.resume(); resumeTyping.hidden = true; });
@@ -374,7 +410,10 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
       try { localStorage.setItem(`${V2_STORAGE_PREFIX}active-profile`, activeProfile.id); } catch { /* database is canonical */ }
       const state = await repository.read(activeProfile.id);
       savedSessions = state.sessions.length;
-      if (state.settings?.reducedMotion === true) shell.classList.add('v2-reduced-motion');
+      if (state.settings?.reducedMotion === true) { shell.classList.add('v2-reduced-motion'); cues.setReducedMotion(true); }
+      if (state.settings) audio.setPreferences({ muted: !state.settings.soundEnabled,
+        effectsVolume: typeof state.settings.effectsVolume === 'number' ? state.settings.effectsVolume : audio.getPreferences().effectsVolume,
+        ambienceVolume: typeof state.settings.ambienceVolume === 'number' ? state.settings.ambienceVolume : audio.getPreferences().ambienceVolume });
       if (state.problems.length) reportRecovery('corruptProgress');
       if (savedSessions && !disposed) worldSummary.textContent = `${savedSessions} home-position practice ${savedSessions === 1 ? 'visit' : 'visits'} saved on this device.`;
     } catch (cause) {
@@ -390,6 +429,6 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
     if (disposed) return;
     disposed = true; root.removeEventListener('naturequest:v2:recoverable-error', onRecoverableError);
     root.removeEventListener('naturequest:v2:dialog-request', onDialogRequest);
-    closeDialog(); releaseWorld(); inputService.dispose(); repository?.close(); root.replaceChildren();
+    closeDialog(); releaseWorld(); cues.dispose(); inputService.dispose(); repository?.close(); root.replaceChildren();
   };
 }

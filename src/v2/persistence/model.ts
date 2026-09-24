@@ -15,7 +15,7 @@ export interface RestorationRecord { readonly id: string; readonly learnerId: st
 export interface DiscoveryRecord { readonly id: string; readonly learnerId: string; readonly speciesId: string; readonly discoveredAt: number; }
 export interface SessionSummary { readonly id: string; readonly learnerId: string; readonly lessonId: LessonId; readonly correct: number; readonly incorrect: number; readonly durationMs: number; readonly completedAt: number; readonly source: 'physical' | 'touch' | 'mixed'; }
 export interface MigrationRecord { readonly id: string; readonly learnerId: string; readonly sourceKey: string; readonly sourceVersion: 0; readonly importVersion: 1; readonly importedAt: number; }
-export interface LocalSettings { readonly id: string; readonly learnerId: string; readonly locale: 'en' | 'fr' | 'es'; readonly reducedMotion: boolean; readonly soundEnabled: boolean; }
+export interface LocalSettings { readonly id: string; readonly learnerId: string; readonly locale: 'en' | 'fr' | 'es'; readonly reducedMotion: boolean; readonly soundEnabled: boolean; readonly effectsVolume?: number; readonly ambienceVolume?: number; }
 export interface EncounterCommit {
   readonly encounterId: string;
   readonly learnerId: string;
@@ -46,7 +46,7 @@ export const validRecord = (store: StoreName, value: unknown): boolean => {
   if (store === 'missions') return typeof value.missionId === 'string' && typeof value.encounterId === 'string' && validNumber(value.completedAt);
   if (store === 'restoration') return typeof value.biomeId === 'string' && typeof value.stageId === 'string' && validNumber(value.unlockedAt);
   if (store === 'discoveries') return typeof value.speciesId === 'string' && validNumber(value.discoveredAt);
-  if (store === 'settings') return ['en', 'fr', 'es'].includes(String(value.locale)) && typeof value.reducedMotion === 'boolean' && typeof value.soundEnabled === 'boolean';
+  if (store === 'settings') return ['en', 'fr', 'es'].includes(String(value.locale)) && typeof value.reducedMotion === 'boolean' && typeof value.soundEnabled === 'boolean' && [value.effectsVolume, value.ambienceVolume].every((level) => level === undefined || validNumber(level) && level <= 1);
   return typeof value.sourceKey === 'string' && value.sourceVersion === 0 && value.importVersion === IMPORT_VERSION && validNumber(value.importedAt);
 };
 

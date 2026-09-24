@@ -53,6 +53,7 @@ jobs:
       - run: npm run validate:mastery
       - run: npm run validate:content
       - run: npm run validate:assets
+      - run: npm run validate:cues
       - run: npm run validate:input
       - run: npm run validate:persistence
       - run: npm run test:v2-theme
