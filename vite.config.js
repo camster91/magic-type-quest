@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   base: '/magic-type-quest/',
   build: {
     rollupOptions: {
@@ -10,8 +10,8 @@ export default defineConfig({
         parents: resolve(import.meta.dirname, 'parents.html'),
         teacher: resolve(import.meta.dirname, 'teacher.html'),
         landing: resolve(import.meta.dirname, 'landing.html'),
-        v2: resolve(import.meta.dirname, 'v2/index.html'),
+        ...(mode === 'v2-preview' ? { v2: resolve(import.meta.dirname, 'v2/index.html') } : {}),
       },
     },
   },
-});
+}));

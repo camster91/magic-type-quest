@@ -9,12 +9,12 @@ concurrency:
 
 on:
   push:
-    branches: [main]
+    branches: [main, nature-quest-v2]
     paths-ignore:
       - '**/*.md'
       - 'docs/**'
   pull_request:
-    branches: [main]
+    branches: [main, nature-quest-v2]
     paths-ignore:
       - '**/*.md'
       - 'docs/**'
@@ -31,9 +31,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - run: npm ci --no-audit --no-fund
       - run: npm run lint
-      - run: npm run typecheck:v2
-      - run: npm run test:v2-theme
-      - run: npm run check:v2-theme
       - run: npm test -- --run
       - run: npm run build
       - run: npm run verify:local-only-build
@@ -41,3 +38,21 @@ jobs:
         if: github.actor != 'dependabot[bot]'
         run: npm run test:e2e
       - run: npm audit --audit-level=high
+  v2:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Linux, X64, ashbi-vps, magic-type-quest]
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.0-noble@sha256:baed2032d533817f3dbe6425de795788430ba345e819a1201337009ba17c9d07
+      options: --user 986:986
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck:v2
+      - run: npm run test:v2-theme
+      - run: npm run check:v2-theme
+      - run: npm run build:v2
+      - run: npm run verify:local-only-build
+      - name: V2 coexistence smoke
+        if: github.actor != 'dependabot[bot]'
+        run: npm run test:e2e:v2

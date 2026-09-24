@@ -8,7 +8,7 @@ BloomType v1 is a local-first Vite/JavaScript application with a custom Canvas e
 
 ## Decision and exact installed versions
 
-Use **Phaser 4.2.1**, **TypeScript 6.0.3**, and **Vite 8.3.1**, pinned exactly in `package.json` and `package-lock.json`. Phaser renders and manages the game world; TypeScript strict mode applies to `src/v2`; Vite builds a separate `v2/index.html` entry alongside the unchanged v1 entry points. HTML/CSS DOM owns semantic application UI. Vitest, Playwright, and axe retain their existing roles. No React, additional state library, physics engine, animation framework, or cloud SDK is introduced.
+Use **Phaser 4.2.1**, **TypeScript 6.0.3**, and **Vite 8.3.1**, pinned exactly in `package.json` and `package-lock.json`. Phaser renders and manages the game world; TypeScript strict mode applies to `src/v2`; Vite builds a separate `v2/index.html` entry only in the explicit preview build mode defined by [#156](../MIGRATION-PLAN.md). HTML/CSS DOM owns semantic application UI. Vitest, Playwright, and axe retain their existing roles. No React, additional state library, physics engine, animation framework, or cloud SDK is introduced.
 
 The development entry is `/magic-type-quest/v2/` under the existing Vite base path. It is intentionally navigable by URL and links back to the v1 root. This is a development preview, not a public default-route cutover. [#156](https://github.com/camster91/magic-type-quest/issues/156) governs availability and coexistence before promotion.
 

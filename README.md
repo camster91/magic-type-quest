@@ -8,6 +8,8 @@ The [v2 product contract](docs/v2/PRODUCT-CONTRACT.md) and [decision log](docs/v
 
 The [browser-game architecture ADR](docs/v2/architecture/ADR-001-browser-game-stack.md) records the pinned Phaser/TypeScript/Vite stack and the DOM/game-world boundary. In development, visit `/magic-type-quest/v2/` for the isolated boot preview; the normal root still serves v1. Run `npm run typecheck:v2` for the strict TypeScript gate.
 
+The [v2 migration plan](docs/v2/MIGRATION-PLAN.md) defines the `nature-quest-v2` integration branch, local-data boundary, and rollback. `npm run build` produces the v1 artifact; `npm run build:v2` intentionally includes the v2 preview. `npm run test:e2e` and `npm run test:e2e:v2` verify those paths independently.
+
 Run `npm run check:v2-theme` to check v2 child-facing content against the prohibited-theme rule. Historical v1 content remains outside that scope.
 
 ![Hero](assets/hero-unicorn.png)
