@@ -2,6 +2,7 @@
  * BloomType — Spaced Repetition Tracker (lightweight)
  * Tracks per-key practice history to prioritize review items.
  */
+import { getLegacyAllowedCharacters, isLegacyItemAllowed } from './v2/curriculum/legacyAdapter.ts';
 
 /** Update SR stats for a key after practice/gameplay. */
 export function recordKeyPractice(profile, key, correct) {
@@ -46,11 +47,14 @@ export function getDueKeys(profile, max = 5) {
 
 /** Build practice words prioritizing due keys. */
 export function buildReviewWords(profile, allWords, count = 30) {
-  const due = getDueKeys(profile, 5);
+  const unlockedLevel = Math.min(10, Math.max(1, ...(profile.completedLevels || [])) + 1);
+  const allowed = getLegacyAllowedCharacters(unlockedLevel);
+  const due = getDueKeys(profile, 5).filter(k => allowed.has(k));
   if (due.length === 0) return [];
   
   const dueSet = new Set(due.map(k => k.toLowerCase()));
   const matches = allWords.filter(w => {
+    if (!isLegacyItemAllowed(w, unlockedLevel)) return false;
     return w.toLowerCase().split('').some(c => dueSet.has(c));
   });
   

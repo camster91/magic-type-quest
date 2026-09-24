@@ -855,7 +855,8 @@ function bindEvents() {
   $('btn-drill')?.addEventListener('click', () => {
     const weakKeys = getWeakKeys(gameState.keyAccuracy, 3);
     if (weakKeys.length === 0) return;
-    const drillLesson = buildDrillLesson(weakKeys);
+    const unlockedLevel = Math.min(10, Math.max(1, ...(gameState.profile?.completedLevels || [])) + 1);
+    const drillLesson = buildDrillLesson(weakKeys, unlockedLevel);
     if (!drillLesson) return;
     $('gameover-overlay').classList.add('hidden');
     $('gameover-overlay').setAttribute('aria-hidden', 'true');

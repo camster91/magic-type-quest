@@ -4,6 +4,7 @@
  */
 
 import { getLessonByLevel } from './lessonLevels.js';
+import { getLegacyAllowedCharacters, isLegacyItemAllowed } from './v2/curriculum/legacyAdapter.ts';
 
 /** Analyze keyAccuracy and return the worst keys (most wrong %). */
 export function getWeakKeys(keyAccuracy, max = 3) {
@@ -21,10 +22,12 @@ export function getWeakKeys(keyAccuracy, max = 3) {
 }
 
 /** Generate a mini-lesson word list containing only weak keys. */
-export function generateDrillWords(weakKeys, allWords, count = 20) {
+export function generateDrillWords(weakKeys, allWords, count = 20, maxLevel = 10) {
   if (!weakKeys || weakKeys.length === 0) return [];
-  const weakSet = new Set(weakKeys.map(k => k.toLowerCase()));
+  const allowed = getLegacyAllowedCharacters(maxLevel);
+  const weakSet = new Set(weakKeys.filter(k => allowed.has(k)).map(k => k.toLowerCase()));
   const matches = allWords.filter(w => {
+    if (!isLegacyItemAllowed(w, maxLevel)) return false;
     const chars = w.toLowerCase().split('');
     return chars.some(c => weakSet.has(c));
   });
@@ -35,25 +38,28 @@ export function generateDrillWords(weakKeys, allWords, count = 20) {
 }
 
 /** Build a drill lesson object from weak keys. */
-export function buildDrillLesson(weakKeys) {
+export function buildDrillLesson(weakKeys, maxLevel = 10) {
   if (!weakKeys || weakKeys.length === 0) return null;
+  const allowed = getLegacyAllowedCharacters(maxLevel);
+  const scopedWeakKeys = weakKeys.filter(k => allowed.has(k));
+  if (scopedWeakKeys.length === 0) return null;
   const allWords = [];
-  // Collect words from all levels
-  for (let i = 1; i <= 10; i++) {
+  // Only collect already available lessons; every candidate is checked again below.
+  for (let i = 1; i <= maxLevel; i++) {
     const lesson = getLessonByLevel(i);
     if (lesson.words) allWords.push(...lesson.words);
   }
-  const drillWords = generateDrillWords(weakKeys, allWords, 25);
+  const drillWords = generateDrillWords(scopedWeakKeys, allWords, 25, maxLevel);
   if (drillWords.length === 0) return null;
 
   return {
     id: 'drill',
-    name: `Drill: ${weakKeys.join(', ').toUpperCase()}`,
+    name: `Drill: ${scopedWeakKeys.join(', ').toUpperCase()}`,
     subtitle: 'Fix Your Tricky Keys!',
-    description: `Focus practice on the keys you miss most: ${weakKeys.join(', ').toUpperCase()}`,
-    keys: weakKeys,
+    description: `Focus practice on the keys you miss most: ${scopedWeakKeys.join(', ').toUpperCase()}`,
+    keys: scopedWeakKeys,
     words: drillWords,
-    practicePatterns: weakKeys.map(k => `${k}${k}${k} ${k}${k}${k}`),
+    practicePatterns: scopedWeakKeys.map(k => `${k}${k}${k} ${k}${k}${k}`),
     speed: 0.35, // Slower than normal for drill mode
     spawnRate: 5000,
     wordsPerLevel: drillWords.length,
