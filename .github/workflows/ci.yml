@@ -51,6 +51,7 @@ jobs:
       - run: npm run typecheck:v2
       - run: npm run validate:curriculum
       - run: npm run validate:mastery
+      - run: npm run validate:content
       - run: npm run test:v2-theme
       - run: npm run check:v2-theme
       - run: npm run build:v2
