@@ -34,6 +34,9 @@ test('learner profile controls have no automated WCAG A or AA violations', async
   await page.goto('');
   await page.locator('#btn-profile').click();
   await expect(page.locator('#profile-screen')).toHaveClass(/active/);
+  // Wait for the outgoing menu's 350ms fade to finish before measuring the
+  // destination screen; axe otherwise catches partially transparent text.
+  await expect(page.locator('#menu-screen')).toBeHidden();
   const results = await new AxeBuilder({ page }).withTags(standards).analyze();
   expect(summarize(results.violations)).toEqual([]);
 });
