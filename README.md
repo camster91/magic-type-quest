@@ -2,6 +2,12 @@
 
 A beautiful, immersive typing game for kids — built for the web with gorgeous Canvas animations, AI-generated character art, and PWA support.
 
+## Nature Quest v2 (in development)
+
+The [v2 product contract](docs/v2/PRODUCT-CONTRACT.md) and [decision log](docs/v2/DECISION-LOG.md) govern new wildlife-restoration work under [#153](https://github.com/camster91/magic-type-quest/issues/153). This README describes the existing v1 experience. Keep v1 recoverable while the isolated v2 route, curriculum, and Meadow slice are built and verified; v2 is not the current production release.
+
+Run `npm run check:v2-theme` to check v2 child-facing content against the prohibited-theme rule. Historical v1 content remains outside that scope.
+
 ![Hero](assets/hero-unicorn.png)
 
 ## 🚀 Play Now
