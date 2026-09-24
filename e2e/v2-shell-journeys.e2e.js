@@ -48,8 +48,11 @@ test('semantic navigation, settings, pause and return focus work by keyboard', a
   await expect(page.getByRole('button', { name: 'Settings' })).toBeFocused();
   await page.getByRole('button', { name: 'Start Meadow' }).click();
   await expect(page.locator('.v2-live')).toContainText('ready');
-  if (process.env.CAPTURE_V2_SHELL === '1') await page.screenshot({ path: 'docs/v2/evidence/shell-world-1366.png', fullPage: true });
-  await expect(page.getByRole('button', { name: 'Pause' })).toBeFocused();
+  await expect(page.locator('.v2-typing-surface')).toBeFocused();
+  if (process.env.CAPTURE_V2_SHELL === '1') {
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ path: 'docs/v2/evidence/shell-world-1366.png', fullPage: true, animations: 'disabled' });
+  }
   await page.getByRole('button', { name: 'Pause' }).click();
   const paused = page.getByRole('dialog', { name: 'Paused' });
   await expect(paused.getByRole('button', { name: 'Resume' })).toBeFocused();

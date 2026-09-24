@@ -1,4 +1,5 @@
 import type Phaser from 'phaser';
+import { getFingerGuidance, TypingInputService, type TypingEvent } from '../input/TypingInputService';
 
 type WorldLoader = () => Promise<{ Phaser: typeof Phaser; BootScene: typeof import('../game/scenes/BootScene').BootScene }>;
 export type RecoveryKind = 'corruptProgress' | 'storageUnavailable' | 'unsupportedGraphics' | 'offlineAsset';
@@ -49,10 +50,28 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
   const worldTitle = node('h1', '', 'Meadow Base'); worldTitle.id = 'v2-world-title';
   const pause = node('button', 'v2-text-button', 'Pause'); worldTop.append(worldTitle, pause);
   const stage = node('div', 'v2-stage'); stage.setAttribute('aria-label', 'Meadow environment');
+  const practice = node('section', 'v2-practice'); practice.setAttribute('aria-label', 'Home-position key practice');
+  const targetLabel = node('p', 'v2-target', 'Target: F, then J');
+  const fingerLabel = node('p', 'v2-finger', 'F: left index finger');
+  const progress = node('p', 'v2-practice-progress', '0 of 2 keys');
+  const feedback = node('p', 'v2-feedback', 'Focus the practice area and press F.');
+  const typingSurface = node('div', 'v2-typing-surface', 'Type here: F then J');
+  typingSurface.tabIndex = 0; typingSurface.setAttribute('role', 'group');
+  typingSurface.setAttribute('aria-label', 'Typing practice. Press F, then J.');
+  typingSurface.setAttribute('aria-describedby', 'v2-target v2-finger v2-practice-progress v2-feedback');
+  targetLabel.id = 'v2-target'; fingerLabel.id = 'v2-finger'; progress.id = 'v2-practice-progress'; feedback.id = 'v2-feedback';
+  const touch = node('button', 'v2-text-button', 'Use touch keyboard');
+  touch.disabled = true;
+  const touchInput = node('input', 'v2-touch-input'); touchInput.type = 'text';
+  touchInput.setAttribute('aria-label', 'Touch typing practice'); touchInput.inputMode = 'text';
+  const resumeTyping = node('button', 'v2-secondary', 'Resume typing'); resumeTyping.hidden = true;
+  const retryPractice = node('button', 'v2-text-button', 'Try the keys again');
+  retryPractice.disabled = true;
+  practice.append(targetLabel, fingerLabel, progress, feedback, typingSurface, touch, touchInput, resumeTyping, retryPractice);
   const worldSummary = node('p', 'v2-world-summary', 'The meadow has open patches ready for care.'); worldSummary.id = 'v2-world-summary';
   const finish = node('button', 'v2-secondary', 'Finish for now');
-  world.append(worldTop, node('p', 'v2-objective', 'Objective: find F and J to prepare planting spots.'), stage, worldSummary,
-    node('p', 'v2-world-note', 'A physical keyboard is best for finger-placement lessons. Touch controls will be a practice fallback.'), finish);
+  const worldNote = node('p', 'v2-world-note', 'A physical keyboard is best for finger-placement lessons. Touch controls are a practice fallback.');
+  world.append(worldTop, node('p', 'v2-objective', 'Objective: find F and J to prepare planting spots.'), stage, practice, worldSummary, worldNote, finish);
 
   const auxiliary = node('section', 'v2-auxiliary'); auxiliary.hidden = true;
   const auxiliaryTitle = node('h1', ''); auxiliaryTitle.tabIndex = -1;
@@ -83,6 +102,37 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
   let loadCounter = 0;
   let retryAction: 'world' | 'dismiss' = 'world';
   const announce = (message: string): void => { live.textContent = message; };
+  const fingerText = (key: string): string => {
+    const guidance = getFingerGuidance(key);
+    if (!guidance) return `Find ${key} on the keyboard.`;
+    return `${key.toUpperCase()}: ${guidance.hand} ${guidance.finger.replace(/^left|^right/, '').toLowerCase()} finger${guidance.shiftHand ? `; hold ${guidance.shiftHand} Shift` : ''}`;
+  };
+  const onTypingEvent = (event: TypingEvent): void => {
+    if (event.type === 'inputCapabilityChanged') {
+      worldNote.textContent = event.capability === 'touch'
+        ? 'Touch practice only. Physical-key mastery is not recorded.'
+        : 'A physical keyboard is best for finger-placement lessons. Touch controls are a practice fallback.';
+    }
+    if (event.type === 'correctKey') feedback.textContent = 'Correct key. Keep going.';
+    if (event.type === 'incorrectKey') feedback.textContent = `Try ${event.expectedKey} again. Take your time.`;
+    if (event.type === 'sequenceProgress') {
+      progress.textContent = `${event.position} of ${event.total} keys`;
+      const next = inputService.getVisualState().target;
+      if (next) { targetLabel.textContent = `Next key: ${next.toUpperCase()}`; fingerLabel.textContent = fingerText(next); }
+    }
+    if (event.type === 'sequenceComplete') {
+      targetLabel.textContent = 'F and J complete'; feedback.textContent = 'You found both home-position keys.';
+      resumeTyping.hidden = true;
+    }
+    if (event.type === 'pauseRequested') {
+      inputService.suspend(); resumeTyping.hidden = false;
+      openDialog('Paused', 'Take your time. The meadow will wait.', [
+        { label: 'Resume', action: () => { inputService.resume(); resumeTyping.hidden = true; } },
+        { label: 'Finish for now', action: showHome },
+      ], typingSurface);
+    }
+  };
+  const inputService = new TypingInputService(typingSurface, touchInput, onTypingEvent, announce);
   const reportRecovery = (kind: RecoveryKind): void => {
     const messages: Record<RecoveryKind, [string, string]> = {
       corruptProgress: ['Progress needs attention.', 'We could not read saved progress. Your original data has not been erased.'],
@@ -103,6 +153,9 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
   root.addEventListener('naturequest:v2:recoverable-error', onRecoverableError);
   const releaseWorld = (): void => {
     loadCounter++;
+    inputService.suspend();
+    touch.disabled = true;
+    retryPractice.disabled = true;
     resizeObserver?.disconnect(); resizeObserver = null;
     game?.destroy(true); game = null;
     stage.replaceChildren();
@@ -166,6 +219,11 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
           game.canvas.setAttribute('role', 'img'); game.canvas.setAttribute('aria-label', 'Meadow environment');
           game.canvas.setAttribute('aria-describedby', 'v2-world-summary'); game.canvas.setAttribute('tabindex', '-1');
           loading.hidden = true; announce('Meadow environment ready. The meadow has open patches ready for care.'); pause.focus();
+          targetLabel.textContent = 'Target: F, then J'; fingerLabel.textContent = fingerText('f');
+          progress.textContent = '0 of 2 keys'; feedback.textContent = 'Press F to begin.'; resumeTyping.hidden = true;
+          inputService.start({ lessonId: 'meadow-fj', missionId: 'meadow-a', sequence: 'fj' });
+          touch.disabled = false;
+          retryPractice.disabled = false;
         })],
       });
       resizeObserver = new ResizeObserver(() => {
@@ -193,10 +251,25 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
     window.location.reload();
   });
   finish.addEventListener('click', showHome);
-  pause.addEventListener('click', () => openDialog('Paused', 'Take your time. The meadow will wait.', [
-    { label: 'Resume' }, { label: 'Finish for now', action: showHome },
-  ], pause));
-  settings.addEventListener('click', () => openDialog('Settings', 'Choose how the Meadow environment moves.', [{ label: 'Done' }], settings, true));
+  pause.addEventListener('click', () => {
+    inputService.suspend(); resumeTyping.hidden = false;
+    openDialog('Paused', 'Take your time. The meadow will wait.', [
+      { label: 'Resume', action: () => { inputService.resume(); resumeTyping.hidden = true; } },
+      { label: 'Finish for now', action: showHome },
+    ], pause);
+  });
+  settings.addEventListener('click', () => {
+    if (!world.hidden) { inputService.suspend(); resumeTyping.hidden = false; }
+    openDialog('Settings', 'Choose how the Meadow environment moves.', [{ label: 'Done' }], settings, true);
+  });
+  touch.addEventListener('click', () => inputService.enableTouchFallback());
+  resumeTyping.addEventListener('click', () => { inputService.resume(); resumeTyping.hidden = true; });
+  retryPractice.addEventListener('click', () => {
+    if (world.hidden) return;
+    inputService.start({ lessonId: 'meadow-fj', missionId: 'meadow-a', sequence: 'fj' });
+    inputService.retry(); progress.textContent = '0 of 2 keys'; targetLabel.textContent = 'Target: F, then J';
+    fingerLabel.textContent = fingerText('f'); feedback.textContent = 'Press F to begin.';
+  });
   const openAuxiliary = (heading: string, description: string): void => {
     releaseWorld(); home.hidden = true; world.hidden = true; loading.hidden = true; error.hidden = true; auxiliary.hidden = false;
     auxiliaryTitle.textContent = heading; auxiliaryText.textContent = description;
@@ -217,6 +290,6 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
     if (disposed) return;
     disposed = true; root.removeEventListener('naturequest:v2:recoverable-error', onRecoverableError);
     root.removeEventListener('naturequest:v2:dialog-request', onDialogRequest);
-    closeDialog(); releaseWorld(); root.replaceChildren();
+    closeDialog(); releaseWorld(); inputService.dispose(); root.replaceChildren();
   };
 }
