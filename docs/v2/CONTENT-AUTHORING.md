@@ -23,7 +23,7 @@ Meadow's three missions follow #167: F/J home position marks planting spots; hom
 
 ## Add restoration stages and missions
 
-Stages begin at order 0 and increase without gaps. Each has a milestone (`initial`, `mission:<id>:sequence`, or `mission:<id>:complete`), visible/hidden layer IDs, prop changes, wildlife arrivals, animation cue, accessible summary key, reduced-motion fallback, and a `naturequest:v2:` persistence key. Stage 0 is the sparse baseline. The assets must exist in the catalog; implemented content requires real built paths. #163 will expand provisional asset slots into the full typed manifest with provenance and variants.
+Stages begin at order 0 and increase without gaps. Each has a milestone (`initial`, `mission:<id>:sequence`, or `mission:<id>:complete`), visible/hidden layer IDs, prop changes, wildlife arrivals, animation cue, accessible summary key, reduced-motion fallback, and a `naturequest:v2:` persistence key. Stage 0 is the sparse baseline. The assets must exist in the [typed manifest](../../src/v2/assets/manifest.ts); `STARTER_CONTENT.assets` is derived from it. Implemented content requires approved built paths and variants. Use [the art bible](art/ART-BIBLE.md), [Meadow checklist](art/MEADOW-SLOTS.md), and `npm run validate:assets` before an art PR.
 
 For a mission, choose a lesson from the biome curriculum contract, objective content key, interaction ID, restoration outcome stage, approved rewards, duration, supportive retry, accessibility modes and deterministic seed policy. A review mission still uses its lesson's allowed assessed keys. Mission play later uses the shared encounter state machine and mastery engine; this schema does not bypass either. Add EN/FR/ES objective strings. The Meadow sample IDs are `meadow-a`, `meadow-b` and `meadow-c`; all are still draft.
 
@@ -44,4 +44,4 @@ A `WildlifeEntry` uses a stable species ID, common-name key, optional verified s
 | Implemented species with pending fact | `wildlife[0].factReview: production fact needs reviewed source, reviewer and content` |
 | Reward type `coins` | `rewards[0].type: unsupported reward coins` |
 
-`npm run validate:content` reports 3 passing validator suites for the current draft. `ContentRegistry` throws a path-listed error on malformed data, so development and tests fail before a scene can render it. #163 replaces draft art slots; #167 replaces draft mission content with production content after review.
+`npm run validate:content` reports 3 passing validator suites for the current draft. `ContentRegistry` throws a path-listed error on malformed data, so development and tests fail before a scene can render it. #163 records the planned art slots and provenance without generating a large library; #167 replaces draft mission content with production content after review.

@@ -14,6 +14,7 @@
     "validate:curriculum": "vitest run test/v2-curriculum.test.js",
     "validate:mastery": "vitest run test/v2-mastery.test.js",
     "validate:content": "vitest run test/v2-content.test.js",
+    "validate:assets": "node scripts/validate-v2-assets.mjs && vitest run test/v2-assets.test.js",
     "validate:input": "vitest run test/v2-input.test.js",
     "validate:persistence": "playwright test --config playwright.persistence.config.js",
     "test:e2e": "npm run build && npm run verify:local-only-build && playwright test e2e/accessibility.e2e.js e2e/app.e2e.js e2e/curriculum.e2e.js e2e/localization-layout.e2e.js",

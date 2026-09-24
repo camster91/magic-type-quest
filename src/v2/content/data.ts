@@ -1,13 +1,14 @@
 import { BIOME_ORDER, LESSON_BIOMES, type BiomeId } from '../curriculum/biomeMapping';
 import { LESSON_ORDER } from '../curriculum/domain';
+import { ASSET_MANIFEST } from '../assets/manifest';
 import type { BiomeDefinition, ContentData, RestorationStage } from './schema';
 
 const meadowStages: readonly RestorationStage[] = [
-  { id: 'meadow-sparse', biomeId: 'meadow-base', order: 0, requiredMilestone: 'initial', visibleLayers: ['biomes.meadow.sky', 'biomes.meadow.sparse'], hiddenLayers: [], propChanges: [], wildlifeArrivals: [], animationCueId: null, accessibleSummaryKey: 'stage.meadow.sparse', reducedMotionFallback: 'instantLayerSwap', completionPersistenceKey: 'naturequest:v2:meadow:stage:0' },
-  { id: 'meadow-planting-spots', biomeId: 'meadow-base', order: 1, requiredMilestone: 'mission:meadow-a:complete', visibleLayers: ['biomes.meadow.sky', 'biomes.meadow.sparse', 'biomes.meadow.plantingSpots'], hiddenLayers: [], propChanges: ['biomes.meadow.plantingSpots'], wildlifeArrivals: [], animationCueId: 'meadow.spots', accessibleSummaryKey: 'stage.meadow.spots', reducedMotionFallback: 'instantLayerSwap', completionPersistenceKey: 'naturequest:v2:meadow:stage:1' },
-  { id: 'meadow-flowers', biomeId: 'meadow-base', order: 2, requiredMilestone: 'mission:meadow-b:complete', visibleLayers: ['biomes.meadow.sky', 'biomes.meadow.flowers'], hiddenLayers: ['biomes.meadow.sparse'], propChanges: ['biomes.meadow.flowers'], wildlifeArrivals: [], animationCueId: 'meadow.grow', accessibleSummaryKey: 'stage.meadow.flowers', reducedMotionFallback: 'gentleFade', completionPersistenceKey: 'naturequest:v2:meadow:stage:2' },
-  { id: 'meadow-pollinator', biomeId: 'meadow-base', order: 3, requiredMilestone: 'mission:meadow-c:sequence', visibleLayers: ['biomes.meadow.sky', 'biomes.meadow.flowers'], hiddenLayers: ['biomes.meadow.sparse'], propChanges: [], wildlifeArrivals: ['danaus-plexippus'], animationCueId: 'meadow.arrival', accessibleSummaryKey: 'stage.meadow.pollinator', reducedMotionFallback: 'instantLayerSwap', completionPersistenceKey: 'naturequest:v2:meadow:stage:3' },
-  { id: 'meadow-restored', biomeId: 'meadow-base', order: 4, requiredMilestone: 'mission:meadow-c:complete', visibleLayers: ['biomes.meadow.sky', 'biomes.meadow.flowers', 'biomes.meadow.restored'], hiddenLayers: ['biomes.meadow.sparse'], propChanges: ['biomes.meadow.restored'], wildlifeArrivals: [], animationCueId: 'meadow.complete', accessibleSummaryKey: 'stage.meadow.restored', reducedMotionFallback: 'gentleFade', completionPersistenceKey: 'naturequest:v2:meadow:stage:4' },
+  { id: 'meadow-sparse', biomeId: 'meadow-base', order: 0, requiredMilestone: 'initial', visibleLayers: ['biomes.meadow.background.sky', 'biomes.meadow.habitat.sparse'], hiddenLayers: [], propChanges: [], wildlifeArrivals: [], animationCueId: null, accessibleSummaryKey: 'stage.meadow.sparse', reducedMotionFallback: 'instantLayerSwap', completionPersistenceKey: 'naturequest:v2:meadow:stage:0' },
+  { id: 'meadow-planting-spots', biomeId: 'meadow-base', order: 1, requiredMilestone: 'mission:meadow-a:complete', visibleLayers: ['biomes.meadow.background.sky', 'biomes.meadow.habitat.sparse', 'biomes.meadow.restoration.plantingSpots'], hiddenLayers: [], propChanges: ['biomes.meadow.restoration.plantingSpots'], wildlifeArrivals: [], animationCueId: 'meadow.spots', accessibleSummaryKey: 'stage.meadow.spots', reducedMotionFallback: 'instantLayerSwap', completionPersistenceKey: 'naturequest:v2:meadow:stage:1' },
+  { id: 'meadow-flowers', biomeId: 'meadow-base', order: 2, requiredMilestone: 'mission:meadow-b:complete', visibleLayers: ['biomes.meadow.background.sky', 'biomes.meadow.restoration.flowers'], hiddenLayers: ['biomes.meadow.habitat.sparse'], propChanges: ['biomes.meadow.restoration.flowers'], wildlifeArrivals: [], animationCueId: 'meadow.grow', accessibleSummaryKey: 'stage.meadow.flowers', reducedMotionFallback: 'gentleFade', completionPersistenceKey: 'naturequest:v2:meadow:stage:2' },
+  { id: 'meadow-pollinator', biomeId: 'meadow-base', order: 3, requiredMilestone: 'mission:meadow-c:sequence', visibleLayers: ['biomes.meadow.background.sky', 'biomes.meadow.restoration.flowers'], hiddenLayers: ['biomes.meadow.habitat.sparse'], propChanges: [], wildlifeArrivals: ['danaus-plexippus'], animationCueId: 'meadow.arrival', accessibleSummaryKey: 'stage.meadow.pollinator', reducedMotionFallback: 'instantLayerSwap', completionPersistenceKey: 'naturequest:v2:meadow:stage:3' },
+  { id: 'meadow-restored', biomeId: 'meadow-base', order: 4, requiredMilestone: 'mission:meadow-c:complete', visibleLayers: ['biomes.meadow.background.sky', 'biomes.meadow.restoration.flowers', 'biomes.meadow.restoration.restored'], hiddenLayers: ['biomes.meadow.habitat.sparse'], propChanges: ['biomes.meadow.restoration.restored'], wildlifeArrivals: [], animationCueId: 'meadow.complete', accessibleSummaryKey: 'stage.meadow.restored', reducedMotionFallback: 'gentleFade', completionPersistenceKey: 'naturequest:v2:meadow:stage:4' },
 ];
 
 const titles: Readonly<Record<BiomeId, [string, string, string]>> = {
@@ -48,11 +49,7 @@ export const STARTER_CONTENT: ContentData = {
     { id: 'reward.meadow.restored', type: 'habitatState', targetId: 'meadow-restored' },
     { id: 'reward.monarch', type: 'fieldGuideEntry', targetId: 'danaus-plexippus' },
   ],
-  // Asset slots are a draft contract; #163 adds provenance, variants and budgets.
-  assets: [
-    'biomes.meadow.sky', 'biomes.meadow.sparse', 'biomes.meadow.plantingSpots',
-    'biomes.meadow.flowers', 'biomes.meadow.restored', 'plants.yarrow.card', 'wildlife.monarch.idle',
-  ].map((id) => ({ id, status: 'planned', sourcePath: null })),
+  assets: ASSET_MANIFEST.map(({ id, status, sourcePath }) => ({ id, status, sourcePath })),
   strings: {
     en: {
       'biome.meadow.name': 'Meadow Base', 'biome.meadow.description': 'Help a meadow recover.',
