@@ -16,6 +16,8 @@ erDiagram
 
 Every store has an `id` key. Learner-owned rows include `learnerId`; mission, stage, and species IDs use stable content IDs with a learner prefix. Session IDs use a stable encounter ID. Schema upgrades add missing stores without clearing existing rows. `commitEncounter` validates the curriculum and content reference, reads current aggregates, applies evidence with the mastery engine, and saves evidence, mission, restoration, discovery, and one compact session summary in one transaction. The encounter ID makes repeated commits no-ops. Unique mission/stage/species IDs prevent duplicate rewards on a later encounter. #166 will provide completed mission results; the current F/J preview persists only a practice summary and physical evidence.
 
+#164 added optional effect/ambience volume fields to the existing settings record; older schema-v2 records remain valid and use conservative defaults. No IndexedDB store upgrade or v1 data change is needed for these additive preferences.
+
 ## Copy/import
 
 The importer reads `bloomtype-profile` and `bloomtype_profile_*` snapshots. It deliberately excludes `bloomtype-class-*` rosters. `previewLegacy` clamps malformed counts, removes invalid completed levels, limits the alias, and uses #158's conservative mapping: historical completion introduces keys, qualifying measured keys reach at most `familiar`, and no v2 lesson is completed. It never copies v1 UUID, class code, stars, email, or raw text. A `migrations` row records source key, source/import version, local learner ID, and timestamp. Reimporting the same source returns the existing profile. Resetting that learner also removes its marker, allowing an explicit new import later. The original v1 value remains byte-for-byte unchanged.

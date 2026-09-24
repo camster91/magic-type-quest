@@ -117,13 +117,13 @@ export class ProgressRepository {
     await this.write(['lessons'], async (tx) => { await result(tx.objectStore('lessons').put({ id: `${learnerId}:${session.lessonId}`, learnerId, lessonId: session.lessonId, completedAt: Date.now() })); });
     return true;
   }
-  async saveSettings(learnerId: string, patch: Partial<Pick<LocalSettings, 'locale' | 'reducedMotion' | 'soundEnabled'>>): Promise<LocalSettings> {
+  async saveSettings(learnerId: string, patch: Partial<Pick<LocalSettings, 'locale' | 'reducedMotion' | 'soundEnabled' | 'effectsVolume' | 'ambienceVolume'>>): Promise<LocalSettings> {
     return this.write(['profiles', 'settings'], async (tx) => {
       if (!validProfile(await result(tx.objectStore('profiles').get(learnerId)))) throw new ProgressStorageError('corrupt', 'Learner profile is missing');
       const store = tx.objectStore('settings');
       const previous = await result(store.get(learnerId)) as unknown;
       if (previous !== undefined && !validRecord('settings', previous)) throw new ProgressStorageError('corrupt', 'Settings record needs repair');
-      const next: LocalSettings = { id: learnerId, learnerId, locale: 'en', reducedMotion: false, soundEnabled: true,
+      const next: LocalSettings = { id: learnerId, learnerId, locale: 'en', reducedMotion: false, soundEnabled: true, effectsVolume: 0.15, ambienceVolume: 0.08,
         ...(previous as Partial<LocalSettings> | undefined), ...patch };
       if (!validRecord('settings', next)) throw new Error('Invalid local settings');
       await result(store.put(next));
