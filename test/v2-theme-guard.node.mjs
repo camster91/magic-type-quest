@@ -36,3 +36,10 @@ test('requires an exact path, term, and rationale for an exception', () => fixtu
   assert.throws(() => scanTheme(root, [{ path: 'public/v2/story.html', term: 'wizard', reason: '' }]));
   assert.throws(() => scanTheme(root, [{ path: '../src/v2/story.ts', term: 'wizard', reason: 'Outside scope' }]));
 }));
+
+test('covers every minimum prohibited root and common variations', () => fixture((root) => {
+  mkdirSync(join(root, 'public/v2'), { recursive: true });
+  const terms = ['spell', 'magic', 'witch', 'wizard', 'sorcery', 'potion', 'mana', 'rune', 'enchanted', 'arcane', 'mystical', 'witchcraft', 'enchantment'];
+  writeFileSync(join(root, 'public/v2/labels.json'), JSON.stringify(terms));
+  assert.equal(scanTheme(root).length, terms.length);
+}));
