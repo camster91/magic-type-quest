@@ -6,6 +6,8 @@ A beautiful, immersive typing game for kids — built for the web with gorgeous 
 
 The [v2 product contract](docs/v2/PRODUCT-CONTRACT.md) and [decision log](docs/v2/DECISION-LOG.md) govern new wildlife-restoration work under [#153](https://github.com/camster91/magic-type-quest/issues/153). This README describes the existing v1 experience. Keep v1 recoverable while the isolated v2 route, curriculum, and Meadow slice are built and verified; v2 is not the current production release.
 
+The [browser-game architecture ADR](docs/v2/architecture/ADR-001-browser-game-stack.md) records the pinned Phaser/TypeScript/Vite stack and the DOM/game-world boundary. In development, visit `/magic-type-quest/v2/` for the isolated boot preview; the normal root still serves v1. Run `npm run typecheck:v2` for the strict TypeScript gate.
+
 Run `npm run check:v2-theme` to check v2 child-facing content against the prohibited-theme rule. Historical v1 content remains outside that scope.
 
 ![Hero](assets/hero-unicorn.png)

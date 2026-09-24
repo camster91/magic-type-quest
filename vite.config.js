@@ -10,6 +10,7 @@ export default defineConfig({
         parents: resolve(import.meta.dirname, 'parents.html'),
         teacher: resolve(import.meta.dirname, 'teacher.html'),
         landing: resolve(import.meta.dirname, 'landing.html'),
+        v2: resolve(import.meta.dirname, 'v2/index.html'),
       },
     },
   },

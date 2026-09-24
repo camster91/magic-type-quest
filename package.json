@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:e2e": "npm run build && npm run verify:local-only-build && playwright test",
+    "typecheck:v2": "tsc -p tsconfig.v2.json",
     "lint": "eslint src test e2e scripts/*.mjs playwright.config.js",
     "check:v2-theme": "node scripts/check-v2-theme.mjs",
     "test:v2-theme": "node --test test/v2-theme-guard.node.mjs"
@@ -33,10 +34,14 @@
     "eslint": "^10.9.1",
     "jsdom": "^30.0.1",
     "playwright": "^1.62.1",
-    "vite": "^8.2.2",
+    "typescript": "6.0.3",
+    "vite": "8.3.1",
     "vitest": "^4.1.11"
   },
   "optionalDependencies": {
     "@supabase/supabase-js": "^2.112.4"
+  },
+  "dependencies": {
+    "phaser": "4.2.1"
   }
 }

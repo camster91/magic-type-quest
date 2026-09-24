@@ -31,6 +31,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - run: npm ci --no-audit --no-fund
       - run: npm run lint
+      - run: npm run typecheck:v2
       - run: npm run test:v2-theme
       - run: npm run check:v2-theme
       - run: npm test -- --run
