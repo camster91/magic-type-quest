@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 2,
+  "exportedAt": 1790292000000,
+  "profile": { "id": "sample-local-learner", "alias": "Scout", "avatar": "fox", "createdAt": 1790291000000 },
+  "mastery": {
+    "keys": {
+      "f": {
+        "key": "f", "introduced": true, "correct": 1, "incorrect": 0,
+        "firstAttemptCorrect": 1, "firstAttemptTotal": 1, "recentCorrect": [true],
+        "recentLatenciesMs": [], "recentErrors": 0, "lastPractisedAt": 1790292000000,
+        "reviewDueAt": 1790378400000, "failedDueReview": false,
+        "consecutiveSuccess": 1, "sampleCount": 1, "sessionIds": ["sample-encounter"],
+        "score": 100, "label": "learning", "contentVersion": 1
+      }
+    },
+    "completedLessonIds": []
+  },
+  "lessons": [],
+  "missions": [],
+  "restoration": [],
+  "discoveries": [],
+  "sessions": [{ "id": "sample-local-learner:sample-encounter", "learnerId": "sample-local-learner", "lessonId": "meadow-fj", "correct": 1, "incorrect": 0, "durationMs": 1500, "completedAt": 1790292000000, "source": "physical" }],
+  "settings": null
+}

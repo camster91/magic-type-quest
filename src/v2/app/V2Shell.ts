@@ -1,5 +1,10 @@
 import type Phaser from 'phaser';
+import type { KeyId } from '../curriculum/domain';
 import { getFingerGuidance, TypingInputService, type TypingEvent } from '../input/TypingInputService';
+import type { LocalProfile } from '../persistence/model';
+import { V2_STORAGE_PREFIX } from '../persistence/legacySnapshot';
+import { downloadProgress, ProgressRepository } from '../persistence/repository';
+import type { TypingAttempt } from '../mastery/engine';
 
 type WorldLoader = () => Promise<{ Phaser: typeof Phaser; BootScene: typeof import('../game/scenes/BootScene').BootScene }>;
 export type RecoveryKind = 'corruptProgress' | 'storageUnavailable' | 'unsupportedGraphics' | 'offlineAsset';
@@ -101,6 +106,12 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
   let returnFocus: HTMLElement | null = null;
   let loadCounter = 0;
   let retryAction: 'world' | 'dismiss' = 'world';
+  let repository: ProgressRepository | null = null;
+  let activeProfile: LocalProfile | null = null;
+  let encounterId = crypto.randomUUID();
+  let encounterStartedAt = performance.now();
+  let encounterAttempts: TypingAttempt[] = [];
+  let savedSessions = 0;
   const announce = (message: string): void => { live.textContent = message; };
   const fingerText = (key: string): string => {
     const guidance = getFingerGuidance(key);
@@ -108,6 +119,12 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
     return `${key.toUpperCase()}: ${guidance.hand} ${guidance.finger.replace(/^left|^right/, '').toLowerCase()} finger${guidance.shiftHand ? `; hold ${guidance.shiftHand} Shift` : ''}`;
   };
   const onTypingEvent = (event: TypingEvent): void => {
+    if (event.type === 'keyAttempt') {
+      encounterAttempts.push({ lessonId: event.lessonId, targetKey: event.expectedKey.toLowerCase() as KeyId,
+        correct: event.receivedKey === event.expectedKey && event.shiftUsed === event.shiftExpected,
+        firstAttempt: !encounterAttempts.some((attempt) => attempt.targetKey === event.expectedKey && attempt.sessionId === encounterId),
+        at: Date.now(), sessionId: encounterId, source: event.source });
+    }
     if (event.type === 'inputCapabilityChanged') {
       worldNote.textContent = event.capability === 'touch'
         ? 'Touch practice only. Physical-key mastery is not recorded.'
@@ -123,6 +140,17 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
     if (event.type === 'sequenceComplete') {
       targetLabel.textContent = 'F and J complete'; feedback.textContent = 'You found both home-position keys.';
       resumeTyping.hidden = true;
+      const attempts = [...encounterAttempts]; const completedAt = Date.now();
+      const completedEncounterId = encounterId;
+      const durationMs = Math.max(0, Math.round(performance.now() - encounterStartedAt));
+      void persistenceReady.then(async () => {
+        if (!repository || !activeProfile) return;
+        const result = await repository.commitEncounter({ encounterId: completedEncounterId, learnerId: activeProfile.id, lessonId: 'meadow-fj', attempts,
+          summary: { correct: attempts.filter((attempt) => attempt.correct).length, incorrect: attempts.filter((attempt) => !attempt.correct).length,
+            durationMs, completedAt,
+            source: attempts.every((attempt) => attempt.source === 'touch') ? 'touch' : attempts.every((attempt) => attempt.source === 'physical') ? 'physical' : 'mixed' } });
+        if (result.applied && !disposed) { savedSessions++; worldSummary.textContent = `Home-position practice saved. ${savedSessions} practice ${savedSessions === 1 ? 'visit' : 'visits'} recorded.`; announce('Practice progress saved on this device.'); }
+      }).catch(() => { if (!disposed) reportRecovery('storageUnavailable'); });
     }
     if (event.type === 'pauseRequested') {
       inputService.suspend(); resumeTyping.hidden = false;
@@ -178,8 +206,46 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
       const label = node('label', 'v2-setting', 'Reduce motion');
       const checkbox = node('input', ''); checkbox.type = 'checkbox';
       checkbox.checked = shell.classList.contains('v2-reduced-motion') || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      checkbox.addEventListener('change', () => shell.classList.toggle('v2-reduced-motion', checkbox.checked));
+      checkbox.addEventListener('change', () => {
+        shell.classList.toggle('v2-reduced-motion', checkbox.checked);
+        if (repository && activeProfile) void repository.saveSettings(activeProfile.id, { reducedMotion: checkbox.checked }).catch(() => reportRecovery('storageUnavailable'));
+      });
       label.prepend(checkbox); dialog.append(label);
+      const settingAction = (caption: string, action: () => void): void => {
+        const button = node('button', 'v2-text-button', caption);
+        button.disabled = !repository || !activeProfile;
+        button.addEventListener('click', () => { closeDialog(); action(); });
+        dialog.append(button);
+      };
+      settingAction('Export local progress', () => {
+        if (repository && activeProfile) void downloadProgress(repository, activeProfile.id)
+          .then(() => announce('Progress export downloaded.')).catch(() => reportRecovery('corruptProgress'));
+      });
+      settingAction('Repair progress labels', () => {
+        if (repository && activeProfile) void repository.repairDerivedProgress(activeProfile.id)
+          .then((problems) => announce(problems.length ? 'Valid progress was rebuilt. Some records still need attention.' : 'Progress labels checked.'))
+          .catch(() => reportRecovery('corruptProgress'));
+      });
+      settingAction('Reset this Nature Quest learner', () => openDialog('Reset this learner?', 'This removes this learner’s Nature Quest progress on this device. BloomType progress stays safe.', [
+        { label: 'Cancel' }, { label: 'Reset learner', action: () => { void (async () => {
+          if (!repository || !activeProfile) return;
+          await repository.resetLearner(activeProfile.id);
+          activeProfile = await repository.createProfile();
+          try { localStorage.setItem(`${V2_STORAGE_PREFIX}active-profile`, activeProfile.id); } catch { /* database remains canonical */ }
+          savedSessions = 0; worldSummary.textContent = 'The meadow has open patches ready for care.';
+          announce('Nature Quest learner reset. BloomType data is unchanged.');
+        })().catch(() => reportRecovery('corruptProgress')); } },
+      ], settings));
+      settingAction('Delete all Nature Quest data', () => openDialog('Delete all Nature Quest data?', 'This removes all Nature Quest learners on this device. BloomType progress stays safe.', [
+        { label: 'Cancel' }, { label: 'Delete Nature Quest data', action: () => { void (async () => {
+          repository?.close(); repository = null;
+          await ProgressRepository.deleteAll();
+          try { localStorage.removeItem(`${V2_STORAGE_PREFIX}active-profile`); } catch { /* no legacy key touched */ }
+          repository = await ProgressRepository.open(); activeProfile = await repository.createProfile();
+          savedSessions = 0; worldSummary.textContent = 'The meadow has open patches ready for care.';
+          announce('Nature Quest data deleted. BloomType data is unchanged.');
+        })().catch(() => reportRecovery('storageUnavailable')); } },
+      ], settings));
     }
     const buttons = node('div', 'v2-dialog-actions');
     for (const item of actions) {
@@ -222,6 +288,7 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
           targetLabel.textContent = 'Target: F, then J'; fingerLabel.textContent = fingerText('f');
           progress.textContent = '0 of 2 keys'; feedback.textContent = 'Press F to begin.'; resumeTyping.hidden = true;
           inputService.start({ lessonId: 'meadow-fj', missionId: 'meadow-a', sequence: 'fj' });
+          encounterId = crypto.randomUUID(); encounterStartedAt = performance.now(); encounterAttempts = [];
           touch.disabled = false;
           retryPractice.disabled = false;
         })],
@@ -267,6 +334,7 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
   retryPractice.addEventListener('click', () => {
     if (world.hidden) return;
     inputService.start({ lessonId: 'meadow-fj', missionId: 'meadow-a', sequence: 'fj' });
+    encounterId = crypto.randomUUID(); encounterStartedAt = performance.now(); encounterAttempts = [];
     inputService.retry(); progress.textContent = '0 of 2 keys'; targetLabel.textContent = 'Target: F, then J';
     fingerLabel.textContent = fingerText('f'); feedback.textContent = 'Press F to begin.';
   });
@@ -286,10 +354,42 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
     }
   } catch { /* storage may be unavailable; home remains usable */ }
 
+  const persistenceReady = (async (): Promise<void> => {
+    try {
+      repository = await ProgressRepository.open();
+      let available = await repository.listProfiles();
+      let imported: Awaited<ReturnType<ProgressRepository['importAvailable']>> = [];
+      if (!available.profiles.length) {
+        try { imported = await repository.importAvailable(localStorage); }
+        catch (cause) {
+          if (!(cause instanceof DOMException && cause.name === 'SecurityError')) throw cause;
+          if (import.meta.env.DEV) console.warn('Legacy snapshot unavailable', cause);
+        }
+      }
+      if (imported.length) available = await repository.listProfiles();
+      if (available.problems.length) reportRecovery('corruptProgress');
+      let selected: string | null = null;
+      try { selected = localStorage.getItem(`${V2_STORAGE_PREFIX}active-profile`); } catch { /* IndexedDB remains available */ }
+      activeProfile = available.profiles.find((profile) => profile.id === selected) ?? imported[0]?.profile ?? available.profiles[0] ?? await repository.createProfile();
+      try { localStorage.setItem(`${V2_STORAGE_PREFIX}active-profile`, activeProfile.id); } catch { /* database is canonical */ }
+      const state = await repository.read(activeProfile.id);
+      savedSessions = state.sessions.length;
+      if (state.settings?.reducedMotion === true) shell.classList.add('v2-reduced-motion');
+      if (state.problems.length) reportRecovery('corruptProgress');
+      if (savedSessions && !disposed) worldSummary.textContent = `${savedSessions} home-position practice ${savedSessions === 1 ? 'visit' : 'visits'} saved on this device.`;
+    } catch (cause) {
+      if (import.meta.env.DEV) console.error('Local progress unavailable', cause);
+      repository?.close(); repository = null;
+      if (!disposed) reportRecovery('storageUnavailable');
+    } finally {
+      if (disposed) { repository?.close(); repository = null; }
+    }
+  })();
+
   return (): void => {
     if (disposed) return;
     disposed = true; root.removeEventListener('naturequest:v2:recoverable-error', onRecoverableError);
     root.removeEventListener('naturequest:v2:dialog-request', onDialogRequest);
-    closeDialog(); releaseWorld(); inputService.dispose(); root.replaceChildren();
+    closeDialog(); releaseWorld(); inputService.dispose(); repository?.close(); root.replaceChildren();
   };
 }
