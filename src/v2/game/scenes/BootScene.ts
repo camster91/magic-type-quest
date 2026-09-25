@@ -1,21 +1,35 @@
 import Phaser from 'phaser';
 import type { CuePlayback } from '../../motion/cues';
+import type { PackResource } from '../../assets/PackLoader';
 
 /** Rendering proof only. No learner state, input, persistence, or biome content. */
 export class BootScene extends Phaser.Scene {
-  private scenery?: Phaser.GameObjects.Graphics;
+  private scenery: Phaser.GameObjects.Graphics | undefined;
   private cueOverlay: Phaser.GameObjects.Graphics | undefined;
   private habitatAction = false;
+  private readonly ownedTextures = new Set<string>();
 
-  constructor(private readonly onReady: () => void) {
+  constructor(private readonly onReady: () => void, private readonly resources: ReadonlyMap<string, PackResource> = new Map()) {
     super({ key: 'BootScene' });
+  }
+
+  preload(): void {
+    for (const resource of this.resources.values()) {
+      if (resource.format === 'svg') this.load.svg(resource.id, resource.url);
+      else this.load.image(resource.id, resource.url);
+    }
   }
 
   create(): void {
     this.scenery = this.add.graphics();
+    for (const resource of this.resources.values()) if (this.textures.exists(resource.id)) this.ownedTextures.add(resource.id);
     this.drawScenery();
     this.scale.on('resize', this.drawScenery, this);
-    this.events.once('shutdown', () => { this.scale.off('resize', this.drawScenery, this); this.disposeCues(); });
+    this.events.once('shutdown', () => {
+      this.scale.off('resize', this.drawScenery, this); this.disposeCues();
+      for (const id of this.ownedTextures) this.textures.remove(id);
+      this.ownedTextures.clear(); this.scenery = undefined;
+    });
     this.onReady();
   }
 

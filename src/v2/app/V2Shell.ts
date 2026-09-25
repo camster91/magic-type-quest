@@ -8,6 +8,11 @@ import type { TypingAttempt } from '../mastery/engine';
 import { AudioCueService } from '../audio/AudioCueService';
 import { CueDirector, type CueHost } from '../motion/cues';
 import type { BootScene as BootSceneType } from '../game/scenes/BootScene';
+import { PackLoader } from '../assets/PackLoader';
+import { ASSET_MANIFEST } from '../assets/manifest';
+import { getLesson } from '../curriculum/domain';
+import { STARTER_CONTENT } from '../content/data';
+import { PerformanceMonitor } from '../performance/PerformanceMonitor';
 
 type WorldLoader = () => Promise<{ Phaser: typeof Phaser; BootScene: typeof import('../game/scenes/BootScene').BootScene }>;
 export type RecoveryKind = 'corruptProgress' | 'storageUnavailable' | 'unsupportedGraphics' | 'offlineAsset';
@@ -95,6 +100,8 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
   const live = node('p', 'v2-live', 'Ready to explore Meadow Base.');
   live.setAttribute('role', 'status'); live.setAttribute('aria-live', 'polite'); live.setAttribute('aria-atomic', 'true');
   main.append(home, world, auxiliary, loading, error, live);
+  const diagnostics = import.meta.env.DEV ? node('output', 'v2-performance', 'Performance: waiting for Meadow…') : null;
+  if (diagnostics) { diagnostics.setAttribute('aria-label', 'Development performance metrics'); main.append(diagnostics); }
   const footer = node('footer', 'v2-footer');
   const parents = node('a', '', 'Parent view'); parents.href = '../parents.html';
   const teacher = node('a', '', 'Teacher view'); teacher.href = '../teacher.html';
@@ -116,6 +123,17 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
   let encounterAttempts: TypingAttempt[] = [];
   let savedSessions = 0;
   let cueHost: BootSceneType | null = null;
+  let attemptStartedAt = 0;
+  const packs = new PackLoader();
+  const meadowPack = 'biomes.meadow-base';
+  let onWorldReady: () => void = () => {};
+  const monitor = diagnostics ? new PerformanceMonitor(() => ({
+    textures: game ? Object.keys(game.textures.list).length : 0,
+    scenes: game?.scene.getScenes(true).map((scene) => scene.scene.key) ?? [], packs: packs.loadedPackIds(),
+  }), ({ fps, frameMs, textures, scenes, packs: loaded, inputP95Ms }) => {
+    diagnostics.textContent = `FPS ${fps} · frame ${frameMs} ms · textures ${textures} · scenes ${scenes.join(',') || 'none'} · packs ${loaded.join(',') || 'none'} · input p95 ${inputP95Ms === null ? '—' : `${inputP95Ms.toFixed(1)} ms`}`;
+  }) : null;
+  monitor?.start();
   const announce = (message: string): void => { live.textContent = message; };
   const audio = new AudioCueService();
   const host: CueHost = {
@@ -130,6 +148,7 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
   };
   const onTypingEvent = (event: TypingEvent): void => {
     if (event.type === 'keyAttempt') {
+      attemptStartedAt = performance.now();
       audio.unlock();
       encounterAttempts.push({ lessonId: event.lessonId, targetKey: event.expectedKey.toLowerCase() as KeyId,
         correct: event.receivedKey === event.expectedKey && event.shiftUsed === event.shiftExpected,
@@ -141,8 +160,8 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
         ? 'Touch practice only. Physical-key mastery is not recorded.'
         : 'A physical keyboard is best for finger-placement lessons. Touch controls are a practice fallback.';
     }
-    if (event.type === 'correctKey') { feedback.textContent = 'Correct key. Keep going.'; cues.request('input.correct'); }
-    if (event.type === 'incorrectKey') { feedback.textContent = `Try ${event.expectedKey} again. Take your time.`; cues.request('input.incorrect'); }
+    if (event.type === 'correctKey') { feedback.textContent = 'Correct key. Keep going.'; cues.request('input.correct'); if (monitor) { const began = attemptStartedAt; requestAnimationFrame(() => monitor.recordInputFeedback(performance.now() - began)); } }
+    if (event.type === 'incorrectKey') { feedback.textContent = `Try ${event.expectedKey} again. Take your time.`; cues.request('input.incorrect'); if (monitor) { const began = attemptStartedAt; requestAnimationFrame(() => monitor.recordInputFeedback(performance.now() - began)); } }
     if (event.type === 'sequenceProgress') {
       progress.textContent = `${event.position} of ${event.total} keys`;
       const next = inputService.getVisualState().target;
@@ -198,8 +217,9 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
     touch.disabled = true;
     retryPractice.disabled = true;
     resizeObserver?.disconnect(); resizeObserver = null;
-    cueHost?.disposeCues(); cueHost = null;
-    game?.destroy(true); game = null;
+    cueHost?.disposeCues();
+    if (game) { game.scene.stop('BootScene'); game.loop.sleep(); }
+    else packs.release(meadowPack);
     stage.replaceChildren();
   };
   const showHome = (): void => {
@@ -305,41 +325,61 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
   const openWorld = async (): Promise<void> => {
     const request = ++loadCounter;
     home.hidden = true; auxiliary.hidden = true; world.hidden = false; error.hidden = true; loading.hidden = false;
-    announce('Loading Meadow environment.');
+    loading.textContent = 'Opening Meadow environment…'; announce(loading.textContent);
     try {
+      if (game) {
+        onWorldReady = () => readyForPractice(request);
+        stage.append(game.canvas); game.loop.wake(); game.scene.start('BootScene');
+        observeWorldSize();
+        return;
+      }
       const { Phaser: Engine, BootScene } = await loadWorld();
+      if (disposed || request !== loadCounter) return;
+      const pack = await packs.load(meadowPack, Math.max(320, stage.clientWidth), window.devicePixelRatio || 1, ({ phase, completed, total }) => {
+        if (disposed || request !== loadCounter) return;
+        const label = { shell: 'core artwork', currentBiome: 'Meadow scenery', mission: 'typing activity', optional: 'optional details' }[phase];
+        loading.textContent = total ? `Loading ${label}: ${completed} of ${total} pieces ready.` : `Checking ${label}…`;
+      }, () => STARTER_CONTENT.missions.some((mission) => mission.id === 'meadow-a' && mission.lessonId === 'meadow-fj')
+        && ['f', 'j'].every((key) => getLesson('meadow-fj').allowedAssessedKeys.includes(key as 'f' | 'j')));
       if (disposed || request !== loadCounter) return;
       const bounds = stage.getBoundingClientRect();
       const width = Math.max(320, Math.round(bounds.width));
       const height = Math.max(180, Math.round(bounds.height));
+      onWorldReady = () => readyForPractice(request);
       game = new Engine.Game({ type: Engine.AUTO, parent: stage, width, height, backgroundColor: '#e5f3ec',
         scale: { mode: Engine.Scale.NONE, width, height }, audio: { noAudio: true },
-        scene: [cueHost = new BootScene(() => {
-          if (disposed || request !== loadCounter || !game) return;
-          game.canvas.setAttribute('role', 'img'); game.canvas.setAttribute('aria-label', 'Meadow environment');
-          game.canvas.setAttribute('aria-describedby', 'v2-world-summary'); game.canvas.setAttribute('tabindex', '-1');
-          loading.hidden = true; announce('Meadow environment ready. The meadow has open patches ready for care.'); pause.focus();
-          targetLabel.textContent = 'Target: F, then J'; fingerLabel.textContent = fingerText('f');
-          progress.textContent = '0 of 2 keys'; feedback.textContent = 'Press F to begin.'; resumeTyping.hidden = true;
-          inputService.start({ lessonId: 'meadow-fj', missionId: 'meadow-a', sequence: 'fj' });
-          encounterId = crypto.randomUUID(); encounterStartedAt = performance.now(); encounterAttempts = [];
-          touch.disabled = false;
-          retryPractice.disabled = false;
-        })],
+        scene: [cueHost = new BootScene(() => onWorldReady(), new Map([...pack.resources].filter(([id]) => ASSET_MANIFEST.find((asset) => asset.id === id)?.layer !== 'ui')))],
       });
-      resizeObserver = new ResizeObserver(() => {
-        if (!game) return;
-        const rect = stage.getBoundingClientRect();
-        game.scale.resize(Math.max(320, Math.round(rect.width)), Math.max(180, Math.round(rect.height)));
-      });
-      resizeObserver.observe(stage);
+      observeWorldSize();
     } catch (cause) {
       if (disposed || request !== loadCounter) return;
       game?.destroy(true); game = null;
+      packs.release(meadowPack);
       if (import.meta.env.DEV) console.error('Meadow load failed', cause);
       loading.hidden = true;
       reportRecovery(navigator.onLine ? 'unsupportedGraphics' : 'offlineAsset');
     }
+  };
+
+  const observeWorldSize = (): void => {
+    resizeObserver = new ResizeObserver(() => {
+      if (!game) return;
+      const rect = stage.getBoundingClientRect();
+      game.scale.resize(Math.max(320, Math.round(rect.width)), Math.max(180, Math.round(rect.height)));
+    });
+    resizeObserver.observe(stage);
+  };
+  const readyForPractice = (request: number): void => {
+    if (disposed || request !== loadCounter || !game) return;
+    game.canvas.setAttribute('role', 'img'); game.canvas.setAttribute('aria-label', 'Meadow environment');
+    game.canvas.setAttribute('aria-describedby', 'v2-world-summary'); game.canvas.setAttribute('tabindex', '-1');
+    loading.hidden = true; announce('Meadow environment ready. The meadow has open patches ready for care.'); pause.focus();
+    targetLabel.textContent = 'Target: F, then J'; fingerLabel.textContent = fingerText('f');
+    progress.textContent = '0 of 2 keys'; feedback.textContent = 'Press F to begin.'; resumeTyping.hidden = true;
+    inputService.start({ lessonId: 'meadow-fj', missionId: 'meadow-a', sequence: 'fj' });
+    encounterId = crypto.randomUUID(); encounterStartedAt = performance.now(); encounterAttempts = [];
+    touch.disabled = false; retryPractice.disabled = false;
+    void packs.loadOptional(meadowPack, game.canvas.width, window.devicePixelRatio || 1);
   };
 
   start.addEventListener('click', () => { audio.unlock(); void openWorld(); });
@@ -429,6 +469,7 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
     if (disposed) return;
     disposed = true; root.removeEventListener('naturequest:v2:recoverable-error', onRecoverableError);
     root.removeEventListener('naturequest:v2:dialog-request', onDialogRequest);
-    closeDialog(); releaseWorld(); cues.dispose(); inputService.dispose(); repository?.close(); root.replaceChildren();
+    closeDialog(); releaseWorld(); game?.destroy(true); game = null; cueHost = null;
+    monitor?.dispose(); packs.dispose(); cues.dispose(); inputService.dispose(); repository?.close(); root.replaceChildren();
   };
 }

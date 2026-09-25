@@ -71,6 +71,15 @@ export function getLoadableAssets(group: PreloadGroup, packId: string | null): r
   return ASSET_MANIFEST.filter((asset) => asset.status === 'implemented' && asset.preloadGroup === group && asset.biomePackId === packId);
 }
 
+/** Prefer the smallest approved variant that covers the display at a capped pixel density. */
+export function chooseAssetVariant(asset: AssetDefinition, viewportWidth: number, devicePixelRatio: number): AssetVariant | null {
+  if (asset.status !== 'implemented') return null;
+  const variants = [...asset.outputs].sort((a, b) => a.width - b.width);
+  const target = Math.max(1, viewportWidth) * Math.min(2, Math.max(1, devicePixelRatio));
+  const eligible = variants.filter((variant) => variant.maxViewportWidth === null || viewportWidth <= variant.maxViewportWidth);
+  return eligible.find((variant) => variant.width >= target) ?? eligible.at(-1) ?? null;
+}
+
 export function validateAssetManifest(entries: readonly AssetDefinition[] = ASSET_MANIFEST): readonly string[] {
   const failures: string[] = []; const seen = new Set<string>(); const paths = new Set<string>();
   for (const [index, asset] of entries.entries()) {

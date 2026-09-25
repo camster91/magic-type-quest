@@ -1,5 +1,5 @@
 // BloomType service worker — cache app shell + offline fallback
-const CACHE_NAME = "bloomtype-v19";
+const CACHE_NAME = "bloomtype-v20";
 const PRECACHE_ASSETS = [
   "./",
   "index.html",
@@ -33,6 +33,9 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  // Keep v2 preview and its lazy chunks out of the broad legacy v1 cache.
+  const url = new URL(event.request.url);
+  if (url.pathname.includes("/v2/") || /\/assets\/(?:v2-|BootScene-|phaser\.esm-)/.test(url.pathname)) return;
   event.respondWith(
     caches.match(event.request).then((response) => {
       if (response) return response;
