@@ -8,29 +8,54 @@ export class BootScene extends Phaser.Scene {
   private cueOverlay: Phaser.GameObjects.Graphics | undefined;
   private habitatAction = false;
   private readonly ownedTextures = new Set<string>();
+  private cycleActive = false;
+  private readinessReported = false;
 
-  constructor(private readonly onReady: () => void, private readonly resources: ReadonlyMap<string, PackResource> = new Map()) {
+  constructor(private readonly onReady: () => void, private readonly resources: ReadonlyMap<string, PackResource> = new Map(),
+    private readonly onLoadFailure: (cause: Error) => void = () => {}) {
     super({ key: 'BootScene' });
   }
 
   preload(): void {
+    // Register before starting requests: a scene may exit before create().
+    this.cycleActive = true;
+    this.readinessReported = false;
+    this.events.once('shutdown', this.releaseScene, this);
+    this.events.once('destroy', this.releaseScene, this);
     for (const resource of this.resources.values()) {
+      // A texture supplied by another owner must not be queued or removed here.
+      if (this.textures.exists(resource.id)) continue;
+      this.ownedTextures.add(resource.id);
       if (resource.format === 'svg') this.load.svg(resource.id, resource.url);
       else this.load.image(resource.id, resource.url);
     }
   }
 
   create(): void {
+    if (!this.cycleActive || this.readinessReported) return;
+    this.readinessReported = true;
+    // A finished loader queue is not proof that every image decoded. Required
+    // resources must exist in the Texture Manager before typing becomes usable.
+    const missing = [...this.resources.keys()].filter((id) => !this.textures.exists(id));
+    if (missing.length) {
+      this.onLoadFailure(new Error(`Required scene textures unavailable: ${missing.join(', ')}`));
+      return;
+    }
     this.scenery = this.add.graphics();
-    for (const resource of this.resources.values()) if (this.textures.exists(resource.id)) this.ownedTextures.add(resource.id);
     this.drawScenery();
     this.scale.on('resize', this.drawScenery, this);
-    this.events.once('shutdown', () => {
-      this.scale.off('resize', this.drawScenery, this); this.disposeCues();
-      for (const id of this.ownedTextures) this.textures.remove(id);
-      this.ownedTextures.clear(); this.scenery = undefined;
-    });
     this.onReady();
+  }
+
+  private releaseScene(): void {
+    this.cycleActive = false;
+    this.events.off('shutdown', this.releaseScene, this);
+    this.events.off('destroy', this.releaseScene, this);
+    this.scale.off('resize', this.drawScenery, this);
+    this.disposeCues();
+    this.scenery?.destroy(); this.scenery = undefined;
+    for (const id of this.ownedTextures) if (this.textures.exists(id)) this.textures.remove(id);
+    this.ownedTextures.clear();
   }
 
   private drawScenery(): void {

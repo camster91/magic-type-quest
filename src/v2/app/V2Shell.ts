@@ -13,13 +13,14 @@ import { ASSET_MANIFEST } from '../assets/manifest';
 import { getLesson } from '../curriculum/domain';
 import { STARTER_CONTENT } from '../content/data';
 import { PerformanceMonitor } from '../performance/PerformanceMonitor';
+import { destroyWorldGame } from '../game/systems/destroyWorldGame';
 
 type WorldLoader = () => Promise<{ Phaser: typeof Phaser; BootScene: typeof import('../game/scenes/BootScene').BootScene }>;
 export type RecoveryKind = 'corruptProgress' | 'storageUnavailable' | 'unsupportedGraphics' | 'offlineAsset';
 export type DialogRequest =
   | { readonly type: 'completion'; readonly description: string }
   | { readonly type: 'confirmation'; readonly description: string; readonly onConfirm: () => void };
-const defaultLoader: WorldLoader = async () => {
+export const loadV2World: WorldLoader = async () => {
   const [engine, scene] = await Promise.all([import('phaser'), import('../game/scenes/BootScene')]);
   return { Phaser: engine.default, BootScene: scene.BootScene };
 };
@@ -32,7 +33,7 @@ function node<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, 
 }
 
 /** The DOM owns navigation, dialogs and announcements; Phaser owns only the world host. */
-export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = defaultLoader): () => void {
+export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = loadV2World): () => void {
   root.replaceChildren();
   const skip = node('a', 'v2-skip', 'Skip to main content'); skip.href = '#v2-main';
   const shell = node('div', 'v2-shell');
@@ -127,6 +128,7 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
   const packs = new PackLoader();
   const meadowPack = 'biomes.meadow-base';
   let onWorldReady: () => void = () => {};
+  let onWorldFailure: (cause: Error) => void = () => {};
   const monitor = diagnostics ? new PerformanceMonitor(() => ({
     textures: game ? Object.keys(game.textures.list).length : 0,
     scenes: game?.scene.getScenes(true).map((scene) => scene.scene.key) ?? [], packs: packs.loadedPackIds(),
@@ -213,7 +215,9 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
   root.addEventListener('naturequest:v2:recoverable-error', onRecoverableError);
   const releaseWorld = (): void => {
     loadCounter++;
+    onWorldReady = () => {}; onWorldFailure = () => {};
     inputService.suspend();
+    resumeTyping.disabled = true;
     touch.disabled = true;
     retryPractice.disabled = true;
     resizeObserver?.disconnect(); resizeObserver = null;
@@ -322,13 +326,30 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
   };
   root.addEventListener('naturequest:v2:dialog-request', onDialogRequest);
 
+  const failWorld = (request: number, cause: unknown): void => {
+    if (disposed || request !== loadCounter) return;
+    releaseWorld();
+    const failedGame = game; game = null; cueHost = null;
+    destroyWorldGame(failedGame);
+    packs.release(meadowPack);
+    if (import.meta.env.DEV) console.error('Meadow load failed', cause);
+    loading.hidden = true;
+    reportRecovery(navigator.onLine ? 'unsupportedGraphics' : 'offlineAsset');
+  };
   const openWorld = async (): Promise<void> => {
+    if (disposed || !world.hidden) return;
     const request = ++loadCounter;
+    inputService.suspend(); touch.disabled = true; retryPractice.disabled = true; resumeTyping.disabled = true;
+    onWorldReady = () => { queueMicrotask(() => {
+      try { readyForPractice(request); } catch (cause) { failWorld(request, cause); }
+    }); };
+    // create() can run inside an engine callback. Finish that callback before
+    // stopping the scene or disposing its Game; retain this visit's token.
+    onWorldFailure = (cause) => { queueMicrotask(() => failWorld(request, cause)); };
     home.hidden = true; auxiliary.hidden = true; world.hidden = false; error.hidden = true; loading.hidden = false;
     loading.textContent = 'Opening Meadow environment…'; announce(loading.textContent);
     try {
       if (game) {
-        onWorldReady = () => readyForPractice(request);
         stage.append(game.canvas); game.loop.wake(); game.scene.start('BootScene');
         observeWorldSize();
         return;
@@ -345,23 +366,19 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
       const bounds = stage.getBoundingClientRect();
       const width = Math.max(320, Math.round(bounds.width));
       const height = Math.max(180, Math.round(bounds.height));
-      onWorldReady = () => readyForPractice(request);
       game = new Engine.Game({ type: Engine.AUTO, parent: stage, width, height, backgroundColor: '#e5f3ec',
         scale: { mode: Engine.Scale.NONE, width, height }, audio: { noAudio: true },
-        scene: [cueHost = new BootScene(() => onWorldReady(), new Map([...pack.resources].filter(([id]) => ASSET_MANIFEST.find((asset) => asset.id === id)?.layer !== 'ui')))],
+        scene: [cueHost = new BootScene(() => onWorldReady(), new Map([...pack.resources].filter(([id]) => ASSET_MANIFEST.find((asset) => asset.id === id)?.layer !== 'ui')),
+          (cause) => onWorldFailure(cause))],
       });
       observeWorldSize();
     } catch (cause) {
-      if (disposed || request !== loadCounter) return;
-      game?.destroy(true); game = null;
-      packs.release(meadowPack);
-      if (import.meta.env.DEV) console.error('Meadow load failed', cause);
-      loading.hidden = true;
-      reportRecovery(navigator.onLine ? 'unsupportedGraphics' : 'offlineAsset');
+      failWorld(request, cause);
     }
   };
 
   const observeWorldSize = (): void => {
+    resizeObserver?.disconnect();
     resizeObserver = new ResizeObserver(() => {
       if (!game) return;
       const rect = stage.getBoundingClientRect();
@@ -370,15 +387,21 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
     resizeObserver.observe(stage);
   };
   const readyForPractice = (request: number): void => {
-    if (disposed || request !== loadCounter || !game) return;
+    if (disposed || request !== loadCounter || world.hidden || !game) return;
     game.canvas.setAttribute('role', 'img'); game.canvas.setAttribute('aria-label', 'Meadow environment');
     game.canvas.setAttribute('aria-describedby', 'v2-world-summary'); game.canvas.setAttribute('tabindex', '-1');
-    loading.hidden = true; announce('Meadow environment ready. The meadow has open patches ready for care.'); pause.focus();
+    loading.hidden = true; announce('Meadow environment ready. The meadow has open patches ready for care.');
     targetLabel.textContent = 'Target: F, then J'; fingerLabel.textContent = fingerText('f');
     progress.textContent = '0 of 2 keys'; feedback.textContent = 'Press F to begin.'; resumeTyping.hidden = true;
+    const dialogFocus = activeDialog?.contains(document.activeElement) && document.activeElement instanceof HTMLElement ? document.activeElement : null;
     inputService.start({ lessonId: 'meadow-fj', missionId: 'meadow-a', sequence: 'fj' });
     encounterId = crypto.randomUUID(); encounterStartedAt = performance.now(); encounterAttempts = [];
-    touch.disabled = false; retryPractice.disabled = false;
+    touch.disabled = false; retryPractice.disabled = false; resumeTyping.disabled = false;
+    if (activeDialog) {
+      // Finishing a load must not resume gameplay or steal focus from a dialog.
+      inputService.suspend(); resumeTyping.hidden = false; game.scene.pause('BootScene');
+      dialogFocus?.focus();
+    } else pause.focus();
     void packs.loadOptional(meadowPack, game.canvas.width, window.devicePixelRatio || 1);
   };
 
@@ -469,7 +492,9 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = default
     if (disposed) return;
     disposed = true; root.removeEventListener('naturequest:v2:recoverable-error', onRecoverableError);
     root.removeEventListener('naturequest:v2:dialog-request', onDialogRequest);
-    closeDialog(); releaseWorld(); game?.destroy(true); game = null; cueHost = null;
+    closeDialog(); releaseWorld();
+    const disposedGame = game; game = null; cueHost = null;
+    destroyWorldGame(disposedGame);
     monitor?.dispose(); packs.dispose(); cues.dispose(); inputService.dispose(); repository?.close(); root.replaceChildren();
   };
 }
