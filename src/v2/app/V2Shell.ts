@@ -14,6 +14,7 @@ import { getLesson } from '../curriculum/domain';
 import { STARTER_CONTENT } from '../content/data';
 import { PerformanceMonitor } from '../performance/PerformanceMonitor';
 import { destroyWorldGame } from '../game/systems/destroyWorldGame';
+import { createWorldGame } from '../game/systems/createWorldGame';
 
 type WorldLoader = () => Promise<{ Phaser: typeof Phaser; BootScene: typeof import('../game/scenes/BootScene').BootScene }>;
 export type RecoveryKind = 'corruptProgress' | 'storageUnavailable' | 'unsupportedGraphics' | 'offlineAsset';
@@ -366,7 +367,7 @@ export function mountV2Shell(root: HTMLElement, loadWorld: WorldLoader = loadV2W
       const bounds = stage.getBoundingClientRect();
       const width = Math.max(320, Math.round(bounds.width));
       const height = Math.max(180, Math.round(bounds.height));
-      game = new Engine.Game({ type: Engine.AUTO, parent: stage, width, height, backgroundColor: '#e5f3ec',
+      game = createWorldGame(Engine, { type: Engine.AUTO, parent: stage, width, height, backgroundColor: '#e5f3ec',
         scale: { mode: Engine.Scale.NONE, width, height }, audio: { noAudio: true },
         scene: [cueHost = new BootScene(() => onWorldReady(), new Map([...pack.resources].filter(([id]) => ASSET_MANIFEST.find((asset) => asset.id === id)?.layer !== 'ui')),
           (cause) => onWorldFailure(cause))],

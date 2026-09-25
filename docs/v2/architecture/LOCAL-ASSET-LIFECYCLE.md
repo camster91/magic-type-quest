@@ -63,16 +63,45 @@ the destruction request for its normal boot. Repeat disposal is idempotent.
 must observe the actual Game `destroy` event before claiming engine teardown;
 calling `destroy` or removing a canvas is not sufficient evidence.
 
-## Remaining upstream and browser constraints
+## Scoped browser-event ownership
 
-The pinned upstream
-[`VisibilityHandler`](https://github.com/phaserjs/phaser/blob/v4.2.1/src/core/VisibilityHandler.js)
-registers a document visibility listener and assigns window focus/blur handlers
-without a matching cleanup in that function. This continuation does not claim
-to remove that upstream global retention or fully certify repeated whole-shell
-mount/unmount. It does not monkey-patch browser globals or fork Phaser. One Game
-per live shell still bounds ordinary home/scene visits; actual global listener
-and final-disposal evidence remains an acceptance item, not a passed check.
+Phaser 4.2.1's [VisibilityHandler](https://github.com/phaserjs/phaser/blob/v4.2.1/src/core/VisibilityHandler.js)
+retains its document listener and overwrites window focus/blur properties. V2 now
+uses one shared `createWorldGame` factory. Its small subclass overrides the
+[protected startup hook](https://docs.phaser.io/api-documentation/class/game#start)
+to retain the upstream postBoot and rendered/headless loop behaviour while
+binding browser events through `bindWorldVisibility`. No installed dependency,
+browser prototype, global handler property, scene engine or package pin is changed.
+
+The four core events still invoke Phaser's own protected handlers with the Game
+as context. The DOM bridge uses removable listeners rather than `window.onblur`
+or `window.onfocus`; it does not steal window focus. Ownership is released as
+soon as destruction is requested, and on an actual destroy event as a fallback.
+It is installed before the loop starts so synchronous initial destruction cannot
+be followed by a late listener registration. Cancellation before startup skips
+registration. Closure-owned weak collections avoid base-constructor timing traps.
+
+This is a narrow maintenance tradeoff, not a general replacement for Game.start:
+`test/v2-phaser-startup-contract.test.js` checks the installed Phaser version and
+the normalized SHA-256 of the reviewed upstream startup body. A dependency change
+requires source review and the full browser suite before updating that guard.
+Do not copy this adapter into later biomes. The initial/scene/renderer/texture
+systems and teardown implementation remain inherited from Phaser.
+
+The teardown helper checks `loop.started`, not merely `Game.isRunning`: upstream
+sets isRunning before postBoot and before the loop has its callback. Waking from
+that interval is unsafe. The public destroy request is retained until normal
+startup supplies a step; no private runDestroy call is introduced.
+
+## Browser acceptance still outstanding
+
+Isolated port tests exercise listener ownership and cancellation, not actual
+rendering or page restoration. Added real-Phaser journeys require five whole-shell
+lifetimes to return global listeners to baseline, preserve external window
+handlers, and finish cancellation during native preBoot. They remain unrun in
+the current restricted environment. The installed-package source-contract test
+also remains unrun here; its expected digest was independently calculated from
+the exact pinned upstream method read during implementation.
 
 The new source-mode browser suite inspects actual scene textures, resize/lifecycle
 listeners, tweens and the pinned Clock's three timer queues over five visits.

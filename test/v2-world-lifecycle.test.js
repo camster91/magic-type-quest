@@ -55,7 +55,7 @@ function gameFixture({ started = true, running = false } = {}) {
   const calls = []; let pending = false; let destroyed = false;
   const game = {
     isRunning: started,
-    loop: { running, wake() { calls.push('wake'); this.running = true; step(); } },
+    loop: { running, started, wake() { calls.push('wake'); this.running = true; step(); } },
     destroy(removeCanvas, noReturn) { calls.push(['destroy', removeCanvas, noReturn]); pending = true; },
   };
   const step = () => { if (pending) { destroyed = true; pending = false; game.loop.running = false; } };

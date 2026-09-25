@@ -9,6 +9,7 @@ async function mountFixture(page, { invalidImage = false, delayedFirstLoad = fal
     // Dispose the ordinary entry through its real lifecycle hook before mounting
     // a controlled source-mode fixture. No production test globals are added.
     window.dispatchEvent(new window.Event('pagehide'));
+    window.__worldGlobalBaseline = window.__readWorldListeners?.();
     const { mountV2Shell, loadV2World } = await import('/magic-type-quest/src/v2/app/V2Shell.ts');
     const { Phaser, BootScene } = await loadV2World();
     const image = new Blob([invalidImage ? 'not-an-image' : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 4"><rect width="4" height="4" fill="#426c57"/></svg>'],
@@ -29,17 +30,19 @@ async function mountFixture(page, { invalidImage = false, delayedFirstLoad = fal
       constructor(config) {
         super(config);
         window.__worldFixtureGame = this;
+        window.__worldFixtureDestroyed = false;
         window.__worldFixtureGameCount++;
         this.events.once('destroy', () => { window.__worldFixtureDestroyed = true; });
       }
     }
     let calls = 0;
     const firstLoad = new Promise((resolve) => { window.__allowFirstWorldLoad = resolve; });
-    window.__disposeWorldFixture = mountV2Shell(document.getElementById('v2-app'), async () => {
+    window.__mountWorldFixture = () => mountV2Shell(document.getElementById('v2-app'), async () => {
       calls++;
       if (delayedFirstLoad && calls === 1) await firstLoad;
       return { Phaser: { ...Phaser, Game: FixtureGame }, BootScene: FixtureScene };
     });
+    window.__disposeWorldFixture = window.__mountWorldFixture();
   }, { invalidImage, delayedFirstLoad });
 }
 
@@ -139,4 +142,61 @@ test('a completed load respects the open pause dialog and its focus', async ({ p
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.locator('.v2-typing-surface').focus(); await page.keyboard.press('f');
   await expect(page.locator('.v2-practice-progress')).toHaveText('1 of 2 keys');
+});
+
+async function trackWorldListeners(page) {
+  await page.addInitScript(() => {
+    const entries = []; const add = window.EventTarget.prototype.addEventListener; const remove = window.EventTarget.prototype.removeEventListener;
+    const selected = (target, type) => (target === window || target === document) && ['visibilitychange', 'blur', 'focus', 'resize'].includes(type);
+    const captureOf = (options) => typeof options === 'boolean' ? options : Boolean(options?.capture);
+    window.EventTarget.prototype.addEventListener = function(type, handler, options) {
+      const result = add.call(this, type, handler, options); const capture = captureOf(options);
+      if (handler && selected(this, type) && !entries.some((entry) => entry.target === this && entry.type === type && entry.handler === handler && entry.capture === capture)) entries.push({ target: this, type, handler, capture });
+      return result;
+    };
+    window.EventTarget.prototype.removeEventListener = function(type, handler, options) {
+      const capture = captureOf(options); const index = entries.findIndex((entry) => entry.target === this && entry.type === type && entry.handler === handler && entry.capture === capture);
+      if (index >= 0) entries.splice(index, 1);
+      return remove.call(this, type, handler, options);
+    };
+    window.__readWorldListeners = () => ['visibilitychange', 'blur', 'focus', 'resize'].map((type) => entries.filter((entry) => entry.type === type).length);
+    window.__hostBlur = () => {}; window.__hostFocus = () => {};
+    window.onblur = window.__hostBlur; window.onfocus = window.__hostFocus;
+  });
+}
+
+test('five whole-shell lifetimes return global listeners to baseline without replacing host handlers', async ({ page }) => {
+  await trackWorldListeners(page); await mountFixture(page);
+  const baseline = await page.evaluate(() => window.__worldGlobalBaseline);
+  for (let lifetime = 0; lifetime < 5; lifetime++) {
+    if (lifetime) await page.evaluate(() => { window.__disposeWorldFixture = window.__mountWorldFixture(); });
+    await startReady(page);
+    expect(await page.evaluate(() => window.onblur === window.__hostBlur && window.onfocus === window.__hostFocus)).toBe(true);
+    await page.evaluate(() => window.__disposeWorldFixture());
+    await expect.poll(() => page.evaluate(() => window.__worldFixtureDestroyed)).toBe(true);
+    await expect.poll(() => page.evaluate(() => window.__readWorldListeners())).toEqual(baseline);
+  }
+  expect(await page.evaluate(() => window.__worldFixtureGameCount)).toBe(5);
+});
+
+test('cancellation during native preBoot finishes teardown without installing global visibility handlers', async ({ page }) => {
+  await trackWorldListeners(page); await page.goto('v2/');
+  await page.evaluate(async () => {
+    window.dispatchEvent(new window.Event('pagehide'));
+    const { loadV2World } = await import('/magic-type-quest/src/v2/app/V2Shell.ts');
+    const { createWorldGame } = await import('/magic-type-quest/src/v2/game/systems/createWorldGame.ts');
+    const { Phaser } = await loadV2World();
+    window.__worldGlobalBaseline = window.__readWorldListeners();
+    window.__cancelledBootDestroyed = false;
+    const parent = document.createElement('div'); document.body.append(parent);
+    window.__cancelledBootGame = createWorldGame(Phaser, { type: Phaser.CANVAS, parent, width: 32, height: 32, audio: { noAudio: true },
+      callbacks: { preBoot: (game) => {
+        game.events.once('destroy', () => { window.__cancelledBootDestroyed = true; parent.remove(); });
+        game.destroy(true, false);
+      } },
+    });
+  });
+  await expect.poll(() => page.evaluate(() => window.__cancelledBootDestroyed)).toBe(true);
+  await expect.poll(() => page.evaluate(() => window.__readWorldListeners())).toEqual(await page.evaluate(() => window.__worldGlobalBaseline));
+  expect(await page.evaluate(() => window.onblur === window.__hostBlur && window.onfocus === window.__hostFocus)).toBe(true);
 });
