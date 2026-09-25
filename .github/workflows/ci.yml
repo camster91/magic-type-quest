@@ -9,7 +9,7 @@ concurrency:
 
 on:
   push:
-    branches: [main, nature-quest-v2]
+    branches: [main, nature-quest-v2, codex/nature-quest-165-performance]
     paths-ignore:
       - '**/*.md'
       - 'docs/**'
