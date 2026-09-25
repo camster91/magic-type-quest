@@ -67,13 +67,18 @@ export function getAsset(id: string): AssetDefinition {
   if (!asset) throw new Error(`Unknown v2 asset ${id}`);
   return asset;
 }
+function hasApprovedProvenance(asset: AssetDefinition): boolean {
+  return asset.status === 'implemented' && asset.provenance?.approval === 'approved'
+    && ['manual', 'generated', 'licensed'].includes(asset.provenance.origin)
+    && ['owned', 'cc0', 'licensed'].includes(asset.provenance.licence);
+}
 export function getLoadableAssets(group: PreloadGroup, packId: string | null): readonly AssetDefinition[] {
-  return ASSET_MANIFEST.filter((asset) => asset.status === 'implemented' && asset.preloadGroup === group && asset.biomePackId === packId);
+  return ASSET_MANIFEST.filter((asset) => hasApprovedProvenance(asset) && asset.preloadGroup === group && asset.biomePackId === packId);
 }
 
 /** Prefer the smallest approved variant that covers the display at a capped pixel density. */
 export function chooseAssetVariant(asset: AssetDefinition, viewportWidth: number, devicePixelRatio: number): AssetVariant | null {
-  if (asset.status !== 'implemented') return null;
+  if (!hasApprovedProvenance(asset)) return null;
   const variants = [...asset.outputs].sort((a, b) => a.width - b.width);
   const target = Math.max(1, viewportWidth) * Math.min(2, Math.max(1, devicePixelRatio));
   const eligible = variants.filter((variant) => variant.maxViewportWidth === null || viewportWidth <= variant.maxViewportWidth);

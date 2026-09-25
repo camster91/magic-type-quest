@@ -1,30 +1,11 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { extname, join, relative, resolve } from 'node:path';
 import { createServer } from 'vite';
+import { LIMITS, assetPackLimit, assetFilePaths, inspectDimensions } from './v2-asset-policy.mjs';
+export { inspectDimensions } from './v2-asset-policy.mjs';
 
 const ROOT = resolve(import.meta.dirname, '..');
-const MAX_RASTER_BYTES = 1_500_000;
-const PACK_BYTES = { 'biomes.meadow-base': 8_000_000 };
-const LATER_PACK_BYTES = 12_000_000;
 const SOURCE_LOG = readFileSync(resolve(ROOT, 'assets-v2/ASSET-SOURCES.md'), 'utf8');
-
-export function inspectDimensions(path) {
-  const data = readFileSync(path);
-  const ext = extname(path).toLowerCase();
-  if (ext === '.png' && data.subarray(1, 4).toString() === 'PNG') return { width: data.readUInt32BE(16), height: data.readUInt32BE(20) };
-  if (ext === '.webp' && data.toString('ascii', 0, 4) === 'RIFF' && data.toString('ascii', 8, 12) === 'WEBP') {
-    const kind = data.toString('ascii', 12, 16);
-    if (kind === 'VP8X') return { width: 1 + data.readUIntLE(24, 3), height: 1 + data.readUIntLE(27, 3) };
-    if (kind === 'VP8 ') return { width: data.readUInt16LE(26) & 0x3fff, height: data.readUInt16LE(28) & 0x3fff };
-    if (kind === 'VP8L') return { width: 1 + (((data[22] & 0x3f) << 8) | data[21]), height: 1 + (((data[24] & 0x0f) << 10) | (data[23] << 2) | ((data[22] & 0xc0) >> 6)) };
-  }
-  if (ext === '.svg') {
-    const svg = data.toString('utf8');
-    const box = /viewBox=["']\s*[\d.]+\s+[d.]+\s+([d.]+)\s+([d.]+)\s*["']/u.exec(svg);
-    if (box) return { width: Number(box[1]), height: Number(box[2]) };
-  }
-  throw new Error(`Cannot inspect ${relative(ROOT, path)}; provide a supported PNG/WebP/SVG variant before approval`);
-}
 
 function filesUnder(directory) {
   if (!existsSync(directory)) return [];
@@ -57,14 +38,14 @@ export async function validateAssets() {
         console.log(`Planned: ${asset.id} ${asset.sourceDimensions.width}x${asset.sourceDimensions.height}, ${asset.preloadGroup}`);
         continue;
       }
-      const paths = [asset.sourcePath, ...asset.outputs.map((variant) => variant.path)];
+      const paths = assetFilePaths(asset);
       for (const path of paths) {
         if (!path || path.includes('..') || !(path.startsWith('assets-v2/master/') || path.startsWith('public/assets/v2/'))) { failures.push(`${asset.id}: unsafe source/output path ${path}`); continue; }
         const absolute = resolve(ROOT, path);
         if (!existsSync(absolute)) { failures.push(`${asset.id}: missing file ${path}`); continue; }
         if (path.startsWith('public/assets/v2/')) {
           const bytes = statSync(absolute).size;
-          if (bytes > MAX_RASTER_BYTES && extname(path).toLowerCase() !== '.svg') failures.push(`${asset.id}: ${bytes} bytes exceeds 1.5 MB raster budget`);
+          if (bytes > LIMITS.raster && extname(path).toLowerCase() !== '.svg') failures.push(`${asset.id}: ${bytes} bytes exceeds 1.5 MB raster budget`);
           packSizes.set(asset.biomePackId ?? 'shell', (packSizes.get(asset.biomePackId ?? 'shell') ?? 0) + bytes);
           const variant = asset.outputs.find((output) => output.path === path);
           try {
@@ -77,14 +58,14 @@ export async function validateAssets() {
       }
     }
     for (const [pack, bytes] of packSizes) {
-      const limit = PACK_BYTES[pack] ?? (pack === 'shell' ? 2_500_000 : LATER_PACK_BYTES);
+      const limit = assetPackLimit(pack);
       if (bytes > limit) failures.push(`${pack}: ${bytes} bytes exceeds ${limit} byte pack budget`);
     }
     const orphanFiles = filesUnder(resolve(ROOT, 'public/assets/v2')).filter((path) => !usedPaths.has(path));
     for (const path of orphanFiles) {
       const bytes = statSync(path).size;
       console.log(`Unreferenced file: ${relative(ROOT, path)} ${bytes} bytes`);
-      if (bytes > MAX_RASTER_BYTES) failures.push(`${relative(ROOT, path)}: unreferenced oversized file`);
+      if (bytes > LIMITS.raster) failures.push(`${relative(ROOT, path)}: unreferenced oversized file`);
     }
     console.log(`V2 assets: ${ASSET_MANIFEST.length} planned/implemented slots; ${unreferenced.length} reserved slots not yet referenced; ${orphanFiles.length} unreferenced files.`);
     if (unreferenced.length) console.log(`Reserved/unreferenced IDs: ${unreferenced.map((asset) => asset.id).join(', ')}`);

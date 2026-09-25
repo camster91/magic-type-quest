@@ -7,6 +7,8 @@ import { PerformanceMonitor } from '../src/v2/performance/PerformanceMonitor.ts'
 const base = ASSET_MANIFEST[0];
 const asset = (id, phase) => ({ ...base, id, status: 'implemented', preloadGroup: phase,
   biomePackId: phase === 'shell' ? null : 'biomes.meadow-base',
+  sourcePath: `assets-v2/master/${id}.png`,
+  provenance: { origin: 'manual', referenceId: 'test-fixture', licence: 'owned', editHistory: [], approval: 'approved' },
   outputs: [
     { path: `public/assets/v2/${id}-small.webp`, format: 'webp', width: 720, height: 400, maxViewportWidth: 720 },
     { path: `public/assets/v2/${id}-large.webp`, format: 'webp', width: 1920, height: 1080, maxViewportWidth: null },
