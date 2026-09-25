@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
-  testMatch: ['**/v2-persistence.e2e.js', '**/v2-audio-unlock.e2e.js', '**/v2-world-lifecycle.e2e.js'],
+  testMatch: ['**/v2-persistence.e2e.js', '**/v2-audio-unlock.e2e.js', '**/v2-world-lifecycle.e2e.js', '**/v2-page-return.e2e.js'],
   fullyParallel: false,
   workers: 1,
   reporter: 'line',
