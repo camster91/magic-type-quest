@@ -9,7 +9,7 @@ concurrency:
 
 on:
   push:
-    branches: [main, nature-quest-v2]
+    branches: [main, nature-quest-v2, codex/nature-quest-165-performance]
     paths-ignore:
       - '**/*.md'
       - 'docs/**'
@@ -53,6 +53,7 @@ jobs:
       - run: npm run validate:mastery
       - run: npm run validate:content
       - run: npm run validate:assets
+      - run: npm run validate:budgets
       - run: npm run validate:cues
       - run: npm run validate:input
       - run: npm run validate:persistence
