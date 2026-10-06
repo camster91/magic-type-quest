@@ -1,183 +1,112 @@
-# ✨ Bloom Typing ✨
+# BloomType
 
-A beautiful, immersive typing game for kids — built for the web with gorgeous Canvas animations, AI-generated character art, and PWA support.
+A touch-typing game for kids, built as an offline-capable web app with a hand-built Canvas game engine, synthesized sound and a growing pet companion.
 
-## Nature Quest v2 (in development)
+![BloomType hero artwork](assets/hero-unicorn.png)
 
-The [v2 product contract](docs/v2/PRODUCT-CONTRACT.md) and [decision log](docs/v2/DECISION-LOG.md) govern new wildlife-restoration work under [#153](https://github.com/camster91/magic-type-quest/issues/153). This README describes the existing v1 experience. Keep v1 recoverable while the isolated v2 route, curriculum, and Meadow slice are built and verified; v2 is not the current production release.
+## What it is
 
-Run `npm run check:v2-theme` to check v2 child-facing content against the prohibited-theme rule. Historical v1 content remains outside that scope.
+BloomType (repository name `magic-type-quest`) turns touch-typing practice into a short, friendly game. Words fall onto a garden scene, the child types them, and correct keystrokes build combos, earn stars and unlock the next level. Progress is saved in the browser, so the game works without an account. The public build is local-only: a build check fails if any cloud sync configuration or client code ends up in the bundle.
 
-![Hero](assets/hero-unicorn.png)
+The repo also contains a parent information page and a teacher dashboard, plus optional Supabase-based class sync that is kept out of the public build.
 
-## 🚀 Play Now
+## Features
 
-Install the locked dependencies and start the Vite development server:
+**Game modes**
+- **Play Quest:** ten progressive levels covering home row, top row, bottom row, all letters, capitals, numbers, speed, accuracy, combined mastery and a final no-looking challenge
+- **Practice Letters:** A to Z letter practice for building fundamentals
+- **Daily Moment:** a short, low-stress 60-second session
+- **Weak-key drills:** focused practice built from the keys a learner misses most, using a simple spaced-repetition schedule stored locally
+
+**Gameplay**
+- Falling-word system with live typed-letter highlighting
+- Combo streaks, hearts that recover through combos, and star ratings based on accuracy
+- Pet companions that react to play and evolve over time, plus achievements and badges
+- Profiles with selectable avatars and persistent stats (high score, words typed, play time, days played)
+
+**Presentation**
+- Custom HTML5 Canvas renderer with layered backgrounds and a particle system
+- Sound effects synthesized in real time with the Web Audio API (no audio files)
+- Responsive layout for phone, tablet and laptop, with on-screen keyboard and hand guides
+- Interface available in English, French and Spanish
+
+**App**
+- Installable PWA with a service worker for offline play
+- Separate parent page (`parents.html`) and teacher dashboard (`teacher.html`)
+- Optional Supabase sync for profiles, sessions and class rosters (schema in `supabase/schema.sql`, row-level security enabled), excluded from the public local-only build
+
+## Controls
+
+- **Type letters** to match the falling words
+- **Space** skips a tricky word
+- **Escape** pauses and resumes
+
+## Tech stack
+
+- Vite with vanilla JavaScript ES modules (no UI framework)
+- HTML5 Canvas, Web Audio API, Service Worker, localStorage
+- Supabase JS client (optional dependency, loaded lazily)
+- Vitest + jsdom for unit tests, Playwright + axe-core for end-to-end and accessibility checks
+- ESLint
+- Docker image (nginx) built in CI for deployment
+
+## Getting started
+
+Requires Node.js and npm.
+
 ```bash
 npm ci
 npm run dev
 ```
 
-## 🎮 Features
+The app is served under the `/magic-type-quest/` base path. Optional cloud sync is configured through environment variables (see `.env.example`); the game runs fully without them.
 
-### Game Modes
-- **Play Quest** — 10 progressive touch-typing levels
-- **Practice Letters** — A-Z letter practice mode for building fundamentals
-- **Daily Moment** — a low-stress 60-second return path
-- **Weak-key drills** — focused practice derived from each learner's local history
+Build and preview a production bundle:
 
-### Visual System
-- 🌟 Custom Canvas particle engine (sparkle bursts, explosions, floating stars)
-- 🎨 Animated UI with CSS keyframe animations (bouncing title, floating island)
-- 🖼️ Custom AI-assisted character and environment artwork
-- 💜 Glassmorphism cards with glow effects throughout
-- 📱 Fully responsive — works on phone, tablet, laptop
-
-### Game Mechanics
-- Falling word system with typed highlighting
-- Combo streak system with fire bonuses
-- Health system (💜 hearts) — recover hearts via combo streaks
-- Star scoring — earn ⭐ based on accuracy each level
-- Level progression (unlocks saved across sessions)
-- Profile system with 10 selectable avatars
-- Persistent stats (high score, total words, play time, days played)
-
-### Audio
-- 🎵 Web Audio API synthesized sound effects (no files needed!):
-  - Correct letter chime
-  - Wrong letter buzz
-  - Word complete trill
-  - Level complete fanfare
-  - Game over sad tones
-  - Combo fire whoosh
-  - Heart recovery chime
-- No pre-recorded audio — everything generated in browser!
-
-### PWA Features
-- Install as app on iPhone, Android, Windows, Mac
-- Offline play with service worker caching
-- Manifest with theme color, icons, standalone display
-- Install banner prompt
-
-## 📁 Files
-
-| File | Description |
-|------|-------------|
-| `index.html` — Main game page |
-| `parents.html` — Parent info page (curriculum + privacy) |
-| `teacher.html` — Teacher dashboard (class analytics, optional Supabase) |
-| `styles.css` — Full design system (Canvas-independent styles) |
-| `src/` — Modular Vite source (28 ES modules, ~7,800 lines) |
-| `supabase/schema.sql` — Cloud sync schema (profiles, sessions, class roster) |
-| `docs/LAUNCH-READINESS.md` — Pilot gates, evidence, owners, and release record |
-| `public/manifest.json` — PWA manifest |
-| `public/sw.js` — Service worker for offline play |
-| `public/assets/` — AI-generated art + icons |
-
-## 🎨 AI Art Generation
-
-The game uses custom AI-assisted character art generated during development:
-- Hero flower garden scene
-- Celebration/confetti victory screen
-- Per-level backgrounds, badges, particles, pets, and UI assets
-
-Generation credentials are operator-supplied and are never part of the browser
-application or tracked source. The checked-in artwork is served as static files.
-
-## 🛠️ Tech Stack
-
-- **Vite + vanilla JS** — modular ES modules, no framework, fast dev/build
-- **HTML5 Canvas** — custom 2D game engine with particle system
-- **Web Audio API** — real-time synthesized sound effects
-- **CSS3** — animations, glassmorphism, variables, custom scrollbar
-- **Supabase (optional)** — cloud sync for profiles, sessions, class rosters
-- **Web APIs** — localStorage (offline saves), Service Worker (offline), PWA install
-
-## 📱 How to Install
-
-### iPhone / iPad
-1. Open game in Safari
-2. Tap **Share** → **Add to Home Screen**
-3. Play like a native app!
-
-### Android
-1. Open game in Chrome
-2. Tap **⋮ Menu** → **Add to Home Screen**
-3. Chrome may prompt automatically
-
-### Windows / Mac
-1. Click the install icon in Chrome/Edge address bar
-2. Follow the browser's install prompt
-
-## 🎵 Controls
-
-- **Type letters** — match falling words and press each key
-- **Space bar** — skip a tricky word and pick a new one
-- **Escape** — pause/resume game
-
-## 📝 Curriculum
-
-Ten progressive levels cover home row, top row, bottom row, all letters,
-capitals, numbers, speed, accuracy, combined mastery, and a final no-looking
-challenge. The authoritative lesson names, keys, word lists, and completion
-settings live in `src/lessonLevels.js`.
-
-## 🏗️ Architecture
-
-```
-BloomType                  Purpose
-├── index.html            — game entry (Vite)
-├── parents.html          — parent info page
-├── teacher.html          — local-first teacher dashboard (optional Supabase)
-├── styles.css            — design system
-├── src/                  — 28 ES modules (~7,700 lines)
-│   ├── main.js           — bootstrap + screen routing
-│   ├── state.js          — localStorage state + cloud sync
-│   ├── gameEngine.js     — game orchestration + canvas loop
-│   ├── gameCanvas.js     — backgrounds, pets, flowers + effects
-│   ├── gameInput.js      — desktop/mobile input controller
-│   ├── gameSession.js    — per-session state initialization
-│   ├── gameWord.js       — canvas word model + renderer
-│   ├── gamePresentation.js — keyboard feedback presentation
-│   ├── drills.js         — practice mode (letters, words, quotes)
-│   ├── quests.js         — story-mode quest progression
-│   ├── classroom.js      — class-code join + roster sync
-│   ├── teacher.js        — teacher analytics dashboard
-│   ├── achievements.js   — badge unlocking
-│   ├── spacedRep.js      — SR scheduling
-│   ├── story.js          — narrative content
-│   ├── lessons.js / lessonLevels.js — lesson definitions
-│   ├── words.js / data.js — word lists + level config
-│   ├── audio.js          — Web Audio synth
-│   ├── assets.js         — asset manifest
-│   ├── sync.js           — Supabase client (lazy)
-│   └── utils.js          — escapeHTML + helpers
-├── supabase/schema.sql   — Postgres schema (RLS-enabled)
-├── public/sw.js          — service worker
-├── public/manifest.json  — PWA manifest
-└── public/assets/        — AI art + icons
+```bash
+npm run build
+npm run preview
 ```
 
-## 🧪 QA Checks Passed
+## Testing and checks
 
-| Check | Result |
-|-------|--------|
-| Build | ✅ `vite build` succeeds (4 HTML pages) |
-| Tests | ✅ 272 vitest tests pass across 34 files |
-| Browser journeys | ✅ 17 Playwright tests cover classroom join/export/leave, responsive home actions, keyboard onboarding, isolated weak-key drill completion, ten-level progression, production-rendered WCAG A/AA scans, enlarged French/Spanish layouts, the production build, PWA scope, offline reload, and cache cleanup |
-| Local-only release boundary | ✅ Built artifacts fail verification if Supabase configuration or client code is compiled in |
-| Remote CI | ✅ Core checks and the local-only artifact gate run on the repository-scoped Ashbi VPS runner |
-| npm audit | ✅ 0 vulnerabilities |
-| ESLint | ✅ 0 errors via `npm run lint` |
+```bash
+npm test                          # Vitest unit tests (watch mode; add -- --run for a single pass)
+npm run test:e2e                  # build, verify local-only bundle, then run Playwright
+npm run lint                      # ESLint
+npm run verify:local-only-build   # fail if cloud sync code or config is in dist/
+npm run check:v2-theme            # content rule check for the v2 work in progress
+```
 
-## 🎯 Future Ideas
+CI runs lint, unit tests, the build, the local-only bundle check, Playwright end-to-end tests (including automated WCAG A/AA scans) and `npm audit` on pushes and pull requests to `main`. CodeQL scanning runs on `main`.
 
-- Multiplayer racing mode (WebSocket)
-- More AI-generated backgrounds per level theme
-- Leaderboards
-- Supervised classroom pilot and retention validation
-- Complete the fluent French and Spanish learner, parent, and teacher review in `docs/LANGUAGE-QA.md`
+## Project structure
 
----
+```
+index.html            game entry
+landing.html          landing page
+parents.html          parent information page
+teacher.html          teacher dashboard
+styles.css            design system styles
+src/                  game engine, input, state, lessons, drills, audio, i18n, sync
+public/               PWA manifest, service worker and game art
+supabase/schema.sql   optional cloud sync schema
+test/                 Vitest unit tests
+e2e/                  Playwright end-to-end and accessibility tests
+scripts/              build checks and asset generation tools
+docs/                 QA protocols, launch readiness and v2 product docs
+```
 
-**Built with ❤️** for kids who love flowers and learning to type!
+Lesson names, keys, word lists and completion settings live in `src/lessonLevels.js`.
+
+## Artwork
+
+Character, background and UI art was generated with AI image tools during development and is committed as static files. No AI service is called from the browser, and generation credentials are not part of the app.
+
+## Status
+
+Version 1 is the current playable game. A second version ("Nature Quest") is being designed; see the [v2 product contract](docs/v2/PRODUCT-CONTRACT.md) and [decision log](docs/v2/DECISION-LOG.md). School use, cloud sync and classroom features are not yet approved for production; see [docs/LAUNCH-READINESS.md](docs/LAUNCH-READINESS.md).
+
+## License
+
+MIT. See [LICENSE](LICENSE).
