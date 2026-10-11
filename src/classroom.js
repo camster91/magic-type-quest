@@ -56,7 +56,7 @@ export function syncToClass(profile) {
     totalWords: profile.totalWords || 0,
     completedLevels: profile.completedLevels || [],
     achievements: (profile.achievements || []).length,
-    gardenCount: (profile.garden || []).length,
+    gardenCount: profile.gardenTotal ?? (profile.garden || []).length,
   };
   localStorage.setItem(key, JSON.stringify(data));
 }

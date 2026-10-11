@@ -77,11 +77,32 @@ export const defaultState = {
   },
 };
 
+const PROFILE_ARRAY_FIELDS = ['completedLevels', 'seenEvolutions', 'garden'];
+const PROFILE_OBJECT_FIELDS = ['keySR'];
+
 // ===== LIVE GAME STATE =====
 export const gameState = createGameState();
 
 function createGameState() {
-  return { ...defaultState, profile: { ...defaultState.profile } };
+  return { ...defaultState, profile: normalizeProfile() };
+}
+
+/**
+ * Merge saved data over the defaults, giving every profile its own arrays
+ * and objects and replacing fields with the wrong type, so a damaged save
+ * cannot crash the game or leak state between profiles.
+ */
+export function normalizeProfile(saved = {}) {
+  const source = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+  const profile = { ...defaultState.profile, ...source };
+  for (const field of PROFILE_ARRAY_FIELDS) {
+    profile[field] = Array.isArray(source[field]) ? source[field] : [];
+  }
+  for (const field of PROFILE_OBJECT_FIELDS) {
+    const value = source[field];
+    profile[field] = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  }
+  return profile;
 }
 
 // ===== PROFILE PERSISTENCE =====
@@ -90,7 +111,7 @@ export function loadProfile() {
     const saved = localStorage.getItem('bloomtype-profile');
     if (saved) {
       const parsed = JSON.parse(saved);
-      gameState.profile = { ...defaultState.profile, ...parsed };
+      gameState.profile = normalizeProfile(parsed);
     }
   } catch (e) {
     console.warn('Failed to load profile:', e);
@@ -196,11 +217,5 @@ export function deleteLocalProfile() {
     removeProfileCopies(profileId);
   }
   localStorage.removeItem('bloomtype-profile');
-  gameState.profile = {
-    ...defaultState.profile,
-    completedLevels: [],
-    seenEvolutions: [],
-    garden: [],
-    keySR: {},
-  };
+  gameState.profile = normalizeProfile();
 }
