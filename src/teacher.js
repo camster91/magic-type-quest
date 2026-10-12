@@ -10,17 +10,88 @@ import { createRosterCSV, createRosterExport } from './reporting.js';
 import { escapeHTML } from './utils.js';
 import { formatNumber } from './i18n.js';
 import { initializePageTranslations, pageT } from './pageTranslations.js';
+import { createTeacherLock, isValidPin } from './teacherLock.js';
 
 const $ = (id) => document.getElementById(id);
 
 let currentMode = 'local';
 let currentClassCode = '';
+let dashboardBound = false;
+const lock = createTeacherLock();
 
 function init() {
   initializePageTranslations();
+  bindLock();
+  if (lock.isUnlocked()) showDashboard();
+  else showLock();
+}
+
+// ===== PIN LOCK =====
+// Student data is only read and rendered after the PIN is accepted.
+function showLock(message = '') {
+  const settingUp = !lock.hasPin();
+  $('teacher-dashboard').classList.add('hidden');
+  $('student-body').replaceChildren();
+  $('stats-grid').replaceChildren();
+  $('alert-panel').replaceChildren();
+  $('teacher-lock').classList.remove('hidden');
+  $('lock-title').textContent = pageT(settingUp ? 'teacher.lockTitleSet' : 'teacher.lockTitle');
+  $('lock-intro').textContent = pageT(settingUp ? 'teacher.lockIntroSet' : 'teacher.lockIntro');
+  $('btn-unlock').textContent = pageT(settingUp ? 'teacher.createPin' : 'teacher.unlock');
+  $('pin-confirm-row').classList.toggle('hidden', !settingUp);
+  $('btn-forgot-pin').classList.toggle('hidden', settingUp);
+  $('pin-input').value = '';
+  $('pin-confirm').value = '';
+  $('lock-message').textContent = message;
+  $('pin-input').focus();
+}
+
+function showDashboard() {
+  $('teacher-lock').classList.add('hidden');
+  $('teacher-dashboard').classList.remove('hidden');
+  if (!dashboardBound) {
+    bindEvents();
+    dashboardBound = true;
+  }
   renderToolbar();
-  bindEvents();
   loadLocalData();
+}
+
+function lockedMessage() {
+  return pageT('teacher.pinLocked', { seconds: Math.ceil(lock.lockedForMs() / 1000) });
+}
+
+async function submitPin(event) {
+  event.preventDefault();
+  const pin = $('pin-input').value.trim();
+  const say = (key) => { $('lock-message').textContent = pageT(key); };
+  if (!lock.hasPin()) {
+    if (!isValidPin(pin)) return say('teacher.pinInvalid');
+    if (pin !== $('pin-confirm').value.trim()) return say('teacher.pinMismatch');
+    await lock.setPin(pin);
+    showDashboard();
+    return;
+  }
+  const result = await lock.unlock(pin);
+  if (result === 'ok') {
+    showDashboard();
+    return;
+  }
+  $('pin-input').value = '';
+  $('lock-message').textContent = result === 'locked' ? lockedMessage() : pageT('teacher.pinWrong');
+}
+
+function bindLock() {
+  $('lock-form')?.addEventListener('submit', submitPin);
+  $('btn-lock')?.addEventListener('click', () => {
+    lock.lock();
+    showLock();
+  });
+  $('btn-forgot-pin')?.addEventListener('click', () => {
+    if (!confirm(pageT('teacher.resetConfirm'))) return;
+    lock.resetAndClearData(clearStudentStorage);
+    showLock();
+  });
 }
 
 function bindEvents() {
@@ -232,13 +303,17 @@ function downloadBlob(blob, extension) {
 
 function clearAllData() {
   if (!confirm(pageT('teacher.clearConfirm'))) return;
+  clearStudentStorage();
+  loadLocalData();
+}
+
+function clearStudentStorage() {
   const keys = [];
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (key?.startsWith('bloomtype_') || key?.startsWith('bloomtype-class-')) keys.push(key);
   }
   keys.forEach(k => localStorage.removeItem(k));
-  loadLocalData();
 }
 
 // Init
