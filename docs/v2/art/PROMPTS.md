@@ -63,3 +63,26 @@ Single-subject assets use this frame, with the subject line swapped in, then bac
 `meadow.scene.damaged.v1` as used:
 
 > Repaint the reference meadow with the exact same composition, camera, hills, sky, path and painting style (painterly gouache with light coloured-pencil texture, soft edges, no black outlines), but BEFORE restoration: dry patchy short grass in muted tan #C7B88E, bare brown soil patches #8A6A4A, no wildflowers, no butterflies, no bees, no birds, no bird nest box and no bee hotel, only an empty wooden post where the nest box will go. Keep the sky soft and the light warm: calm and hopeful, ready to be restored, not sad, not dirty, no litter. No magic, no sparkles, no people, no text, no letters, no logos, not photorealistic, not 3D render.
+
+## Round 3 prompts as used (2026-10-12)
+
+All use the style anchor as an image reference. Single subjects use the round 2 frame above.
+
+| Id | Subject line or prompt |
+|---|---|
+| `companion.fox.rest.v1` | Second image reference: the approved fox sheet (`ded3e271-…`), to keep the same fox. "One red fox resting, lying curled on the ground with its tail wrapped around, head up and eyes half closed, calm and content, side view." |
+| `props.meadow.milkweed.v1` | A single clump of common milkweed plants with broad oval leaves and several round pink flower clusters, botanically accurate, growing from a small patch of grass |
+| `props.meadow.goldenrod.v1` | A single clump of goldenrod with tall stems and arching plumes of small bright yellow flowers, botanically accurate, growing from a small patch of grass |
+| `ui.badge.meadow.v1` | A round badge like an embroidered park patch: a small painted meadow vignette inside a circle with rolling green hills, a few goldenrod and pink milkweed flowers and one monarch butterfly, framed by a soft cream and green border ring. No text, no stars |
+| `biomes.meadow.layer.sky.v1` | (16:9, 2k) Repaint only the sky of the reference image as a separate background layer, same style, colours and light, sky continuing to the bottom edge. No hills, ground, trees, plants, animals or objects |
+
+Field Guide cards (3:4, opaque) use this frame:
+
+> Match the exact painting style of the reference image (painterly gouache with light coloured-pencil texture, soft edges, no black outlines). A naturalist field guide study plate on warm cream paper **[about …]**, accurately drawn and neatly arranged: **[views]**. Calm, scientific, child-friendly. No text, no letters, no numbers, no labels, no logos, no magic, no sparkles, not photorealistic, not 3D render.
+
+| Id | Views |
+|---|---|
+| `fieldguide.monarch.v1` | the monarch butterfly life cycle: a caterpillar with yellow, black and white stripes on a milkweed leaf, a green chrysalis with gold dots hanging from a stem, and an adult with open wings |
+| `fieldguide.bumblebee.v1` | a bumble bee in side view showing fuzzy banding and pollen baskets on its hind legs, the same bee from above, and a bee visiting a black-eyed Susan |
+| `fieldguide.bluebird.v1` | an adult male bluebird perched in side view, a duller female, and a wooden nest box with a small round entrance hole on a post |
+| `fieldguide.milkweed.v1` | a milkweed stem with broad oval leaves and a round pink flower cluster, a close-up of one cluster, and an open seed pod releasing seeds with white silky fluff |

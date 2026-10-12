@@ -5,11 +5,11 @@ import { fileURLToPath } from 'node:url';
 const projectRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
 export const ASSET_ROOT = 'assets/v2';
 const IMAGE_EXTENSIONS = new Set(['.webp', '.png', '.jpg', '.jpeg', '.avif', '.svg']);
-const TYPES = new Set(['background', 'sprite', 'prop', 'icon']);
+const TYPES = new Set(['background', 'sprite', 'prop', 'icon', 'card']);
 const APPROVAL = new Set(['approved', 'pending', 'rejected']);
 const ID_PATTERN = /^[a-z][a-z0-9]*(?:\.[a-z0-9-]+)+$/;
 // Size budgets per asset type, in bytes. Issue #165 owns the final budgets.
-export const BUDGETS = { background: 1_600_000, sprite: 200_000, prop: 200_000, icon: 120_000 };
+export const BUDGETS = { background: 1_600_000, sprite: 200_000, prop: 200_000, icon: 120_000, card: 200_000 };
 const MAX_SPRITE_EDGE = 1024;
 
 /** Read width, height and alpha from a WebP header without decoding it. */

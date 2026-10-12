@@ -3,6 +3,27 @@
   "note": "Style-test assets for issue #163. Not wired into the game.",
   "assets": [
     {
+      "id": "biomes.meadow.layer.sky",
+      "file": "meadow/biomes.meadow.layer.sky.webp",
+      "type": "background",
+      "biome": "meadow",
+      "width": 2688,
+      "height": 1520,
+      "transparent": false,
+      "preloadGroup": "biome-meadow",
+      "decorative": true,
+      "provenance": {
+        "tool": "Higgsfield",
+        "model": "gpt_image_2_5 (Flare, high)",
+        "promptId": "biomes.meadow.layer.sky.v1",
+        "sourceJob": "0fd82531-18bc-4d35-b6f5-1563032b20e4",
+        "cutout": null,
+        "generated": "2026-10-12"
+      },
+      "licence": "generated on the owner's paid Higgsfield plan",
+      "approval": "pending"
+    },
+    {
       "id": "biomes.meadow.scene.damaged",
       "file": "meadow/biomes.meadow.scene.damaged.webp",
       "type": "background",
@@ -133,6 +154,116 @@
       "altKey": "companion.fox.alt"
     },
     {
+      "id": "companion.fox.rest",
+      "file": "meadow/companion.fox.rest.webp",
+      "type": "sprite",
+      "width": 642,
+      "height": 626,
+      "transparent": true,
+      "preloadGroup": "core",
+      "decorative": false,
+      "altKey": "companion.fox.alt",
+      "provenance": {
+        "tool": "Higgsfield",
+        "model": "gpt_image_2_5 (Flare, high)",
+        "promptId": "companion.fox.rest.v1",
+        "sourceJob": "9a196fd1-c884-4fbe-9804-ce66bcf5f1f6",
+        "cutout": "white-key script",
+        "generated": "2026-10-12"
+      },
+      "licence": "generated on the owner's paid Higgsfield plan",
+      "approval": "pending",
+      "state": "rest"
+    },
+    {
+      "id": "fieldguide.bluebird",
+      "file": "meadow/fieldguide.bluebird.webp",
+      "type": "card",
+      "biome": "meadow",
+      "width": 772,
+      "height": 1024,
+      "transparent": false,
+      "preloadGroup": "fieldguide",
+      "decorative": false,
+      "altKey": "fieldGuide.bluebird.alt",
+      "provenance": {
+        "tool": "Higgsfield",
+        "model": "gpt_image_2_5 (Flare, high)",
+        "promptId": "fieldguide.bluebird.v1",
+        "sourceJob": "13fd1fff-997e-4887-b483-4417f65df323",
+        "cutout": null,
+        "generated": "2026-10-12"
+      },
+      "licence": "generated on the owner's paid Higgsfield plan",
+      "approval": "pending"
+    },
+    {
+      "id": "fieldguide.bumblebee",
+      "file": "meadow/fieldguide.bumblebee.webp",
+      "type": "card",
+      "biome": "meadow",
+      "width": 772,
+      "height": 1024,
+      "transparent": false,
+      "preloadGroup": "fieldguide",
+      "decorative": false,
+      "altKey": "fieldGuide.bumblebee.alt",
+      "provenance": {
+        "tool": "Higgsfield",
+        "model": "gpt_image_2_5 (Flare, high)",
+        "promptId": "fieldguide.bumblebee.v1",
+        "sourceJob": "735b46cb-dbd7-44c6-9118-a776c321941f",
+        "cutout": null,
+        "generated": "2026-10-12"
+      },
+      "licence": "generated on the owner's paid Higgsfield plan",
+      "approval": "pending"
+    },
+    {
+      "id": "fieldguide.milkweed",
+      "file": "meadow/fieldguide.milkweed.webp",
+      "type": "card",
+      "biome": "meadow",
+      "width": 772,
+      "height": 1024,
+      "transparent": false,
+      "preloadGroup": "fieldguide",
+      "decorative": false,
+      "altKey": "fieldGuide.milkweed.alt",
+      "provenance": {
+        "tool": "Higgsfield",
+        "model": "gpt_image_2_5 (Flare, high)",
+        "promptId": "fieldguide.milkweed.v1",
+        "sourceJob": "8441dada-756f-4d57-8029-64256f5c69b2",
+        "cutout": null,
+        "generated": "2026-10-12"
+      },
+      "licence": "generated on the owner's paid Higgsfield plan",
+      "approval": "pending"
+    },
+    {
+      "id": "fieldguide.monarch",
+      "file": "meadow/fieldguide.monarch.webp",
+      "type": "card",
+      "biome": "meadow",
+      "width": 772,
+      "height": 1024,
+      "transparent": false,
+      "preloadGroup": "fieldguide",
+      "decorative": false,
+      "altKey": "fieldGuide.monarch.alt",
+      "provenance": {
+        "tool": "Higgsfield",
+        "model": "gpt_image_2_5 (Flare, high)",
+        "promptId": "fieldguide.monarch.v1",
+        "sourceJob": "403dbaec-cc6d-4363-9088-b57426cf1b67",
+        "cutout": null,
+        "generated": "2026-10-12"
+      },
+      "licence": "generated on the owner's paid Higgsfield plan",
+      "approval": "pending"
+    },
+    {
       "id": "props.meadow.beehotel",
       "file": "meadow/props.meadow.beehotel.webp",
       "type": "prop",
@@ -170,6 +301,48 @@
         "sourceJob": "b5a39395-de5c-48e6-8bb0-cc3cce10b4d4",
         "cutout": "Higgsfield Image Background Remover (2bacb937-df09-42e0-97fa-5741590a21f5)",
         "generated": "2026-10-11"
+      },
+      "licence": "generated on the owner's paid Higgsfield plan",
+      "approval": "pending"
+    },
+    {
+      "id": "props.meadow.goldenrod",
+      "file": "meadow/props.meadow.goldenrod.webp",
+      "type": "prop",
+      "biome": "meadow",
+      "width": 560,
+      "height": 768,
+      "transparent": true,
+      "preloadGroup": "biome-meadow",
+      "decorative": true,
+      "provenance": {
+        "tool": "Higgsfield",
+        "model": "gpt_image_2_5 (Flare, high)",
+        "promptId": "props.meadow.goldenrod.v1",
+        "sourceJob": "1b974db3-d7fa-4c66-ac68-ea35d879b5e6",
+        "cutout": "white-key script",
+        "generated": "2026-10-12"
+      },
+      "licence": "generated on the owner's paid Higgsfield plan",
+      "approval": "pending"
+    },
+    {
+      "id": "props.meadow.milkweed",
+      "file": "meadow/props.meadow.milkweed.webp",
+      "type": "prop",
+      "biome": "meadow",
+      "width": 676,
+      "height": 768,
+      "transparent": true,
+      "preloadGroup": "biome-meadow",
+      "decorative": true,
+      "provenance": {
+        "tool": "Higgsfield",
+        "model": "gpt_image_2_5 (Flare, high)",
+        "promptId": "props.meadow.milkweed.v1",
+        "sourceJob": "d27d4321-6760-46d7-8be5-41ca2d8278ce",
+        "cutout": "white-key script",
+        "generated": "2026-10-12"
       },
       "licence": "generated on the owner's paid Higgsfield plan",
       "approval": "pending"
@@ -233,6 +406,27 @@
         "sourceJob": "b5a39395-de5c-48e6-8bb0-cc3cce10b4d4",
         "cutout": "Higgsfield Image Background Remover (2bacb937-df09-42e0-97fa-5741590a21f5)",
         "generated": "2026-10-11"
+      },
+      "licence": "generated on the owner's paid Higgsfield plan",
+      "approval": "pending"
+    },
+    {
+      "id": "ui.badge.meadow",
+      "file": "meadow/ui.badge.meadow.webp",
+      "type": "icon",
+      "width": 506,
+      "height": 512,
+      "transparent": true,
+      "preloadGroup": "core",
+      "decorative": false,
+      "altKey": "ui.badge.meadow.label",
+      "provenance": {
+        "tool": "Higgsfield",
+        "model": "gpt_image_2_5 (Flare, high)",
+        "promptId": "ui.badge.meadow.v1",
+        "sourceJob": "fcc2b7dc-1eba-4612-af95-242f9a9c99bc",
+        "cutout": "white-key script",
+        "generated": "2026-10-12"
       },
       "licence": "generated on the owner's paid Higgsfield plan",
       "approval": "pending"

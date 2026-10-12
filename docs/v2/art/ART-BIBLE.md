@@ -66,7 +66,7 @@ Every biome scene is painted as separate layers that share one composition, so t
 |---|---|---|
 | Biome layer | 2560×1440 PNG | WebP, 1920 wide + 1280 wide |
 | Wildlife and companion sprite | 1024×1024 transparent PNG | WebP, 512 + 256 |
-| Field Guide art | 1024×1024 | WebP 768 |
+| Field Guide card | 3:4 painted study plate on cream paper | WebP, 1024 tall (type `card`) |
 | Icons and badges | 1024×1024 transparent | WebP 256 / SVG where simple |
 
 Masters are kept, and optimised copies are generated from them by script, never edited by hand.
@@ -90,19 +90,19 @@ What the Meadow slice ([#167](https://github.com/camster91/magic-type-quest/issu
 |---|---|---|
 | Full restored scene (style anchor) | `biomes.meadow.scene.restored` | test, approved |
 | Full damaged scene | `biomes.meadow.scene.damaged` | test |
-| Sky layer | `biomes.meadow.layer.sky` | needed |
+| Sky layer | `biomes.meadow.layer.sky` | test |
 | Far hills layer | `biomes.meadow.layer.far` | needed |
 | Midground layer | `biomes.meadow.layer.mid` | needed |
 | Ground plane, damaged and restored | `biomes.meadow.layer.ground.damaged` / `.restored` | needed |
 | Foreground framing grass | `biomes.meadow.layer.foreground` | needed |
 | Fox: idle, look, move, happy | `companion.fox.idle` / `.look` / `.move` / `.happy` | test, approved |
-| Fox: rest | `companion.fox.rest` | needed |
+| Fox: rest | `companion.fox.rest` | test |
 | Monarch, bumble bee, bluebird | `wildlife.monarch` / `.bumblebee` / `.bluebird` | test |
 | Wildlife move or arrival poses | `wildlife.<species>.move` | needed |
 | Nest box, bee hotel, seedling tray, watering can, black-eyed Susans | `props.meadow.*` | test |
-| Milkweed and goldenrod clumps | `props.meadow.milkweed` / `.goldenrod` | needed |
-| Field Guide cards: monarch, bumble bee, bluebird, milkweed | `fieldguide.<species>` | needed |
+| Milkweed and goldenrod clumps | `props.meadow.milkweed` / `.goldenrod` | test |
+| Field Guide cards: monarch, bumble bee, bluebird, milkweed | `fieldguide.<species>` | test |
 | Home-row keycaps by mastery level | `ui.keycap.*` | needed |
 | Icons: field guide, map, continue, paw | `ui.icon.*` | test |
-| Meadow badge | `ui.badge.meadow` | needed |
+| Meadow badge | `ui.badge.meadow` | test |
 | Pollen and petal particles | drawn in code | not an image |

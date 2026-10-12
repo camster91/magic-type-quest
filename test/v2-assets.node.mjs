@@ -91,6 +91,12 @@ test('requires ids, provenance, alt text keys and safe paths', () => fixture(
   },
 ));
 
+test('accepts Field Guide cards with their own budget', () => fixture(
+  [asset({ id: 'fieldguide.monarch', file: 'meadow/fieldguide.monarch.webp', type: 'card', width: 772, height: 1024, transparent: false })],
+  { 'meadow/fieldguide.monarch.webp': webpHeader(772, 1024, false) },
+  (root) => assert.deepEqual(checkAssets(root), []),
+));
+
 test('enforces sprite edge and size budgets', () => fixture(
   [asset({ width: 2048, height: 800 })],
   { 'meadow/wildlife.monarch.webp': Buffer.concat([webpHeader(2048, 800, true), Buffer.alloc(250_000)]) },
