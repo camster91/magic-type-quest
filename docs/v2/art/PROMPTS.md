@@ -86,3 +86,27 @@ Field Guide cards (3:4, opaque) use this frame:
 | `fieldguide.bumblebee.v1` | a bumble bee in side view showing fuzzy banding and pollen baskets on its hind legs, the same bee from above, and a bee visiting a black-eyed Susan |
 | `fieldguide.bluebird.v1` | an adult male bluebird perched in side view, a duller female, and a wooden nest box with a small round entrance hole on a post |
 | `fieldguide.milkweed.v1` | a milkweed stem with broad oval leaves and a round pink flower cluster, a close-up of one cluster, and an open seed pod releasing seeds with white silky fluff |
+
+## Round 4 prompts as used (2026-10-12)
+
+**Scene layers** (16:9, 2k) all start with: "A separate [background / midground / foreground ground] layer for a side-scrolling game, matching the exact painting style, colours and light of the reference image (painterly gouache with light coloured-pencil texture, soft edges, no black outlines)." Each then says what to paint, that "everything above it is plain flat pure white", and gives the guardrails.
+
+| Id | What to paint |
+|---|---|
+| `biomes.meadow.layer.far.v1` | Only the distant rolling blue-green hills, patchwork fields and far tree line, filling the lower half and continuing to the bottom edge; no sky |
+| `biomes.meadow.layer.mid.v1` | A band of middle-distance meadow with soft drifts of goldenrod and milkweed and a few small shrubs, lower 45 percent; no animals or posts |
+| `biomes.meadow.layer.ground.restored.v1` | Lush green grass with a mown path and scattered black-eyed Susans, goldenrod and milkweed, lower 35 percent with an uneven grassy top edge |
+| `biomes.meadow.layer.ground.damaged.v1` | Reference: the damaged scene. Short patchy tan grass and bare soil with a worn path, no flowers, lower 35 percent; calm, no litter |
+| `biomes.meadow.layer.foreground.v1` | Tall grasses, seed heads, goldenrod and milkweed rising from the bottom corners and a thin bottom strip; centre and top empty white |
+
+**Single subjects** use the round 2 frame:
+
+| Id | Subject line |
+|---|---|
+| `wildlife.monarch.move.v1` | A single monarch in flight, wings raised mid-beat, three-quarter view, no motion lines |
+| `wildlife.bumblebee.move.v1` | A single common eastern bumble bee in flight, side view, wings slightly blurred, legs tucked, no cartoon face |
+| `wildlife.bluebird.move.v1` | A single eastern bluebird in flight, wings spread, side view |
+| `wildlife.cottontail.v1` | A single wild eastern cottontail sitting alert in a tuft of meadow grass with clover, side view, not cartoonish |
+| `props.meadow.growthstages.v1` | (3:2) Three growth stages of a black-eyed Susan in a row, each from the same soil mound: seedling, young plant with bud, flowering plant |
+| `companion.fox.sniff.v1` | Fox sheet as a second reference. The fox gently sniffing a single black-eyed Susan, side view |
+| `companion.fox.approach.v1` | Fox sheet as a second reference. The fox walking toward the viewer, front three-quarter view, mouth closed |

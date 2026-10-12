@@ -82,6 +82,14 @@ Each asset is listed in `assets/v2/manifest.json` (checked by `npm run check:v2-
 - Text must keep 4.5:1 contrast over any art layer; use a solid panel behind text where needed.
 - Reduced-motion mode keeps every state readable without animation.
 
+## Layered restoration (proven in the style test)
+
+The sky, far, mid, ground and foreground layers are separate transparent WebP files, each 2688×1520, and they stack in that order:
+- **Damaged Meadow:** sky + far + damaged ground.
+- **Restored Meadow:** sky + far + mid + restored ground + foreground. Props, wildlife and the fox go between the ground and foreground layers.
+- **Restoration:** cross-fade the ground layers, then bring in the mid and foreground layers, the growth stages, props and wildlife one at a time as the learner's typing progresses.
+- **Placement:** layer offsets and scale are set in code, not baked into the art.
+
 ## Meadow art slots
 
 What the Meadow slice ([#167](https://github.com/camster91/magic-type-quest/issues/167)) needs, and what the style test already covers. "Test" means a style-test file exists in `assets/v2/meadow`; it still needs approval before production use.
@@ -91,14 +99,17 @@ What the Meadow slice ([#167](https://github.com/camster91/magic-type-quest/issu
 | Full restored scene (style anchor) | `biomes.meadow.scene.restored` | test, approved |
 | Full damaged scene | `biomes.meadow.scene.damaged` | test |
 | Sky layer | `biomes.meadow.layer.sky` | test |
-| Far hills layer | `biomes.meadow.layer.far` | needed |
-| Midground layer | `biomes.meadow.layer.mid` | needed |
-| Ground plane, damaged and restored | `biomes.meadow.layer.ground.damaged` / `.restored` | needed |
-| Foreground framing grass | `biomes.meadow.layer.foreground` | needed |
+| Far hills layer | `biomes.meadow.layer.far` | test |
+| Midground layer | `biomes.meadow.layer.mid` | test |
+| Ground plane, damaged and restored | `biomes.meadow.layer.ground.damaged` / `.restored` | test |
+| Foreground framing grass | `biomes.meadow.layer.foreground` | test |
 | Fox: idle, look, move, happy | `companion.fox.idle` / `.look` / `.move` / `.happy` | test, approved |
 | Fox: rest | `companion.fox.rest` | test |
 | Monarch, bumble bee, bluebird | `wildlife.monarch` / `.bumblebee` / `.bluebird` | test |
-| Wildlife move or arrival poses | `wildlife.<species>.move` | needed |
+| Wildlife flying poses | `wildlife.<species>.move` | test |
+| Fox: sniffing a flower, walking toward the player | `companion.fox.sniff` / `.approach` | test |
+| Black-eyed Susan growth stages | `props.meadow.blackeyedsusan.seedling` / `.young` / `.flowering` | test |
+| Extra discovery: eastern cottontail | `wildlife.cottontail` | test |
 | Nest box, bee hotel, seedling tray, watering can, black-eyed Susans | `props.meadow.*` | test |
 | Milkweed and goldenrod clumps | `props.meadow.milkweed` / `.goldenrod` | test |
 | Field Guide cards: monarch, bumble bee, bluebird, milkweed | `fieldguide.<species>` | test |
