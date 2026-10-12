@@ -4,7 +4,10 @@ Status: draft, under [issue #163](https://github.com/camster91/magic-type-quest/
 
 Tool: Higgsfield, model `gpt_image_2_5` (Flare), quality `high`. The approved style anchor is `meadow.scene.restored.v1` (Higgsfield job `9dbca920-8983-46e8-9b8a-cc95ec3c7436`). Pass it as an `image_references` input for every later asset in the pack.
 
-**Transparent assets:** the model's `background: transparent` option did not work (it painted a dark glow). Instead, generate on a plain flat pure white background, then run Higgsfield's Image Background Remover on the result.
+**Transparent assets:** the model's `background: transparent` option did not work (it painted a dark glow). Instead, generate on a plain flat pure white background, then cut the subject out:
+- **Higgsfield Image Background Remover:** use it for most subjects.
+- **White-key cut:** use it when the remover deletes parts of the subject, such as a perch or a host plant, or leaves a white rim. Key out near-white pixels connected to the border, then un-blend the edge pixels from white.
+Record which method was used in `assets/v2/manifest.json`.
 
 ## Style anchor (prefix for every prompt)
 

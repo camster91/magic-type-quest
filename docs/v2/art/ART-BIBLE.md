@@ -73,7 +73,7 @@ Masters are kept, and optimised copies are generated from them by script, never 
 
 ## Provenance
 
-Each asset is recorded in `assets-v2/ASSET-SOURCES.md` with its logical id (for example `biomes.meadow.background.sky`), the tool and model, the prompt id from [PROMPTS.md](PROMPTS.md), the generation date, any edits and its approval state.
+Each asset is listed in `assets/v2/manifest.json` (checked by `npm run check:v2-assets`) and explained in `assets/v2/ASSET-SOURCES.md` with its logical id (for example `biomes.meadow.background.sky`), the tool and model, the prompt id from [PROMPTS.md](PROMPTS.md), the generation date, any edits and its approval state.
 
 ## Accessibility
 
@@ -81,3 +81,28 @@ Each asset is recorded in `assets-v2/ASSET-SOURCES.md` with its logical id (for 
 - Discoveries get names and descriptions from content, in the DOM.
 - Text must keep 4.5:1 contrast over any art layer; use a solid panel behind text where needed.
 - Reduced-motion mode keeps every state readable without animation.
+
+## Meadow art slots
+
+What the Meadow slice ([#167](https://github.com/camster91/magic-type-quest/issues/167)) needs, and what the style test already covers. "Test" means a style-test file exists in `assets/v2/meadow`; it still needs approval before production use.
+
+| Slot | Logical id | Status |
+|---|---|---|
+| Full restored scene (style anchor) | `biomes.meadow.scene.restored` | test, approved |
+| Full damaged scene | `biomes.meadow.scene.damaged` | test |
+| Sky layer | `biomes.meadow.layer.sky` | needed |
+| Far hills layer | `biomes.meadow.layer.far` | needed |
+| Midground layer | `biomes.meadow.layer.mid` | needed |
+| Ground plane, damaged and restored | `biomes.meadow.layer.ground.damaged` / `.restored` | needed |
+| Foreground framing grass | `biomes.meadow.layer.foreground` | needed |
+| Fox: idle, look, move, happy | `companion.fox.idle` / `.look` / `.move` / `.happy` | test, approved |
+| Fox: rest | `companion.fox.rest` | needed |
+| Monarch, bumble bee, bluebird | `wildlife.monarch` / `.bumblebee` / `.bluebird` | test |
+| Wildlife move or arrival poses | `wildlife.<species>.move` | needed |
+| Nest box, bee hotel, seedling tray, watering can, black-eyed Susans | `props.meadow.*` | test |
+| Milkweed and goldenrod clumps | `props.meadow.milkweed` / `.goldenrod` | needed |
+| Field Guide cards: monarch, bumble bee, bluebird, milkweed | `fieldguide.<species>` | needed |
+| Home-row keycaps by mastery level | `ui.keycap.*` | needed |
+| Icons: field guide, map, continue, paw | `ui.icon.*` | test |
+| Meadow badge | `ui.badge.meadow` | needed |
+| Pollen and petal particles | drawn in code | not an image |
