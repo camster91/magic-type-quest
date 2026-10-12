@@ -1,5 +1,13 @@
-// BloomType service worker — cache app shell + offline fallback
-const CACHE_NAME = "bloomtype-v19";
+// BloomType service worker — offline play without trapping old releases.
+//
+// Pages and update metadata are network-first, so a deployed fix reaches
+// installed apps on their next load, with the cached copy as the offline
+// fallback. Vite's fingerprinted JS/CSS never change, so they are cache-first.
+// Other same-origin files (art, icons) are served from cache and refreshed in
+// the background.
+const CACHE_NAME = "bloomtype-v20";
+const MAX_CACHE_ENTRIES = 200;
+const NETWORK_TIMEOUT_MS = 4000;
 const PRECACHE_ASSETS = [
   "./",
   "index.html",
@@ -31,30 +39,78 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+function isCacheable(response) {
+  return response && response.status === 200 && response.type === "basic";
+}
+
+async function store(request, response) {
+  const cache = await caches.open(CACHE_NAME);
+  await cache.put(request, response);
+  // Keep the cache bounded: drop the oldest entries first.
+  const keys = await cache.keys();
+  for (const key of keys.slice(0, Math.max(0, keys.length - MAX_CACHE_ENTRIES))) {
+    await cache.delete(key);
+  }
+}
+
+function fetchAndStore(request) {
+  return fetch(request).then((response) => {
+    if (isCacheable(response)) store(request, response.clone()).catch(() => {});
+    return response;
+  });
+}
+
+function withTimeout(promise, ms) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("network timeout")), ms);
+    promise.then(
+      (value) => { clearTimeout(timer); resolve(value); },
+      (error) => { clearTimeout(timer); reject(error); }
+    );
+  });
+}
+
+async function networkFirst(request) {
+  try {
+    return await withTimeout(fetchAndStore(request), NETWORK_TIMEOUT_MS);
+  } catch {
+    const cached = await caches.match(request, { ignoreSearch: request.mode === "navigate" });
+    if (cached) return cached;
+    if (request.mode === "navigate") {
+      const shell = await caches.match("index.html");
+      if (shell) return shell;
+    }
+    return Response.error();
+  }
+}
+
+async function cacheFirst(request) {
+  const cached = await caches.match(request);
+  return cached || fetchAndStore(request);
+}
+
+async function staleWhileRevalidate(request, event) {
+  const cached = await caches.match(request);
+  const refresh = fetchAndStore(request).catch(() => cached || Response.error());
+  if (cached) {
+    event.waitUntil(refresh);
+    return cached;
+  }
+  return refresh;
+}
+
+function strategyFor(request) {
+  const url = new URL(request.url);
+  if (request.mode === "navigate" || /\.html$|\/manifest\.json$|\/$/.test(url.pathname)) {
+    return networkFirst;
+  }
+  if (/\/assets\/[^/]+-[A-Za-z0-9_-]{8,}\.(js|css)$/.test(url.pathname)) return cacheFirst;
+  return staleWhileRevalidate;
+}
+
 self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      if (response) return response;
-      return fetch(event.request)
-        .then((networkResponse) => {
-          if (
-            !networkResponse ||
-            networkResponse.status !== 200 ||
-            networkResponse.type !== "basic"
-          ) {
-            return networkResponse;
-          }
-          const clone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          return networkResponse;
-        })
-        .catch(() => {
-          // offline fallback for navigation requests
-          if (event.request.mode === "navigate") {
-            return caches.match("index.html");
-          }
-        });
-    })
-  );
+  const { request } = event;
+  if (request.method !== "GET") return;
+  if (new URL(request.url).origin !== self.location.origin) return;
+  event.respondWith(strategyFor(request)(request, event));
 });
