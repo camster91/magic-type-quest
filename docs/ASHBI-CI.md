@@ -13,7 +13,7 @@ BloomType CI runs on the repository-scoped self-hosted runner
 - Work directory: `/opt/actions-runner/_work`
 - systemd service:
   `actions.runner.camster91-magic-type-quest.ashbi-vps-magic-type-quest.service`
-- CI container: `mcr.microsoft.com/playwright:v1.62.0-noble`, pinned by digest
+- CI container: `mcr.microsoft.com/playwright:v1.63.0-noble`, pinned by digest
   in the workflow
 
 The runner user is intentionally separate from application services. It belongs
@@ -21,10 +21,22 @@ to the host's `docker` group so GitHub Actions can create the fixed Playwright
 job container. Docker-group access is root-equivalent, so this runner must stay
 repository-scoped and must not execute untrusted fork pull requests.
 
-The CI workflow enforces that boundary with a job condition: pushes run, and
-pull requests run only when their head repository is this repository. Keep that
-condition in place whenever editing `.github/workflows/ci.yml` or
-`.github/workflows/build-and-push.yml`.
+Pull request code never runs on this runner. `ci.yml` sends `pull_request` jobs
+to GitHub-hosted `ubuntu-latest` runners (free for this public repository) and
+uses the VPS runner only for pushes to `main`, which a maintainer has already
+merged. `build-and-push.yml` runs only on pushes to `main` and version tags.
+
+A workflow file in a pull request can be edited by that pull request, including
+from a fork, so the job routing alone cannot stop a malicious fork from asking
+for the VPS labels. The repository must therefore also keep this setting:
+
+- **Settings → Actions → General → Approval for running fork pull request
+  workflows from contributors: "Require approval for all external
+  contributors".** A maintainer then reads every outside pull request's diff,
+  including any workflow changes, before any of its jobs run.
+
+Keep both the job routing and that setting whenever editing
+`.github/workflows/ci.yml` or `.github/workflows/build-and-push.yml`.
 
 The image publishing workflow also runs directly on this runner and uses its
 Docker daemon to build the multi-architecture GHCR image. Stale-issue and
@@ -39,7 +51,7 @@ Run these on the VPS as an administrator:
 ```bash
 systemctl status actions.runner.camster91-magic-type-quest.ashbi-vps-magic-type-quest.service
 journalctl -u actions.runner.camster91-magic-type-quest.ashbi-vps-magic-type-quest.service -n 100
-docker image inspect mcr.microsoft.com/playwright:v1.62.0-noble
+docker image inspect mcr.microsoft.com/playwright:v1.63.0-noble
 ```
 
 The runner can also be checked from an authenticated workstation:
