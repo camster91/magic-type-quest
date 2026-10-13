@@ -1401,3 +1401,24 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.3); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(139,92,246,0.5); }
+
+/* ===== Meadow play readability =====
+   The play screen now shows a bright painted meadow, so overlays need
+   solid, dark backing to keep text readable over sky and grass. */
+.live-hud { background: rgba(20, 18, 55, 0.82); opacity: 1; }
+.target-word {
+  background: linear-gradient(180deg, rgba(30, 27, 75, 0.82) 0%, rgba(49, 46, 129, 0.72) 100%);
+  border-color: rgba(221, 214, 254, 0.35);
+}
+.finger-hint { background: rgba(20, 18, 55, 0.82); border-color: rgba(221, 214, 254, 0.3); }
+@media (max-width: 600px) {
+  /* Keep reward toasts clear of the live HUD on narrow screens. */
+  .achievement-toast { top: 112px; left: 12px; right: 12px; }
+}
+
+/* ===== Level cards =====
+   Cards are buttons, so set text color explicitly (browsers default it to
+   black). The picture is the icon; the emoji only shows if it fails. */
+.level-card { color: var(--text); }
+.level-card-img { width: 64px; height: 64px; object-fit: cover; border-radius: 14px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35); }
+.level-card-img:not([style*="none"]) + .level-card-icon { display: none; }

@@ -57,3 +57,7 @@ Status: **style test, not production-approved.** These files prove the art direc
 - **Map icon:** its red "X" reads like a treasure map. Consider regenerating it without the mark.
 - **Paw print icon:** it is a generic paw rather than a true fox track, which is fine as an icon. A Field Guide track illustration would need an accurate one.
 - **Facts:** species facts need a recorded source before any Field Guide text uses them. The Field Guide cards show the monarch life cycle (caterpillar, chrysalis, adult), bumble bee pollen baskets, male and female bluebirds, and a milkweed seed pod; check each against a source before the card text is written.
+
+## Post-processing notes
+
+- `props.meadow.blackeyedsusan.flowering`: white background gaps enclosed between the stems were keyed to transparent (near-white regions over 40 px). The flowers and leaves are unchanged.
