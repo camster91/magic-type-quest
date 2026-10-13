@@ -9,5 +9,7 @@ Documents a school, district or homeschool co-op asks for before saying yes. Eac
 | [Accessibility conformance report (VPAT-style)](ACCESSIBILITY-REPORT.md) | Purchasing and accessibility staff | Draft: needs a manual screen-reader pass |
 | [Standards map](STANDARDS-MAP.md) | Teachers and curriculum leads | Draft: standards wording to confirm |
 | [Teacher quick start](TEACHER-QUICK-START.md) | Teachers | Ready to share |
+| [Typing Week kit](TYPING-WEEK-KIT.md) | Teachers | Ready to share |
+| [Homeschool typing guide](../homeschool/CURRICULUM-GUIDE.md) | Homeschool families and co-ops | Ready to share |
 
 Keep these in step with the code. When a feature changes what is stored, update the privacy summary in the same pull request.

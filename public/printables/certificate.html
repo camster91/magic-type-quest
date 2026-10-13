@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BloomType — Typing certificate</title>
+  <link rel="icon" href="data:,">
+  <meta name="description" content="A printable BloomType typing certificate for Typing Week or finishing a level.">
+  <style>
+    :root { --ink: #1E1B4B; --violet: #6D28D9; --gold: #B45309; --line: #A78BFA; --paper: #FFFFFF; }
+    @page { size: landscape; margin: 12mm; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: Georgia, 'Times New Roman', serif; }
+    .cert { box-sizing: border-box; max-width: 1000px; margin: 24px auto; padding: 48px 56px; border: 10px double var(--line); text-align: center; }
+    h1 { font-size: 2.6rem; margin: 0 0 8px; color: var(--violet); }
+    .flowers { font-size: 2rem; letter-spacing: 6px; }
+    .lead { font-size: 1.2rem; margin: 18px 0 6px; }
+    .name { display: block; margin: 18px auto; width: 70%; border-bottom: 2px solid var(--ink); height: 2.6rem; }
+    .what { font-size: 1.3rem; margin: 10px 0 28px; }
+    .row { display: flex; justify-content: space-between; gap: 32px; margin-top: 36px; }
+    .row div { flex: 1; border-top: 1px solid var(--ink); padding-top: 6px; font-size: 0.95rem; }
+    .hint { font-family: Arial, sans-serif; font-size: 0.9rem; text-align: center; color: var(--gold); }
+    @media print { .hint { display: none; } .cert { margin: 0 auto; } }
+  </style>
+</head>
+<body>
+  <p class="hint">Print this page (Ctrl+P or ⌘P). Write the student's name by hand.</p>
+  <main class="cert">
+    <div class="flowers" aria-hidden="true">🌸 🌼 🌻 🌷 🌺</div>
+    <h1>Typing Certificate</h1>
+    <p class="lead">This certificate is proudly given to</p>
+    <span class="name" aria-label="Student name"></span>
+    <p class="what">for growing a meadow full of flowers with careful, steady typing in BloomType.</p>
+    <div class="row">
+      <div>Date</div>
+      <div>Level reached</div>
+      <div>Teacher or parent</div>
+    </div>
+  </main>
+</body>
+</html>
