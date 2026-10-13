@@ -12,11 +12,33 @@ const ID_PATTERN = /^[a-z][a-z0-9]*(?:\.[a-z0-9-]+)+$/;
 export const BUDGETS = { background: 1_600_000, sprite: 200_000, prop: 200_000, icon: 120_000, card: 200_000 };
 const MAX_SPRITE_EDGE = 1024;
 
+/**
+ * Walk the RIFF chunks so a cut-off or forged file fails: the RIFF size must
+ * match the file, every chunk must fit, and there must be image data.
+ */
+export function checkWebpContainer(buffer) {
+  const riffSize = buffer.readUInt32LE(4);
+  if (riffSize + 8 !== buffer.length) throw new Error(`WebP RIFF size ${riffSize + 8} does not match file size ${buffer.length}`);
+  let offset = 12;
+  let imageBytes = 0;
+  while (offset < buffer.length) {
+    if (offset + 8 > buffer.length) throw new Error('WebP chunk header is cut off');
+    const id = buffer.toString('ascii', offset, offset + 4);
+    const size = buffer.readUInt32LE(offset + 4);
+    const end = offset + 8 + size + (size % 2);
+    if (end > buffer.length) throw new Error(`WebP ${id} chunk is cut off`);
+    if ((id === 'VP8 ' || id === 'VP8L') && size > 0) imageBytes += size;
+    offset = end;
+  }
+  if (imageBytes === 0) throw new Error('WebP has no image data');
+}
+
 /** Read width, height and alpha from a WebP header without decoding it. */
 export function readWebpInfo(buffer) {
   if (buffer.length < 30 || buffer.toString('ascii', 0, 4) !== 'RIFF' || buffer.toString('ascii', 8, 12) !== 'WEBP') {
     throw new Error('not a WebP file');
   }
+  checkWebpContainer(buffer);
   const chunk = buffer.toString('ascii', 12, 16);
   if (chunk === 'VP8X') {
     return {
