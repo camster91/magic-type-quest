@@ -71,7 +71,8 @@ describe('T26 - Audio + visual feedback on every keypress', () => {
     });
 
     it('CSS @keyframes wrongFlash starts with high red opacity then fades', () => {
-      expect(stylesSrc).toMatch(/@keyframes\s+wrongFlash[\s\S]*?0%\s*\{\s*background:\s*rgba\(239,\s*68,\s*68,\s*0\.85\)/);
+      expect(stylesSrc).toMatch(/@keyframes\s+wrongFlash[\s\S]*?0%\s*\{\s*background:\s*rgba\(var\(--rgb-red\),\s*0\.85\)/);
+      expect(stylesSrc).toMatch(/--rgb-red:\s*239,\s*68,\s*68;/);
     });
   });
 
