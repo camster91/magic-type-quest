@@ -336,3 +336,37 @@ test('service-worker activation removes stale BloomType caches', async ({ page }
     return caches.keys();
   })).not.toContain('bloomtype-stale-verification');
 });
+
+test('skipping words never finishes a level, but typing them does', async ({ page }) => {
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem('seeded')) return;
+    sessionStorage.setItem('seeded', '1');
+    localStorage.clear();
+    localStorage.setItem('bloomtype-profile', JSON.stringify({
+      name: 'Tester', tutorialSeen: true, seenFingerGuide: true, completedLevels: [1],
+    }));
+  });
+  await page.goto('');
+  await page.locator('#btn-start').click();
+  await expect.poll(() => page.evaluate(() => window.gameState.screen)).toBe('game');
+  await expect.poll(() => page.evaluate(() => window.gameState.paused)).toBe(false);
+
+  // Level 1 has 10 words. Skipping more than that must not finish it.
+  for (let i = 0; i < 15; i++) {
+    // Let the next word appear now instead of after the 4s spawn delay.
+    await page.evaluate(() => { window.gameState.lastSpawn = -Infinity; });
+    await expect.poll(() => page.evaluate(() => Boolean(window.gameState.targetWord))).toBe(true);
+    await page.keyboard.press('Space');
+  }
+  expect(await page.evaluate(() => window.gameState.levelComplete)).toBe(false);
+  expect(await page.evaluate(() => window.gameState.wordsCompleted)).toBe(0);
+
+  for (let i = 0; i < 10; i++) {
+    await page.evaluate(() => { window.gameState.lastSpawn = -Infinity; });
+    await expect.poll(() => page.evaluate(() => window.gameState.targetWord?.text || '')).not.toBe('');
+    const text = await page.evaluate(() => window.gameState.targetWord.text);
+    await page.keyboard.type(text);
+  }
+  await expect.poll(() => page.evaluate(() => window.gameState.levelComplete)).toBe(true);
+  expect(await page.evaluate(() => window.gameState.wordsCompleted)).toBe(10);
+});
