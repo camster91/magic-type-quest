@@ -118,6 +118,15 @@ function stopPracticeTimer() {
   practiceInterval = null;
 }
 
+// Save the minutes from this practice lesson once, when it ends or is left.
+function recordPracticeTime() {
+  if (gameState.practiceKeystrokes > 0 && gameState.practiceStartTime) {
+    recordPractice(gameState.profile, performance.now() - gameState.practiceStartTime);
+    gameState.practiceStartTime = 0;
+    saveProfile();
+  }
+}
+
 function updatePracticeStats() {
   // Stop ticking once the learner has left practice by any route.
   if (gameState.screen !== 'practice') {
@@ -161,6 +170,7 @@ function handlePracticeKey(e) {
       if (gameState.practiceWordIndex >= gameState.currentPracticeWords.length) {
         // Lesson complete
         stopPracticeTimer();
+        recordPracticeTime();
         showAchievement(t('practice.master'), t('practice.lessonComplete', { name: practiceLesson.name }), '🎯');
         // Reset and go back to menu after a delay
         setTimeout(() => {
@@ -782,11 +792,7 @@ function bindEvents() {
   $('btn-lesson-back')?.addEventListener('click', () => showScreen('menu'));
   $('btn-practice-back')?.addEventListener('click', () => {
     stopPracticeTimer();
-    if (gameState.practiceKeystrokes > 0 && gameState.practiceStartTime) {
-      recordPractice(gameState.profile, performance.now() - gameState.practiceStartTime);
-      gameState.practiceStartTime = 0;
-      saveProfile();
-    }
+    recordPracticeTime();
     showScreen('menu');
   });
   $('btn-profile-back')?.addEventListener('click', () => showScreen('menu'));

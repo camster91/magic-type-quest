@@ -68,10 +68,16 @@ describe('terminal curriculum session persistence', () => {
       level: 3, score: 420, completed: true,
     }));
     expect(gameState.profile.levelStats[3]).toEqual({
-      wpm: 18, accuracy: 94, score: 420, words: 12, completed: true,
+      wpm: 18, bestWpm: 18, accuracy: 94, score: 420, words: 12, completed: true,
     });
     expect(gameState.profile.totalWords).toBe(12);
     expect(gameState.profile.totalStars).toBe(42);
+  });
+
+  it('keeps the fastest run when a level is replayed more slowly', () => {
+    gameState.profile.levelStats = { 3: { wpm: 30, accuracy: 90, score: 1, words: 1, completed: true } };
+    finalizeLevelSession({ completed: false });
+    expect(gameState.profile.levelStats[3]).toMatchObject({ wpm: 18, bestWpm: 30, completed: true });
   });
 
   it('never logs analytics during routine autosaves', () => {

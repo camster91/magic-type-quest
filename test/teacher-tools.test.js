@@ -84,6 +84,10 @@ describe('student reports', () => {
     expect(summary).toEqual({ bestWpm: 18, avgAccuracy: 93, weakKeys: ['q'], minutes7d: 6, activeDays7d: 1, minutesTotal: 40 });
   });
 
+  it('reports the best run, not the latest one', () => {
+    expect(summarizeStudent({ levelStats: { 1: { wpm: 10, bestWpm: 25 } } }).bestWpm).toBe(25);
+  });
+
   it('exports a full class report as safe CSV', () => {
     const csv = createClassReportCSV([{ name: '=Ada', level: 3, bestWpm: 18, avgAccuracy: 93, weakKeys: ['q', 'z'], minutes7d: 6, minutesTotal: 40, words: 120, stars: 30, lastPlayed: '10/13/2026', assignment: 'Done' }]);
     const [header, row] = csv.split('\r\n');

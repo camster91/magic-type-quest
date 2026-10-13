@@ -4,6 +4,7 @@
 import { removeStudentFromAllClasses, syncToClass } from './classroom.js';
 import { syncProfile, logSession } from './sync.js';
 import { recordPractice } from './practiceLog.js';
+import { activePlayMs } from './gameSession.js';
 
 // ===== DEFAULT STATE =====
 export const defaultState = {
@@ -176,9 +177,12 @@ export function finalizeLevelSession({ completed = false } = {}) {
   if (snapshot) {
     const p = gameState.profile;
     if (!p.levelStats) p.levelStats = {};
-    const wasCompleted = p.levelStats[snapshot.level]?.completed === true;
+    const previous = p.levelStats[snapshot.level] || {};
+    const wasCompleted = previous.completed === true;
     p.levelStats[snapshot.level] = {
       wpm: snapshot.wpm,
+      // The fastest run is kept, so a slower replay never lowers "Best WPM".
+      bestWpm: Math.max(Number(previous.bestWpm ?? previous.wpm) || 0, snapshot.wpm || 0),
       accuracy: snapshot.accuracy,
       score: snapshot.score,
       words: snapshot.wordsCompleted,
@@ -188,7 +192,7 @@ export function finalizeLevelSession({ completed = false } = {}) {
 
   if (snapshot && !gameState.practiceRecorded && gameState.levelStartTime) {
     gameState.practiceRecorded = true;
-    recordPractice(gameState.profile, performance.now() - gameState.levelStartTime);
+    recordPractice(gameState.profile, activePlayMs(gameState, performance.now()));
   }
 
   saveProfile();

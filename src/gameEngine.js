@@ -1560,6 +1560,13 @@ function preloadImages() {
 
 export function togglePause() {
   gameState.paused = !gameState.paused;
+  // Paused time is not practice time, for WPM or the teacher's minutes.
+  if (gameState.paused) {
+    gameState.pausedAt = performance.now();
+  } else if (gameState.pausedAt) {
+    if (gameState.levelStartTime) gameState.levelStartTime += performance.now() - gameState.pausedAt;
+    gameState.pausedAt = 0;
+  }
   const moment = gameState.dailyMoment;
   if (moment?.active && dailyMomentCountdownId) {
     if (gameState.paused) {
