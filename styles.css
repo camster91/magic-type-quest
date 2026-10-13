@@ -1009,6 +1009,11 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .profile-restore-section { width: 100%; max-width: 420px; margin: 6px 0; display: flex; flex-direction: column; gap: 6px; padding: 10px; border: 1px solid var(--card-border); border-radius: var(--radius-sm); background: var(--card); }
 .profile-restore-section h3 { margin: 0; }
 .restore-code-row { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.grown-up-lock { width: 100%; max-width: 420px; margin: 6px 0; display: flex; flex-direction: column; gap: 6px; padding: 10px; border: 1px solid var(--card-border); border-radius: var(--radius-sm); background: var(--card); }
+.grown-up-lock h3 { margin: 0; }
+.grown-up-form { display: flex; flex-direction: column; gap: 6px; }
+.grown-up-form[hidden], .grown-up-actions[hidden] { display: none; }
+.grown-up-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .restore-code { font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 1.05rem; font-weight: 800; letter-spacing: 1px; color: var(--text); padding: 6px 10px; border-radius: var(--radius-sm); background: rgba(0,0,0,0.25); user-select: all; overflow-wrap: anywhere; }
 .profile-delete-hint { max-width: 300px; color: var(--text-dim); font-size: 0.68rem; text-align: center; }
 
