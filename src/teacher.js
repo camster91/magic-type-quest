@@ -6,7 +6,8 @@
 
 import { fetchClassRoster } from './sync.js';
 import { normalizeClassCode } from './classroom.js';
-import { createRosterCSV, createRosterExport } from './reporting.js';
+import { createClassReportCSV, createRosterExport, summarizeStudent } from './reporting.js';
+import { assignmentStatus, cleanWordList, createClass, deleteClass, getClassMeta, listClasses, updateClass } from './classes.js';
 import { escapeHTML } from './utils.js';
 import { formatNumber } from './i18n.js';
 import { initializePageTranslations, pageT } from './pageTranslations.js';
@@ -15,12 +16,109 @@ const $ = (id) => document.getElementById(id);
 
 let currentMode = 'local';
 let currentClassCode = '';
+// The rows on screen, as data, so exports never scrape the table text.
+let currentRows = [];
 
 function init() {
   initializePageTranslations();
   renderToolbar();
   bindEvents();
+  bindClassEvents();
+  renderClassList();
   loadLocalData();
+}
+
+// ===== Classes on this device =====
+function renderClassList() {
+  const list = $('class-list');
+  if (!list) return;
+  const classes = listClasses();
+  list.innerHTML = classes.length
+    ? classes.map((c) => `<button type="button" class="class-chip" data-code="${escapeHTML(c.code)}" aria-pressed="${c.code === currentClassCode}">${escapeHTML(c.name)}<code>${escapeHTML(c.code)}</code></button>`).join('')
+    : `<p class="hint">${escapeHTML(pageT('teacher.noClassesYet'))}</p>`;
+}
+
+function renderClassSettings() {
+  const panel = $('class-settings');
+  const meta = getClassMeta(currentClassCode);
+  if (!panel) return;
+  panel.hidden = !meta;
+  if (!meta) return;
+  $('settings-class-name').textContent = meta.name;
+  $('settings-class-code').textContent = currentClassCode;
+  const select = $('assign-level');
+  select.innerHTML = Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">${escapeHTML(pageT('teacher.level'))} ${i + 1}</option>`).join('');
+  select.value = String(meta.assignment?.level || 1);
+  $('assign-due').value = meta.assignment?.due || '';
+  $('class-words').value = (meta.words || []).join(', ');
+  $('assignment-status').textContent = meta.assignment
+    ? pageT('teacher.assignmentSet', { level: meta.assignment.level, due: meta.assignment.due || '—' })
+    : '';
+  $('words-status').textContent = meta.words?.length ? pageT('teacher.wordsSaved', { count: meta.words.length }) : '';
+}
+
+function selectClass(code) {
+  currentMode = 'local';
+  renderToolbar();
+  loadClass(code);
+  renderClassList();
+  renderClassSettings();
+}
+
+function bindClassEvents() {
+  $('class-list')?.addEventListener('click', (event) => {
+    const chip = event.target.closest('.class-chip');
+    if (chip) selectClass(chip.dataset.code);
+  });
+  $('new-class-form')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const name = $('new-class-name').value.trim();
+    if (!name) return;
+    const code = createClass(name);
+    $('new-class-name').value = '';
+    selectClass(code);
+    $('settings-class-code')?.focus?.();
+  });
+  $('assignment-form')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    updateClass(currentClassCode, { assignment: { level: Number($('assign-level').value), due: $('assign-due').value || null } });
+    renderClassSettings();
+    loadClass(currentClassCode);
+  });
+  $('btn-clear-assignment')?.addEventListener('click', () => {
+    updateClass(currentClassCode, { assignment: null });
+    renderClassSettings();
+    loadClass(currentClassCode);
+  });
+  $('words-form')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    updateClass(currentClassCode, { words: cleanWordList($('class-words').value) });
+    renderClassSettings();
+  });
+  $('btn-print-cards')?.addEventListener('click', printStudentCards);
+  $('btn-delete-class')?.addEventListener('click', () => {
+    if (!confirm(pageT('teacher.deleteClassConfirm'))) return;
+    deleteClass(currentClassCode);
+    renderClassList();
+    loadLocalData();
+    renderClassSettings();
+  });
+}
+
+function printStudentCards() {
+  const meta = getClassMeta(currentClassCode);
+  if (!meta) return;
+  const card = `<div class="print-card">
+      <h3>🌸 ${escapeHTML(pageT('teacher.cardTitle', { name: meta.name }))}</h3>
+      <div class="pc-code">${escapeHTML(currentClassCode)}</div>
+      <ol>
+        <li>${escapeHTML(pageT('teacher.cardStep1'))}</li>
+        <li>${escapeHTML(pageT('teacher.cardStep2'))}</li>
+        <li>${escapeHTML(pageT('teacher.cardStep3'))}</li>
+      </ol>
+    </div>`;
+  $('print-cards').innerHTML = card.repeat(8);
+  window.print();
 }
 
 function bindEvents() {
@@ -48,6 +146,8 @@ function toggleMode(mode) {
 async function loadClass(code) {
   currentClassCode = normalizeClassCode(code);
   $('class-code-display').textContent = currentClassCode;
+  renderClassList();
+  renderClassSettings();
   
   if (currentMode === 'cloud') {
     const roster = await fetchClassRoster(currentClassCode);
@@ -63,6 +163,8 @@ async function loadClass(code) {
 
 function loadLocalData() {
   currentClassCode = '';
+  renderClassList();
+  renderClassSettings();
   $('class-code-display').textContent = pageT('teacher.allLocal');
   const students = getAllLocalStudents();
   if (students.length > 0) renderRoster(students, false);
@@ -140,30 +242,53 @@ function renderRoster(students, isCloud) {
   }
   
   // Table
-  tbody.innerHTML = students.map(st => {
-    const cl = st.completed_levels ?? st.completedLevels ?? [];
-    const level = Array.isArray(cl) ? cl.length : 0;
-    const statusKey = level >= 10 ? 'teacher.completed' : level >= 5 ? 'teacher.onTrack' : level > 0 ? 'teacher.gettingStarted' : 'teacher.notStarted';
-    const status = pageT(statusKey);
-    const badgeClass = level >= 10 ? 'badge-green' : level >= 5 ? 'badge-yellow' : 'badge-red';
-    const avatar = escapeHTML(st.avatar || '🌸');
-    const name = escapeHTML(st.name || pageT('teacher.anonymous'));
-    const words = escapeHTML(formatNumber(st.total_words ?? st.totalWords ?? 0));
-    const score = escapeHTML(formatNumber(st.high_score ?? st.highScore ?? 0));
-    const stars = escapeHTML(formatNumber(st.total_stars ?? st.totalStars ?? 0));
-    
-    return `
+  const assignment = getClassMeta(currentClassCode)?.assignment || null;
+  currentRows = students.map((st) => studentRow(st, isCloud, assignment));
+  tbody.innerHTML = currentRows.map((row) => `
       <tr>
-        <td><span class="student-avatar">${avatar}</span> <strong>${name}</strong></td>
-        <td>${pageT('teacher.level')} ${escapeHTML(formatNumber(level))}</td>
-        <td>${words}</td>
-        <td>${score}</td>
-        <td>${stars} ⭐</td>
-        <td><span class="badge ${badgeClass}">${escapeHTML(status)}</span></td>
-        <td>${isCloud ? pageT('teacher.cloud') : pageT('teacher.local')}</td>
+        <td><span class="student-avatar">${escapeHTML(row.avatar)}</span> <strong>${escapeHTML(row.name)}</strong></td>
+        <td>${escapeHTML(formatNumber(row.level))}</td>
+        <td>${row.bestWpm ? escapeHTML(formatNumber(row.bestWpm)) : '—'}</td>
+        <td>${row.avgAccuracy == null ? '—' : `${escapeHTML(formatNumber(row.avgAccuracy))}%`}</td>
+        <td class="keys">${row.weakKeys.length ? escapeHTML(row.weakKeys.join(' ').toUpperCase()) : '—'}</td>
+        <td>${escapeHTML(formatNumber(row.minutes7d))}</td>
+        <td>${escapeHTML(row.lastPlayed || '—')}</td>
+        <td>${row.assignmentKey === 'none' ? '—' : `<span class="badge ${ASSIGNMENT_BADGES[row.assignmentKey]}">${escapeHTML(row.assignment)}</span>`}</td>
+        <td><span class="badge ${row.badgeClass}">${escapeHTML(row.status)}</span></td>
       </tr>
-    `;
-  }).join('');
+    `).join('');
+}
+
+const ASSIGNMENT_BADGES = { done: 'badge-green', 'not-yet': 'badge-blue', late: 'badge-yellow' };
+
+// One student's report row, from a local profile, class snapshot or cloud row.
+function studentRow(st, isCloud, assignment) {
+  const completed = st.completed_levels ?? st.completedLevels ?? [];
+  const level = Array.isArray(completed) ? completed.length : 0;
+  const summary = st.keySR || st.levelStats || st.practiceLog ? summarizeStudent(st) : {
+    bestWpm: st.bestWpm || 0,
+    avgAccuracy: st.avgAccuracy ?? null,
+    weakKeys: st.weakKeys || [],
+    minutes7d: st.minutes7d || 0,
+    minutesTotal: st.minutesTotal || 0,
+  };
+  const statusKey = level >= 10 ? 'teacher.completed' : level >= 5 ? 'teacher.onTrack' : level > 0 ? 'teacher.gettingStarted' : 'teacher.notStarted';
+  const lastPlayedRaw = st.last_played ?? st.lastPlayed;
+  const assignmentKey = assignmentStatus(completed, assignment);
+  return {
+    avatar: st.avatar || '🌸',
+    name: st.name || pageT('teacher.anonymous'),
+    level,
+    ...summary,
+    words: st.total_words ?? st.totalWords ?? 0,
+    stars: st.total_stars ?? st.totalStars ?? 0,
+    lastPlayed: lastPlayedRaw ? new Date(lastPlayedRaw).toLocaleDateString() : '',
+    assignmentKey,
+    assignment: assignmentKey === 'none' ? '' : pageT(`teacher.assign.${assignmentKey}`),
+    status: pageT(statusKey),
+    badgeClass: level >= 10 ? 'badge-green' : level >= 5 ? 'badge-yellow' : 'badge-red',
+    source: isCloud ? pageT('teacher.cloud') : pageT('teacher.local'),
+  };
 }
 
 function showEmpty(msg) {
@@ -171,6 +296,7 @@ function showEmpty(msg) {
   const stats = $('stats-grid');
   const empty = $('empty-state');
   const alerts = $('alert-panel');
+  currentRows = [];
   if (tbody) tbody.innerHTML = '';
   if (stats) stats.innerHTML = '';
   if (alerts) alerts.classList.add('hidden');
@@ -188,37 +314,20 @@ function renderToolbar() {
 }
 
 function exportCSV() {
-  const students = getRenderedStudents();
-  if (students.length === 0) { alert(pageT('teacher.noExport')); return; }
+  if (currentRows.length === 0) { alert(pageT('teacher.noExport')); return; }
 
-  const csv = createRosterCSV(students);
+  const csv = createClassReportCSV(currentRows);
   const blob = new Blob([csv], { type: 'text/csv' });
   downloadBlob(blob, 'csv');
 }
 
 function exportJSON() {
-  const students = getRenderedStudents();
-  if (students.length === 0) { alert(pageT('teacher.noExport')); return; }
+  if (currentRows.length === 0) { alert(pageT('teacher.noExport')); return; }
 
-  const payload = createRosterExport(currentClassCode, students);
+  const payload = createRosterExport(currentClassCode, currentRows);
 
   const blob = new Blob([payload], { type: 'application/json' });
   downloadBlob(blob, 'json');
-}
-
-function getRenderedStudents() {
-  return Array.from(document.querySelectorAll('#student-body tr')).map(row => {
-    const tds = row.querySelectorAll('td');
-    return {
-      name: tds[0]?.textContent?.trim() || '',
-      level: tds[1]?.textContent?.trim() || '',
-      words: tds[2]?.textContent?.trim() || '',
-      score: tds[3]?.textContent?.trim() || '',
-      stars: tds[4]?.textContent?.trim() || '',
-      status: tds[5]?.textContent?.trim() || '',
-      source: tds[6]?.textContent?.trim() || '',
-    };
-  });
 }
 
 function downloadBlob(blob, extension) {

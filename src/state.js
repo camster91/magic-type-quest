@@ -3,6 +3,7 @@
  */
 import { removeStudentFromAllClasses, syncToClass } from './classroom.js';
 import { syncProfile, logSession } from './sync.js';
+import { recordPractice } from './practiceLog.js';
 
 // ===== DEFAULT STATE =====
 export const defaultState = {
@@ -182,6 +183,11 @@ export function finalizeLevelSession({ completed = false } = {}) {
       words: snapshot.wordsCompleted,
       completed: snapshot.completed || wasCompleted,
     };
+  }
+
+  if (snapshot && !gameState.practiceRecorded && gameState.levelStartTime) {
+    gameState.practiceRecorded = true;
+    recordPractice(gameState.profile, performance.now() - gameState.levelStartTime);
   }
 
   saveProfile();

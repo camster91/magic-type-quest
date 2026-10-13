@@ -21,6 +21,8 @@ import {
 import { localizeAchievement, localizeAchievementCategory, localizeLesson, localizeQuest } from './contentTranslations.js';
 import { getCurriculumProgress } from './progression.js';
 import { FIELD_GUIDE, discoveredCards } from './fieldGuide.js';
+import { recordPractice } from './practiceLog.js';
+import { assignmentStatus, buildClassWordsLesson, getClassMeta } from './classes.js';
 import { isSoundOn, playAmbient, stopAmbient } from './audio.js';
 
 const $ = (id) => document.getElementById(id);
@@ -285,7 +287,26 @@ function renderLevelCards() {
 }
 
 // ===== UPDATE MENU STATS =====
+// Show the class assignment and spelling words set by the teacher on this device.
+function updateClassBanner() {
+  const banner = $('class-banner');
+  if (!banner) return;
+  const p = gameState.profile || {};
+  const meta = getClassMeta(p.classCode);
+  const assignment = meta?.assignment;
+  const status = assignmentStatus(p.completedLevels, assignment);
+  const text = status === 'none' ? ''
+    : status === 'done' ? t('class.assignmentDone', { level: assignment.level })
+    : assignment.due ? t('class.assignment', { level: assignment.level, due: formatDate(`${assignment.due}T12:00:00`, { dateStyle: 'medium' }) })
+    : t('class.assignmentNoDue', { level: assignment.level });
+  const hasWords = Boolean(meta?.words?.length);
+  $('class-banner-text').textContent = text;
+  $('btn-class-words').hidden = !hasWords;
+  banner.hidden = !text && !hasWords;
+}
+
 function updateMenuStats() {
+  updateClassBanner();
   $('menu-stars') && ($('menu-stars').textContent = formatNumber(gameState.profile?.totalStars || 0));
   $('menu-best') && ($('menu-best').textContent = formatNumber(gameState.profile?.highScore || 0));
   $('menu-words') && ($('menu-words').textContent = formatNumber(gameState.profile?.totalWords || 0));
@@ -761,6 +782,11 @@ function bindEvents() {
   $('btn-lesson-back')?.addEventListener('click', () => showScreen('menu'));
   $('btn-practice-back')?.addEventListener('click', () => {
     stopPracticeTimer();
+    if (gameState.practiceKeystrokes > 0 && gameState.practiceStartTime) {
+      recordPractice(gameState.profile, performance.now() - gameState.practiceStartTime);
+      gameState.practiceStartTime = 0;
+      saveProfile();
+    }
     showScreen('menu');
   });
   $('btn-profile-back')?.addEventListener('click', () => showScreen('menu'));
@@ -858,6 +884,10 @@ function bindEvents() {
   });
 
   // Game overlays
+  $('btn-class-words')?.addEventListener('click', () => {
+    const lesson = buildClassWordsLesson(getClassMeta(gameState.profile?.classCode));
+    if (lesson) startDrillMode(lesson);
+  });
   $('btn-pause')?.addEventListener('click', togglePause);
   $('btn-sound')?.addEventListener('click', () => {
     gameState.profile.soundEnabled = !isSoundOn();

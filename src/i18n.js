@@ -1,5 +1,7 @@
 export const dictionaries = {
   en: {
+    'class.assignment': 'Your teacher asks: finish Level {level} by {due}.', 'class.assignmentNoDue': 'Your teacher asks: finish Level {level}.',
+    'class.assignmentDone': 'Assignment done: Level {level}! 🎉', 'class.words': '📝 Practice class words',
     'fieldguide.title': 'Field Guide', 'fieldguide.new': 'New Field Guide card!',
     'fieldguide.locked': 'Finish Level {level} to discover', 'fieldguide.count': '{found} of {total} found',
     'fieldguide.monarch.name': 'Monarch butterfly', 'fieldguide.monarch.fact': 'Monarch caterpillars eat only milkweed leaves.',
@@ -96,6 +98,8 @@ export const dictionaries = {
     'evolution.3.line': '“We’re UNSTOPPABLE together!” — Bloom',
   },
   fr: {
+    'class.assignment': 'Ton enseignant demande : termine le niveau {level} pour le {due}.', 'class.assignmentNoDue': 'Ton enseignant demande : termine le niveau {level}.',
+    'class.assignmentDone': 'Devoir fait : niveau {level} ! 🎉', 'class.words': '📝 Mots de la classe',
     'fieldguide.title': 'Guide nature', 'fieldguide.new': 'Nouvelle carte du guide nature !',
     'fieldguide.locked': 'Termine le niveau {level} pour la découvrir', 'fieldguide.count': '{found} sur {total} trouvées',
     'fieldguide.monarch.name': 'Papillon monarque', 'fieldguide.monarch.fact': 'Les chenilles du monarque mangent seulement des feuilles d’asclépiade.',
@@ -193,6 +197,8 @@ export const dictionaries = {
     'evolution.3.line': '« Ensemble, nous sommes INARRÊTABLES ! » — Bloom',
   },
   es: {
+    'class.assignment': 'Tu maestro pide: termina el nivel {level} antes del {due}.', 'class.assignmentNoDue': 'Tu maestro pide: termina el nivel {level}.',
+    'class.assignmentDone': '¡Tarea hecha: nivel {level}! 🎉', 'class.words': '📝 Palabras de clase',
     'fieldguide.title': 'Guía de campo', 'fieldguide.new': '¡Nueva tarjeta de la guía de campo!',
     'fieldguide.locked': 'Termina el nivel {level} para descubrirla', 'fieldguide.count': '{found} de {total} encontradas',
     'fieldguide.monarch.name': 'Mariposa monarca', 'fieldguide.monarch.fact': 'Las orugas de la monarca solo comen hojas de algodoncillo.',

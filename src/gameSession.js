@@ -42,6 +42,7 @@ export function resetGameSession(state, {
     paused: false,
     lastSpawn: 0,
     nextSpawnAt: 0,
+    practiceRecorded: false,
     lastFrameTime: 0,
     garden: [],
     levelStartTime: now,

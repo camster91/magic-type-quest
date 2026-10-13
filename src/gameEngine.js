@@ -19,6 +19,7 @@ import { createGameInputController, trapDialogFocus } from './gameInput.js';
 import { createCanvasEffects } from './gameCanvas.js';
 import { createMeadowScene } from './v2/meadowScene.js';
 import { discoverForLevel } from './fieldGuide.js';
+import { recordPractice } from './practiceLog.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -1131,6 +1132,8 @@ function finishDrill() {
   stopLoop();
   stopAmbient();
   gameState.drillLesson = null;
+  recordPractice(gameState.profile, elapsedMs);
+  saveProfile();
 
   const toast = document.getElementById('achievement-toast');
   if (toast) {
@@ -1371,6 +1374,7 @@ export function endDailyMoment({ reason } = {}) {
     ? Math.round((gameState.correctKeystrokes / gameState.totalKeystrokes) * 100)
     : 100;
 
+  recordPractice(gameState.profile, elapsedMs);
   // Persist + bump streak if today
   gameState.profile.lastDailyMomentDate = new Date().toISOString();
   // F2: Daily Moment completion counts toward the streak (same rule as

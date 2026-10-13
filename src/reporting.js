@@ -16,3 +16,53 @@ export function createRosterCSV(students) {
 export function createRosterExport(classCode, students, exportedAt = new Date().toISOString()) {
   return JSON.stringify({ classCode: classCode || 'all', exportedAt, students }, null, 2);
 }
+
+/** Weak keys: lowest accuracy first, among keys tried at least 3 times. */
+export function weakKeysFrom(keySR = {}, count = 3) {
+  return Object.entries(keySR)
+    .map(([key, sr]) => ({ key, tries: (sr?.correct || 0) + (sr?.wrong || 0), wrong: sr?.wrong || 0 }))
+    .filter((k) => /^[a-z0-9]$/i.test(k.key) && k.tries >= 3 && k.wrong > 0)
+    .sort((a, b) => (b.wrong / b.tries) - (a.wrong / a.tries) || a.key.localeCompare(b.key))
+    .slice(0, count)
+    .map((k) => k.key.toLowerCase());
+}
+
+/** The numbers a teacher or parent needs, from one student profile. */
+export function summarizeStudent(profile = {}, now = new Date()) {
+  const stats = Object.values(profile.levelStats || {});
+  const wpm = stats.map((s) => Number(s.wpm) || 0).filter((n) => n > 0);
+  const accuracy = stats.map((s) => Number(s.accuracy) || 0).filter((n) => n > 0);
+  const log = profile.practiceLog || {};
+  let minutes7d = 0;
+  let activeDays7d = 0;
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(now);
+    date.setDate(now.getDate() - i);
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    if (log[key] > 0) { minutes7d += log[key]; activeDays7d++; }
+  }
+  return {
+    bestWpm: wpm.length ? Math.max(...wpm) : 0,
+    avgAccuracy: accuracy.length ? Math.round(accuracy.reduce((a, b) => a + b, 0) / accuracy.length) : null,
+    weakKeys: weakKeysFrom(profile.keySR),
+    minutes7d: Math.round(minutes7d * 10) / 10,
+    activeDays7d,
+    minutesTotal: Math.round((profile.minutesPractised || 0) * 10) / 10,
+  };
+}
+
+const REPORT_HEADERS = [
+  ['name', 'Name'], ['level', 'Levels done'], ['bestWpm', 'Best WPM'], ['avgAccuracy', 'Accuracy %'],
+  ['weakKeys', 'Weak keys'], ['minutes7d', 'Minutes (7 days)'], ['minutesTotal', 'Minutes (total)'],
+  ['words', 'Words'], ['stars', 'Stars'], ['lastPlayed', 'Last played'], ['assignment', 'Assignment'],
+];
+
+/** One CSV row per student with the full report columns. */
+export function createClassReportCSV(rows) {
+  const header = REPORT_HEADERS.map(([, label]) => csvCell(label)).join(',');
+  const lines = rows.map((row) => REPORT_HEADERS.map(([key]) => {
+    const value = row[key];
+    return csvCell(Array.isArray(value) ? value.join(' ') : value ?? '');
+  }).join(','));
+  return [header, ...lines].join('\r\n');
+}

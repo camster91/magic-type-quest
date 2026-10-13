@@ -1497,3 +1497,8 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .level-new-card img { width: 54px; height: 72px; object-fit: cover; border-radius: 6px; }
 .level-new-card strong { display: block; color: #fde68a; font-size: 0.85rem; }
 .level-new-card span { color: var(--text); font-weight: 700; }
+
+/* Teacher's assignment and spelling words, on the home screen. */
+.class-banner { width: min(420px, 92vw); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin: -4px 0 10px; padding: 10px 12px; border-radius: var(--radius-sm); background: rgba(24, 20, 66, 0.72); border: 1px solid rgba(253, 230, 138, 0.45); color: var(--text); font-weight: 700; font-size: 0.85rem; }
+.class-banner[hidden] { display: none; }
+.class-words-btn { background: #fde68a; color: #1e1b4b; border-radius: 999px; padding: 8px 14px; font-weight: 800; font-size: 0.85rem; min-height: 40px; }
