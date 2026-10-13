@@ -39,3 +39,25 @@ test('reading and play settings apply, persist and keep the game accessible', as
   const after = await page.evaluate(() => window.gameState.targetWord.y);
   expect(after).toBe(before);
 });
+
+test('changing the font keeps contrast following the device, and deleting the profile resets settings', async ({ page }) => {
+  await page.emulateMedia({ contrast: 'more' });
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem('seeded')) return;
+    sessionStorage.setItem('seeded', '1');
+    localStorage.clear();
+    localStorage.setItem('bloomtype-profile', JSON.stringify({ tutorialSeen: true, seenFingerGuide: true }));
+  });
+  await page.goto('');
+  await page.locator('#btn-profile').click();
+  await page.locator('#font-select').selectOption('dyslexic');
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('bloomtype-profile')));
+  expect(saved.font).toBe('dyslexic');
+  expect(saved).not.toHaveProperty('highContrast');
+
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.locator('#btn-delete-profile').click();
+  const html = page.locator('html');
+  await expect(html).not.toHaveAttribute('data-font', /.+/);
+  await expect(html).not.toHaveClass(/relaxed/);
+});

@@ -825,6 +825,7 @@ function bindEvents() {
     const confirmed = window.confirm(t('profile.deleteConfirm'));
     if (!confirmed) return;
     deleteLocalProfile();
+    applyAccessibility(gameState.profile);
     updateMenuStats();
     showScreen('menu');
     showAchievement(t('profile.deleted'), t('profile.deletedDesc'), '🗑️');
@@ -875,6 +876,7 @@ function bindEvents() {
       return;
     }
     deleteLocalProfile();
+    applyAccessibility(gameState.profile);
     updateMenuStats();
     showScreen('menu');
     showAchievement(
@@ -912,15 +914,18 @@ function bindEvents() {
     if (lesson) startDrillMode(lesson);
   });
   // Reading and play settings apply straight away, so children see the change.
-  const saveA11y = () => {
-    const p = gameState.profile;
-    p.font = $('font-select')?.value || 'default';
-    p.highContrast = Boolean($('contrast-toggle')?.checked);
-    p.relaxed = Boolean($('relaxed-toggle')?.checked);
-    applyAccessibility(p);
-    saveProfile();
+  // Only the changed control is saved, so contrast keeps following the
+  // device setting until the child picks it themselves.
+  const a11yControls = {
+    'font-select': (p, el) => { p.font = el.value || 'default'; },
+    'contrast-toggle': (p, el) => { p.highContrast = el.checked; },
+    'relaxed-toggle': (p, el) => { p.relaxed = el.checked; },
   };
-  ['font-select', 'contrast-toggle', 'relaxed-toggle'].forEach((id) => $(id)?.addEventListener('change', saveA11y));
+  Object.entries(a11yControls).forEach(([id, save]) => $(id)?.addEventListener('change', (event) => {
+    save(gameState.profile, event.currentTarget);
+    applyAccessibility(gameState.profile);
+    saveProfile();
+  }));
   $('players-list')?.addEventListener('click', (event) => {
     const chip = event.target.closest('.player-chip');
     if (!chip) return;
