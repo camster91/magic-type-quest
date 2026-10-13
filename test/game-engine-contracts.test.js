@@ -16,8 +16,10 @@ function fn(src, signature) {
 describe('game engine fixes — source contracts', () => {
   it('only ever runs one animation loop', () => {
     // Every start goes through startLoop, which cancels the previous loop.
-    // (The fifth keeps the restored meadow animating behind the level-complete card.)
-    expect(engineSrc.match(/animationId = requestAnimationFrame\(gameLoop\)/g)).toHaveLength(5);
+    // (Another keeps the restored meadow animating behind the level-complete card,
+    // and draws it once and stops when the learner prefers reduced motion.)
+    expect(engineSrc.match(/animationId = requestAnimationFrame\(gameLoop\)/g)).toHaveLength(4);
+    expect(engineSrc.match(/animationId = prefersReducedMotion\(\) \? null : requestAnimationFrame\(gameLoop\)/g)).toHaveLength(1);
     expect(fn(engineSrc, 'function startLoop()')).toMatch(/cancelAnimationFrame\(animationId\)/);
     for (const start of ['export function startGame(', 'export function startDrillMode(', 'export function startDailyMoment(']) {
       expect(fn(engineSrc, start), start).toMatch(/startLoop\(\);/);
@@ -43,6 +45,24 @@ describe('game engine fixes — source contracts', () => {
     expect(fn(mainSrc, 'function updatePracticeStats()')).toMatch(/gameState\.screen !== 'practice'\) \{\s*stopPracticeTimer\(\);/);
     expect(mainSrc).toMatch(/btn-practice-back'\)\?\.addEventListener\('click', \(\) => \{\s*stopPracticeTimer\(\);/);
     expect(fn(mainSrc, 'function handlePracticeKey(')).toMatch(/if \(e\.key\.length !== 1\) return;/);
+    // Practice minutes are saved whether the lesson is finished or left early.
+    expect(fn(mainSrc, 'function handlePracticeKey(')).toMatch(/\/\/ Lesson complete\s*stopPracticeTimer\(\);\s*recordPracticeTime\(\);/);
+    expect(mainSrc).toMatch(/btn-practice-back'\)\?\.addEventListener\('click', \(\) => \{\s*stopPracticeTimer\(\);\s*recordPracticeTime\(\);/);
+  });
+
+  it('paused time does not count as play time', () => {
+    const pause = fn(engineSrc, 'export function togglePause()');
+    expect(pause).toMatch(/gameState\.pausedAt = performance\.now\(\);/);
+    expect(pause).toMatch(/gameState\.levelStartTime \+= performance\.now\(\) - gameState\.pausedAt;/);
+  });
+});
+
+describe('players on one device', () => {
+  it('switching players keeps last-played and is off for signed-in class accounts', () => {
+    expect(fn(mainSrc, 'function saveCurrentPlayerIfUsed()')).toMatch(/saveProfile\(\{ markPlayed: false \}\)/);
+    expect(fn(mainSrc, 'function renderPlayers()')).toMatch(/hasCloudSync\(\)\.then/);
+    expect(mainSrc).toMatch(/if \(!chip \|\| await hasCloudSync\(\)\) return;/);
+    expect(mainSrc).toMatch(/btn-add-player'\)\?\.addEventListener\('click', async \(\) => \{\s*if \(await hasCloudSync\(\)\) return;/);
   });
 });
 

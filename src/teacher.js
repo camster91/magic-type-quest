@@ -209,7 +209,7 @@ function renderRoster(students, isCloud) {
     return s + (Array.isArray(cl) ? cl.length : 0);
   }, 0) / students.length || 0;
   const activeToday = students.filter(st => {
-    const lp = st.last_played ?? st.lastPlayed;
+    const lp = lastPlayedOf(st);
     if (!lp) return false;
     return new Date(lp).toDateString() === new Date().toDateString();
   }).length;
@@ -224,7 +224,7 @@ function renderRoster(students, isCloud) {
   
   // Red-flag alerts
   const redFlags = students.filter(st => {
-    const lp = st.last_played ?? st.lastPlayed;
+    const lp = lastPlayedOf(st);
     if (!lp) return true;
     const daysSince = (Date.now() - new Date(lp).getTime()) / 86400000;
     return daysSince > 7;
@@ -251,7 +251,7 @@ function renderRoster(students, isCloud) {
         <td>${row.bestWpm ? escapeHTML(formatNumber(row.bestWpm)) : '—'}</td>
         <td>${row.avgAccuracy == null ? '—' : `${escapeHTML(formatNumber(row.avgAccuracy))}%`}</td>
         <td class="keys">${row.weakKeys.length ? escapeHTML(row.weakKeys.join(' ').toUpperCase()) : '—'}</td>
-        <td>${escapeHTML(formatNumber(row.minutes7d))}</td>
+        <td>${row.minutes7d == null ? '—' : escapeHTML(formatNumber(row.minutes7d))}</td>
         <td>${escapeHTML(row.lastPlayed || '—')}</td>
         <td>${row.assignmentKey === 'none' ? '—' : `<span class="badge ${ASSIGNMENT_BADGES[row.assignmentKey]}">${escapeHTML(row.assignment)}</span>`}</td>
         <td><span class="badge ${row.badgeClass}">${escapeHTML(row.status)}</span></td>
@@ -261,7 +261,14 @@ function renderRoster(students, isCloud) {
 
 const ASSIGNMENT_BADGES = { done: 'badge-green', 'not-yet': 'badge-blue', late: 'badge-yellow' };
 
+// Cloud roster rows store their last save as updated_at.
+function lastPlayedOf(st) {
+  return st.last_played ?? st.lastPlayed ?? st.updated_at ?? null;
+}
+
 // One student's report row, from a local profile, class snapshot or cloud row.
+// Cloud roster rows only carry totals, so their detailed numbers show as "—"
+// (unknown) rather than 0 until the cloud roster stores them.
 function studentRow(st, isCloud, assignment) {
   const completed = st.completed_levels ?? st.completedLevels ?? [];
   const level = Array.isArray(completed) ? completed.length : 0;
@@ -269,11 +276,11 @@ function studentRow(st, isCloud, assignment) {
     bestWpm: st.bestWpm || 0,
     avgAccuracy: st.avgAccuracy ?? null,
     weakKeys: st.weakKeys || [],
-    minutes7d: st.minutes7d || 0,
-    minutesTotal: st.minutesTotal || 0,
+    minutes7d: st.minutes7d ?? null,
+    minutesTotal: st.minutesTotal ?? null,
   };
   const statusKey = level >= 10 ? 'teacher.completed' : level >= 5 ? 'teacher.onTrack' : level > 0 ? 'teacher.gettingStarted' : 'teacher.notStarted';
-  const lastPlayedRaw = st.last_played ?? st.lastPlayed;
+  const lastPlayedRaw = lastPlayedOf(st);
   const assignmentKey = assignmentStatus(completed, assignment);
   return {
     avatar: st.avatar || '🌸',
