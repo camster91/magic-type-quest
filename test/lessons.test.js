@@ -6,7 +6,7 @@
 // whole point of this feature.
 
 import { describe, it, expect } from 'vitest';
-import { LESSON_LEVELS } from '../src/lessonLevels.js';
+import { LESSON_LEVELS, getLessonByLevel, isTypableWord } from '../src/lessonLevels.js';
 
 describe('Lesson card subtitles (T28)', () => {
   it('ships exactly 10 levels', () => {
@@ -49,5 +49,26 @@ describe('Lesson card subtitles (T28)', () => {
     expect(LESSON_LEVELS[6].teaches).toMatch(/numbers: 1, 2, 3, 4, 5, 6, 7, 8, 9, 0/);
     expect(LESSON_LEVELS[7].teaches).toMatch(/WPM/i);
     expect(LESSON_LEVELS[10].teaches).toMatch(/touch-typing|mastery/i);
+  });
+});
+
+describe('lesson words can always be typed', () => {
+  it('every level only serves words the game input accepts', () => {
+    for (let level = 1; level <= 10; level++) {
+      const lesson = getLessonByLevel(level);
+      const stuck = lesson.words.filter((word) => !isTypableWord(word, lesson.requiresShift === true));
+      expect(stuck, `level ${level}`).toEqual([]);
+      expect(lesson.words.length, `level ${level}`).toBeGreaterThanOrEqual(lesson.wordsPerLevel);
+    }
+  });
+
+  it('rejects phrases, punctuation and capitals outside Shift lessons', () => {
+    expect(isTypableWord('run fast')).toBe(false);
+    expect(isTypableWord('3.14')).toBe(false);
+    expect(isTypableWord('armor-clad')).toBe(false);
+    expect(isTypableWord('I')).toBe(false);
+    expect(isTypableWord('1st')).toBe(true);
+    expect(isTypableWord('CITY', true)).toBe(true);
+    expect(isTypableWord('city', true)).toBe(false);
   });
 });
