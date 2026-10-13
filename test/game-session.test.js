@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createSessionId, getLevelScoreBonus, resetGameSession } from '../src/gameSession.js';
+import { activePlayMs, createSessionId, getLevelScoreBonus, resetGameSession } from '../src/gameSession.js';
 
 function dirtyState() {
   return {
@@ -80,5 +80,16 @@ describe('level score bonus', () => {
     expect(getLevelScoreBonus(4)).toBe(8);
     expect(getLevelScoreBonus('drill')).toBe(0);
     expect(getLevelScoreBonus(undefined)).toBe(0);
+  });
+});
+
+describe('activePlayMs', () => {
+  it('leaves out a pause that is still going on', () => {
+    expect(activePlayMs({ levelStartTime: 1000, paused: true, pausedAt: 61_000 }, 1_261_000)).toBe(60_000);
+  });
+
+  it('counts the whole time when the level is not paused', () => {
+    expect(activePlayMs({ levelStartTime: 1000, paused: false, pausedAt: 0 }, 61_000)).toBe(60_000);
+    expect(activePlayMs({ levelStartTime: 0 }, 61_000)).toBe(0);
   });
 });

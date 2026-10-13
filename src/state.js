@@ -4,6 +4,7 @@
 import { removeStudentFromAllClasses, syncToClass } from './classroom.js';
 import { syncProfile, logSession } from './sync.js';
 import { recordPractice } from './practiceLog.js';
+import { activePlayMs } from './gameSession.js';
 
 // ===== DEFAULT STATE =====
 export const defaultState = {
@@ -71,6 +72,7 @@ export const defaultState = {
     petEvolution: 1, // 1=sprout, 2=bud, 3=bloom
     seenEvolutions: [], // Track which evolutions the player has seen
     garden: [], // Persistent flower collection across sessions
+    fieldGuide: [], // Wildlife cards discovered by restoring meadows
     classCode: null, // Classroom code for teacher dashboard
     uuid: null, // Stable identifier for class sync
     keySR: {}, // Spaced repetition state for weak keys
@@ -78,7 +80,7 @@ export const defaultState = {
   },
 };
 
-const PROFILE_ARRAY_FIELDS = ['completedLevels', 'seenEvolutions', 'garden'];
+const PROFILE_ARRAY_FIELDS = ['completedLevels', 'seenEvolutions', 'garden', 'fieldGuide'];
 const PROFILE_OBJECT_FIELDS = ['keySR'];
 
 // ===== LIVE GAME STATE =====
@@ -119,7 +121,8 @@ export function loadProfile() {
   }
 }
 
-export function saveProfile() {
+/** Save the profile. markPlayed: false keeps the "last played" time as it was. */
+export function saveProfile({ markPlayed = true } = {}) {
   try {
     const p = gameState.profile;
     if (gameState.score > p.highScore) p.highScore = gameState.score;
@@ -129,7 +132,7 @@ export function saveProfile() {
     p.totalStars += Math.max(0, scoreStars - (gameState.savedScoreStars || 0));
     gameState.savedWordsTyped = wordsTyped;
     gameState.savedScoreStars = scoreStars;
-    p.lastPlayed = new Date().toISOString();
+    if (markPlayed) p.lastPlayed = new Date().toISOString();
     
     // Ensure uuid for class sync
     if (!p.uuid) p.uuid = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -175,9 +178,12 @@ export function finalizeLevelSession({ completed = false } = {}) {
   if (snapshot) {
     const p = gameState.profile;
     if (!p.levelStats) p.levelStats = {};
-    const wasCompleted = p.levelStats[snapshot.level]?.completed === true;
+    const previous = p.levelStats[snapshot.level] || {};
+    const wasCompleted = previous.completed === true;
     p.levelStats[snapshot.level] = {
       wpm: snapshot.wpm,
+      // The fastest run is kept, so a slower replay never lowers "Best WPM".
+      bestWpm: Math.max(Number(previous.bestWpm ?? previous.wpm) || 0, snapshot.wpm || 0),
       accuracy: snapshot.accuracy,
       score: snapshot.score,
       words: snapshot.wordsCompleted,
@@ -187,7 +193,7 @@ export function finalizeLevelSession({ completed = false } = {}) {
 
   if (snapshot && !gameState.practiceRecorded && gameState.levelStartTime) {
     gameState.practiceRecorded = true;
-    recordPractice(gameState.profile, performance.now() - gameState.levelStartTime);
+    recordPractice(gameState.profile, activePlayMs(gameState, performance.now()));
   }
 
   saveProfile();
