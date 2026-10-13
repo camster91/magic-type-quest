@@ -9,6 +9,7 @@ There are two tracks. Each has one source of truth:
 | **v1 BloomType**: the live game, its operations and launch gates | This file and [`docs/LAUNCH-READINESS.md`](docs/LAUNCH-READINESS.md) | Live as a public local-only release |
 | **v2 Nature Quest**: the wildlife-restoration rebuild | Epic [#153](https://github.com/camster91/magic-type-quest/issues/153), [`docs/v2/PRODUCT-CONTRACT.md`](docs/v2/PRODUCT-CONTRACT.md) and [`docs/v2/DECISION-LOG.md`](docs/v2/DECISION-LOG.md) | In development; Meadow slice first ([#167](https://github.com/camster91/magic-type-quest/issues/167)) |
 | **Business model and go-to-market** | [`docs/GO-TO-MARKET.md`](docs/GO-TO-MARKET.md) | Owner decision recorded 2026-10-12 |
+| **To-do list to 100/100** (speed, looks, UX, backend, school trust, growth) | [`docs/TODO-100.md`](docs/TODO-100.md) | Started 2026-10-13 with measured Lighthouse baselines |
 
 - **v1 work** (bug fixes, security, operations) keeps the live game healthy while v2 is built. It must not add new v1 features that v2 replaces.
 - **v2 product direction** comes from the product contract. Where this file and the contract disagree about v2, the contract wins.
