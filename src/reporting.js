@@ -17,11 +17,14 @@ export function createRosterExport(classCode, students, exportedAt = new Date().
   return JSON.stringify({ classCode: classCode || 'all', exportedAt, students }, null, 2);
 }
 
-/** Weak keys: lowest accuracy first, among keys tried at least 3 times. */
+/**
+ * Weak keys: lowest accuracy first, among keys tried at least 3 times and
+ * missed more than 1 time in 10 (a key at 90%+ counts as learned).
+ */
 export function weakKeysFrom(keySR = {}, count = 3) {
   return Object.entries(keySR)
     .map(([key, sr]) => ({ key, tries: (sr?.correct || 0) + (sr?.wrong || 0), wrong: sr?.wrong || 0 }))
-    .filter((k) => /^[a-z0-9]$/i.test(k.key) && k.tries >= 3 && k.wrong > 0)
+    .filter((k) => /^[a-z0-9]$/i.test(k.key) && k.tries >= 3 && k.wrong / k.tries > 0.1)
     .sort((a, b) => (b.wrong / b.tries) - (a.wrong / a.tries) || a.key.localeCompare(b.key))
     .slice(0, count)
     .map((k) => k.key.toLowerCase());

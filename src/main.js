@@ -23,6 +23,7 @@ import { getCurriculumProgress } from './progression.js';
 import { FIELD_GUIDE, discoveredCards } from './fieldGuide.js';
 import { recordPractice } from './practiceLog.js';
 import { assignmentStatus, buildClassWordsLesson, getClassMeta } from './classes.js';
+import { activePlayerId, listPlayers, startNewPlayer, switchPlayer } from './players.js';
 import { isSoundOn, playAmbient, stopAmbient } from './audio.js';
 
 const $ = (id) => document.getElementById(id);
@@ -546,7 +547,24 @@ function triggerPetHeroCelebrate() {
 // ===== PROFILE =====
 import { getPetPath } from './assets.js';
 
+function renderPlayers() {
+  const list = $('players-list');
+  if (!list) return;
+  const current = activePlayerId();
+  const others = listPlayers().filter((player) => player.uuid !== current);
+  list.innerHTML = others.length
+    ? others.map((player) => `<button type="button" class="player-chip" data-player="${escapeHTML(player.uuid)}" aria-label="${escapeHTML(t('players.switchTo', { name: player.name || 'Player' }))}"><span aria-hidden="true">${escapeHTML(player.avatar || '🌸')}</span> ${escapeHTML(player.name || 'Player')}</button>`).join('')
+    : `<p class="profile-hint">${escapeHTML(t('players.onlyOne'))}</p>`;
+}
+
+// Keep the current player's progress before handing the device to someone else.
+function saveCurrentPlayerIfUsed() {
+  const p = gameState.profile || {};
+  if ((p.totalWords || 0) > 0 || (p.name && p.name !== 'Player') || (p.completedLevels || []).length) saveProfile();
+}
+
 function loadProfileScreen() {
+  renderPlayers();
   const p = gameState.profile || {};
   const avatar = p.avatar || '🌸';
   // Update both the kawaii image and the emoji fallback
@@ -887,6 +905,17 @@ function bindEvents() {
   $('btn-class-words')?.addEventListener('click', () => {
     const lesson = buildClassWordsLesson(getClassMeta(gameState.profile?.classCode));
     if (lesson) startDrillMode(lesson);
+  });
+  $('players-list')?.addEventListener('click', (event) => {
+    const chip = event.target.closest('.player-chip');
+    if (!chip) return;
+    saveCurrentPlayerIfUsed();
+    if (switchPlayer(chip.dataset.player)) window.location.reload();
+  });
+  $('btn-add-player')?.addEventListener('click', () => {
+    saveCurrentPlayerIfUsed();
+    startNewPlayer();
+    window.location.reload();
   });
   $('btn-pause')?.addEventListener('click', togglePause);
   $('btn-sound')?.addEventListener('click', () => {

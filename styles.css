@@ -1502,3 +1502,8 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .class-banner { width: min(420px, 92vw); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin: -4px 0 10px; padding: 10px 12px; border-radius: var(--radius-sm); background: rgba(24, 20, 66, 0.72); border: 1px solid rgba(253, 230, 138, 0.45); color: var(--text); font-weight: 700; font-size: 0.85rem; }
 .class-banner[hidden] { display: none; }
 .class-words-btn { background: #fde68a; color: #1e1b4b; border-radius: 999px; padding: 8px 14px; font-weight: 800; font-size: 0.85rem; min-height: 40px; }
+
+/* Players on this device */
+.players-section { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.players-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.player-chip { min-height: 44px; padding: 8px 14px; border-radius: 999px; background: var(--card); border: 1px solid var(--card-border); color: var(--text); font-weight: 800; }

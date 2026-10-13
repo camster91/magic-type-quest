@@ -71,7 +71,7 @@ describe('practice log', () => {
 
 describe('student reports', () => {
   it('finds weak keys from enough tries', () => {
-    expect(weakKeysFrom({ q: { correct: 1, wrong: 4 }, a: { correct: 20, wrong: 1 }, z: { correct: 0, wrong: 1 }, x: { correct: 3, wrong: 3 } })).toEqual(['q', 'x', 'a']);
+    expect(weakKeysFrom({ q: { correct: 1, wrong: 4 }, a: { correct: 20, wrong: 1 }, z: { correct: 0, wrong: 1 }, x: { correct: 3, wrong: 3 } })).toEqual(['q', 'x']);
   });
 
   it('summarizes speed, accuracy, weak keys and minutes', () => {

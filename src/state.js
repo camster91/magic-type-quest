@@ -139,7 +139,7 @@ export function saveProfile() {
     // Also save to teacher-readable key
     removeProfileCopies(p.uuid);
     const name = (p.name || 'Anonymous').replace(/[^a-zA-Z0-9]/g, '_');
-    localStorage.setItem(`bloomtype_profile_${name}`, JSON.stringify(p));
+    localStorage.setItem(profileCopyKey(name, p.uuid), JSON.stringify(p));
     
     // Sync to class if joined
     if (p.classCode) {
@@ -198,6 +198,19 @@ export function finalizeLevelSession({ completed = false } = {}) {
       .catch(() => {})
       .finally(() => { gameState.sessionLogInFlight = false; });
   }
+}
+
+// Two children with the same name on one device must not overwrite each
+// other's copy, so a clash adds the start of the student's id.
+function profileCopyKey(name, profileId) {
+  const key = `bloomtype_profile_${name}`;
+  try {
+    const existing = JSON.parse(localStorage.getItem(key));
+    if (existing?.uuid && existing.uuid !== profileId) return `${key}_${String(profileId).slice(0, 8)}`;
+  } catch {
+    // A corrupt copy is simply replaced.
+  }
+  return key;
 }
 
 function removeProfileCopies(profileId) {
