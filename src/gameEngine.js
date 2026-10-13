@@ -17,6 +17,7 @@ import { GameWord } from './gameWord.js';
 import { getLevelScoreBonus, resetGameSession } from './gameSession.js';
 import { createGameInputController, trapDialogFocus } from './gameInput.js';
 import { createCanvasEffects } from './gameCanvas.js';
+import { createMeadowScene } from './v2/meadowScene.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -73,6 +74,29 @@ const {
   getPetImage,
 });
 
+const meadow = createMeadowScene({
+  context: ctx,
+  state: gameState,
+  prefersReducedMotion,
+  getKeyboardTop: () => {
+    const keyboard = document.getElementById('virtual-keyboard-game');
+    const top = keyboard?.getBoundingClientRect().top;
+    return top > 0 ? top : gameState.canvasH * 0.83;
+  },
+});
+
+// How far through the current level or session the learner is (0–1).
+function levelProgress() {
+  const target = gameState.dailyMoment?.active
+    ? (gameState.dailyMoment.wordsTarget || 12)
+    : (currentLesson()?.wordsPerLevel || 10);
+  return Math.min(1, (gameState.wordsCompleted || 0) / target);
+}
+
+// After a finished word the next one arrives quickly, so fast typists
+// never sit waiting with nothing to type.
+const NEXT_WORD_DELAY_MS = 450;
+
 let animationId = null;
 let lastFrameTime = 0;
 
@@ -80,6 +104,9 @@ let lastFrameTime = 0;
 // is still scheduled, so loops never pile up across games.
 function startLoop() {
   if (animationId !== null) cancelAnimationFrame(animationId);
+  // Every game start begins with a fresh, damaged meadow.
+  meadow.load();
+  meadow.reset();
   lastFrameTime = 0;
   animationId = requestAnimationFrame(gameLoop);
 }
@@ -142,7 +169,8 @@ function gameLoop(timestamp) {
   // The canvas still exists for animation continuity but draws nothing
   // that competes with them.
   if (typeof window !== 'undefined' && window.__bloomtypeT15Overlay) {
-    drawQuietGradient();
+    if (meadow.isReady()) meadow.draw(levelProgress(), gameState.wordsCompleted || 0);
+    else drawQuietGradient();
     updateWords(deltaTime);
     // No drawWords (overlay), no drawPet (HTML pet), no particles.
     checkLevelComplete();
@@ -178,11 +206,12 @@ function updateWords(deltaTime) {
 
   const hasWordsLeft = gameState.dailyMoment?.active ||
     gameState.wordsSpawned < lesson.wordsPerLevel;
-  if (gameState.activeWords.length < 1 &&
-      hasWordsLeft &&
-      now - gameState.lastSpawn > adaptiveSpawnRate) {
+  const nextWordDue = now - gameState.lastSpawn > adaptiveSpawnRate ||
+    (gameState.nextSpawnAt > 0 && now >= gameState.nextSpawnAt);
+  if (gameState.activeWords.length < 1 && hasWordsLeft && nextWordDue) {
     spawnWord();
     gameState.lastSpawn = now;
+    gameState.nextSpawnAt = 0;
   }
 
   // Adaptive difficulty check every 5 seconds
@@ -335,6 +364,7 @@ function onWrongKeystroke(key) {
   flashWrongKey(key);
   gameState.combo = 0;
   updateCombo();
+  meadow.notice();
   if (gameState.targetWord) {
     gameState.targetWord.shake = 1;
   }
@@ -444,6 +474,8 @@ function completeWord() {
   // Stats
   gameState.wordsTyped++;
   gameState.wordsCompleted++;
+  gameState.nextSpawnAt = gameState.currentTime + NEXT_WORD_DELAY_MS;
+  meadow.cheer();
   
   // Check achievements
   checkAchievements();
