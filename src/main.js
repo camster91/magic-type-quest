@@ -9,6 +9,7 @@ import { getAchievementStats, getAllAchievements } from './achievements.js';
 import { getTodaysQuests, isStreakAtRisk } from './quests.js';
 import { getWeakKeys, buildDrillLesson } from './drills.js';
 import { getDueKeys } from './spacedRep.js';
+import { decodeRestoreCode, encodeRestoreCode, mergeRestoredProgress } from './restoreCode.js';
 import { joinClass } from './classroom.js';
 import { escapeHTML } from './utils.js';
 import { applyTranslations, formatDate, formatNumber, localizeFingerLabel, setLocale, t } from './i18n.js';
@@ -605,6 +606,7 @@ function loadProfileScreen() {
   $('relaxed-toggle') && ($('relaxed-toggle').checked = a11y.relaxed);
   $('language-select') && ($('language-select').value = p.locale || 'en');
   refreshCloudControls();
+  $('restore-code') && ($('restore-code').textContent = encodeRestoreCode(p));
 
   document.querySelectorAll('.avatar-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.avatar === (p.avatar || '🌸'));
@@ -845,6 +847,45 @@ function bindEvents() {
     updateMenuStats();
     showScreen('menu');
     showAchievement(t('profile.deleted'), t('profile.deletedDesc'), '🗑️');
+  });
+
+  $('btn-copy-restore-code')?.addEventListener('click', async () => {
+    const code = $('restore-code')?.textContent || '';
+    const status = $('restore-code-status');
+    try {
+      await navigator.clipboard.writeText(code);
+      if (status) {
+        status.hidden = false;
+        status.textContent = t('restore.copied');
+      }
+    } catch {
+      // Clipboard can be blocked; the code is still selectable on screen.
+    }
+  });
+
+  $('btn-restore-code')?.addEventListener('click', () => {
+    const input = $('restore-code-input');
+    const status = $('restore-code-status');
+    const data = decodeRestoreCode(input?.value);
+    if (status) status.hidden = false;
+    if (!data) {
+      if (status) status.textContent = t('restore.invalid');
+      input?.setAttribute('aria-invalid', 'true');
+      return;
+    }
+    input?.removeAttribute('aria-invalid');
+    mergeRestoredProgress(gameState.profile, data);
+    setLocale(gameState.profile.locale);
+    applyTranslations();
+    saveProfile();
+    updateMenuStats();
+    onAvatarChanged();
+    loadProfileScreen();
+    if (input) input.value = '';
+    if (status) {
+      status.hidden = false;
+      status.textContent = t('restore.done');
+    }
   });
 
   $('btn-export-local-profile')?.addEventListener('click', () => {
