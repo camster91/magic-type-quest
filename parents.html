@@ -2,11 +2,19 @@
 <html lang="en" data-page-title="parent.title">
 <head>
   <meta charset="UTF-8">
+  <meta name="description" content="See your child's BloomType typing progress: speed, accuracy and keys practised. Stays on this device.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preload" href="/fonts/fredoka-one-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/nunito-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <title>BloomType — Help Your Child Learn to Type at Home</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <style>
+    @font-face { font-family: 'Fredoka One'; font-style: normal; font-weight: 400; font-display: optional; src: url('fonts/fredoka-one-latin-400-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'Nunito'; font-style: normal; font-weight: 400 600; font-display: optional; src: url('fonts/nunito-latin-400-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'Nunito'; font-style: normal; font-weight: 700; font-display: optional; src: url('fonts/nunito-latin-700-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'Nunito'; font-style: normal; font-weight: 800 900; font-display: optional; src: url('fonts/nunito-latin-800-normal.woff2') format('woff2'); }
+    
     :root {
       --bg: #0f0d2e; --text: #f0e6ff; --text-dim: #C4B5FD;
       --primary: #6D28D9; --primary-light: #C4B5FD; --accent: #F9A8D4;
@@ -49,7 +57,7 @@
       border-radius: 14px; padding: 20px; text-align: center;
     }
     .problem-card .emoji { font-size: 2.5rem; margin-bottom: 8px; }
-    .problem-card h4 { font-size: 1rem; margin-bottom: 6px; }
+    .problem-card h3 { font-size: 1rem; margin-bottom: 6px; }
     .problem-card p { font-size: 0.88rem; color: var(--text-dim); }
     
     /* Solution */
@@ -61,7 +69,7 @@
       background: var(--glass); border: 1px solid var(--glass-border);
       border-radius: 14px; padding: 20px;
     }
-    .feature h4 { color: var(--accent); margin-bottom: 8px; font-size: 0.95rem; }
+    .feature h3 { color: var(--accent); margin-bottom: 8px; font-size: 0.95rem; }
     .feature p { font-size: 0.85rem; color: var(--text-dim); }
     
     /* Curriculum */
@@ -74,7 +82,7 @@
       border-radius: 12px; padding: 14px; text-align: center;
     }
     .level-preview .level-icon { font-size: 1.8rem; margin-bottom: 6px; }
-    .level-preview h5 { font-size: 0.85rem; margin-bottom: 4px; }
+    .level-preview h3 { font-size: 0.85rem; margin-bottom: 4px; }
     .level-preview p { font-size: 0.75rem; color: var(--text-dim); }
     
     /* Trust */
@@ -108,6 +116,24 @@
     .privacy-details p, .privacy-details li { color: var(--text-dim); font-size: 0.9rem; }
     .privacy-details a { color: #F5F3FF; }
     .privacy-details ul { padding-left: 22px; }
+      .family-hint { color: var(--text-dim); margin-bottom: 14px; }
+    .family-list { display: grid; gap: 14px; }
+    .child-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 16px; }
+    .child-card h3 { margin-bottom: 10px; }
+    .child-line { margin-top: 8px; color: var(--text-dim); }
+    .child-line .keys { color: var(--text); letter-spacing: 2px; font-family: ui-monospace, Menlo, monospace; }
+    .record-btn { margin-top: 12px; padding: 10px 16px; border-radius: 10px; border: none; background: #fde68a; color: #1e1b4b; font-weight: 800; cursor: pointer; min-height: 44px; }
+    #print-record { display: none; }
+    @media print {
+      body { background: #fff !important; color: #000 !important; }
+      body > *:not(#print-record) { display: none !important; }
+      #print-record { display: block !important; font-family: Arial, sans-serif; color: #000; padding: 24px; }
+      #print-record h1 { font-size: 22px; margin-bottom: 12px; }
+      #print-record p { margin: 6px 0; }
+      #print-record table { border-collapse: collapse; margin-top: 12px; }
+      #print-record th, #print-record td { border: 1px solid #999; padding: 4px 10px; text-align: left; }
+      #print-record .sig { margin-top: 32px; }
+    }
   </style>
 </head>
 <body>
@@ -125,18 +151,18 @@
       <div class="problem-cards" data-page-i18n-html="parent.problems">
         <div class="problem-card">
           <div class="emoji">📚</div>
-          <h4>Schools Assume They Know</h4>
+          <h3>Schools Assume They Know</h3>
           <p>Teachers assign online essays and tests, but kids never get formal typing instruction. They hunt-and-peck for years.</p>
         </div>
         <div class="problem-card">
           <div class="emoji">⏱️</div>
-          <h4>Homework Takes Forever</h4>
+          <h3>Homework Takes Forever</h3>
           <p>A 10-minute assignment takes 45 minutes because they can't find the keys. Frustration builds.</p>
         </div>
         <div class="problem-card"
         >
           <div class="emoji">😫</div>
-          <h4>"Practice Websites" Are Boring</h4>
+          <h3>"Practice Websites" Are Boring</h3>
           <p>Adult typing tutors are dry, timed, and stressful. Kids quit after 2 minutes.</p>
         </div>
       </div>
@@ -147,19 +173,18 @@
       <h2 data-page-i18n="parent.howTitle">How BloomType Works</h2>
       <div class="solution-features" data-page-i18n-html="parent.features">
         <div class="feature">
-          <h4>🌸 Words Fall From the Sky</h4>
-          <p>Your child types words before they reach the ground. Miss a word? A flower wilts. Type it right? A new flower blooms in their garden.</p>
+          <h3>🌼 Every Word Restores a Meadow</h3><p>Each word your child types grows a flower. As they finish a level, bees, butterflies and birds come back to the meadow. Mistakes never take anything away.</p>
         </div>
         <div class="feature">
-          <h4>🐱 A Pet Cheers Them On</h4>
+          <h3>🐱 A Pet Cheers Them On</h3>
           <p>A friendly flower-pet reacts to every keystroke. "Nice!" for correct letters. Gentle encouragement for mistakes.</p>
         </div>
         <div class="feature">
-          <h4>🎹 10 Built-In Lessons</h4>
+          <h3>🎹 10 Built-In Lessons</h3>
           <p>Starts with home row (ASDF). Gradually adds top row, bottom row, capitals, and numbers. Each level takes 5–10 minutes.</p>
         </div>
         <div class="feature">
-          <h4>🏆 Progress They Can See</h4>
+          <h3>🏆 Progress They Can See</h3>
           <p>Garden grows as they play. Stars collect. Levels unlock. Kids feel proud of visible progress.</p>
         </div>
       </div>
@@ -169,21 +194,28 @@
     <div class="section">
       <h2 data-page-i18n="parent.curriculumTitle">What They'll Learn (10 Levels)</h2>
       <div class="levels-grid" data-page-i18n-html="parent.curriculum">
-        <div class="level-preview"><div class="level-icon">🌸</div><h5>Home Row Garden</h5><p>ASDF JKL; — finger placement</p></div>
-        <div class="level-preview"><div class="level-icon">⬆️</div><h5>Top Row Sky</h5><p>QWERTYUIOP — reaching up</p></div>
-        <div class="level-preview"><div class="level-icon">⬇️</div><h5>Bottom Row Ocean</h5><p>ZXCVBNM — reaching down</p></div>
-        <div class="level-preview"><div class="level-icon">🌲</div><h5>All Letters Forest</h5><p>A-Z mixed practice</p></div>
-        <div class="level-preview"><div class="level-icon">🏙️</div><h5>Capital City</h5><p>SHIFT + key technique</p></div>
-        <div class="level-preview"><div class="level-icon">🚀</div><h5>Number Galaxy</h5><p>0123456789</p></div>
-        <div class="level-preview"><div class="level-icon">⚡</div><h5>Speed Meadow</h5><p>Faster pace, combo chains</p></div>
-        <div class="level-preview"><div class="level-icon">🎯</div><h5>Accuracy Peak</h5><p>Precision focus</p></div>
-        <div class="level-preview"><div class="level-icon">✨</div><h5>Master Valley</h5><p>Challenge words</p></div>
-        <div class="level-preview"><div class="level-icon">🏆</div><h5>Legend Kingdom</h5><p>Final quest with everything</p></div>
+        <div class="level-preview"><div class="level-icon">🌸</div><h3>Home Row Garden</h3><p>ASDF JKL; — finger placement</p></div>
+        <div class="level-preview"><div class="level-icon">⬆️</div><h3>Top Row Sky</h3><p>QWERTYUIOP — reaching up</p></div>
+        <div class="level-preview"><div class="level-icon">⬇️</div><h3>Bottom Row Ocean</h3><p>ZXCVBNM — reaching down</p></div>
+        <div class="level-preview"><div class="level-icon">🌲</div><h3>All Letters Forest</h3><p>A-Z mixed practice</p></div>
+        <div class="level-preview"><div class="level-icon">🏙️</div><h3>Capital City</h3><p>SHIFT + key technique</p></div>
+        <div class="level-preview"><div class="level-icon">🚀</div><h3>Number Galaxy</h3><p>0123456789</p></div>
+        <div class="level-preview"><div class="level-icon">⚡</div><h3>Speed Meadow</h3><p>Faster pace, combo chains</p></div>
+        <div class="level-preview"><div class="level-icon">🎯</div><h3>Accuracy Peak</h3><p>Precision focus</p></div>
+        <div class="level-preview"><div class="level-icon">✨</div><h3>Master Valley</h3><p>Challenge words</p></div>
+        <div class="level-preview"><div class="level-icon">🏆</div><h3>Legend Kingdom</h3><p>Final quest with everything</p></div>
       </div>
     </div>
 
-    <!-- PARENT PREVIEW -->
-    <div class="section">
+    <!-- FAMILY PROGRESS (real data from this device) -->
+    <div class="section" id="family-progress" hidden>
+      <h2 data-page-i18n="family.title">This week on this device</h2>
+      <p class="family-hint" data-page-i18n="family.hint">Progress stays in this browser. Nothing is sent anywhere.</p>
+      <div id="family-list" class="family-list"></div>
+    </div>
+
+    <!-- PARENT PREVIEW (example, shown before any child has played here) -->
+    <div class="section" id="family-sample">
       <div class="parent-preview" data-page-i18n-html="parent.preview">
         <h3>📊 Parents Can Track Progress</h3>
         <p>When your child plays on this device, you'll see their WPM (words per minute), accuracy, and which levels they've completed. No account needed — it saves automatically.</p>
@@ -246,9 +278,7 @@
     <p>Teachers: assign levels by having students visit this page from your classroom computers. Data stays on your school's devices.</p>
   </div>
 </body>
-<script type="module">
-  import { initializePageTranslations } from './src/pageTranslations.js';
-  initializePageTranslations();
-</script>
+<section id="print-record" aria-hidden="true"></section>
+<script type="module" src="./src/parentReport.js"></script>
 <script>if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');</script>
 </html>

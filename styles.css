@@ -1,3 +1,9 @@
+/* Bundled open-licensed fonts (SIL OFL 1.1, see public/fonts/LICENSE-*). */
+@font-face { font-family: 'Fredoka One'; font-style: normal; font-weight: 400; font-display: optional; src: url('/fonts/fredoka-one-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Nunito'; font-style: normal; font-weight: 400 600; font-display: optional; src: url('/fonts/nunito-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Nunito'; font-style: normal; font-weight: 700; font-display: optional; src: url('/fonts/nunito-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Nunito'; font-style: normal; font-weight: 800 900; font-display: optional; src: url('/fonts/nunito-latin-800-normal.woff2') format('woff2'); }
+
 /* ==========================================
    BLOOMTYPE - T15 redesign styles
    Goal: 5 colors max, 1 primary action, solid cards.
@@ -119,7 +125,7 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 }
 .streak-prominent .streak-icon { font-size: 1rem; line-height: 1; }
 .streak-prominent .streak-value { font-size: 1rem; font-weight: 800; font-variant-numeric: tabular-nums; min-width: 1ch; text-align: center; }
-.streak-prominent.streak-hidden { display: none; }
+.streak-prominent.streak-hidden { visibility: hidden; }
 .streak-prominent.streak-gold {
   background: rgba(251,191,36,0.12);
   border-color: rgba(251,191,36,0.4);
@@ -145,7 +151,7 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 }
 .streak-chip .streak-icon { font-size: 1rem; line-height: 1; }
 .streak-chip .streak-value { font-size: 1rem; font-weight: 800; font-variant-numeric: tabular-nums; min-width: 1ch; text-align: center; }
-.streak-chip.streak-hidden { display: none; }
+.streak-chip.streak-hidden { visibility: hidden; }
 .streak-chip.streak-gold {
   background: rgba(251,191,36,0.12);
   border-color: rgba(251,191,36,0.4);
@@ -356,6 +362,7 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
   .pet-hero-img { animation: none; }
   .pet-hero.celebrate .pet-hero-img,
   .pet-hero.warning .pet-hero-img { animation: none; }
+  .pet-hero-bubble { transition: none; transform: none; }
 }
 
 /* ===== PRIMARY CTA ===== */
@@ -1400,3 +1407,152 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.3); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(139,92,246,0.5); }
+
+/* ===== Meadow play readability =====
+   The play screen now shows a bright painted meadow, so overlays need
+   solid, dark backing to keep text readable over sky and grass. */
+.live-hud { background: rgba(20, 18, 55, 0.82); opacity: 1; }
+.target-word {
+  background: linear-gradient(180deg, rgba(30, 27, 75, 0.82) 0%, rgba(49, 46, 129, 0.72) 100%);
+  border-color: rgba(221, 214, 254, 0.35);
+}
+.finger-hint { background: rgba(20, 18, 55, 0.82); border-color: rgba(221, 214, 254, 0.3); }
+@media (max-width: 600px) {
+  /* Keep reward toasts clear of the live HUD on narrow screens. */
+  .achievement-toast { top: 112px; left: 12px; right: 12px; }
+}
+
+/* ===== Level cards =====
+   Cards are buttons, so set text color explicitly (browsers default it to
+   black). The picture is the icon; the emoji only shows if it fails. */
+.level-card { color: var(--text); }
+.level-card-img { width: 64px; height: 64px; object-fit: cover; border-radius: 14px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35); }
+.level-card-img:not([style*="none"]) + .level-card-icon { display: none; }
+
+/* ===== Legible text =====
+   Keep child-facing labels at 12px or larger, including on phones. */
+.progress-next, .pet-hero-bubble, .menu-icon .mi-label { font-size: 0.78rem; }
+.km-key { font-size: 0.75rem; }
+@media (max-width: 480px) {
+  .progress-next, .pet-hero-bubble, .menu-icon .mi-label { font-size: 0.75rem; }
+  .km-key { width: 20px; height: 20px; font-size: 0.75rem; }
+}
+
+/* Reserve the learned-keys row before JavaScript fills it, so the start
+   button does not jump down as the page loads. */
+.keyboard-mini { min-height: 27px; }
+@media (max-width: 480px) { .keyboard-mini { min-height: 25px; } }
+
+/* ===== Meadow restored! =====
+   Let the glowing, restored meadow show behind the level-complete card. */
+#level-overlay { background: rgba(15, 12, 40, 0.28); backdrop-filter: blur(0); align-items: flex-end; padding-bottom: max(24px, 8vh); }
+#level-overlay .level-complete-card { background: rgba(30, 27, 75, 0.9); border-color: rgba(253, 230, 138, 0.55); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), 0 0 48px rgba(253, 230, 138, 0.25); }
+.level-complete-sub { color: var(--text-dim); font-weight: 700; margin-top: -4px; }
+.level-stars { display: flex; justify-content: center; gap: 8px; font-size: 2.4rem; line-height: 1; }
+.level-star { color: rgba(255, 255, 255, 0.18); }
+.level-star.earned { color: #fcd34d; text-shadow: 0 0 14px rgba(252, 211, 77, 0.7); }
+#level-overlay:not(.hidden) .level-star.earned { animation: starPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; animation-delay: calc(var(--i, 1) * 0.18s + 0.2s); }
+@keyframes starPop { from { transform: scale(0) rotate(-40deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  #level-overlay:not(.hidden) .level-star.earned { animation: none; }
+}
+
+/* ===== Meadow menus =====
+   Menu screens sit on a soft, blurred copy of the restored Meadow, with a
+   dusk tint so cards and text stay readable. */
+.menu-bg {
+  background:
+    linear-gradient(180deg, rgba(24, 20, 66, 0.72) 0%, rgba(24, 20, 66, 0.45) 45%, rgba(24, 20, 66, 0.78) 100%),
+    url('/assets/home/meadow-home-wide.webp') center bottom / cover no-repeat,
+    var(--bg-1);
+}
+@media (max-aspect-ratio: 1/1) {
+  .menu-bg {
+    background:
+      linear-gradient(180deg, rgba(24, 20, 66, 0.72) 0%, rgba(24, 20, 66, 0.45) 45%, rgba(24, 20, 66, 0.78) 100%),
+      url('/assets/home/meadow-home-narrow.webp') center bottom / cover no-repeat,
+      var(--bg-1);
+  }
+}
+.menu-bg::after { display: none; }
+.progress-card, .menu-dock { background: rgba(24, 20, 66, 0.62); backdrop-filter: blur(6px); }
+/* Hide the empty word card and finger hint behind the finish card. */
+#game-screen:has(#level-overlay:not(.hidden)) :is(.target-word, .finger-hint, .live-hud, .hud, .virtual-keyboard) { visibility: hidden; }
+
+/* Phones: a smaller pet in the corner leaves room for the meadow and word. */
+@media (max-width: 600px) {
+  .pet-container { bottom: 158px; right: 10px; }
+  .pet-wrap { width: 76px; height: 76px; }
+  .pet-bubble { font-size: 0.75rem; max-width: 140px; }
+}
+
+/* ===== Field Guide ===== */
+.field-guide { width: min(560px, 92vw); margin: 4px 0 12px; }
+.field-guide-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+.field-guide-head h3 { font-size: 1.05rem; }
+.field-guide-count { color: var(--text-dim); font-size: 0.8rem; font-weight: 700; }
+.field-guide-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+.fg-card { background: rgba(24, 20, 66, 0.72); border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 8px; text-align: center; }
+.fg-card img { width: 100%; height: auto; border-radius: 8px; display: block; }
+.fg-card h4 { font-size: 0.85rem; margin: 6px 0 2px; color: #fde68a; }
+.fg-card p { font-size: 0.75rem; color: var(--text); line-height: 1.3; }
+.fg-card.locked { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 170px; opacity: 0.85; }
+.fg-mystery { font-size: 2.4rem; color: rgba(255, 255, 255, 0.35); font-family: 'Fredoka One', cursive; }
+.level-new-card { display: flex; align-items: center; gap: 10px; text-align: left; background: rgba(253, 230, 138, 0.12); border: 1px solid rgba(253, 230, 138, 0.45); border-radius: 12px; padding: 8px 10px; }
+.level-new-card[hidden] { display: none; }
+.level-new-card img { width: 54px; height: 72px; object-fit: cover; border-radius: 6px; }
+.level-new-card strong { display: block; color: #fde68a; font-size: 0.85rem; }
+.level-new-card span { color: var(--text); font-weight: 700; }
+
+/* Teacher's assignment and spelling words, on the home screen. */
+.class-banner { width: min(420px, 92vw); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin: -4px 0 10px; padding: 10px 12px; border-radius: var(--radius-sm); background: rgba(24, 20, 66, 0.72); border: 1px solid rgba(253, 230, 138, 0.45); color: var(--text); font-weight: 700; font-size: 0.85rem; }
+.class-banner[hidden] { display: none; }
+.class-words-btn { background: #fde68a; color: #1e1b4b; border-radius: 999px; padding: 8px 14px; font-weight: 800; font-size: 0.85rem; min-height: 40px; }
+
+/* Players on this device */
+.players-section { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.players-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.player-chip { min-height: 44px; padding: 8px 14px; border-radius: 999px; background: var(--card); border: 1px solid var(--card-border); color: var(--text); font-weight: 800; }
+
+/* ===== Reading and play settings ===== */
+@font-face { font-family: 'Atkinson Hyperlegible'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/atkinson-hyperlegible-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Atkinson Hyperlegible'; font-style: normal; font-weight: 700 900; font-display: swap; src: url('/fonts/atkinson-hyperlegible-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'OpenDyslexic'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/opendyslexic-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'OpenDyslexic'; font-style: normal; font-weight: 700 900; font-display: swap; src: url('/fonts/opendyslexic-latin-700-normal.woff2') format('woff2'); }
+
+.a11y-settings { width: 100%; max-width: 420px; border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 10px 12px; margin: 6px 0; display: flex; flex-direction: column; gap: 8px; }
+.a11y-settings legend { padding: 0 6px; }
+
+/* Easy-read letters: a clearer font with a little more space. */
+html[data-font="readable"] body,
+html[data-font="readable"] body * {
+  font-family: 'Atkinson Hyperlegible', 'Nunito', sans-serif !important;
+  letter-spacing: 0.02em;
+  word-spacing: 0.08em;
+}
+html[data-font="dyslexic"] body,
+html[data-font="dyslexic"] body * {
+  font-family: 'OpenDyslexic', 'Nunito', sans-serif !important;
+  letter-spacing: 0.03em;
+  word-spacing: 0.12em;
+  line-height: 1.5;
+}
+html[data-font] .target-word { letter-spacing: 0.08em; }
+
+/* High contrast: solid panels, white text, bright focus and borders. */
+html.high-contrast { --text: #ffffff; --text-dim: #ffffff; --text-mute: #ffffff; --card: #000000; --card-border: #ffffff; }
+html.high-contrast body { background: #000; }
+html.high-contrast :is(.progress-card, .menu-dock, .live-hud, .finger-hint, .target-word, .overlay-card, .class-banner, .fg-card, .level-card, .achievement-toast, .pet-hero-bubble, .profile-input, .a11y-settings) {
+  background: #000 !important;
+  color: #fff !important;
+  border: 2px solid #fff !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+html.high-contrast .menu-bg { background: #000; }
+html.high-contrast .target-word .tw-char.typed { color: #7CFFB2; text-shadow: none; }
+html.high-contrast .target-word .tw-char.next { color: #FFE14D; text-decoration: underline; text-underline-offset: 6px; }
+html.high-contrast :focus-visible { outline: 4px solid #FFE14D !important; outline-offset: 3px; }
+html.high-contrast .btn-cta-primary, html.high-contrast .btn-primary { background: #FFE14D !important; color: #000 !important; border: 2px solid #fff; }
+html.high-contrast .key { background: #000 !important; color: #fff !important; border: 2px solid #fff !important; }
+html.high-contrast .key.target, html.high-contrast .key.highlight { background: #FFE14D !important; color: #000 !important; }
