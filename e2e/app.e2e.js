@@ -81,6 +81,14 @@ test('a first-time student can start, learn, pause, resume, and quit with the ke
   await expect(page.locator('#btn-start')).toBeFocused();
 });
 
+async function createTeacherPin(page, pin = '2468') {
+  await expect(page.locator('#lock-title')).toHaveText('🔒 Create a teacher PIN');
+  await page.locator('#pin-input').fill(pin);
+  await page.locator('#pin-confirm').fill(pin);
+  await page.locator('#btn-unlock').click();
+  await expect(page.locator('#teacher-dashboard')).toBeVisible();
+}
+
 test('a student can join and leave a local class that a teacher can review and export', async ({ page }) => {
   await page.goto('');
   await page.evaluate(() => localStorage.clear());
@@ -92,6 +100,7 @@ test('a student can join and leave a local class that a teacher can review and e
   await page.locator('#btn-save-profile').click();
 
   await page.goto('teacher.html');
+  await createTeacherPin(page);
   await page.locator('#class-code-input').fill('ab 12');
   await page.locator('#btn-load-class').click();
   await expect(page.locator('#class-code-display')).toHaveText('AB12');
@@ -236,6 +245,11 @@ test('language selection applies immediately and persists after reload', async (
   await page.goto('teacher.html');
   await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
   await expect(page.locator('h1')).toContainText('Tableau de bord enseignant');
+  await expect(page.locator('#lock-title')).toHaveText('🔒 Créer un NIP enseignant');
+  await expect(page.locator('#btn-unlock')).toHaveText('Créer le NIP');
+  await page.locator('#pin-input').fill('2468');
+  await page.locator('#pin-confirm').fill('2468');
+  await page.locator('#btn-unlock').click();
   await expect(page.locator('#btn-load-class')).toHaveText('🔍 Charger la classe');
   await expect(page.locator('thead th').first()).toHaveText('Élève');
   await expect(page.locator('.stat-label').first()).toHaveText('Élèves');
@@ -335,6 +349,61 @@ test('service-worker activation removes stale BloomType caches', async ({ page }
     await navigator.serviceWorker.ready;
     return caches.keys();
   })).not.toContain('bloomtype-stale-verification');
+});
+
+test('the teacher dashboard stays locked until the PIN is entered', async ({ page }) => {
+  await page.goto('');
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  await page.locator('#btn-profile').click();
+  await page.locator('#player-name').fill('Grace');
+  await page.locator('#btn-save-profile').click();
+
+  await page.goto('teacher.html');
+  await expect(page.locator('#teacher-dashboard')).toBeHidden();
+  await expect(page.locator('#pin-input')).toBeFocused();
+
+  await page.locator('#pin-input').fill('12');
+  await page.locator('#pin-confirm').fill('12');
+  await page.locator('#btn-unlock').click();
+  await expect(page.locator('#lock-message')).toHaveText('Use 4 to 8 digits.');
+  await page.locator('#pin-input').fill('2468');
+  await page.locator('#pin-confirm').fill('2469');
+  await page.locator('#btn-unlock').click();
+  await expect(page.locator('#lock-message')).toHaveText('The two PINs do not match.');
+
+  await createTeacherPin(page);
+  await expect(page.locator('#student-body')).toContainText('Grace');
+  expect(await page.evaluate(() => localStorage.getItem('bloomtype-teacher-pin'))).not.toContain('2468');
+
+  await page.locator('#btn-lock').click();
+  await expect(page.locator('#teacher-dashboard')).toBeHidden();
+  await expect(page.locator('#lock-title')).toHaveText('🔒 Teacher dashboard locked');
+  // Locking removes the rendered student data from the page.
+  await expect(page.locator('#student-body tr')).toHaveCount(0);
+  await expect(page.locator('#class-list > *')).toHaveCount(0);
+
+  // A new tab needs the PIN again.
+  const other = await page.context().newPage();
+  await other.goto('teacher.html');
+  await expect(other.locator('#teacher-dashboard')).toBeHidden();
+  await other.locator('#pin-input').fill('1111');
+  await other.locator('#btn-unlock').click();
+  await expect(other.locator('#lock-message')).toHaveText('That PIN is not right. Try again.');
+  await other.locator('#pin-input').fill('2468');
+  await other.locator('#btn-unlock').click();
+  await expect(other.locator('#student-body')).toContainText('Grace');
+  await other.locator('#new-class-name').fill('Room 1');
+  await other.locator('#new-class-form button[type="submit"]').click();
+  await expect(other.locator('.class-chip')).toHaveCount(1);
+
+  // Forgetting the PIN is only possible by also deleting the class data.
+  await page.reload();
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.locator('#btn-forgot-pin').click();
+  await expect(page.locator('#lock-title')).toHaveText('🔒 Create a teacher PIN');
+  expect(await page.evaluate(() => Object.keys(localStorage).filter((key) => key.startsWith('bloomtype_profile_')
+    || ['bloomtype-teacher-pin', 'bloomtype-profile', 'bloomtype-classes'].includes(key)))).toEqual([]);
 });
 
 test('skipping words never finishes a level, but typing them does', async ({ page }) => {

@@ -7,8 +7,12 @@ test('a teacher sets up a class with an assignment and words, and sees the stude
     localStorage.clear();
   });
 
-  // 1. Teacher: create the class, set an assignment and a spelling list.
+  // 1. Teacher: set a PIN, create the class, set an assignment and a spelling list.
   await page.goto('teacher.html');
+  await page.locator('#pin-input').fill('2468');
+  await page.locator('#pin-confirm').fill('2468');
+  await page.locator('#btn-unlock').click();
+  await expect(page.locator('#teacher-dashboard')).toBeVisible();
   await page.locator('#new-class-name').fill('Room 12');
   await page.locator('#new-class-form button[type="submit"]').click();
   const code = (await page.locator('#settings-class-code').textContent()).trim();
