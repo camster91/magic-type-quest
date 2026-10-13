@@ -3,6 +3,13 @@ import { expect, test } from '@playwright/test';
 
 const standards = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
+// axe measures contrast at one instant, so a fade caught halfway reports
+// low contrast. Reduced motion makes fades instant; the end states are what
+// learners read.
+test.beforeEach(async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+});
+
 function summarize(violations) {
   return violations.map((violation) => ({
     id: violation.id,

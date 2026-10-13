@@ -76,6 +76,23 @@ const {
 let animationId = null;
 let lastFrameTime = 0;
 
+// Run exactly one animation loop. Starting a new game cancels any loop that
+// is still scheduled, so loops never pile up across games.
+function startLoop() {
+  if (animationId !== null) cancelAnimationFrame(animationId);
+  lastFrameTime = 0;
+  animationId = requestAnimationFrame(gameLoop);
+}
+
+function stopLoop() {
+  if (animationId !== null) cancelAnimationFrame(animationId);
+  animationId = null;
+}
+
+// Keep at most this many flowers in the saved garden so the profile stays
+// well under the localStorage quota. `gardenTotal` keeps the full count.
+const MAX_SAVED_GARDEN = 500;
+
 function resizeCanvas() {
   if (!canvas.parentElement) return;
   const rect = canvas.parentElement.getBoundingClientRect();
@@ -95,7 +112,7 @@ function resizeCanvas() {
 // ===== GAME LOOP =====
 function gameLoop(timestamp) {
   if (gameState.screen !== 'game' || gameState.gameOver) {
-    animationId = requestAnimationFrame(gameLoop);
+    animationId = null;
     return;
   }
 
@@ -159,8 +176,10 @@ function updateWords(deltaTime) {
   const now = gameState.currentTime;
   const adaptiveSpawnRate = lesson.spawnRate / gameState.adaptiveSpeed;
 
+  const hasWordsLeft = gameState.dailyMoment?.active ||
+    gameState.wordsSpawned < lesson.wordsPerLevel;
   if (gameState.activeWords.length < 1 &&
-      gameState.wordsSpawned < lesson.wordsPerLevel &&
+      hasWordsLeft &&
       now - gameState.lastSpawn > adaptiveSpawnRate) {
     spawnWord();
     gameState.lastSpawn = now;
@@ -464,7 +483,11 @@ function completeWord() {
   };
   gameState.garden.push(flowerData);
   if (!gameState.profile.garden) gameState.profile.garden = [];
+  gameState.profile.gardenTotal = (gameState.profile.gardenTotal ?? gameState.profile.garden.length) + 1;
   gameState.profile.garden.push(flowerData);
+  if (gameState.profile.garden.length > MAX_SAVED_GARDEN) {
+    gameState.profile.garden.splice(0, gameState.profile.garden.length - MAX_SAVED_GARDEN);
+  }
   saveProfile();
   
   // Remove word
@@ -493,6 +516,8 @@ function skipWord() {
   gameState.targetWord = null;
   gameState.targetIndex = 0;
   gameState.combo = 0;
+  // A skipped word is replaced, not counted: levels finish only by typing.
+  gameState.wordsSpawned = Math.max(0, gameState.wordsSpawned - 1);
   
   updateTargetDisplay();
   updateKeyboardHighlight();
@@ -528,7 +553,7 @@ function loseHealth() {
 
 function gameOver() {
   gameState.gameOver = true;
-  cancelAnimationFrame(animationId);
+  stopLoop();
   stopAmbient();
   finalizeLevelSession({ completed: false });
   showGameOver();
@@ -987,6 +1012,8 @@ export function onAvatarChanged() {
 
 // ===== LEVEL MANAGEMENT =====
 function checkLevelComplete() {
+  // Daily Moment ends on its own timer or word target, never as a level.
+  if (gameState.dailyMoment?.active) return;
   const lesson = currentLesson();
   // Level is done when all words have been spawned and none remain active
   if (gameState.wordsSpawned >= lesson.wordsPerLevel && 
@@ -1060,7 +1087,7 @@ function finishDrill() {
     : 100;
 
   gameState.gameOver = true;
-  cancelAnimationFrame(animationId);
+  stopLoop();
   stopAmbient();
   gameState.drillLesson = null;
 
@@ -1181,7 +1208,6 @@ function checkAchievements() {
 // Soft 60s typing session. No game-over, no hearts, no level score — just
 // streak/quest progress and a gentle "session complete" landing. Reuses
 // the existing game engine: words fall, focus mechanic, completeWord.
-let dailyMomentTimerId = null;
 let dailyMomentCountdownId = null;
 
 export function startDailyMoment() {
@@ -1250,7 +1276,7 @@ export function startDailyMoment() {
   const badge = document.getElementById('difficulty-badge');
   if (badge) badge.textContent = `⚡ ${t('daily.title')}`;
 
-  animationId = requestAnimationFrame(gameLoop);
+  startLoop();
 
   // Mobile input for soft keyboard (same as startGame)
   const mobileInput = document.getElementById('mobile-input');
@@ -1260,19 +1286,28 @@ export function startDailyMoment() {
 
 }
 
+function stopDailyMomentTimers() {
+  if (dailyMomentCountdownId) { clearInterval(dailyMomentCountdownId); dailyMomentCountdownId = null; }
+}
+
 function beginDailyMomentCountdown() {
   gameState.dailyMoment.startTime = performance.now();
-  if (dailyMomentTimerId) clearTimeout(dailyMomentTimerId);
-  dailyMomentTimerId = setTimeout(() => endDailyMoment({ reason: 'timeUp' }), 60_000);
-  if (dailyMomentCountdownId) clearInterval(dailyMomentCountdownId);
+  gameState.dailyMoment.pausedAt = null;
+  stopDailyMomentTimers();
+  // The countdown interval also ends the session, so time spent paused
+  // (which shifts startTime forward) never counts against the 60 seconds.
   dailyMomentCountdownId = setInterval(updateDailyMomentHUD, 250);
   updateDailyMomentHUD();
 }
 
 function updateDailyMomentHUD() {
-  if (!gameState.dailyMoment?.active) return;
+  if (!gameState.dailyMoment?.active || gameState.paused) return;
   const elapsed = performance.now() - gameState.dailyMoment.startTime;
   const remaining = Math.max(0, gameState.dailyMoment.durationMs - elapsed);
+  if (remaining <= 0) {
+    endDailyMoment({ reason: 'timeUp' });
+    return;
+  }
   const seconds = Math.ceil(remaining / 1000);
   const wpmEl = document.getElementById('wpm');
   // Reuse the WPM slot to show time + words so we don't add new HUD chrome
@@ -1284,8 +1319,7 @@ export function endDailyMoment({ reason } = {}) {
   void reason;
 
   // Clear timers
-  if (dailyMomentTimerId) { clearTimeout(dailyMomentTimerId); dailyMomentTimerId = null; }
-  if (dailyMomentCountdownId) { clearInterval(dailyMomentCountdownId); dailyMomentCountdownId = null; }
+  stopDailyMomentTimers();
 
   // Capture stats
   const wordsCompleted = gameState.wordsCompleted;
@@ -1309,7 +1343,7 @@ export function endDailyMoment({ reason } = {}) {
   saveProfile();
 
   // Soft landing: stop the loop, route back to menu, show a toast
-  cancelAnimationFrame(animationId);
+  stopLoop();
   stopAmbient();
   gameState.dailyMoment.active = false;
   gameState.gameOver = true; // suppress the normal level/gameover overlays
@@ -1405,7 +1439,7 @@ export function startGame(level = 1) {
   updateLessonInfo();
   
   // Start loop
-  animationId = requestAnimationFrame(gameLoop);
+  startLoop();
   
   // Focus mobile input for virtual keyboard (touch devices only — on desktop
   // it would steal keyboard focus from the real game handler).
@@ -1446,7 +1480,7 @@ export function startDrillMode(drillLesson) {
   updateTargetDisplay();
   updateLessonInfo();
   
-  animationId = requestAnimationFrame(gameLoop);
+  startLoop();
   
   // Focus mobile input for virtual keyboard (touch devices only)
   const mobileInput = document.getElementById('mobile-input');
@@ -1478,6 +1512,15 @@ function preloadImages() {
 
 export function togglePause() {
   gameState.paused = !gameState.paused;
+  const moment = gameState.dailyMoment;
+  if (moment?.active && dailyMomentCountdownId) {
+    if (gameState.paused) {
+      moment.pausedAt = performance.now();
+    } else if (moment.pausedAt) {
+      moment.startTime += performance.now() - moment.pausedAt;
+      moment.pausedAt = null;
+    }
+  }
   const overlay = document.getElementById('pause-overlay');
   if (gameState.paused) {
     overlay.classList.remove('hidden');
@@ -1490,6 +1533,20 @@ export function togglePause() {
     canvas.classList.remove('blurred');
     document.getElementById('game-screen')?.focus();
   }
+}
+
+// Leave a game from the pause menu: stop the loop, music, and any Daily
+// Moment timer. An abandoned Daily Moment earns no streak or rewards.
+export function quitGame() {
+  if (gameState.paused) togglePause();
+  if (gameState.dailyMoment?.active) {
+    stopDailyMomentTimers();
+    gameState.dailyMoment.active = false;
+  }
+  gameState.gameOver = true;
+  stopLoop();
+  stopAmbient();
+  showScreen('menu');
 }
 
 function showGameOver() {
