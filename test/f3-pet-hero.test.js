@@ -111,7 +111,7 @@ describe('F3 — Pet hero: state machine in main.js', () => {
     const fnMatch = mainSrc.match(/function updateHomePet\s*\(\s*\)\s*\{[\s\S]*?\n\}/);
     const body = fnMatch[0];
     expect(body).toMatch(/getPetPath\(avatar, state\)/);
-    expect(body).toMatch(/petImg\.src = /);
+    expect(body).toMatch(/setImageSrc\(petImg, getPetPath\(avatar, state\)\)/);
   });
 
   it('updateHomePet wires the evolution dots to profile.petEvolution (1..3)', () => {
