@@ -545,6 +545,11 @@
         <output id="restore-code" class="restore-code" aria-live="polite"></output>
         <button type="button" id="btn-copy-restore-code" class="btn btn-secondary" data-i18n="restore.copy">Copy</button>
       </div>
+      <div id="link-code-box" class="link-code-box" hidden>
+        <p class="profile-hint" data-i18n="link.hint">Play in class on more than one device? Get a link code here and type it on your other device.</p>
+        <button type="button" id="btn-link-code" class="btn btn-secondary" data-i18n="link.get">Get a code for my other devices</button>
+        <output id="link-code" class="restore-code" aria-live="polite" hidden></output>
+      </div>
       <label class="profile-label" for="restore-code-input" data-i18n="restore.enterLabel">Have a code? Type it here</label>
       <input type="text" id="restore-code-input" class="profile-input" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24" placeholder="XXXX-XXXX-XXXX-XXXX">
       <button type="button" id="btn-restore-code" class="btn btn-secondary" data-i18n="restore.button">Restore progress</button>

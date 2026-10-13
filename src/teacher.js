@@ -6,7 +6,7 @@
 
 import { fetchClassRoster } from './sync.js';
 import { normalizeClassCode } from './classroom.js';
-import { createClassReportCSV, createRosterExport, summarizeStudent } from './reporting.js';
+import { createClassReportCSV, createRosterExport, mergeLinkedRosterRows, summarizeStudent } from './reporting.js';
 import { assignmentStatus, cleanWordList, createClass, deleteClass, getClassMeta, listClasses, updateClass } from './classes.js';
 import { escapeHTML } from './utils.js';
 import { formatNumber } from './i18n.js';
@@ -226,7 +226,9 @@ async function loadClass(code) {
   renderClassSettings();
   
   if (currentMode === 'cloud') {
-    const roster = await fetchClassRoster(currentClassCode);
+    const rows = await fetchClassRoster(currentClassCode);
+    // A child on several linked devices shows as one student.
+    const roster = rows ? mergeLinkedRosterRows(rows) : rows;
     if (roster?.length) renderRoster(roster, true);
     else showEmpty(pageT('teacher.noCloud'));
   } else {

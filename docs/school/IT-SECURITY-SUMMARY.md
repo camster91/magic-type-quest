@@ -25,7 +25,7 @@ A web app (PWA) for typing practice. It runs in any modern browser, including ma
 | `bloomtype-class-<CODE>` | Class roster summaries for the teacher page on this device |
 | `bloomtype-classes` | The teacher's classes, assignments and spelling words |
 
-Clearing site data for the domain removes everything. Chromebooks that wipe storage between users will also wipe progress. Students can carry it with a **save code** (the restore-code feature, once merged) or, later, the cloud class login.
+Clearing site data for the domain removes everything. Chromebooks that wipe storage between users will also wipe progress. Students can carry it with a **save code**. When cloud classes are switched on, a **link code** joins a child's devices into one student instead.
 
 ## Security controls
 

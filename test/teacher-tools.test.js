@@ -5,7 +5,7 @@ import {
   generateClassCode, getClassMeta, listClasses, updateClass,
 } from '../src/classes.js';
 import { practiceDays, practiceSummary, recordPractice } from '../src/practiceLog.js';
-import { createClassReportCSV, summarizeStudent, weakKeysFrom } from '../src/reporting.js';
+import { createClassReportCSV, summarizeStudent, weakKeysFrom, mergeLinkedRosterRows } from '../src/reporting.js';
 
 beforeEach(() => localStorage.clear());
 
@@ -86,6 +86,17 @@ describe('student reports', () => {
 
   it('reports the best run, not the latest one', () => {
     expect(summarizeStudent({ levelStats: { 1: { wpm: 10, bestWpm: 25 } } }).bestWpm).toBe(25);
+  });
+
+  it('shows a child on several linked devices as one student', () => {
+    const rows = mergeLinkedRosterRows([
+      { profile_id: 'd1', student_id: 's1', name: 'Ada', total_words: 100, total_stars: 5, completed_levels: [1, 2], updated_at: '2026-10-01T00:00:00Z' },
+      { profile_id: 'd2', student_id: 's1', name: 'Ada B', total_words: 40, total_stars: 9, completed_levels: [3], updated_at: '2026-10-05T00:00:00Z' },
+      { profile_id: 'd3', student_id: 's2', name: 'Ben', total_words: 7, completed_levels: [], updated_at: '2026-10-02T00:00:00Z' },
+      { profile_id: 'd4', name: 'Old row', completed_levels: [] },
+    ]);
+    expect(rows).toHaveLength(3);
+    expect(rows[0]).toMatchObject({ name: 'Ada B', total_words: 100, total_stars: 9, completed_levels: [1, 2, 3], updated_at: '2026-10-05T00:00:00Z' });
   });
 
   it('exports a full class report as safe CSV', () => {

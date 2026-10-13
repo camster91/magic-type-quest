@@ -612,6 +612,7 @@ function loadProfileScreen() {
   // Static flag check so production builds drop the cloud login code entirely.
   $('btn-join-class-online') && ($('btn-join-class-online').hidden = import.meta.env.VITE_CLOUD_CLASS_LOGIN !== 'true');
   $('restore-code') && ($('restore-code').textContent = encodeRestoreCode(p));
+  $('link-code-box') && ($('link-code-box').hidden = import.meta.env.VITE_CLOUD_CLASS_LOGIN !== 'true');
   renderGrownUpLock();
 
   document.querySelectorAll('.avatar-btn').forEach(btn => {
@@ -956,12 +957,51 @@ function bindEvents() {
     }
   });
 
-  $('btn-restore-code')?.addEventListener('click', () => {
+  $('btn-link-code')?.addEventListener('click', async () => {
+    if (!grownUpAllows()) return;
+    const button = $('btn-link-code');
+    const output = $('link-code');
+    const status = $('restore-code-status');
+    if (import.meta.env.VITE_CLOUD_CLASS_LOGIN !== 'true') return;
+    button.disabled = true;
+    const { createLinkCode } = await import('./cloudLogin.js');
+    const result = await createLinkCode();
+    button.disabled = false;
+    if (result.code) {
+      output.textContent = result.code;
+      output.hidden = false;
+    }
+    if (status) {
+      status.hidden = false;
+      status.textContent = t(result.code ? 'link.made' : `cloudLogin.${result.reason}`);
+    }
+  });
+
+  $('btn-restore-code')?.addEventListener('click', async () => {
     if (!grownUpAllows()) return;
     const input = $('restore-code-input');
     const status = $('restore-code-status');
     const data = decodeRestoreCode(input?.value);
     if (status) status.hidden = false;
+    // A 12-character code from a class device links this device to that child.
+    if (!data && import.meta.env.VITE_CLOUD_CLASS_LOGIN === 'true') {
+      const { linkThisDevice, normalizeLinkCode } = await import('./cloudLogin.js');
+      if (normalizeLinkCode(input?.value)) {
+        if (status) status.textContent = t('cloudLogin.joining');
+        const result = await linkThisDevice(gameState.profile, input.value);
+        if (status) status.textContent = t(result.linked ? 'link.linked' : `cloudLogin.${result.reason}`);
+        if (result.linked) {
+          input.removeAttribute('aria-invalid');
+          input.value = '';
+          saveProfile();
+          updateMenuStats();
+          loadProfileScreen();
+        } else {
+          input.setAttribute('aria-invalid', 'true');
+        }
+        return;
+      }
+    }
     if (!data) {
       if (status) status.textContent = t('restore.invalid');
       input?.setAttribute('aria-invalid', 'true');
@@ -1209,6 +1249,17 @@ function init() {
   // F3: let gameEngine's endDailyMoment trigger a one-shot pet celebrate
   // when the kid lands back on the menu after a Daily Moment.
   window.__triggerPetHeroCelebrate = triggerPetHeroCelebrate;
+  // Static flag check so production builds drop the cloud code entirely.
+  if (import.meta.env.VITE_CLOUD_CLASS_LOGIN === 'true') {
+    import('./cloudLogin.js')
+      .then(({ refreshLinkedProgress }) => refreshLinkedProgress(gameState.profile))
+      .then((changed) => {
+        if (!changed) return;
+        saveProfile({ markPlayed: false });
+        updateMenuStats();
+      })
+      .catch(() => {});
+  }
 }
 
 init();

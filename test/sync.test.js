@@ -251,4 +251,30 @@ describe('student progress export', () => {
       ['class_roster', 'profile_id', 'user-1'],
     ]);
   });
+
+  it('exports every device linked to the same child', async () => {
+    const filters = [];
+    const rows = {
+      profiles: { a: [{ id: 'a', name: 'Ada' }], b: [{ id: 'b', name: 'Ada' }] },
+      game_sessions: { a: [{ id: 1, profile_id: 'a' }], b: [{ id: 2, profile_id: 'b' }] },
+      class_roster: { a: [], b: [{ id: 9, profile_id: 'b' }] },
+    };
+    const sb = {
+      from(table) {
+        let owner;
+        return {
+          select() { return this; },
+          eq(column, value) { owner = value; filters.push([table, value]); return this; },
+          order() { return this; },
+          range: () => Promise.resolve({ data: rows[table][owner], error: null }),
+        };
+      },
+    };
+    const payload = await buildCloudProgressExport(sb, 'b', 'now', 500, ['a', 'b']);
+    expect(payload.profile).toEqual({ id: 'b', name: 'Ada' });
+    expect(payload.linkedProfiles).toEqual([{ id: 'a', name: 'Ada' }]);
+    expect(payload.sessions.map((row) => row.id).sort()).toEqual([1, 2]);
+    expect(payload.rosterMemberships).toEqual([{ id: 9, profile_id: 'b' }]);
+    expect(new Set(filters.map(([, owner]) => owner))).toEqual(new Set(['a', 'b']));
+  });
 });
