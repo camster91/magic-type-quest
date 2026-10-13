@@ -25,6 +25,8 @@ The rules every screen follows: the game, the teacher page, the parent page and 
 
 **Rule:** text that sits on the painted art always gets a dark panel behind it (0.62–0.82 opacity). Never put light text straight on the sky.
 
+**Palette.** Every colour in `styles.css` is a token in `:root`. Solid colours use `var(--name)`. See-through colours use `rgba(var(--rgb-name), alpha)`, where `--rgb-name` holds the colour as `r, g, b`. For example, the panel on the art is `rgba(var(--rgb-night), 0.72)`. `test/css-tokens.test.js` fails if a one-off colour is added: add or reuse a token instead.
+
 ## Type
 
 | Role | Font | Size |

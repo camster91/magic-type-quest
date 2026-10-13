@@ -58,7 +58,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [x] **Claude:** a Meadow home screen ✅ #217., with the scene and the fox behind the menu instead of plain purple.
 - [ ] **Claude (Higgsfield):** remake the 10 level tiles, the pets and the achievement badges in the Meadow painted style. **Done when:** no v1 3D-render art remains on a child-facing screen.
 - [x] **Claude:** on phones, shrink the pet bubble ✅ #217. so the meadow and the word have room.
-- [ ] **Claude:** one design system (colors, type, spacing, buttons) written down and used on all 4 pages. (Written down in `docs/DESIGN-SYSTEM.md`; about 190 old one-off colours still to replace.) **Done when:** the CSS has no one-off colors outside the tokens.
+- [ ] **Claude:** one design system (colors, type, spacing, buttons) written down and used on all 4 pages. (Written down in `docs/DESIGN-SYSTEM.md`. The game stylesheet now uses tokens only, guarded by `test/css-tokens.test.js`; the inline styles in teacher, parents and landing pages are still to move onto the same tokens.) **Done when:** the CSS has no one-off colors outside the tokens.
 
 ### Fun (game mechanics)
 - [x] **Claude:** no dead time between words (#215).
