@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BloomType — Home row poster</title>
+  <link rel="icon" href="data:,">
+  <meta name="description" content="A printable poster showing where each finger rests on the home row.">
+  <style>
+    :root { --ink: #1E1B4B; --left: #1D4ED8; --right: #15803D; --soft: #EDE9FE; --paper: #FFFFFF; }
+    @page { size: landscape; margin: 10mm; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: Arial, Helvetica, sans-serif; }
+    main { max-width: 1000px; margin: 24px auto; padding: 0 16px; text-align: center; }
+    h1 { font-size: 2.4rem; margin: 0 0 6px; }
+    .sub { font-size: 1.2rem; margin: 0 0 28px; }
+    .keys { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+    .key { width: 78px; height: 78px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; background: var(--soft); border: 3px solid currentColor; }
+    .key small { font-size: 0.7rem; font-weight: 400; margin-top: 2px; }
+    .left { color: var(--left); } .right { color: var(--right); }
+    .gap { width: 40px; }
+    .bump { text-decoration: underline; text-underline-offset: 6px; }
+    ul { text-align: left; max-width: 640px; margin: 32px auto 0; font-size: 1.15rem; line-height: 1.7; }
+    .goal { margin-top: 28px; font-size: 1.2rem; border: 2px dashed var(--ink); border-radius: 12px; padding: 12px; }
+    .hint { font-size: 0.9rem; }
+    @media print { .hint { display: none; } }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="hint" data-t="hint">Print this page (Ctrl+P or ⌘P) for the classroom wall.</p>
+    <h1 data-t="h1">🌱 Home row: where fingers rest</h1>
+    <p class="sub" data-t="sub">Find the bumps on <strong>F</strong> and <strong>J</strong>. Every finger comes back home.</p>
+    <div class="keys">
+      <div class="key left">A<small data-t="pinky">pinky</small></div>
+      <div class="key left">S<small data-t="ring">ring</small></div>
+      <div class="key left">D<small data-t="middle">middle</small></div>
+      <div class="key left"><span class="bump">F</span><small data-t="pointer">pointer</small></div>
+      <div class="gap" aria-hidden="true"></div>
+      <div class="key right"><span class="bump">J</span><small data-t="pointer">pointer</small></div>
+      <div class="key right">K<small data-t="middle">middle</small></div>
+      <div class="key right">L<small data-t="ring">ring</small></div>
+      <div class="key right">;<small data-t="pinky">pinky</small></div>
+    </div>
+    <ul>
+      <li data-t="tip1">Sit tall, feet flat, wrists floating.</li>
+      <li data-t="tip2">Eyes on the screen, not your hands.</li>
+      <li data-t="tip3">Thumbs share the space bar.</li>
+      <li data-t="tip4">Careful beats fast. Stars come from accuracy.</li>
+    </ul>
+    <p class="goal" data-t="goal">Our class goal: plant <strong>100 flowers</strong> together. Flowers so far: ______</p>
+  </main>
+
+  <script>
+    var TEXT = {
+      fr: {
+        title: 'BloomType — Affiche de la rangée de repos',
+        hint: 'Imprimez cette page (Ctrl+P ou ⌘P) pour le mur de la classe.',
+        h1: '🌱 Rangée de repos : où posent les doigts',
+        sub: 'Trouvez les petites bosses sur <strong>F</strong> et <strong>J</strong>. Chaque doigt revient à la maison.',
+        pinky: 'auriculaire', ring: 'annulaire', middle: 'majeur', pointer: 'index',
+        tip1: 'Assieds-toi droit, pieds à plat, poignets légers.',
+        tip2: 'Les yeux sur l’écran, pas sur tes mains.',
+        tip3: 'Les pouces partagent la barre d’espace.',
+        tip4: 'Mieux vaut précis que rapide. Les étoiles viennent de la précision.',
+        goal: 'Notre objectif de classe : planter <strong>100 fleurs</strong> ensemble. Fleurs plantées : ______'
+      },
+      es: {
+        title: 'BloomType — Póster de la fila guía',
+        hint: 'Imprime esta página (Ctrl+P o ⌘P) para la pared del aula.',
+        h1: '🌱 Fila guía: dónde descansan los dedos',
+        sub: 'Busca las marcas en <strong>F</strong> y <strong>J</strong>. Cada dedo vuelve a casa.',
+        pinky: 'meñique', ring: 'anular', middle: 'medio', pointer: 'índice',
+        tip1: 'Siéntate derecho, pies planos, muñecas ligeras.',
+        tip2: 'Mira la pantalla, no tus manos.',
+        tip3: 'Los pulgares comparten la barra espaciadora.',
+        tip4: 'Mejor con cuidado que rápido. Las estrellas vienen de la precisión.',
+        goal: 'Meta de la clase: plantar <strong>100 flores</strong> juntos. Flores hasta ahora: ______'
+      }
+    };
+  </script>
+  <script>
+    // Same choice as the teacher page: ?lang=, then the saved profile, then the browser.
+    (function () {
+      var supported = ['en', 'fr', 'es'];
+      var lang = new URLSearchParams(location.search).get('lang');
+      if (supported.indexOf(lang) < 0) {
+        try { lang = (JSON.parse(localStorage.getItem('bloomtype-profile') || 'null') || {}).locale; } catch (e) { lang = null; }
+      }
+      if (supported.indexOf(lang) < 0) lang = (navigator.language || 'en').split('-')[0];
+      if (supported.indexOf(lang) < 0 || lang === 'en') return;
+      var t = TEXT[lang];
+      document.documentElement.lang = lang;
+      document.title = t.title;
+      document.querySelectorAll('[data-t]').forEach(function (el) {
+        var value = t[el.getAttribute('data-t')];
+        if (value) el.innerHTML = value;
+      });
+    })();
+  </script>
+</body>
+</html>

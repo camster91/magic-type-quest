@@ -58,6 +58,7 @@ const REPORT_HEADERS = [
   ['name', 'Name'], ['level', 'Levels done'], ['bestWpm', 'Best WPM'], ['avgAccuracy', 'Accuracy %'],
   ['weakKeys', 'Weak keys'], ['minutes7d', 'Minutes (7 days)'], ['minutesTotal', 'Minutes (total)'],
   ['words', 'Words'], ['stars', 'Stars'], ['lastPlayed', 'Last played'], ['assignment', 'Assignment'],
+  ['saveCode', 'Save code'],
 ];
 
 /** One CSV row per student with the full report columns. */
