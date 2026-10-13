@@ -210,7 +210,8 @@ describe('F2 — CSS: visual states + mobile + reduced motion', () => {
   });
 
   it('hides the card with .streak-hidden', () => {
-    expect(stylesSrc).toMatch(/\.streak-prominent\.streak-hidden\s*\{[^}]*display:\s*none/);
+    // Hidden but still holding its space, so the home screen does not jump.
+    expect(stylesSrc).toMatch(/\.streak-prominent\.streak-hidden\s*\{[^}]*visibility:\s*hidden/);
   });
 
   it('gold gradient variant at >= 7 days', () => {

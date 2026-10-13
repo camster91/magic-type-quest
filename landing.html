@@ -4,11 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <link rel="preload" href="/fonts/fredoka-one-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/nunito-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <title>BloomType — Typing That Grows With Your Class</title>
   <meta name="description" content="A local-first garden typing adventure for grades 2-6. Student play is free; supervised school pilots are available by request.">
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <link rel="manifest" href="manifest.json">
   <style>
+    @font-face { font-family: 'Fredoka One'; font-style: normal; font-weight: 400; font-display: optional; src: url('fonts/fredoka-one-latin-400-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'Nunito'; font-style: normal; font-weight: 400 600; font-display: optional; src: url('fonts/nunito-latin-400-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'Nunito'; font-style: normal; font-weight: 700; font-display: optional; src: url('fonts/nunito-latin-700-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'Nunito'; font-style: normal; font-weight: 800 900; font-display: optional; src: url('fonts/nunito-latin-800-normal.woff2') format('woff2'); }
+    
     /* ===== V2 DESIGN TOKENS (locked from bloomtype-v2-design-brief-2026-06-04.md) ===== */
     :root {
       --lavender:    #B8A4E3;
@@ -350,7 +357,7 @@
       margin-bottom: 14px;
       display: block;
     }
-    .feature h4 {
+    .feature h3 {
       font-family: var(--display);
       font-size: 1.05rem;
       color: #fff;
@@ -491,7 +498,7 @@
       font-size: 1.2rem;
       margin-bottom: 14px;
     }
-    .privacy-card h4 {
+    .privacy-card h3 {
       font-family: var(--display);
       font-size: 1.1rem;
       color: #fff;
@@ -615,7 +622,7 @@
       <article class="bet-card">
         <span class="bet-num">BET 1</span>
         <div class="bet-icon" aria-hidden="true">
-          <img src="assets/ui/streak.png" alt="" onerror="this.parentElement.textContent='⚡'">
+          <img src="assets/ui/streak.webp" alt="" onerror="this.parentElement.textContent='⚡'">
         </div>
         <h3>Daily 60-second Moment</h3>
         <p>A low-stress daily entry point. No game-over. Awards streak + daily quest just for showing up. Replaces "30-minute session or nothing."</p>
@@ -625,7 +632,7 @@
       <article class="bet-card">
         <span class="bet-num">BET 2</span>
         <div class="bet-icon" aria-hidden="true">
-          <img src="assets/pets/flower-celebrate.png" alt="" onerror="this.parentElement.textContent='🌸'">
+          <img src="assets/pets/flower-celebrate.webp" alt="" onerror="this.parentElement.textContent='🌸'">
         </div>
         <h3>Pet as the front of the house</h3>
         <p>The pet IS the brand. Visible on the home screen, reacts to streak state, evolves over time. Kids come back for the pet, not the points.</p>
@@ -635,7 +642,7 @@
       <article class="bet-card">
         <span class="bet-num">BET 3</span>
         <div class="bet-icon" aria-hidden="true">
-          <img src="assets/ui/badge-gold.png" alt="" onerror="this.parentElement.textContent='🏆'">
+          <img src="assets/ui/badge-gold.webp" alt="" onerror="this.parentElement.textContent='🏆'">
         </div>
         <h3>Local class dashboard + this page</h3>
         <p>Teacher-facing: a same-browser roster, progress summary, inactivity alert, and CSV/JSON export. Adult-facing: this public overview for teachers, parents, and district coordinators.</p>
@@ -678,42 +685,42 @@
   <div class="features-grid">
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">🪴</span>
-      <h4>6-digit class codes</h4>
+      <h3>6-digit class codes</h3>
       <p>Kids join with a code. No emails, no accounts, no friction. Works on Chromebooks, iPads, BYOD.</p>
     </article>
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">📊</span>
-      <h4>Real progress data</h4>
+      <h3>Real progress data</h3>
       <p>WPM, accuracy, streaks, words typed per week. Red-flag alerts for students who haven't logged in for 3+ days.</p>
     </article>
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">🏆</span>
-      <h4>Local class dashboard</h4>
+      <h3>Local class dashboard</h3>
       <p>Teachers can review progress from students who use the same browser and class code. There is no global matchmaking or public ranking.</p>
     </article>
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">📥</span>
-      <h4>CSV + JSON export</h4>
+      <h3>CSV + JSON export</h3>
       <p>Take your data anywhere. The district asks, you deliver. No vendor lock-in, no "contact us for export."</p>
     </article>
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">⚡</span>
-      <h4>Daily Moment nudges</h4>
+      <h3>Daily Moment nudges</h3>
       <p>Quiet reminders when a class drops below 50% daily engagement. We tell you, the kids see nothing.</p>
     </article>
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">🎯</span>
-      <h4>Adaptive difficulty</h4>
+      <h3>Adaptive difficulty</h3>
       <p>Words pick themselves based on the kid's last session. Easy days build confidence. Hard days build skill.</p>
     </article>
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">📴</span>
-      <h4>Works offline</h4>
+      <h3>Works offline</h3>
       <p>Spots without wifi? BloomType keeps playing and saves progress locally in the browser. Cloud synchronization is disabled in the public deployment.</p>
     </article>
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">🔒</span>
-      <h4>Privacy-first by default</h4>
+      <h3>Privacy-first by default</h3>
       <p>No third-party analytics, ads, or behavioral profiling. Progress stays on the device unless an authenticated school deployment enables cloud sync.</p>
     </article>
   </div>
@@ -781,17 +788,17 @@
   <div class="privacy-grid">
     <article class="privacy-card">
       <div class="check">✓</div>
-      <h4>No third-party trackers</h4>
+      <h3>No third-party trackers</h3>
       <p>No Google Analytics, Facebook pixel, or Mixpanel. In the default deployment, typing progress stays in the browser on the device.</p>
     </article>
     <article class="privacy-card">
       <div class="check">✓</div>
-      <h4>Cloud sync requires school setup</h4>
+      <h3>Cloud sync requires school setup</h3>
       <p>Cloud storage remains disabled until authenticated access, school consent, retention, and deletion procedures are configured and approved.</p>
     </article>
     <article class="privacy-card">
       <div class="check">✓</div>
-      <h4>No ads. No IAP for kids.</h4>
+      <h3>No ads. No IAP for kids.</h3>
       <p>Zero in-game purchases on the kid surface. The only money flows from schools to us. No data sales. No behavioral profiling.</p>
     </article>
   </div>
@@ -857,7 +864,7 @@
 
   // Pet image (loaded once)
   const petImg = new Image();
-  petImg.src = 'assets/pets/flower-celebrate.png';
+  petImg.src = 'assets/pets/flower-celebrate.webp';
   let petReady = false;
   petImg.onload = () => { petReady = true; };
 

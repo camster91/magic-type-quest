@@ -12,8 +12,8 @@ export function createCanvasEffects({
   random = Math.random,
 }) {
   const particles = [];
+  // Loaded with the scene images, only when the classic garden is drawn.
   const particleTexture = new ImageCtor();
-  particleTexture.src = 'assets/pro/particles/sparkle.png';
   const backgroundLayers = {
     sky: { img: null, scroll: 0.02 },
     trees: { img: null, scroll: 0.05 },
@@ -42,6 +42,7 @@ export function createCanvasEffects({
   }
 
   function loadSceneImages() {
+    if (!particleTexture.src) particleTexture.src = 'assets/pro/particles/sparkle.png';
     backgroundLayers.sky.img = loadImage('assets/backgrounds/magical_garden-sky.png', true);
     backgroundLayers.trees.img = loadImage('assets/backgrounds/magical_garden-mid.png', true);
     backgroundLayers.hills.img = loadImage('assets/backgrounds/magical_garden-foreground.png', true);
@@ -291,7 +292,7 @@ export function createCanvasEffects({
   }
 
   function drawTexturedParticles() {
-    if (!particleTexture.complete) {
+    if (!particleTexture.complete || !particleTexture.naturalWidth) {
       drawSolidParticles();
       return;
     }

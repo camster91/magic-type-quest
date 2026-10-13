@@ -438,17 +438,27 @@ export const LESSON_LEVELS = {
   },
 };
 
+// Shift lessons accept capital letters only; every other lesson accepts
+// lowercase letters and digits (see gameInput.js processKeystroke).
+export function isTypableWord(word, requiresShift = false) {
+  if (typeof word !== 'string') return false;
+  return requiresShift ? /^[A-Z]+$/.test(word) : /^[a-z0-9]+$/.test(word);
+}
+
 // Get lesson by game level — injects expanded word bank dynamically
 export function getLessonByLevel(level) {
   const base = LESSON_LEVELS[level] || LESSON_LEVELS[1];
   const expanded = ALL_WORDS[level];
   const sentences = ALL_SENTENCES[level];
   
-  // Merge expanded words (if available) into base lesson
-  if (expanded && expanded.length > 0) {
+  // Merge expanded words (if available) into base lesson. Only keep words
+  // the game input can accept, so a learner never gets stuck on a phrase,
+  // punctuation, or a capital letter outside a Shift lesson.
+  const typable = (expanded || []).filter((word) => isTypableWord(word, base.requiresShift === true));
+  if (typable.length > 0) {
     return {
       ...base,
-      words: expanded,
+      words: typable,
       sentences: sentences || [],
     };
   }

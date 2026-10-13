@@ -381,6 +381,7 @@ test('the teacher dashboard stays locked until the PIN is entered', async ({ pag
   await expect(page.locator('#lock-title')).toHaveText('🔒 Teacher dashboard locked');
   // Locking removes the rendered student data from the page.
   await expect(page.locator('#student-body tr')).toHaveCount(0);
+  await expect(page.locator('#class-list > *')).toHaveCount(0);
 
   // A new tab needs the PIN again.
   const other = await page.context().newPage();
@@ -399,4 +400,38 @@ test('the teacher dashboard stays locked until the PIN is entered', async ({ pag
   await page.locator('#btn-forgot-pin').click();
   await expect(page.locator('#lock-title')).toHaveText('🔒 Create a teacher PIN');
   expect(await page.evaluate(() => Object.keys(localStorage).filter((key) => key.startsWith('bloomtype_profile_') || key === 'bloomtype-teacher-pin'))).toEqual([]);
+});
+
+test('skipping words never finishes a level, but typing them does', async ({ page }) => {
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem('seeded')) return;
+    sessionStorage.setItem('seeded', '1');
+    localStorage.clear();
+    localStorage.setItem('bloomtype-profile', JSON.stringify({
+      name: 'Tester', tutorialSeen: true, seenFingerGuide: true, completedLevels: [1],
+    }));
+  });
+  await page.goto('');
+  await page.locator('#btn-start').click();
+  await expect.poll(() => page.evaluate(() => window.gameState.screen)).toBe('game');
+  await expect.poll(() => page.evaluate(() => window.gameState.paused)).toBe(false);
+
+  // Level 1 has 10 words. Skipping more than that must not finish it.
+  for (let i = 0; i < 15; i++) {
+    // Let the next word appear now instead of after the 4s spawn delay.
+    await page.evaluate(() => { window.gameState.lastSpawn = -Infinity; });
+    await expect.poll(() => page.evaluate(() => Boolean(window.gameState.targetWord))).toBe(true);
+    await page.keyboard.press('Space');
+  }
+  expect(await page.evaluate(() => window.gameState.levelComplete)).toBe(false);
+  expect(await page.evaluate(() => window.gameState.wordsCompleted)).toBe(0);
+
+  for (let i = 0; i < 10; i++) {
+    await page.evaluate(() => { window.gameState.lastSpawn = -Infinity; });
+    await expect.poll(() => page.evaluate(() => window.gameState.targetWord?.text || '')).not.toBe('');
+    const text = await page.evaluate(() => window.gameState.targetWord.text);
+    await page.keyboard.type(text);
+  }
+  await expect.poll(() => page.evaluate(() => window.gameState.levelComplete)).toBe(true);
+  expect(await page.evaluate(() => window.gameState.wordsCompleted)).toBe(10);
 });

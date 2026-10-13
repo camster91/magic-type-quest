@@ -1,3 +1,7 @@
+function isMobileInput(element) {
+  return element?.id === 'mobile-input';
+}
+
 function isTextEntry(element) {
   return element?.id !== 'mobile-input' &&
     (element?.tagName === 'INPUT' || element?.tagName === 'TEXTAREA');
@@ -49,6 +53,7 @@ export function createGameInputController({
     if (requiresShift) {
       if (rawKey.length !== 1 || !/[a-zA-Z]/.test(rawKey)) return;
       if (!isShift) {
+        state.totalKeystrokes++;
         onWrongKeystroke(rawKey.toLowerCase());
         showShiftHint();
         return;
@@ -115,7 +120,12 @@ export function createGameInputController({
       return;
     }
 
-    if (state.paused || isTextEntry(getActiveElement())) return;
+    const activeElement = getActiveElement();
+    if (state.paused || isTextEntry(activeElement)) return;
+    // When the hidden mobile input has focus, printable keys also arrive as
+    // `input` events (handleMobileInput). Handling them here as well would
+    // count every key press twice, so leave them to the input handler.
+    if (isMobileInput(activeElement) && event.key.length === 1) return;
     if (event.key === ' ') {
       event.preventDefault();
       skipWord();
@@ -136,6 +146,11 @@ export function createGameInputController({
       return;
     }
     if (!event.data || event.data.length !== 1) {
+      input.value = '';
+      return;
+    }
+    if (event.data === ' ') {
+      skipWord();
       input.value = '';
       return;
     }

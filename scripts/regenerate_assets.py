@@ -392,6 +392,20 @@ def remove_background_if_sprite(filepath: Path, threshold: int = 50) -> None:
     img.save(filepath, "PNG", optimize=True)
 
 
+# The app loads these folders as small WebP files (see src/lessons.js and
+# src/assets.js), so freshly generated PNGs are resized and converted.
+WEBP_FOLDERS = {"levels/": 192, "pets/": 384}
+
+
+def convert_to_webp(filepath: Path, max_side: int) -> Path:
+    img = Image.open(filepath).convert("RGBA")
+    img.thumbnail((max_side, max_side), Image.LANCZOS)
+    webp = filepath.with_suffix(".webp")
+    img.save(webp, "WEBP", quality=82, method=6)
+    filepath.unlink()
+    return webp
+
+
 # --- Main ------------------------------------------------------------------
 
 def main() -> int:
@@ -423,6 +437,8 @@ def main() -> int:
     print(f"Plan: {len(catalog)} assets")
     for relpath, (prompt, aspect, res) in catalog.items():
         target = ASSETS / relpath
+        if any(relpath.startswith(folder) for folder in WEBP_FOLDERS):
+            target = target.with_suffix(".webp")
         size_kb = target.stat().st_size // 1024 if target.exists() else 0
         print(f"  {relpath:40s} {res:10s}  ({size_kb} KB current)")
 
@@ -445,6 +461,11 @@ def main() -> int:
             if not args.no_bg_removal and not relpath.startswith(("pro/bg/", "backgrounds/")):
                 remove_background_if_sprite(target)
                 print(f"  bg-removed")
+
+            for folder, max_side in WEBP_FOLDERS.items():
+                if relpath.startswith(folder):
+                    webp = convert_to_webp(target, max_side)
+                    print(f"  converted to {webp.name} ({webp.stat().st_size // 1024} KB)")
 
             succeeded.append(relpath)
         except urllib.error.HTTPError as e:
