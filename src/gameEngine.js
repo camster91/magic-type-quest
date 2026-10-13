@@ -10,7 +10,7 @@ import { evaluateQuests, bumpStreakIfToday } from './quests.js';
 import { playAmbient, playSound, stopAmbient, initAudio } from './audio.js';
 import { getWeakKeys } from './drills.js';
 import { recordKeyPractice } from './spacedRep.js';
-import { formatNumber, localizeFingerLabel, t } from './i18n.js';
+import { formatNumber, localizeAvatarName, localizeFingerLabel, t } from './i18n.js';
 import { localizeAchievement, localizeChapter, localizeLesson, localizeQuest } from './contentTranslations.js';
 import { highlightTargetKey, showKeyFeedback } from './gamePresentation.js';
 import { GameWord } from './gameWord.js';
@@ -840,7 +840,7 @@ function showComboFloater(combo) {
   if (!COMBO_MILESTONES.has(combo)) return;
   const el = document.createElement('div');
   el.className = 'combo-floater';
-  el.textContent = `COMBO x${combo}! 🔥`;
+  el.textContent = t('game.combo', { count: combo });
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 800);
 }
@@ -918,8 +918,7 @@ function setPetImage() {
   if (petImg) {
     petImg.src = getPetImage();
     const avatar = gameState.profile?.avatar || '🌸';
-    const names = { '🌸': 'Flower', '🌻': 'Sunflower', '🐉': 'Dragon', '🐱': 'Cat', '🤖': 'Robot', '🐰': 'Bunny', '🐼': 'Panda', '🦊': 'Fox', '🦉': 'Owl', '🐶': 'Puppy' };
-    petImg.alt = (names[avatar] || 'Flower') + ' Pet';
+    petImg.alt = t('a11y.petAlt', { name: localizeAvatarName(avatar) });
   }
 }
 
