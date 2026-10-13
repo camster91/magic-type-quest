@@ -71,3 +71,19 @@ describe('meadow scene drawing', () => {
     expect(scene.isReady()).toBe(false);
   });
 });
+
+describe('level-complete celebration', () => {
+  it('celebrates until the next level resets the scene', () => {
+    const ctx = { drawImage: vi.fn(), save: vi.fn(), restore: vi.fn(), translate: vi.fn(), rotate: vi.fn(), scale: vi.fn(), fillRect: vi.fn(), beginPath: vi.fn(), ellipse: vi.fn(), fill: vi.fn(), createRadialGradient: () => ({ addColorStop: vi.fn() }), globalAlpha: 1 };
+    const Img = class { constructor() { this.complete = true; this.naturalWidth = 400; this.naturalHeight = 200; } };
+    const scene = createMeadowScene({ context: ctx, state: { canvasW: 800, canvasH: 500 }, ImageCtor: Img, createCanvas: () => ({ getContext: () => ({ ...ctx }) }), now: () => 5000 });
+    scene.load();
+    expect(scene.isCelebrating()).toBe(false);
+    scene.celebrate();
+    expect(scene.isCelebrating()).toBe(true);
+    scene.draw(1, 10);
+    expect(ctx.ellipse).toHaveBeenCalled(); // petals
+    scene.reset();
+    expect(scene.isCelebrating()).toBe(false);
+  });
+});

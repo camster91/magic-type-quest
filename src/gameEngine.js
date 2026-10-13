@@ -18,6 +18,9 @@ import { getLevelScoreBonus, resetGameSession } from './gameSession.js';
 import { createGameInputController, trapDialogFocus } from './gameInput.js';
 import { createCanvasEffects } from './gameCanvas.js';
 import { createMeadowScene } from './v2/meadowScene.js';
+import { discoverForLevel } from './fieldGuide.js';
+import { recordPractice } from './practiceLog.js';
+import { isRelaxed } from './accessibility.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -138,6 +141,13 @@ function resizeCanvas() {
 
 // ===== GAME LOOP =====
 function gameLoop(timestamp) {
+  if (gameState.screen === 'game' && gameState.levelComplete && meadow.isCelebrating()) {
+    // Keep the restored meadow alive behind the level-complete card.
+    meadow.draw(1, gameState.wordsCompleted || 0);
+    // With reduced motion the scene is still, so one frame is enough.
+    animationId = prefersReducedMotion() ? null : requestAnimationFrame(gameLoop);
+    return;
+  }
   if (gameState.screen !== 'game' || gameState.gameOver) {
     animationId = null;
     return;
@@ -264,7 +274,9 @@ function spawnWord() {
   const words = lesson.words;
   const text = words[Math.floor(Math.random() * words.length)];
   
-  const word = new GameWord(text, lesson.speed * gameState.adaptiveSpeed);
+  // Relaxed mode: the word waits for the child instead of falling.
+  const speed = isRelaxed(gameState.profile) ? 0 : lesson.speed * gameState.adaptiveSpeed;
+  const word = new GameWord(text, speed);
   // Set font BEFORE measuring so pills fit words
   ctx.font = '700 26px Nunito, sans-serif';
   word.width = ctx.measureText(text).width + 40;
@@ -1078,6 +1090,7 @@ function levelComplete() {
   if (wasFirstCompletion) {
     gameState.profile.completedLevels.push(gameState.level);
   }
+  pendingFieldGuideCard = discoverForLevel(gameState.profile, gameState.level);
   gameState.profile.totalStars += 10;
   
   // Check pet evolution
@@ -1098,6 +1111,7 @@ function levelComplete() {
   }
 
   // Show celebration
+  if (window.__bloomtypeT15Overlay && meadow.isReady()) meadow.celebrate();
   showLevelComplete();
   showPetReaction('celebrate', t('game.levelComplete'));
   spawnConfetti(gameState.canvasW/2, gameState.canvasH/2, 50);
@@ -1122,6 +1136,8 @@ function finishDrill() {
   stopLoop();
   stopAmbient();
   gameState.drillLesson = null;
+  recordPractice(gameState.profile, elapsedMs);
+  saveProfile();
 
   const toast = document.getElementById('achievement-toast');
   if (toast) {
@@ -1335,6 +1351,12 @@ function beginDailyMomentCountdown() {
 function updateDailyMomentHUD() {
   if (!gameState.dailyMoment?.active || gameState.paused) return;
   const elapsed = performance.now() - gameState.dailyMoment.startTime;
+  if (isRelaxed(gameState.profile)) {
+    // No clock in relaxed mode: the session ends when the words are done.
+    const wpmEl = document.getElementById('wpm');
+    if (wpmEl) wpmEl.textContent = `${gameState.wordsCompleted}/${gameState.dailyMoment.wordsTarget}`;
+    return;
+  }
   const remaining = Math.max(0, gameState.dailyMoment.durationMs - elapsed);
   if (remaining <= 0) {
     endDailyMoment({ reason: 'timeUp' });
@@ -1362,6 +1384,7 @@ export function endDailyMoment({ reason } = {}) {
     ? Math.round((gameState.correctKeystrokes / gameState.totalKeystrokes) * 100)
     : 100;
 
+  recordPractice(gameState.profile, elapsedMs);
   // Persist + bump streak if today
   gameState.profile.lastDailyMomentDate = new Date().toISOString();
   // F2: Daily Moment completion counts toward the streak (same rule as
@@ -1499,7 +1522,7 @@ export function startDrillMode(drillLesson) {
   
   // Force first word with drill lesson data
   const text = drillLesson.words[Math.floor(Math.random() * drillLesson.words.length)];
-  const word = new GameWord(text, drillLesson.speed);
+  const word = new GameWord(text, isRelaxed(gameState.profile) ? 0 : drillLesson.speed);
   ctx.font = '700 26px Nunito, sans-serif';
   word.width = ctx.measureText(text).width + 40;
   word.x = 80 + Math.random() * (gameState.canvasW - 200);
@@ -1521,6 +1544,8 @@ export function startDrillMode(drillLesson) {
 }
 
 function preloadImages() {
+  // The Meadow scene loads its own art; the classic garden art is unused.
+  if (window.__bloomtypeT15Overlay) return Promise.resolve([]);
   const images = [];
   
   // Collect all image URLs
@@ -1544,6 +1569,13 @@ function preloadImages() {
 
 export function togglePause() {
   gameState.paused = !gameState.paused;
+  // Paused time is not practice time, for WPM or the teacher's minutes.
+  if (gameState.paused) {
+    gameState.pausedAt = performance.now();
+  } else if (gameState.pausedAt) {
+    if (gameState.levelStartTime) gameState.levelStartTime += performance.now() - gameState.pausedAt;
+    gameState.pausedAt = 0;
+  }
   const moment = gameState.dailyMoment;
   if (moment?.active && dailyMomentCountdownId) {
     if (gameState.paused) {
@@ -1605,6 +1637,30 @@ function showGameOver() {
   showPetReaction('hurt', t('game.over'));
 }
 
+export function levelStars(accuracy) {
+  if (accuracy >= 95) return 3;
+  if (accuracy >= 80) return 2;
+  return 1;
+}
+
+function countUp(el, target) {
+  if (!el) return;
+  if (prefersReducedMotion() || target <= 0) {
+    el.textContent = target;
+    return;
+  }
+  const start = performance.now();
+  const step = (now) => {
+    const k = Math.min(1, (now - start) / 900);
+    el.textContent = Math.round(target * (1 - (1 - k) ** 3));
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+// The Field Guide card discovered by the level that just ended, if any.
+let pendingFieldGuideCard = null;
+
 function showLevelComplete() {
   const num = document.getElementById('level-complete-num');
   const score = document.getElementById('level-score');
@@ -1621,11 +1677,34 @@ function showLevelComplete() {
   if (words) words.textContent = gameState.wordsCompleted;
   if (combo) combo.textContent = gameState.maxCombo;
   
+  // Stars reward care, not speed: 3 for 95%+ accuracy, 2 for 80%+.
+  const total = gameState.totalKeystrokes || 0;
+  const accuracy = total > 0 ? (gameState.correctKeystrokes / total) * 100 : 100;
+  const stars = levelStars(accuracy);
+  const starsEl = overlay?.querySelector('.level-stars');
+  if (starsEl) {
+    starsEl.innerHTML = [1, 2, 3].map((n) => `<span class="level-star${n <= stars ? ' earned' : ''}" style="--i:${n}">★</span>`).join('');
+    starsEl.setAttribute('role', 'img');
+    starsEl.setAttribute('aria-label', t('game.starsEarned', { count: stars }));
+  }
+  const subtitle = document.getElementById('level-complete-sub');
+  if (subtitle) subtitle.textContent = t('game.levelCompleteNamed', { level: gameState.level });
+  countUp(score, gameState.score);
+  const newCard = document.getElementById('level-new-card');
+  if (newCard) {
+    newCard.hidden = !pendingFieldGuideCard;
+    if (pendingFieldGuideCard) {
+      document.getElementById('level-new-card-img').src = pendingFieldGuideCard.image;
+      document.getElementById('level-new-card-name').textContent = t(`fieldguide.${pendingFieldGuideCard.id}.name`);
+    }
+    pendingFieldGuideCard = null;
+  }
+
   if (isFinal) {
     if (cardTitle) cardTitle.textContent = `🎉 ${t('game.complete')}`;
     if (nextBtn) { nextBtn.textContent = `🏆 ${t('game.quit')}`; nextBtn.classList.add('final'); }
   } else {
-    if (cardTitle) cardTitle.textContent = t('game.levelCompleteNamed', { level: gameState.level });
+    if (cardTitle) cardTitle.textContent = `🌼 ${t('game.meadowRestored')}`;
     if (nextBtn) { nextBtn.textContent = `${t('game.next')} →`; nextBtn.classList.remove('final'); }
   }
   
@@ -1661,7 +1740,8 @@ function updateLessonInfo() {
 export function init() {
   loadProfile();
   resizeCanvas();
-  loadSceneImages();
+  // The Meadow overlay never draws the classic garden, so skip its ~6 MB of art.
+  if (!window.__bloomtypeT15Overlay) loadSceneImages();
   // Expose for testing
   window.gameState = gameState;
   // Desktop keyboard

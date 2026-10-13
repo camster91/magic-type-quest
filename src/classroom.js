@@ -4,6 +4,8 @@
  * to a shared localStorage key. Teachers open the Teacher page and read it.
  */
 
+import { summarizeStudent } from './reporting.js';
+
 const PREFIX = 'bloomtype-class';
 
 function readClassData(key) {
@@ -57,6 +59,7 @@ export function syncToClass(profile) {
     completedLevels: profile.completedLevels || [],
     achievements: (profile.achievements || []).length,
     gardenCount: profile.gardenTotal ?? (profile.garden || []).length,
+    ...summarizeStudent(profile),
   };
   localStorage.setItem(key, JSON.stringify(data));
 }

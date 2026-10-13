@@ -20,6 +20,12 @@ import {
 } from './sync.js';
 import { localizeAchievement, localizeAchievementCategory, localizeLesson, localizeQuest } from './contentTranslations.js';
 import { getCurriculumProgress } from './progression.js';
+import { FIELD_GUIDE, discoveredCards } from './fieldGuide.js';
+import { recordPractice } from './practiceLog.js';
+import { assignmentStatus, buildClassWordsLesson, getClassMeta } from './classes.js';
+import { activePlayerId, listPlayers, startNewPlayer, switchPlayer } from './players.js';
+import { accessibilitySettings, applyAccessibility } from './accessibility.js';
+import { isSoundOn, playAmbient, stopAmbient } from './audio.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -114,6 +120,15 @@ function stopPracticeTimer() {
   practiceInterval = null;
 }
 
+// Save the minutes from this practice lesson once, when it ends or is left.
+function recordPracticeTime() {
+  if (gameState.practiceKeystrokes > 0 && gameState.practiceStartTime) {
+    recordPractice(gameState.profile, performance.now() - gameState.practiceStartTime);
+    gameState.practiceStartTime = 0;
+    saveProfile();
+  }
+}
+
 function updatePracticeStats() {
   // Stop ticking once the learner has left practice by any route.
   if (gameState.screen !== 'practice') {
@@ -157,6 +172,7 @@ function handlePracticeKey(e) {
       if (gameState.practiceWordIndex >= gameState.currentPracticeWords.length) {
         // Lesson complete
         stopPracticeTimer();
+        recordPracticeTime();
         showAchievement(t('practice.master'), t('practice.lessonComplete', { name: practiceLesson.name }), '🎯');
         // Reset and go back to menu after a delay
         setTimeout(() => {
@@ -238,9 +254,9 @@ function renderLevelCards() {
   // to the big "master" badge — we render the lesson's emoji icon over it instead
   // of leaning on a generic illustration.
   const levelImages = {
-    1: 'home-row.png', 2: 'top-row.png', 3: 'bottom-row.png',
-    4: 'master.png', 5: 'capitals.png', 6: 'numbers.png',
-    7: 'master.png', 8: 'master.png', 9: 'master.png', 10: 'master.png'
+    1: 'home-row.webp', 2: 'top-row.webp', 3: 'bottom-row.webp',
+    4: 'master.webp', 5: 'capitals.webp', 6: 'numbers.webp',
+    7: 'master.webp', 8: 'master.webp', 9: 'master.webp', 10: 'master.webp'
   };
 
   container.innerHTML = Object.values(LESSON_LEVELS).map(rawLesson => {
@@ -248,7 +264,7 @@ function renderLevelCards() {
     const unlocked = isLevelUnlocked(lev.id, gameState.profile);
     const done = completed.includes(lev.id);
     const status = done ? 'completed' : !unlocked ? 'locked' : 'play';
-    const imgName = levelImages[lev.id] || 'home-row.png';
+    const imgName = levelImages[lev.id] || 'home-row.webp';
     // T28: use the lesson's `teaches` field as the on-card 1-line subtitle.
     // Falls back to the first sentence of the description if a lesson was
     // somehow added without `teaches`. 90-char ceiling + ellipsis is a
@@ -283,7 +299,26 @@ function renderLevelCards() {
 }
 
 // ===== UPDATE MENU STATS =====
+// Show the class assignment and spelling words set by the teacher on this device.
+function updateClassBanner() {
+  const banner = $('class-banner');
+  if (!banner) return;
+  const p = gameState.profile || {};
+  const meta = getClassMeta(p.classCode);
+  const assignment = meta?.assignment;
+  const status = assignmentStatus(p.completedLevels, assignment);
+  const text = status === 'none' ? ''
+    : status === 'done' ? t('class.assignmentDone', { level: assignment.level })
+    : assignment.due ? t('class.assignment', { level: assignment.level, due: formatDate(`${assignment.due}T12:00:00`, { dateStyle: 'medium' }) })
+    : t('class.assignmentNoDue', { level: assignment.level });
+  const hasWords = Boolean(meta?.words?.length);
+  $('class-banner-text').textContent = text;
+  $('btn-class-words').hidden = !hasWords;
+  banner.hidden = !text && !hasWords;
+}
+
 function updateMenuStats() {
+  updateClassBanner();
   $('menu-stars') && ($('menu-stars').textContent = formatNumber(gameState.profile?.totalStars || 0));
   $('menu-best') && ($('menu-best').textContent = formatNumber(gameState.profile?.highScore || 0));
   $('menu-words') && ($('menu-words').textContent = formatNumber(gameState.profile?.totalWords || 0));
@@ -523,7 +558,34 @@ function triggerPetHeroCelebrate() {
 // ===== PROFILE =====
 import { getPetPath } from './assets.js';
 
+function renderPlayers() {
+  const list = $('players-list');
+  if (!list) return;
+  const current = activePlayerId();
+  const others = listPlayers().filter((player) => player.uuid !== current);
+  list.innerHTML = others.length
+    ? others.map((player) => `<button type="button" class="player-chip" data-player="${escapeHTML(player.uuid)}" aria-label="${escapeHTML(t('players.switchTo', { name: player.name || 'Player' }))}"><span aria-hidden="true">${escapeHTML(player.avatar || '🌸')}</span> ${escapeHTML(player.name || 'Player')}</button>`).join('')
+    : `<p class="profile-hint">${escapeHTML(t('players.onlyOne'))}</p>`;
+  // A signed-in class account saves to one cloud profile, so a sibling's
+  // progress would overwrite it. Switching stays off until sign-out.
+  hasCloudSync().then((signedIn) => {
+    if (!signedIn) return;
+    list.innerHTML = `<p class="profile-hint">${escapeHTML(t('players.cloudOnly'))}</p>`;
+    $('btn-add-player')?.classList.add('hidden');
+  });
+}
+
+// Keep the current player's progress before handing the device to someone else.
+// Switching is not play, so the saved "last played" time is left alone.
+function saveCurrentPlayerIfUsed() {
+  const p = gameState.profile || {};
+  if ((p.totalWords || 0) > 0 || (p.name && p.name !== 'Player') || (p.completedLevels || []).length) {
+    saveProfile({ markPlayed: false });
+  }
+}
+
 function loadProfileScreen() {
+  renderPlayers();
   const p = gameState.profile || {};
   const avatar = p.avatar || '🌸';
   // Update both the kawaii image and the emoji fallback
@@ -537,6 +599,10 @@ function loadProfileScreen() {
   $('profile-words') && ($('profile-words').textContent = p.totalWords || 0);
   $('profile-achievements') && ($('profile-achievements').textContent = (p.achievements?.length) || 0);
   $('voice-toggle') && ($('voice-toggle').checked = p.voiceEnabled !== false);
+  const a11y = accessibilitySettings(p);
+  $('font-select') && ($('font-select').value = a11y.font);
+  $('contrast-toggle') && ($('contrast-toggle').checked = a11y.highContrast);
+  $('relaxed-toggle') && ($('relaxed-toggle').checked = a11y.relaxed);
   $('language-select') && ($('language-select').value = p.locale || 'en');
   refreshCloudControls();
 
@@ -643,8 +709,37 @@ const FLOWER_EMOJIS = {
   flower: '🌸', sunflower: '🌻', daisy: '🌼', tulip: '🌷', rose: '🌹'
 };
 
+function renderFieldGuide(p) {
+  const grid = document.getElementById('field-guide-grid');
+  if (!grid) return;
+  const found = new Set(discoveredCards(p).map((card) => card.id));
+  const count = document.getElementById('field-guide-count');
+  if (count) count.textContent = t('fieldguide.count', { found: found.size, total: FIELD_GUIDE.length });
+  grid.innerHTML = FIELD_GUIDE.map((card) => found.has(card.id)
+    ? `<article class="fg-card">
+        <img src="${escapeHTML(card.image)}" alt="" width="180" height="239" loading="lazy">
+        <h4>${escapeHTML(t(`fieldguide.${card.id}.name`))}</h4>
+        <p>${escapeHTML(t(`fieldguide.${card.id}.fact`))}</p>
+      </article>`
+    : `<article class="fg-card locked">
+        <div class="fg-mystery" aria-hidden="true">?</div>
+        <p>${escapeHTML(t('fieldguide.locked', { level: card.level }))}</p>
+      </article>`).join('');
+}
+
+function updateSoundButton() {
+  const button = $('btn-sound');
+  if (!button) return;
+  const on = isSoundOn();
+  button.textContent = on ? '🔊' : '🔇';
+  button.setAttribute('aria-pressed', String(on));
+  button.setAttribute('aria-label', t(on ? 'sound.on' : 'sound.off'));
+  button.title = t(on ? 'sound.on' : 'sound.off');
+}
+
 function loadGardenScreen() {
   const p = gameState.profile || {};
+  renderFieldGuide(p);
   const garden = p.garden || [];
   const countEl = document.getElementById('garden-count');
   if (countEl) countEl.textContent = p.gardenTotal ?? garden.length;
@@ -730,6 +825,7 @@ function bindEvents() {
   $('btn-lesson-back')?.addEventListener('click', () => showScreen('menu'));
   $('btn-practice-back')?.addEventListener('click', () => {
     stopPracticeTimer();
+    recordPracticeTime();
     showScreen('menu');
   });
   $('btn-profile-back')?.addEventListener('click', () => showScreen('menu'));
@@ -745,6 +841,7 @@ function bindEvents() {
     const confirmed = window.confirm(t('profile.deleteConfirm'));
     if (!confirmed) return;
     deleteLocalProfile();
+    applyAccessibility(gameState.profile);
     updateMenuStats();
     showScreen('menu');
     showAchievement(t('profile.deleted'), t('profile.deletedDesc'), '🗑️');
@@ -795,6 +892,7 @@ function bindEvents() {
       return;
     }
     deleteLocalProfile();
+    applyAccessibility(gameState.profile);
     updateMenuStats();
     showScreen('menu');
     showAchievement(
@@ -827,7 +925,44 @@ function bindEvents() {
   });
 
   // Game overlays
+  $('btn-class-words')?.addEventListener('click', () => {
+    const lesson = buildClassWordsLesson(getClassMeta(gameState.profile?.classCode));
+    if (lesson) startDrillMode(lesson);
+  });
+  // Reading and play settings apply straight away, so children see the change.
+  // Only the changed control is saved, so contrast keeps following the
+  // device setting until the child picks it themselves.
+  const a11yControls = {
+    'font-select': (p, el) => { p.font = el.value || 'default'; },
+    'contrast-toggle': (p, el) => { p.highContrast = el.checked; },
+    'relaxed-toggle': (p, el) => { p.relaxed = el.checked; },
+  };
+  Object.entries(a11yControls).forEach(([id, save]) => $(id)?.addEventListener('change', (event) => {
+    save(gameState.profile, event.currentTarget);
+    applyAccessibility(gameState.profile);
+    saveProfile();
+  }));
+  $('players-list')?.addEventListener('click', async (event) => {
+    const chip = event.target.closest('.player-chip');
+    if (!chip || await hasCloudSync()) return;
+    saveCurrentPlayerIfUsed();
+    if (switchPlayer(chip.dataset.player)) window.location.reload();
+  });
+  $('btn-add-player')?.addEventListener('click', async () => {
+    if (await hasCloudSync()) return;
+    saveCurrentPlayerIfUsed();
+    startNewPlayer();
+    window.location.reload();
+  });
   $('btn-pause')?.addEventListener('click', togglePause);
+  $('btn-sound')?.addEventListener('click', () => {
+    gameState.profile.soundEnabled = !isSoundOn();
+    if (isSoundOn()) playAmbient(); else stopAmbient();
+    saveProfile();
+    updateSoundButton();
+    document.getElementById('game-screen')?.focus();
+  });
+  updateSoundButton();
   $('btn-resume')?.addEventListener('click', togglePause);
   $('btn-quit')?.addEventListener('click', () => {
     quitGame();
@@ -929,6 +1064,7 @@ function init() {
   applyTranslations();
   bindEvents();
   initEngine();
+  applyAccessibility(gameState.profile);
   updateMenuStats();
   // F1: let gameEngine's endDailyMoment refresh the menu's stats
   // (streak counter, lastDailyMomentDate label, quest progress) without

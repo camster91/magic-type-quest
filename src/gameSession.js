@@ -40,8 +40,10 @@ export function resetGameSession(state, {
     targetIndex: 0,
     gameOver: false,
     paused: false,
+    pausedAt: 0,
     lastSpawn: 0,
     nextSpawnAt: 0,
+    practiceRecorded: false,
     lastFrameTime: 0,
     garden: [],
     levelStartTime: now,
@@ -63,4 +65,14 @@ export function resetGameSession(state, {
 /** Curriculum levels earn a small level bonus; named modes never do. */
 export function getLevelScoreBonus(level) {
   return Number.isInteger(level) && level > 0 ? level * 2 : 0;
+}
+
+/**
+ * Time actually spent playing this level. Resuming moves levelStartTime
+ * forward by the pause, and a pause still in progress is left out too.
+ */
+export function activePlayMs(state, now) {
+  if (!state.levelStartTime) return 0;
+  const pausedNow = state.paused && state.pausedAt ? now - state.pausedAt : 0;
+  return Math.max(0, now - state.levelStartTime - pausedNow);
 }

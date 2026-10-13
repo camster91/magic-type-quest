@@ -14,16 +14,16 @@ describe('Asset registry', () => {
 
   it('returns a state-aware pet path', () => {
     const path = getPetPath('🌸', 'happy');
-    expect(path).toBe('assets/pets/flower-happy.png');
+    expect(path).toBe('assets/pets/flower-happy.webp');
   });
 
   it('falls back to flower for unknown emoji', () => {
     const path = getPetPath('🦄', 'idle');
-    expect(path).toBe('assets/pets/flower-idle.png');
+    expect(path).toBe('assets/pets/flower-idle.webp');
   });
 
   it('returns idle by default if state omitted', () => {
     const path = getPetPath('🐉');
-    expect(path).toBe('assets/pets/dragon-idle.png');
+    expect(path).toBe('assets/pets/dragon-idle.webp');
   });
 });
