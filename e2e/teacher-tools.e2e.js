@@ -49,6 +49,8 @@ test('a teacher sets up a class with an assignment and words, and sees the stude
   const row = page.locator('#student-body tr', { hasText: 'Ava' });
   await expect(row).toBeVisible();
   await expect(row).toContainText('Not yet');
+  // The student's save code is on the roster, ready to print for a rescue.
+  await expect(row.locator('td.save-code')).toHaveText(/^[0-9A-Z]{4}(-[0-9A-Z]{4}){3}$/);
 
   const download = page.waitForEvent('download');
   await page.locator('#btn-export-csv').click();
