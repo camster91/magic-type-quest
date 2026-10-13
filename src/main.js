@@ -24,6 +24,7 @@ import { FIELD_GUIDE, discoveredCards } from './fieldGuide.js';
 import { recordPractice } from './practiceLog.js';
 import { assignmentStatus, buildClassWordsLesson, getClassMeta } from './classes.js';
 import { activePlayerId, listPlayers, startNewPlayer, switchPlayer } from './players.js';
+import { accessibilitySettings, applyAccessibility } from './accessibility.js';
 import { isSoundOn, playAmbient, stopAmbient } from './audio.js';
 
 const $ = (id) => document.getElementById(id);
@@ -578,6 +579,10 @@ function loadProfileScreen() {
   $('profile-words') && ($('profile-words').textContent = p.totalWords || 0);
   $('profile-achievements') && ($('profile-achievements').textContent = (p.achievements?.length) || 0);
   $('voice-toggle') && ($('voice-toggle').checked = p.voiceEnabled !== false);
+  const a11y = accessibilitySettings(p);
+  $('font-select') && ($('font-select').value = a11y.font);
+  $('contrast-toggle') && ($('contrast-toggle').checked = a11y.highContrast);
+  $('relaxed-toggle') && ($('relaxed-toggle').checked = a11y.relaxed);
   $('language-select') && ($('language-select').value = p.locale || 'en');
   refreshCloudControls();
 
@@ -906,6 +911,16 @@ function bindEvents() {
     const lesson = buildClassWordsLesson(getClassMeta(gameState.profile?.classCode));
     if (lesson) startDrillMode(lesson);
   });
+  // Reading and play settings apply straight away, so children see the change.
+  const saveA11y = () => {
+    const p = gameState.profile;
+    p.font = $('font-select')?.value || 'default';
+    p.highContrast = Boolean($('contrast-toggle')?.checked);
+    p.relaxed = Boolean($('relaxed-toggle')?.checked);
+    applyAccessibility(p);
+    saveProfile();
+  };
+  ['font-select', 'contrast-toggle', 'relaxed-toggle'].forEach((id) => $(id)?.addEventListener('change', saveA11y));
   $('players-list')?.addEventListener('click', (event) => {
     const chip = event.target.closest('.player-chip');
     if (!chip) return;
@@ -1027,6 +1042,7 @@ function init() {
   applyTranslations();
   bindEvents();
   initEngine();
+  applyAccessibility(gameState.profile);
   updateMenuStats();
   // F1: let gameEngine's endDailyMoment refresh the menu's stats
   // (streak counter, lastDailyMomentDate label, quest progress) without

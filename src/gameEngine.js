@@ -20,6 +20,7 @@ import { createCanvasEffects } from './gameCanvas.js';
 import { createMeadowScene } from './v2/meadowScene.js';
 import { discoverForLevel } from './fieldGuide.js';
 import { recordPractice } from './practiceLog.js';
+import { isRelaxed } from './accessibility.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -272,7 +273,9 @@ function spawnWord() {
   const words = lesson.words;
   const text = words[Math.floor(Math.random() * words.length)];
   
-  const word = new GameWord(text, lesson.speed * gameState.adaptiveSpeed);
+  // Relaxed mode: the word waits for the child instead of falling.
+  const speed = isRelaxed(gameState.profile) ? 0 : lesson.speed * gameState.adaptiveSpeed;
+  const word = new GameWord(text, speed);
   // Set font BEFORE measuring so pills fit words
   ctx.font = '700 26px Nunito, sans-serif';
   word.width = ctx.measureText(text).width + 40;
@@ -1347,6 +1350,12 @@ function beginDailyMomentCountdown() {
 function updateDailyMomentHUD() {
   if (!gameState.dailyMoment?.active || gameState.paused) return;
   const elapsed = performance.now() - gameState.dailyMoment.startTime;
+  if (isRelaxed(gameState.profile)) {
+    // No clock in relaxed mode: the session ends when the words are done.
+    const wpmEl = document.getElementById('wpm');
+    if (wpmEl) wpmEl.textContent = `${gameState.wordsCompleted}/${gameState.dailyMoment.wordsTarget}`;
+    return;
+  }
   const remaining = Math.max(0, gameState.dailyMoment.durationMs - elapsed);
   if (remaining <= 0) {
     endDailyMoment({ reason: 'timeUp' });
@@ -1512,7 +1521,7 @@ export function startDrillMode(drillLesson) {
   
   // Force first word with drill lesson data
   const text = drillLesson.words[Math.floor(Math.random() * drillLesson.words.length)];
-  const word = new GameWord(text, drillLesson.speed);
+  const word = new GameWord(text, isRelaxed(gameState.profile) ? 0 : drillLesson.speed);
   ctx.font = '700 26px Nunito, sans-serif';
   word.width = ctx.measureText(text).width + 40;
   word.x = 80 + Math.random() * (gameState.canvasW - 200);

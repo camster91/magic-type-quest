@@ -7,6 +7,8 @@
   <meta charset="UTF-8">
   <meta name="description" content="BloomType is a free, ad-free typing game for kids. Type words to bring a meadow back to life. Works offline; no account needed.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preload" href="/fonts/fredoka-one-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/nunito-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <title>🌸 BloomType - Garden Typing Adventure</title>
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <meta name="theme-color" content="#8B5CF6">
@@ -540,6 +542,23 @@
       <option value="fr">Français</option>
       <option value="es">Español</option>
     </select>
+
+    <fieldset class="a11y-settings">
+      <legend class="profile-label" data-i18n="a11y.settings">Reading and play</legend>
+      <label class="profile-label" for="font-select" data-i18n="a11y.font">Letters</label>
+      <select id="font-select" class="profile-input">
+        <option value="default" data-i18n="a11y.fontDefault">Standard</option>
+        <option value="readable" data-i18n="a11y.fontReadable">Easy-read (Atkinson Hyperlegible)</option>
+        <option value="dyslexic" data-i18n="a11y.fontDyslexic">OpenDyslexic</option>
+      </select>
+      <label class="toggle-label">
+        <input type="checkbox" id="contrast-toggle"> <span data-i18n="a11y.highContrast">High contrast</span>
+      </label>
+      <label class="toggle-label">
+        <input type="checkbox" id="relaxed-toggle"> <span data-i18n="a11y.relaxed">Relaxed mode: no time pressure</span>
+      </label>
+      <p class="profile-hint" data-i18n="a11y.relaxedHint">Words wait for you and the Daily Moment has no clock.</p>
+    </fieldset>
 
     <label class="toggle-label">
       <input type="checkbox" id="voice-toggle"> 🗣 <span data-i18n="profile.voice">Voice Narration</span>

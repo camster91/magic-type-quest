@@ -1,3 +1,9 @@
+/* Bundled open-licensed fonts (SIL OFL 1.1, see public/fonts/LICENSE-*). */
+@font-face { font-family: 'Fredoka One'; font-style: normal; font-weight: 400; font-display: optional; src: url('/fonts/fredoka-one-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Nunito'; font-style: normal; font-weight: 400 600; font-display: optional; src: url('/fonts/nunito-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Nunito'; font-style: normal; font-weight: 700; font-display: optional; src: url('/fonts/nunito-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Nunito'; font-style: normal; font-weight: 800 900; font-display: optional; src: url('/fonts/nunito-latin-800-normal.woff2') format('woff2'); }
+
 /* ==========================================
    BLOOMTYPE - T15 redesign styles
    Goal: 5 colors max, 1 primary action, solid cards.
@@ -1507,3 +1513,46 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .players-section { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
 .players-list { display: flex; flex-wrap: wrap; gap: 6px; }
 .player-chip { min-height: 44px; padding: 8px 14px; border-radius: 999px; background: var(--card); border: 1px solid var(--card-border); color: var(--text); font-weight: 800; }
+
+/* ===== Reading and play settings ===== */
+@font-face { font-family: 'Atkinson Hyperlegible'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/atkinson-hyperlegible-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Atkinson Hyperlegible'; font-style: normal; font-weight: 700 900; font-display: swap; src: url('/fonts/atkinson-hyperlegible-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'OpenDyslexic'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/opendyslexic-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'OpenDyslexic'; font-style: normal; font-weight: 700 900; font-display: swap; src: url('/fonts/opendyslexic-latin-700-normal.woff2') format('woff2'); }
+
+.a11y-settings { width: 100%; max-width: 420px; border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 10px 12px; margin: 6px 0; display: flex; flex-direction: column; gap: 8px; }
+.a11y-settings legend { padding: 0 6px; }
+
+/* Easy-read letters: a clearer font with a little more space. */
+html[data-font="readable"] body,
+html[data-font="readable"] body * {
+  font-family: 'Atkinson Hyperlegible', 'Nunito', sans-serif !important;
+  letter-spacing: 0.02em;
+  word-spacing: 0.08em;
+}
+html[data-font="dyslexic"] body,
+html[data-font="dyslexic"] body * {
+  font-family: 'OpenDyslexic', 'Nunito', sans-serif !important;
+  letter-spacing: 0.03em;
+  word-spacing: 0.12em;
+  line-height: 1.5;
+}
+html[data-font] .target-word { letter-spacing: 0.08em; }
+
+/* High contrast: solid panels, white text, bright focus and borders. */
+html.high-contrast { --text: #ffffff; --text-dim: #ffffff; --text-mute: #ffffff; --card: #000000; --card-border: #ffffff; }
+html.high-contrast body { background: #000; }
+html.high-contrast :is(.progress-card, .menu-dock, .live-hud, .finger-hint, .target-word, .overlay-card, .class-banner, .fg-card, .level-card, .achievement-toast, .pet-hero-bubble, .profile-input, .a11y-settings) {
+  background: #000 !important;
+  color: #fff !important;
+  border: 2px solid #fff !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+html.high-contrast .menu-bg { background: #000; }
+html.high-contrast .target-word .tw-char.typed { color: #7CFFB2; text-shadow: none; }
+html.high-contrast .target-word .tw-char.next { color: #FFE14D; text-decoration: underline; text-underline-offset: 6px; }
+html.high-contrast :focus-visible { outline: 4px solid #FFE14D !important; outline-offset: 3px; }
+html.high-contrast .btn-cta-primary, html.high-contrast .btn-primary { background: #FFE14D !important; color: #000 !important; border: 2px solid #fff; }
+html.high-contrast .key { background: #000 !important; color: #fff !important; border: 2px solid #fff !important; }
+html.high-contrast .key.target, html.high-contrast .key.highlight { background: #FFE14D !important; color: #000 !important; }

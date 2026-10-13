@@ -1,5 +1,9 @@
 export const dictionaries = {
   en: {
+    'a11y.settings': 'Reading and play', 'a11y.font': 'Letters', 'a11y.fontDefault': 'Standard',
+    'a11y.fontReadable': 'Easy-read (Atkinson Hyperlegible)', 'a11y.fontDyslexic': 'OpenDyslexic',
+    'a11y.highContrast': 'High contrast', 'a11y.relaxed': 'Relaxed mode: no time pressure',
+    'a11y.relaxedHint': 'Words wait for you and the Daily Moment has no clock.',
     'players.title': 'Players on this device', 'players.add': '➕ Add a player', 'players.switchTo': 'Switch to {name}', 'players.onlyOne': 'Brothers and sisters can each have their own player here.',
     'class.assignment': 'Your teacher asks: finish Level {level} by {due}.', 'class.assignmentNoDue': 'Your teacher asks: finish Level {level}.',
     'class.assignmentDone': 'Assignment done: Level {level}! 🎉', 'class.words': '📝 Practice class words',
@@ -99,6 +103,10 @@ export const dictionaries = {
     'evolution.3.line': '“We’re UNSTOPPABLE together!” — Bloom',
   },
   fr: {
+    'a11y.settings': 'Lecture et jeu', 'a11y.font': 'Lettres', 'a11y.fontDefault': 'Standard',
+    'a11y.fontReadable': 'Lecture facile (Atkinson Hyperlegible)', 'a11y.fontDyslexic': 'OpenDyslexic',
+    'a11y.highContrast': 'Contraste élevé', 'a11y.relaxed': 'Mode détente : sans chrono',
+    'a11y.relaxedHint': 'Les mots t’attendent et le Moment du jour n’a pas de minuterie.',
     'players.title': 'Joueurs sur cet appareil', 'players.add': '➕ Ajouter un joueur', 'players.switchTo': 'Passer à {name}', 'players.onlyOne': 'Chaque enfant de la famille peut avoir son propre joueur ici.',
     'class.assignment': 'Ton enseignant demande : termine le niveau {level} pour le {due}.', 'class.assignmentNoDue': 'Ton enseignant demande : termine le niveau {level}.',
     'class.assignmentDone': 'Devoir fait : niveau {level} ! 🎉', 'class.words': '📝 Mots de la classe',
@@ -199,6 +207,10 @@ export const dictionaries = {
     'evolution.3.line': '« Ensemble, nous sommes INARRÊTABLES ! » — Bloom',
   },
   es: {
+    'a11y.settings': 'Lectura y juego', 'a11y.font': 'Letras', 'a11y.fontDefault': 'Estándar',
+    'a11y.fontReadable': 'Lectura fácil (Atkinson Hyperlegible)', 'a11y.fontDyslexic': 'OpenDyslexic',
+    'a11y.highContrast': 'Alto contraste', 'a11y.relaxed': 'Modo tranquilo: sin prisa',
+    'a11y.relaxedHint': 'Las palabras te esperan y el Momento diario no tiene reloj.',
     'players.title': 'Jugadores en este dispositivo', 'players.add': '➕ Añadir jugador', 'players.switchTo': 'Cambiar a {name}', 'players.onlyOne': 'Cada hermano o hermana puede tener su propio jugador aquí.',
     'class.assignment': 'Tu maestro pide: termina el nivel {level} antes del {due}.', 'class.assignmentNoDue': 'Tu maestro pide: termina el nivel {level}.',
     'class.assignmentDone': '¡Tarea hecha: nivel {level}! 🎉', 'class.words': '📝 Palabras de clase',

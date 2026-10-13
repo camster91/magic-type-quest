@@ -4,10 +4,17 @@
   <meta charset="UTF-8">
   <meta name="description" content="See your child's BloomType typing progress: speed, accuracy and keys practised. Stays on this device.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preload" href="/fonts/fredoka-one-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/nunito-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <title>BloomType — Help Your Child Learn to Type at Home</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <style>
+    @font-face { font-family: 'Fredoka One'; font-style: normal; font-weight: 400; font-display: optional; src: url('fonts/fredoka-one-latin-400-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'Nunito'; font-style: normal; font-weight: 400 600; font-display: optional; src: url('fonts/nunito-latin-400-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'Nunito'; font-style: normal; font-weight: 700; font-display: optional; src: url('fonts/nunito-latin-700-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'Nunito'; font-style: normal; font-weight: 800 900; font-display: optional; src: url('fonts/nunito-latin-800-normal.woff2') format('woff2'); }
+    
     :root {
       --bg: #0f0d2e; --text: #f0e6ff; --text-dim: #C4B5FD;
       --primary: #6D28D9; --primary-light: #C4B5FD; --accent: #F9A8D4;
