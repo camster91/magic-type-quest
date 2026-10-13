@@ -9,6 +9,7 @@ import { summarizeStudent } from './reporting.js';
 import { escapeHTML } from './utils.js';
 import { initializePageTranslations, pageT } from './pageTranslations.js';
 import { discoveredCards } from './fieldGuide.js';
+import { mountPilotSurvey } from './pilot.js';
 
 /** Keys a child has clearly learned: 5+ tries at 90%+ accuracy. */
 export function masteredKeys(keySR = {}) {
@@ -102,4 +103,9 @@ export function initFamilyProgress(root = document, storage = localStorage) {
 if (typeof document !== 'undefined' && document.getElementById('family-progress')) {
   initializePageTranslations();
   initFamilyProgress();
+  // The pilot survey is opt-in: it is only built when a grown-up opens it.
+  document.getElementById('pilot-details')?.addEventListener('toggle', (event) => {
+    const survey = document.getElementById('pilot-survey');
+    if (event.target.open && !survey.hasChildNodes()) mountPilotSurvey(survey, 'parent');
+  });
 }

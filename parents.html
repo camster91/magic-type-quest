@@ -144,6 +144,21 @@
       #print-record th, #print-record td { border: 1px solid rgb(var(--rgb-grey)); padding: 4px 10px; text-align: left; }
       #print-record .sig { margin-top: 32px; }
     }
+    /* Pilot feedback (grown-ups only, opt-in, stored on this device) */
+    .pilot-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px; }
+    .pilot-intro { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 10px; }
+    .pilot-details summary { cursor: pointer; font-weight: 800; padding: 10px 0; min-height: 44px; }
+    .pilot-q { border: none; margin: 14px 0; padding: 0; min-width: 0; }
+    .pilot-q legend, .pilot-q label { font-weight: 700; }
+    .pilot-hint { color: var(--text-dim); font-size: 0.85rem; margin: 2px 0 6px; }
+    .pilot-scale { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pilot-choice { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 12px; border: 1px solid var(--glass-border); border-radius: 10px; cursor: pointer; font-weight: 700; }
+    .pilot-field { display: block; width: 100%; max-width: 100%; margin-top: 6px; background: rgba(var(--rgb-white), 0.06); border: 1px solid var(--glass-border); border-radius: 8px; padding: 9px 12px; color: var(--text); font: inherit; }
+    textarea.pilot-field { min-height: 90px; resize: vertical; }
+    .pilot-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .pilot-btn { min-height: 44px; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text); font: inherit; font-weight: 700; cursor: pointer; }
+    .pilot-btn-primary { background: var(--primary); color: var(--white); border-color: var(--primary-light); }
+    .pilot-status { min-height: 1.2em; margin-top: 8px; color: var(--success); font-weight: 700; }
   </style>
 </head>
 <body>
@@ -236,6 +251,18 @@
           <div class="stat-pill">⏱️ 45 Minutes Played</div>
         </div>
         <p style="margin-top:16px; font-size:0.85rem;"><a href="./teacher.html" style="color:var(--primary-light)">Open Progress Dashboard →</a></p>
+      </div>
+    </div>
+
+    <!-- PILOT FEEDBACK (opt-in survey for grown-ups; stays on this device) -->
+    <div class="section" id="pilot-feedback">
+      <h2 data-page-i18n="pilot.title">Pilot feedback</h2>
+      <div class="pilot-card">
+      <p class="pilot-intro" data-page-i18n="pilot.intro">Taking part in the BloomType pilot? This short survey is for grown-ups, not children, and it is optional. Nothing is saved until you press Save, and your answers stay in this browser. To share them, copy or download them and send them to us yourself.</p>
+      <details class="pilot-details" id="pilot-details">
+        <summary data-page-i18n="pilot.open">Answer the pilot survey</summary>
+        <div id="pilot-survey"></div>
+      </details>
       </div>
     </div>
 
