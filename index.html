@@ -517,6 +517,19 @@
       <p class="profile-hint" data-i18n="profile.classHint">Ask your teacher for a class code to share your progress.</p>
     </div>
 
+    <section class="profile-restore-section" aria-labelledby="restore-code-title">
+      <h3 id="restore-code-title" class="profile-label" data-i18n="restore.title">My Save Code</h3>
+      <p class="profile-hint" data-i18n="restore.hint">Write this code down. Type it on another device to bring your progress with you.</p>
+      <div class="restore-code-row">
+        <output id="restore-code" class="restore-code" aria-live="polite"></output>
+        <button type="button" id="btn-copy-restore-code" class="btn btn-secondary" data-i18n="restore.copy">Copy</button>
+      </div>
+      <label class="profile-label" for="restore-code-input" data-i18n="restore.enterLabel">Have a code? Type it here</label>
+      <input type="text" id="restore-code-input" class="profile-input" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24" placeholder="XXXX-XXXX-XXXX-XXXX">
+      <button type="button" id="btn-restore-code" class="btn btn-secondary" data-i18n="restore.button">Restore progress</button>
+      <p id="restore-code-status" class="profile-hint" role="status" aria-live="polite" hidden></p>
+    </section>
+
     <label class="profile-label" for="language-select" data-i18n="profile.language">Language</label>
     <select id="language-select" class="profile-input">
       <option value="en">English</option>
