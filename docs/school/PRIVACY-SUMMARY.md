@@ -43,6 +43,8 @@ A school version with cloud class sync is prepared but **turned off**. It will o
 3. a retention and deletion schedule;
 4. security checks on the hosted database.
 
+Students never make an account or type an email. Each device signs in anonymously. A child who uses two devices (for example a class Chromebook and a home tablet) links them with a 12-character link code made on the first device. The code works for 14 days, and the server stores only a scrambled (hashed) copy of it. Linked devices count as one student on the teacher's list.
+
 When it is on, the extra data stored is listed in [`docs/PRIVACY-OPERATIONS.md`](../PRIVACY-OPERATIONS.md) and the school's agreement. Hosting in Canada is planned for Canadian boards.
 
 ## Laws and frameworks this is designed for

@@ -9,7 +9,7 @@ const syncSource = readFileSync(resolve(root, 'src/sync.js'), 'utf8');
 
 describe('Supabase privacy boundary', () => {
   it('enables RLS on every student-data table', () => {
-    for (const table of ['profiles', 'game_sessions', 'class_roster', 'teacher_codes']) {
+    for (const table of ['profiles', 'game_sessions', 'class_roster', 'teacher_codes', 'student_link_codes', 'linked_devices']) {
       expect(schema).toContain(`alter table ${table} enable row level security`);
     }
   });
@@ -101,5 +101,22 @@ describe('Supabase privacy boundary', () => {
     expect(schema).toContain('create unique index if not exists idx_sessions_session_id');
     expect(schema).toContain('where session_id is not null');
     expect(syncSource).toContain("if (error?.code === '23505') return true");
+  });
+
+  it('links a child\'s devices only through hashed, expiring codes', () => {
+    // Link codes are stored as SHA-256 hashes and no policy exposes them.
+    expect(schema).toContain("encode(digest(code, 'sha256'), 'hex')");
+    expect(schema).toContain("now() + interval '14 days'");
+    expect(schema).not.toMatch(/create policy [^\n]+ on student_link_codes/);
+    expect(schema).toContain('revoke insert, update on linked_devices from authenticated');
+    for (const fn of ['create_link_code()', 'link_device(text)', 'student_profiles()', 'my_student_id()']) {
+      expect(schema).toContain(`revoke all on function public.${fn} from public, anon;`);
+      expect(schema).toContain(`grant execute on function public.${fn} to authenticated;`);
+    }
+  });
+
+  it('never lets a device pose as another child in the roster', () => {
+    expect(schema).toMatch(/function public\.set_roster_student_id\(\)[\s\S]*?new\.student_id := public\.my_student_id\(\);/);
+    expect(schema).toMatch(/create trigger roster_student_id\s+before insert or update on class_roster/);
   });
 });
