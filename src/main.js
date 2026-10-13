@@ -10,7 +10,7 @@ import { getTodaysQuests, isStreakAtRisk } from './quests.js';
 import { getWeakKeys, buildDrillLesson } from './drills.js';
 import { getDueKeys } from './spacedRep.js';
 import { decodeRestoreCode, encodeRestoreCode, mergeRestoredProgress } from './restoreCode.js';
-import { joinClass } from './classroom.js';
+import { joinClass, normalizeClassCode } from './classroom.js';
 import { escapeHTML } from './utils.js';
 import { applyTranslations, formatDate, formatNumber, localizeFingerLabel, setLocale, t } from './i18n.js';
 import {
@@ -27,6 +27,7 @@ import { assignmentStatus, buildClassWordsLesson, getClassMeta } from './classes
 import { activePlayerId, listPlayers, startNewPlayer, switchPlayer } from './players.js';
 import { accessibilitySettings, applyAccessibility } from './accessibility.js';
 import { isSoundOn, playAmbient, stopAmbient } from './audio.js';
+import { createParentLock, isValidPin } from './teacherLock.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -609,6 +610,7 @@ function loadProfileScreen() {
   // Static flag check so production builds drop the cloud login code entirely.
   $('btn-join-class-online') && ($('btn-join-class-online').hidden = import.meta.env.VITE_CLOUD_CLASS_LOGIN !== 'true');
   $('restore-code') && ($('restore-code').textContent = encodeRestoreCode(p));
+  renderGrownUpLock();
 
   document.querySelectorAll('.avatar-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.avatar === (p.avatar || '🌸'));
@@ -699,13 +701,70 @@ function saveProfileScreen() {
   p.locale = setLocale($('language-select')?.value || 'en');
   applyTranslations();
   const code = $('class-code')?.value?.trim();
-  joinClass(p, code);
+  // Changing the class is a grown-up setting when the lock is on.
+  const classChanged = normalizeClassCode(code) !== normalizeClassCode(p.classCode);
+  const allowed = !classChanged || grownUpAllows();
+  if (allowed) joinClass(p, code);
+  else if ($('class-code')) $('class-code').value = p.classCode || '';
   saveProfile();
   updateMenuStats();
   // If the avatar changed, invalidate pet image cache and reload for current state
   if (oldAvatar !== p.avatar) {
     onAvatarChanged();
   }
+  return allowed;
+}
+
+// ===== GROWN-UP LOCK =====
+// An optional PIN so only a grown-up can delete progress, change the class,
+// use a code or add players. Children keep their name, look and reading
+// settings. Like the teacher lock, it keeps children out; it is not encryption.
+const parentLock = createParentLock();
+
+function renderGrownUpLock(message = '') {
+  const status = $('grown-up-status');
+  if (!status) return;
+  const hasPin = parentLock.hasPin();
+  const unlocked = parentLock.isUnlocked();
+  status.textContent = t(!hasPin ? 'parentLock.off' : unlocked ? 'parentLock.unlocked' : 'parentLock.locked');
+  $('grown-up-form').hidden = hasPin && unlocked;
+  $('grown-up-confirm-row').hidden = hasPin;
+  $('btn-grown-up').textContent = t(hasPin ? 'parentLock.unlock' : 'parentLock.set');
+  $('grown-up-unlocked').hidden = !(hasPin && unlocked);
+  $('grown-up-forgot').hidden = !hasPin || unlocked;
+  $('grown-up-pin').value = '';
+  $('grown-up-pin-confirm').value = '';
+  $('grown-up-message').textContent = message;
+}
+
+/** True when a grown-up action may go ahead; otherwise asks for the PIN. */
+function grownUpAllows() {
+  if (!parentLock.hasPin() || parentLock.isUnlocked()) return true;
+  renderGrownUpLock(t('parentLock.needed'));
+  $('grown-up-pin')?.scrollIntoView?.({ block: 'center' });
+  $('grown-up-pin')?.focus();
+  return false;
+}
+
+async function submitGrownUpPin(event) {
+  event.preventDefault();
+  const pin = $('grown-up-pin').value.trim();
+  const say = (key, vars) => { $('grown-up-message').textContent = t(key, vars); };
+  if (!parentLock.hasPin()) {
+    if (!isValidPin(pin)) return say('parentLock.invalid');
+    if (pin !== $('grown-up-pin-confirm').value.trim()) return say('parentLock.mismatch');
+    await parentLock.setPin(pin);
+    renderGrownUpLock();
+    return;
+  }
+  const result = await parentLock.unlock(pin);
+  if (result === 'ok') {
+    renderGrownUpLock();
+    return;
+  }
+  $('grown-up-pin').value = '';
+  if (result === 'locked') say('parentLock.wait', { seconds: Math.ceil(parentLock.lockedForMs() / 1000) });
+  else say('parentLock.wrong');
 }
 
 // ===== GARDEN SCREEN =====
@@ -837,11 +896,21 @@ function bindEvents() {
 
   // Profile
   $('btn-save-profile')?.addEventListener('click', () => {
-    saveProfileScreen();
-    showScreen('menu');
+    if (saveProfileScreen()) showScreen('menu');
+  });
+
+  $('grown-up-form')?.addEventListener('submit', submitGrownUpPin);
+  $('btn-grown-up-lock')?.addEventListener('click', () => {
+    parentLock.lock();
+    renderGrownUpLock();
+  });
+  $('btn-grown-up-remove')?.addEventListener('click', () => {
+    parentLock.removePin();
+    renderGrownUpLock();
   });
 
   $('btn-delete-profile')?.addEventListener('click', () => {
+    if (!grownUpAllows()) return;
     const confirmed = window.confirm(t('profile.deleteConfirm'));
     if (!confirmed) return;
     deleteLocalProfile();
@@ -852,6 +921,7 @@ function bindEvents() {
   });
 
   $('btn-join-class-online')?.addEventListener('click', async () => {
+    if (!grownUpAllows()) return;
     const button = $('btn-join-class-online');
     const status = $('join-class-online-status');
     button.disabled = true;
@@ -885,6 +955,7 @@ function bindEvents() {
   });
 
   $('btn-restore-code')?.addEventListener('click', () => {
+    if (!grownUpAllows()) return;
     const input = $('restore-code-input');
     const status = $('restore-code-status');
     const data = decodeRestoreCode(input?.value);
@@ -935,6 +1006,7 @@ function bindEvents() {
   });
 
   $('btn-delete-cloud-profile')?.addEventListener('click', async () => {
+    if (!grownUpAllows()) return;
     const confirmed = window.confirm(t('profile.deleteCloudConfirm'));
     if (!confirmed) return;
     const button = $('btn-delete-cloud-profile');
@@ -1011,7 +1083,7 @@ function bindEvents() {
     if (switchPlayer(chip.dataset.player)) window.location.reload();
   });
   $('btn-add-player')?.addEventListener('click', async () => {
-    if (await hasCloudSync()) return;
+    if (!grownUpAllows() || await hasCloudSync()) return;
     saveCurrentPlayerIfUsed();
     startNewPlayer();
     window.location.reload();
