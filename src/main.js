@@ -114,7 +114,7 @@ function updatePracticeDisplay() {
   }
 
   wpmEl.textContent = gameState.practiceWPM;
-  accuracyEl.textContent = gameState.practiceAccuracy + '%';
+  accuracyEl.textContent = formatNumber(gameState.practiceAccuracy / 100, { style: 'percent' });
 
   highlightTargetKey(nextChar);
 }
@@ -506,7 +506,7 @@ function updateHomeProgressCard() {
     } else if (level.id >= 5) {
       next.textContent = t('game.mastery');
     } else {
-      next.textContent = t('game.levelUnlock', { name: level.name.toLowerCase(), level: level.id + 1 });
+      next.textContent = t('game.levelUnlock', { name: level.name, level: level.id + 1 });
     }
   }
   if (fill) {
@@ -568,7 +568,7 @@ function updateHomePet() {
     bubbleText = t(grown === 1 ? 'pet.keepStreakOne' : 'pet.keepStreakMany', { count: grown });
   } else {
     state = 'idle';
-    bubbleText = t('pet.greeting', { pet: avatar });
+    bubbleText = t('pet.greeting', { pet: 'Bloom' });
   }
 
   // Apply class + image
@@ -616,7 +616,7 @@ function renderPlayers() {
   const current = activePlayerId();
   const others = listPlayers().filter((player) => player.uuid !== current);
   list.innerHTML = others.length
-    ? others.map((player) => `<button type="button" class="player-chip" data-player="${escapeHTML(player.uuid)}" aria-label="${escapeHTML(t('players.switchTo', { name: player.name || 'Player' }))}"><span aria-hidden="true">${escapeHTML(player.avatar || '🌸')}</span> ${escapeHTML(player.name || 'Player')}</button>`).join('')
+    ? others.map((player) => `<button type="button" class="player-chip" data-player="${escapeHTML(player.uuid)}" aria-label="${escapeHTML(t('players.switchTo', { name: player.name || t('players.unnamed') }))}"><span aria-hidden="true">${escapeHTML(player.avatar || '🌸')}</span> ${escapeHTML(player.name || t('players.unnamed'))}</button>`).join('')
     : `<p class="profile-hint">${escapeHTML(t('players.onlyOne'))}</p>`;
   // A signed-in class account saves to one cloud profile, so a sibling's
   // progress would overwrite it. Switching stays off until sign-out.
@@ -1145,6 +1145,7 @@ function bindEvents() {
   $('language-select')?.addEventListener('change', (event) => {
     gameState.profile.locale = setLocale(event.target.value);
     applyTranslations();
+    updateSoundButton();
     updateMenuStats();
     renderLevelCards();
     loadProfileScreen();

@@ -159,3 +159,78 @@ not approved for repository publication.
 
 The overall gate remains open until separate signed French and Spanish records
 both pass.
+
+## Claude pre-review pass (2026-10-13)
+
+This was a full French and Spanish pass on the game, parent and teacher
+screens, done before the fluent-reviewer matrix above. It does **not**
+replace that matrix: the gate stays open until both fluent reviewers sign.
+The pass removes the mechanical and obvious wording problems so the human
+reviewers can spend their time on meaning and tone.
+
+- Setup: branch `i18n/fr-es-qa`, local `vite build` + `vite preview`,
+  headless Chromium, cloud disabled, fictional profile ("Alexandrine").
+- Locales: Canadian French (`tu` for children, `vous` for adults on the
+  teacher and parent pages) and neutral Latin American Spanish.
+
+### Automated checks (now in `test/translation-quality.test.js`)
+
+| Check | Result |
+|---|---|
+| Every English key exists in `fr` and `es` (game `src/i18n.js` and page `src/pageTranslations.js`), with no extra keys | Pass: 0 missing, 0 extra |
+| `{placeholder}` sets match English in every string | Pass: 0 mismatches |
+| No empty or still-English strings (allowlist for real cognates: Score, Parents, Aster, Date, Minutes, Source, Local, PIN, OpenDyslexic, `:`) | Pass |
+| Rich HTML strings keep the same tag structure as English | Pass |
+| Every `data-i18n*` key in `index.html` exists | Pass |
+| No English-only `aria-label` left on game controls in `index.html` | Pass |
+| The English parent privacy copy contains every section of the static page | Pass (it failed before this pass; see below) |
+| Lesson, chapter, quest and achievement content has the same entries and placeholders in `fr` and `es` | Pass |
+
+### Rendered checks
+
+96 screens were rendered and checked:
+
+- Screens: menu, lesson picker, practice, profile (all hidden sections
+  shown), garden, game HUD, pause, level complete, game over, tutorial,
+  chapter intro, evolution, finger guide, parents page and teacher page.
+- Languages: `fr`, `es` and `en`.
+- Sizes: 360×740 (phone) and 1280×800 (desktop).
+
+A script also flagged clipped text, off-screen buttons and horizontal page
+scroll. The final run found 0 issues.
+
+### Findings fixed
+
+| Severity | Lang | Surface | Problem | Fix |
+|---|---|---|---|---|
+| Critical | en/fr/es | Parent privacy | At runtime the dictionary replaced the static privacy section with an older copy. That copy had no "Download progress" section and an out-of-date cloud-deletion paragraph. | Dictionary text brought in line with `parents.html` in all 3 languages; test added |
+| Major | fr/es | Lesson picker | On locked cards, the lesson description was cut mid-line and the unlock hint was cut off | `.level-card-sub` shows 2 full lines; grid rows size to their content |
+| Major | fr/es | Practice | "⚡ 0 MPM 🎯 0 % Précision" ran off the right edge on phones | Stats wrap and centre; the % sign uses the locale format |
+| Major | fr/es | Home | The unlock hint was squeezed into a one-word column, and the Daily Moment button wrapped | Progress row wraps; shorter "Moment quotidien de 60 s" / "Momento diario de 60 s" |
+| Major | all | Home | The pet greeting said "Hi! I'm 🌸 🌸" (an emoji where the name should be) | Uses "Bloom" |
+| Major | fr/es | Game | The combo pop-up was hard-coded as "COMBO x5! 🔥" | Uses `game.combo` |
+| Major | fr/es | Game, practice | "WPM", "Lv" and "SPACE" were hard-coded | `metric.wpm` (MPM/PPM), `hud.levelShort`, `key.space` |
+| Major | fr/es | Screen reader | These were English-only: menu dock buttons, the schools link, avatar buttons, pet images, evolution dots, the pause button tooltip, the achievements list and the page title | Routed through i18n (`data-i18n-aria-label`, new `data-i18n-title` and `data-i18n-alt`, `a11y.selectAvatar`, `a11y.petAlt`, `app.title`) |
+| Major | es | Fingers | "corazón izquierdo/derecho" (reads as "left/right heart") | "dedo medio izquierdo/derecho" |
+| Major | fr | Teacher page | The teacher was addressed with a mix of `tu` and `vous` (Crée, Colle…) | `vous` throughout |
+| Major | fr/es | Home | "Maîtrise jardin de la…" had no article, and level names were lowercased | The level name is quoted: « Jardin de la rangée de repos 🌸 » |
+| Minor | fr | Game | Awkward or literal wording: "Quitter vers le menu", "Pouvoir de pratique", "Nous t’encouragerons", "ne sont pas pareils", "trop vieux", "Moment du jour" (inconsistent term) | "Retour au menu", "À toi de t’entraîner !", "On t’encourage !", "ne correspondent pas", "Il a peut-être expiré", "Moment quotidien" |
+| Minor | fr | Results | No space before the colon ("Score final: 0") | `common.colon` gives "Score final : 0" |
+| Minor | es | Game and pages | Words from Spain rather than Latin America: añadir, pulsa, introduce, apunta, ordenadores, portátiles, deberes, alumnado, en directo, cifras, ajustes, contacta con, jugar a | agregar, presiona/toca, ingresa, anota, computadoras, laptops, tareas, estudiantes, en vivo, dígitos, configuración, comunícate con, jugar |
+| Minor | es | Home | "Pide a tu docente" here, but "tu maestro" everywhere else | "Pídele a tu maestro" |
+| Minor | fr/es | Quests, achievements | Some titles were violent or odd for children: "Démon/Demonio de vitesse", "Tireur/Tirador précis", "Infierno" | "As de la vitesse"/"Rayo veloz", "Œil de lynx"/"Ojo de águila", "Fuego total" |
+| Minor | fr/es | Home | The "Practice class words" button had lost its verb | "Pratiquer les mots de la classe" / "Practicar palabras de clase" |
+
+### Still open for the fluent reviewers
+
+- Spanish uses `tú` with parents and teachers. That is common in Latin
+  American apps, but a reviewer may prefer `usted` on the teacher page.
+- The French and Spanish lesson names (« Jardin de la rangée de repos »,
+  "Fila guía") and Bloom's gender (`Réveille-le`, `Despiértalo`) need a
+  fluent reviewer's choice.
+- The weak-key drill lesson in `src/drills.js` still has an English name,
+  subtitle and description. No current screen shows them.
+- `landing.html` (the For Schools page) is English-only and has no
+  translation dictionary.
+- The human reviewers still need to run the full A–F journey matrix
+  (live gameplay, deletion, offline and 200% zoom).
