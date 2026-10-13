@@ -141,7 +141,8 @@ function gameLoop(timestamp) {
   if (gameState.screen === 'game' && gameState.levelComplete && meadow.isCelebrating()) {
     // Keep the restored meadow alive behind the level-complete card.
     meadow.draw(1, gameState.wordsCompleted || 0);
-    animationId = requestAnimationFrame(gameLoop);
+    // With reduced motion the scene is still, so one frame is enough.
+    animationId = prefersReducedMotion() ? null : requestAnimationFrame(gameLoop);
     return;
   }
   if (gameState.screen !== 'game' || gameState.gameOver) {
