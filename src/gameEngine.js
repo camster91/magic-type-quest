@@ -1521,6 +1521,8 @@ export function startDrillMode(drillLesson) {
 }
 
 function preloadImages() {
+  // The Meadow scene loads its own art; the classic garden art is unused.
+  if (window.__bloomtypeT15Overlay) return Promise.resolve([]);
   const images = [];
   
   // Collect all image URLs
@@ -1661,7 +1663,8 @@ function updateLessonInfo() {
 export function init() {
   loadProfile();
   resizeCanvas();
-  loadSceneImages();
+  // The Meadow overlay never draws the classic garden, so skip its ~6 MB of art.
+  if (!window.__bloomtypeT15Overlay) loadSceneImages();
   // Expose for testing
   window.gameState = gameState;
   // Desktop keyboard

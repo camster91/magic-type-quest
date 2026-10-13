@@ -119,7 +119,7 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 }
 .streak-prominent .streak-icon { font-size: 1rem; line-height: 1; }
 .streak-prominent .streak-value { font-size: 1rem; font-weight: 800; font-variant-numeric: tabular-nums; min-width: 1ch; text-align: center; }
-.streak-prominent.streak-hidden { display: none; }
+.streak-prominent.streak-hidden { visibility: hidden; }
 .streak-prominent.streak-gold {
   background: rgba(251,191,36,0.12);
   border-color: rgba(251,191,36,0.4);
@@ -145,7 +145,7 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 }
 .streak-chip .streak-icon { font-size: 1rem; line-height: 1; }
 .streak-chip .streak-value { font-size: 1rem; font-weight: 800; font-variant-numeric: tabular-nums; min-width: 1ch; text-align: center; }
-.streak-chip.streak-hidden { display: none; }
+.streak-chip.streak-hidden { visibility: hidden; }
 .streak-chip.streak-gold {
   background: rgba(251,191,36,0.12);
   border-color: rgba(251,191,36,0.4);
@@ -1422,3 +1422,17 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .level-card { color: var(--text); }
 .level-card-img { width: 64px; height: 64px; object-fit: cover; border-radius: 14px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35); }
 .level-card-img:not([style*="none"]) + .level-card-icon { display: none; }
+
+/* ===== Legible text =====
+   Keep child-facing labels at 12px or larger, including on phones. */
+.progress-next, .pet-hero-bubble, .menu-icon .mi-label { font-size: 0.78rem; }
+.km-key { font-size: 0.75rem; }
+@media (max-width: 480px) {
+  .progress-next, .pet-hero-bubble, .menu-icon .mi-label { font-size: 0.75rem; }
+  .km-key { width: 20px; height: 20px; font-size: 0.75rem; }
+}
+
+/* Reserve the learned-keys row before JavaScript fills it, so the start
+   button does not jump down as the page loads. */
+.keyboard-mini { min-height: 27px; }
+@media (max-width: 480px) { .keyboard-mini { min-height: 25px; } }

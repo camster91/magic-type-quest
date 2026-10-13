@@ -238,9 +238,9 @@ function renderLevelCards() {
   // to the big "master" badge — we render the lesson's emoji icon over it instead
   // of leaning on a generic illustration.
   const levelImages = {
-    1: 'home-row.png', 2: 'top-row.png', 3: 'bottom-row.png',
-    4: 'master.png', 5: 'capitals.png', 6: 'numbers.png',
-    7: 'master.png', 8: 'master.png', 9: 'master.png', 10: 'master.png'
+    1: 'home-row.webp', 2: 'top-row.webp', 3: 'bottom-row.webp',
+    4: 'master.webp', 5: 'capitals.webp', 6: 'numbers.webp',
+    7: 'master.webp', 8: 'master.webp', 9: 'master.webp', 10: 'master.webp'
   };
 
   container.innerHTML = Object.values(LESSON_LEVELS).map(rawLesson => {
@@ -248,7 +248,7 @@ function renderLevelCards() {
     const unlocked = isLevelUnlocked(lev.id, gameState.profile);
     const done = completed.includes(lev.id);
     const status = done ? 'completed' : !unlocked ? 'locked' : 'play';
-    const imgName = levelImages[lev.id] || 'home-row.png';
+    const imgName = levelImages[lev.id] || 'home-row.webp';
     // T28: use the lesson's `teaches` field as the on-card 1-line subtitle.
     // Falls back to the first sentence of the description if a lesson was
     // somehow added without `teaches`. 90-char ceiling + ellipsis is a
