@@ -596,6 +596,8 @@ function loadProfileScreen() {
   const emoji = $('avatar-preview-emoji');
   if (emoji) emoji.textContent = avatar;
   $('player-name') && ($('player-name').value = p.name || '');
+  // Show the saved class so saving other settings never drops it.
+  $('class-code') && ($('class-code').value = p.classCode || '');
   $('profile-stars') && ($('profile-stars').textContent = p.totalStars || 0);
   $('profile-best') && ($('profile-best').textContent = p.highScore || 0);
   $('profile-words') && ($('profile-words').textContent = p.totalWords || 0);

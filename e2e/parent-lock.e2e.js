@@ -51,3 +51,27 @@ test('a grown-up PIN keeps progress safe until a grown-up unlocks it', async ({ 
   // The PIN itself survives deleting a child's progress.
   expect(await page.evaluate(() => localStorage.getItem('bloomtype-parent-pin'))).not.toBeNull();
 });
+
+test('saving a child setting keeps the saved class and needs no PIN', async ({ page }) => {
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem('seeded')) return;
+    sessionStorage.setItem('seeded', '1');
+    localStorage.clear();
+    localStorage.setItem('bloomtype-profile', JSON.stringify({
+      name: 'Ada', tutorialSeen: true, seenFingerGuide: true, classCode: 'ROOM12', uuid: 'ada-1',
+    }));
+  });
+  await page.goto('');
+  await page.locator('#btn-profile').click();
+  await expect(page.locator('#class-code')).toHaveValue('ROOM12');
+  await page.locator('#grown-up-pin').fill('1357');
+  await page.locator('#grown-up-pin-confirm').fill('1357');
+  await page.locator('#btn-grown-up').click();
+  await page.locator('#btn-grown-up-lock').click();
+
+  await page.locator('#player-name').fill('Ada L');
+  await page.locator('#btn-save-profile').click();
+  await expect(page.locator('#menu-screen')).toBeVisible();
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('bloomtype-profile')));
+  expect(saved).toMatchObject({ name: 'Ada L', classCode: 'ROOM12' });
+});
