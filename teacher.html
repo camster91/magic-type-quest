@@ -171,6 +171,9 @@
       .print-card h3 { font-size: 16px; margin-bottom: 6px; }
       .print-card .pc-code { font-size: 28px; letter-spacing: 4px; font-weight: 800; margin: 6px 0; }
       .print-card ol { margin-left: 18px; font-size: 13px; }
+      .print-card .pc-code.long { font-size: 18px; letter-spacing: 1px; font-family: monospace; }
+      .print-card p { font-size: 13px; }
+      td.save-code { font-family: monospace; white-space: nowrap; font-size: 0.85rem; }
     }
 
     /* Empty state */
@@ -216,6 +219,7 @@
     <p class="hint" data-page-i18n="teacher.joinHint">Students open BloomType → Profile → Class Code, type this code, then tap Save.</p>
     <div class="row" style="margin-bottom:14px">
       <button type="button" class="btn btn-export" id="btn-print-cards" data-page-i18n="teacher.printCards">🖨 Print student cards</button>
+      <button type="button" class="btn btn-export" id="btn-print-save-codes" data-page-i18n="teacher.printSaveCodes">🔑 Print save codes</button>
       <button type="button" class="btn btn-danger" id="btn-delete-class" data-page-i18n="teacher.deleteClass">Delete class</button>
     </div>
     <div class="settings-grid">
@@ -278,6 +282,7 @@
           <th data-page-i18n="teacher.minutesWeek">Minutes this week</th>
           <th data-page-i18n="teacher.lastPlayed">Last played</th>
           <th data-page-i18n="teacher.assignmentCol">Assignment</th>
+          <th data-page-i18n="teacher.saveCodeCol">Save code</th>
           <th data-page-i18n="teacher.status">Status</th>
         </tr>
       </thead>

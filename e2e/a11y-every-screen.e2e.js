@@ -49,10 +49,13 @@ async function startLevel(page) {
 
 async function typeWholeLevel(page) {
   for (let i = 0; i < 40; i++) {
-    if (await page.evaluate(() => window.gameState.levelComplete)) return;
     await page.evaluate(() => { window.gameState.lastSpawn = -Infinity; window.gameState.nextSpawnAt = 0; });
-    await expect.poll(() => page.evaluate(() => window.gameState.targetWord?.text || '')).not.toBe('');
-    await page.keyboard.type(await page.evaluate(() => window.gameState.targetWord.text));
+    // Wait for the next word, or for the level to finish after the last one.
+    const next = () => page.evaluate(() => (window.gameState.levelComplete ? 'DONE' : window.gameState.targetWord?.text || ''));
+    await expect.poll(next).not.toBe('');
+    const word = await next();
+    if (word === 'DONE') return;
+    await page.keyboard.type(word);
   }
 }
 
