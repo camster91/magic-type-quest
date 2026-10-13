@@ -161,6 +161,22 @@ describe('pilot summary aggregates', () => {
     expect(summary.dateRange).toEqual({ from: '2026-10-01', to: '2026-10-12' });
   });
 
+  it('does not count a stale snapshot as this week', () => {
+    const summary = createPilotSummary([
+      { name: 'Ada', minutes7d: 20, lastPlayed: new Date(NOW.getTime() - 30 * 86400000).toISOString() },
+    ], NOW);
+    expect(summary.minutes.last7Days).toBe(0);
+    expect(summary.minutes.studentsCounted7Days).toBe(1);
+    expect(summary.minutes.activeStudentsLast7Days).toBe(0);
+  });
+
+  it('keeps settings-only saves out of the practice date range', () => {
+    const summary = createPilotSummary([
+      { name: 'Ada', levelStats: {}, practiceLog: { [daysAgo(10)]: 8 }, lastPlayed: NOW.toISOString() },
+    ], NOW);
+    expect(summary.dateRange).toEqual({ from: daysAgo(10), to: daysAgo(10) });
+  });
+
   it('handles an empty class', () => {
     const summary = createPilotSummary([], NOW);
     expect(summary.studentCount).toBe(0);

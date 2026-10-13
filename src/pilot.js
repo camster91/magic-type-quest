@@ -121,6 +121,12 @@ export function average(values) {
 
 const stat = (values) => ({ median: median(values), average: average(values), studentsCounted: values.length });
 
+function isWithinDays(value, days, now) {
+  const time = value ? new Date(value).getTime() : NaN;
+  if (Number.isNaN(time)) return false;
+  return now.getTime() - time < days * 24 * 60 * 60 * 1000;
+}
+
 /**
  * One anonymised summary for a group of students. Accepts local profiles,
  * class snapshots or cloud rows; a number a record does not carry is left out
@@ -159,12 +165,21 @@ export function createPilotSummary(students = [], now = new Date()) {
       if (week.minutes > 0) active7++;
       for (const [day, mins] of Object.entries(st.practiceLog)) if (mins > 0) days.push(day);
     } else if (typeof st.minutes7d === 'number') {
-      minutes7 += st.minutes7d;
+      // A snapshot's minutes7d covers the week before it was saved. Every
+      // practice saves a fresh snapshot, so one older than a week means no
+      // practice since: count it as 0, not as this week's minutes.
+      const fresh = isWithinDays(st.updatedAt ?? st.updated_at ?? st.last_played ?? st.lastPlayed, 7, now);
+      const mins = fresh ? st.minutes7d : 0;
+      minutes7 += mins;
       counted7++;
-      if (st.minutes7d > 0) active7++;
+      if (mins > 0) active7++;
     }
-    const last = st.last_played ?? st.lastPlayed ?? st.updated_at ?? null;
-    if (last && !Number.isNaN(new Date(last).getTime())) days.push(dateOnly(last));
+    // Only records without a practice log fall back to the last-played date:
+    // saving settings also updates it, so it can't stretch the practice range.
+    if (!st.practiceLog) {
+      const last = st.last_played ?? st.lastPlayed ?? st.updated_at ?? null;
+      if (last && !Number.isNaN(new Date(last).getTime())) days.push(dateOnly(last));
+    }
   }
 
   days.sort();
