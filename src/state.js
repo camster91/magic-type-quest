@@ -3,6 +3,8 @@
  */
 import { removeStudentFromAllClasses, syncToClass } from './classroom.js';
 import { syncProfile, logSession } from './sync.js';
+import { recordPractice } from './practiceLog.js';
+import { activePlayMs } from './gameSession.js';
 
 // ===== DEFAULT STATE =====
 export const defaultState = {
@@ -70,6 +72,7 @@ export const defaultState = {
     petEvolution: 1, // 1=sprout, 2=bud, 3=bloom
     seenEvolutions: [], // Track which evolutions the player has seen
     garden: [], // Persistent flower collection across sessions
+    fieldGuide: [], // Wildlife cards discovered by restoring meadows
     classCode: null, // Classroom code for teacher dashboard
     uuid: null, // Stable identifier for class sync
     keySR: {}, // Spaced repetition state for weak keys
@@ -77,11 +80,32 @@ export const defaultState = {
   },
 };
 
+const PROFILE_ARRAY_FIELDS = ['completedLevels', 'seenEvolutions', 'garden', 'fieldGuide'];
+const PROFILE_OBJECT_FIELDS = ['keySR'];
+
 // ===== LIVE GAME STATE =====
 export const gameState = createGameState();
 
 function createGameState() {
-  return { ...defaultState, profile: { ...defaultState.profile } };
+  return { ...defaultState, profile: normalizeProfile() };
+}
+
+/**
+ * Merge saved data over the defaults, giving every profile its own arrays
+ * and objects and replacing fields with the wrong type, so a damaged save
+ * cannot crash the game or leak state between profiles.
+ */
+export function normalizeProfile(saved = {}) {
+  const source = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+  const profile = { ...defaultState.profile, ...source };
+  for (const field of PROFILE_ARRAY_FIELDS) {
+    profile[field] = Array.isArray(source[field]) ? source[field] : [];
+  }
+  for (const field of PROFILE_OBJECT_FIELDS) {
+    const value = source[field];
+    profile[field] = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  }
+  return profile;
 }
 
 // ===== PROFILE PERSISTENCE =====
@@ -90,14 +114,15 @@ export function loadProfile() {
     const saved = localStorage.getItem('bloomtype-profile');
     if (saved) {
       const parsed = JSON.parse(saved);
-      gameState.profile = { ...defaultState.profile, ...parsed };
+      gameState.profile = normalizeProfile(parsed);
     }
   } catch (e) {
     console.warn('Failed to load profile:', e);
   }
 }
 
-export function saveProfile() {
+/** Save the profile. markPlayed: false keeps the "last played" time as it was. */
+export function saveProfile({ markPlayed = true } = {}) {
   try {
     const p = gameState.profile;
     if (gameState.score > p.highScore) p.highScore = gameState.score;
@@ -107,7 +132,7 @@ export function saveProfile() {
     p.totalStars += Math.max(0, scoreStars - (gameState.savedScoreStars || 0));
     gameState.savedWordsTyped = wordsTyped;
     gameState.savedScoreStars = scoreStars;
-    p.lastPlayed = new Date().toISOString();
+    if (markPlayed) p.lastPlayed = new Date().toISOString();
     
     // Ensure uuid for class sync
     if (!p.uuid) p.uuid = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -117,7 +142,7 @@ export function saveProfile() {
     // Also save to teacher-readable key
     removeProfileCopies(p.uuid);
     const name = (p.name || 'Anonymous').replace(/[^a-zA-Z0-9]/g, '_');
-    localStorage.setItem(`bloomtype_profile_${name}`, JSON.stringify(p));
+    localStorage.setItem(profileCopyKey(name, p.uuid), JSON.stringify(p));
     
     // Sync to class if joined
     if (p.classCode) {
@@ -153,14 +178,22 @@ export function finalizeLevelSession({ completed = false } = {}) {
   if (snapshot) {
     const p = gameState.profile;
     if (!p.levelStats) p.levelStats = {};
-    const wasCompleted = p.levelStats[snapshot.level]?.completed === true;
+    const previous = p.levelStats[snapshot.level] || {};
+    const wasCompleted = previous.completed === true;
     p.levelStats[snapshot.level] = {
       wpm: snapshot.wpm,
+      // The fastest run is kept, so a slower replay never lowers "Best WPM".
+      bestWpm: Math.max(Number(previous.bestWpm ?? previous.wpm) || 0, snapshot.wpm || 0),
       accuracy: snapshot.accuracy,
       score: snapshot.score,
       words: snapshot.wordsCompleted,
       completed: snapshot.completed || wasCompleted,
     };
+  }
+
+  if (snapshot && !gameState.practiceRecorded && gameState.levelStartTime) {
+    gameState.practiceRecorded = true;
+    recordPractice(gameState.profile, activePlayMs(gameState, performance.now()));
   }
 
   saveProfile();
@@ -171,6 +204,19 @@ export function finalizeLevelSession({ completed = false } = {}) {
       .catch(() => {})
       .finally(() => { gameState.sessionLogInFlight = false; });
   }
+}
+
+// Two children with the same name on one device must not overwrite each
+// other's copy, so a clash adds the start of the student's id.
+function profileCopyKey(name, profileId) {
+  const key = `bloomtype_profile_${name}`;
+  try {
+    const existing = JSON.parse(localStorage.getItem(key));
+    if (existing?.uuid && existing.uuid !== profileId) return `${key}_${String(profileId).slice(0, 8)}`;
+  } catch {
+    // A corrupt copy is simply replaced.
+  }
+  return key;
 }
 
 function removeProfileCopies(profileId) {
@@ -196,11 +242,5 @@ export function deleteLocalProfile() {
     removeProfileCopies(profileId);
   }
   localStorage.removeItem('bloomtype-profile');
-  gameState.profile = {
-    ...defaultState.profile,
-    completedLevels: [],
-    seenEvolutions: [],
-    garden: [],
-    keySR: {},
-  };
+  gameState.profile = normalizeProfile();
 }

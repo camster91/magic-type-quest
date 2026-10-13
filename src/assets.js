@@ -17,27 +17,27 @@ export const PET_EMOJI_TO_NAME = {
 };
 
 // Pet emoji -> asset path (state-aware: idle / happy / hurt / celebrate / fire)
-// Uses the new 5-state pack at /assets/pets/{name}-{state}.png
+// Uses the new 5-state pack at /assets/pets/{name}-{state}.webp
 export const PET_NAME_LIST = Object.values(PET_EMOJI_TO_NAME);
 
 export const PET_STATES = ['idle', 'happy', 'hurt', 'celebrate', 'fire'];
 
 export function getPetPath(emoji, state = 'idle') {
   const name = PET_EMOJI_TO_NAME[emoji] || 'flower';
-  return `assets/pets/${name}-${state}.png`;
+  return `assets/pets/${name}-${state}.webp`;
 }
 
 export const ASSET_PATHS = {
   pets: {
     // Legacy single-frame (kept for backwards compat)
-    flower: "assets/pets/flower.png",
-    sunflower: "assets/pets/sunflower.png",
-    dragon: "assets/pets/dragon.png",
-    cat: "assets/pets/cat.png",
-    robot: "assets/pets/robot.png",
-    bunny: "assets/pets/bunny.png",
-    panda: "assets/pets/panda.png",
-    fox: "assets/pets/fox.png",
+    flower: "assets/pets/flower.webp",
+    sunflower: "assets/pets/sunflower.webp",
+    dragon: "assets/pets/dragon.webp",
+    cat: "assets/pets/cat.webp",
+    robot: "assets/pets/robot.webp",
+    bunny: "assets/pets/bunny.webp",
+    panda: "assets/pets/panda.webp",
+    fox: "assets/pets/fox.webp",
   },
   badges: {
     bronze: "assets/badges/bronze.png",
@@ -46,12 +46,12 @@ export const ASSET_PATHS = {
     platinum: "assets/badges/platinum.png",
   },
   levels: {
-    homeRow: "assets/levels/home-row.png",
-    topRow: "assets/levels/top-row.png",
-    bottomRow: "assets/levels/bottom-row.png",
-    capitals: "assets/levels/capitals.png",
-    numbers: "assets/levels/numbers.png",
-    master: "assets/levels/master.png",
+    homeRow: "assets/levels/home-row.webp",
+    topRow: "assets/levels/top-row.webp",
+    bottomRow: "assets/levels/bottom-row.webp",
+    capitals: "assets/levels/capitals.webp",
+    numbers: "assets/levels/numbers.webp",
+    master: "assets/levels/master.webp",
   },
   guides: {
     leftHand: "assets/guides/left-hand.png",
