@@ -12,6 +12,7 @@ import { escapeHTML } from './utils.js';
 import { formatNumber } from './i18n.js';
 import { initializePageTranslations, pageT } from './pageTranslations.js';
 import { createTeacherLock, isValidPin } from './teacherLock.js';
+import { createPilotSummary, downloadJSON, mountPilotSurvey } from './pilot.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -21,6 +22,8 @@ let dashboardBound = false;
 const lock = createTeacherLock();
 // The rows on screen, as data, so exports never scrape the table text.
 let currentRows = [];
+// The raw student records behind those rows, for the anonymised pilot summary.
+let currentStudents = [];
 
 function init() {
   initializePageTranslations();
@@ -41,6 +44,7 @@ function showLock(message = '') {
   $('print-cards')?.replaceChildren();
   if ($('class-settings')) $('class-settings').hidden = true;
   currentRows = [];
+  currentStudents = [];
   $('teacher-lock').classList.remove('hidden');
   $('lock-title').textContent = pageT(settingUp ? 'teacher.lockTitleSet' : 'teacher.lockTitle');
   $('lock-intro').textContent = pageT(settingUp ? 'teacher.lockIntroSet' : 'teacher.lockIntro');
@@ -205,6 +209,11 @@ function bindEvents() {
   $('btn-all-students')?.addEventListener('click', loadLocalData);
   $('btn-export-csv')?.addEventListener('click', exportCSV);
   $('btn-export-json')?.addEventListener('click', exportJSON);
+  $('btn-pilot-summary')?.addEventListener('click', exportPilotSummary);
+  // The survey is opt-in: it is only built when the teacher opens it.
+  $('pilot-details')?.addEventListener('toggle', (event) => {
+    if (event.target.open && !$('pilot-survey').hasChildNodes()) mountPilotSurvey($('pilot-survey'), 'teacher');
+  });
   $('btn-clear-data')?.addEventListener('click', clearAllData);
   $('btn-cloud-mode')?.addEventListener('click', () => toggleMode('cloud'));
   $('btn-local-mode')?.addEventListener('click', () => toggleMode('local'));
@@ -321,6 +330,7 @@ function renderRoster(students, isCloud) {
   
   // Table
   const assignment = getClassMeta(currentClassCode)?.assignment || null;
+  currentStudents = students;
   currentRows = students.map((st) => studentRow(st, isCloud, assignment));
   tbody.innerHTML = currentRows.map((row) => `
       <tr>
@@ -382,6 +392,7 @@ function showEmpty(msg) {
   const empty = $('empty-state');
   const alerts = $('alert-panel');
   currentRows = [];
+  currentStudents = [];
   if (tbody) tbody.innerHTML = '';
   if (stats) stats.innerHTML = '';
   if (alerts) alerts.classList.add('hidden');
@@ -413,6 +424,13 @@ function exportJSON() {
 
   const blob = new Blob([payload], { type: 'application/json' });
   downloadBlob(blob, 'json');
+}
+
+// Class-level numbers only (no names, no class code) for sharing pilot results.
+function exportPilotSummary() {
+  if (currentStudents.length === 0) { alert(pageT('teacher.noExport')); return; }
+  const summary = createPilotSummary(currentStudents);
+  downloadJSON(summary, `bloomtype-pilot-summary-${summary.generatedOn}.json`);
 }
 
 function downloadBlob(blob, extension) {

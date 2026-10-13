@@ -176,6 +176,21 @@
     /* Empty state */
     .empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); }
     .empty-state h2 { font-family: 'Fredoka One', cursive; margin-bottom: 12px; color: var(--text); }
+    /* Pilot feedback (grown-ups only, opt-in, stored on this device) */
+    .pilot-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px; }
+    .pilot-intro { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 10px; }
+    .pilot-details summary { cursor: pointer; font-weight: 800; padding: 10px 0; min-height: 44px; }
+    .pilot-q { border: none; margin: 14px 0; padding: 0; min-width: 0; }
+    .pilot-q legend, .pilot-q label { font-weight: 700; }
+    .pilot-hint { color: var(--text-dim); font-size: 0.85rem; margin: 2px 0 6px; }
+    .pilot-scale { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pilot-choice { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 12px; border: 1px solid var(--glass-border); border-radius: 10px; cursor: pointer; font-weight: 700; }
+    .pilot-field { display: block; width: 100%; max-width: 100%; margin-top: 6px; background: rgba(var(--rgb-white), 0.06); border: 1px solid var(--glass-border); border-radius: 8px; padding: 9px 12px; color: var(--text); font: inherit; }
+    textarea.pilot-field { min-height: 90px; resize: vertical; }
+    .pilot-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .pilot-btn { min-height: 44px; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text); font: inherit; font-weight: 700; cursor: pointer; }
+    .pilot-btn-primary { background: var(--primary); color: var(--white); border-color: var(--primary-light); }
+    .pilot-status { min-height: 1.2em; margin-top: 8px; color: var(--success); font-weight: 700; }
   </style>
 </head>
 <body>
@@ -289,6 +304,18 @@
     <h2 data-page-i18n="teacher.noData">No data yet</h2>
     <p data-page-i18n="teacher.emptyHint">Students will appear here after they play BloomType. 🌸</p>
   </div>
+  <section class="panel pilot-card" id="pilot-panel" aria-labelledby="pilot-title">
+    <h2 id="pilot-title" data-page-i18n="pilot.title">Pilot feedback</h2>
+    <h3 data-page-i18n="pilot.summaryTitle">Pilot summary</h3>
+    <p class="pilot-intro" data-page-i18n="pilot.summaryHint">Class totals for the students shown above: counts, medians and minutes. No names, no class codes. Download it to share pilot results.</p>
+    <button type="button" class="btn btn-export" id="btn-pilot-summary" data-page-i18n="pilot.summaryDownload">📈 Download pilot summary (.json)</button>
+    <h3 style="margin-top:12px" data-page-i18n="pilot.surveyTitle">Pilot survey</h3>
+      <p class="pilot-intro" data-page-i18n="pilot.intro">Taking part in the BloomType pilot? This short survey is for grown-ups, not children, and it is optional. Nothing is saved until you press Save, and your answers stay in this browser. To share them, copy or download them and send them to us yourself.</p>
+      <details class="pilot-details" id="pilot-details">
+        <summary data-page-i18n="pilot.open">Answer the pilot survey</summary>
+        <div id="pilot-survey"></div>
+      </details>
+  </section>
   </div>
 
   <section id="print-cards" aria-hidden="true"></section>
