@@ -76,7 +76,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [x] **Claude:** a class report showing ✅ #220 (CSV done; PDF via the browser's print). each student's speed, accuracy, weak keys, minutes practised and trend, with CSV and PDF export.
 - [x] **Claude:** an assignments feature ✅ #220.: "do 10 minutes of Level 3 by Friday", with a done/not-done view.
 - [x] **Claude:** spelling-list lessons ✅ #220.: a teacher pastes a word list and it becomes a typing lesson. The word filter keeps it safe.
-- [ ] **Claude:** save codes on the teacher roster, so a teacher can rescue a student who forgot theirs (builds on #213).
+- [x] **Claude:** save codes on the teacher roster, so a teacher can rescue a student who forgot theirs (builds on #213) ✅ ("Save code" column, CSV column and "Print save codes" cards).
 - [x] **Claude:** a standards map ✅ draft in #222. showing which levels match ISTE and Common Core keyboarding expectations by grade.
 
 ### Parents and homeschool
@@ -117,7 +117,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 
 ### Getting found
 - [ ] **Claude:** a landing page with a 30-second Meadow trailer (Higgsfield), a teacher demo video, the free-for-families promise and the school price list. Lighthouse 100.
-- [ ] **Claude:** homeschool curriculum guides, plus a "Typing Week" classroom event kit (certificates and posters).
+- [x] **Claude:** homeschool curriculum guides, plus a "Typing Week" classroom event kit (certificates and posters) ✅ (`docs/homeschool/CURRICULUM-GUIDE.md`, `docs/school/TYPING-WEEK-KIT.md`, printable poster and certificate linked from the teacher page).
 - [ ] **Owner:** list it in homeschool directories, state ESA (education savings account) approved-vendor lists, the Google for Education marketplace, ClassLink and Clever.
 - [ ] **Owner:** contact homeschool influencers and co-ops.
 - [ ] **Owner:** go to one teacher conference (ISTE, or a provincial one), with materials made by Claude.

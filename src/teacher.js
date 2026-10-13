@@ -176,6 +176,7 @@ function bindClassEvents() {
     renderClassSettings();
   });
   $('btn-print-cards')?.addEventListener('click', printStudentCards);
+  $('btn-print-save-codes')?.addEventListener('click', printSaveCodes);
   $('btn-delete-class')?.addEventListener('click', () => {
     if (!confirm(pageT('teacher.deleteClassConfirm'))) return;
     deleteClass(currentClassCode);
@@ -183,6 +184,24 @@ function bindClassEvents() {
     loadLocalData();
     renderClassSettings();
   });
+}
+
+// One card per student with their save code, for a student who lost their
+// progress (new device, cleared browser). Codes hold progress, never names.
+function printSaveCodes() {
+  const rows = currentRows.filter((row) => row.saveCode);
+  if (!rows.length) {
+    // Online students sign in to their account on any device, so they never
+    // need a save code.
+    alert(pageT(currentRows.some((row) => row.cloud) ? 'teacher.cloudNoSaveCodes' : 'teacher.noSaveCodes'));
+    return;
+  }
+  $('print-cards').innerHTML = rows.map((row) => `<div class="print-card">
+      <h3>${escapeHTML(row.avatar)} ${escapeHTML(row.name)}</h3>
+      <div class="pc-code long">${escapeHTML(row.saveCode)}</div>
+      <p>${escapeHTML(pageT('teacher.saveCodeHow'))}</p>
+    </div>`).join('');
+  window.print();
 }
 
 function printStudentCards() {
@@ -342,6 +361,7 @@ function renderRoster(students, isCloud) {
         <td>${row.minutes7d == null ? '—' : escapeHTML(formatNumber(row.minutes7d))}</td>
         <td>${escapeHTML(row.lastPlayed || '—')}</td>
         <td>${row.assignmentKey === 'none' ? '—' : `<span class="badge ${ASSIGNMENT_BADGES[row.assignmentKey]}">${escapeHTML(row.assignment)}</span>`}</td>
+        <td class="save-code">${row.saveCode ? escapeHTML(row.saveCode) : escapeHTML(row.cloud ? pageT('teacher.saveCodeCloud') : '—')}</td>
         <td><span class="badge ${row.badgeClass}">${escapeHTML(row.status)}</span></td>
       </tr>
     `).join('');
@@ -378,6 +398,8 @@ function studentRow(st, isCloud, assignment) {
     words: st.total_words ?? st.totalWords ?? 0,
     stars: st.total_stars ?? st.totalStars ?? 0,
     lastPlayed: lastPlayedRaw ? new Date(lastPlayedRaw).toLocaleDateString() : '',
+    saveCode: isCloud ? '' : st.saveCode || '',
+    cloud: Boolean(isCloud),
     assignmentKey,
     assignment: assignmentKey === 'none' ? '' : pageT(`teacher.assign.${assignmentKey}`),
     status: pageT(statusKey),
