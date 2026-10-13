@@ -47,31 +47,92 @@ export function isSoundOn() {
 	return gameState.profile?.soundEnabled !== false;
 }
 
+let birdTimer = null;
+
+// A short two-note chirp, like a songbird far across the meadow.
+export function chirpPlan(random = Math.random) {
+	const base = 2200 + random() * 1600;
+	const notes = 2 + Math.floor(random() * 3);
+	return Array.from({ length: notes }, (_, i) => ({
+		start: i * (0.11 + random() * 0.05),
+		from: base * (1 + (i % 2) * 0.18),
+		to: base * (1.25 + (i % 2) * 0.1),
+		length: 0.07 + random() * 0.05,
+	}));
+}
+
+function playChirp() {
+	if (!audioCtx || !ambientGain || !isSoundOn()) return;
+	const now = audioCtx.currentTime;
+	for (const note of chirpPlan()) {
+		const osc = audioCtx.createOscillator();
+		const g = audioCtx.createGain();
+		osc.type = 'sine';
+		osc.frequency.setValueAtTime(note.from, now + note.start);
+		osc.frequency.exponentialRampToValueAtTime(note.to, now + note.start + note.length);
+		g.gain.setValueAtTime(0.0001, now + note.start);
+		g.gain.exponentialRampToValueAtTime(0.5, now + note.start + 0.015);
+		g.gain.exponentialRampToValueAtTime(0.0001, now + note.start + note.length);
+		osc.connect(g);
+		g.connect(ambientGain);
+		osc.start(now + note.start);
+		osc.stop(now + note.start + note.length + 0.02);
+		osc.onended = () => { g.disconnect(); osc.disconnect(); };
+	}
+}
+
+function scheduleBirds() {
+	birdTimer = setTimeout(() => {
+		playChirp();
+		scheduleBirds();
+	}, 3500 + Math.random() * 5000);
+}
+
+// Soft meadow sounds: a gentle breeze and the odd distant bird.
 export function playAmbient() {
 	if (!audioCtx || !isSoundOn()) return;
 	stopAmbient();
 	try {
 		ambientGain = audioCtx.createGain();
-		ambientGain.gain.value = 0.03;
+		ambientGain.gain.value = 0.05;
 		ambientGain.connect(audioCtx.destination);
 
-		// Two softly detuned sine drones
-		const freqs = [220, 330]; // A3 and E4 (fifth)
-		for (const f of freqs) {
-			const osc = audioCtx.createOscillator();
-			osc.type = 'sine';
-			osc.frequency.value = f + (Math.random() - 0.5) * 2;
-			const g = audioCtx.createGain();
-			g.gain.value = 0.5;
-			osc.connect(g);
-			g.connect(ambientGain);
-			osc.start();
-			ambientNodes.push(osc, g);
+		// Breeze: looping soft noise through a low-pass filter that slowly sways.
+		const seconds = 2;
+		const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * seconds, audioCtx.sampleRate);
+		const data = buffer.getChannelData(0);
+		let last = 0;
+		for (let i = 0; i < data.length; i++) {
+			last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; // brown-ish noise
+			data[i] = last * 3.5;
 		}
+		const noise = audioCtx.createBufferSource();
+		noise.buffer = buffer;
+		noise.loop = true;
+		const filter = audioCtx.createBiquadFilter();
+		filter.type = 'lowpass';
+		filter.frequency.value = 420;
+		const sway = audioCtx.createOscillator();
+		sway.frequency.value = 0.08;
+		const swayDepth = audioCtx.createGain();
+		swayDepth.gain.value = 180;
+		sway.connect(swayDepth);
+		swayDepth.connect(filter.frequency);
+		const breezeGain = audioCtx.createGain();
+		breezeGain.gain.value = 0.6;
+		noise.connect(filter);
+		filter.connect(breezeGain);
+		breezeGain.connect(ambientGain);
+		noise.start();
+		sway.start();
+		ambientNodes.push(noise, sway, swayDepth, filter, breezeGain);
+		scheduleBirds();
 	} catch {}
 }
 
 export function stopAmbient() {
+	if (birdTimer) clearTimeout(birdTimer);
+	birdTimer = null;
 	for (const n of ambientNodes) {
 		try { n.stop ? n.stop() : n.disconnect(); } catch {}
 	}
