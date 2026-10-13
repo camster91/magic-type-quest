@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getClassData, joinClass, normalizeClassCode } from '../src/classroom.js';
+import { decodeRestoreCode } from '../src/restoreCode.js';
 
 function memoryStorage() {
   const values = new Map();
@@ -13,6 +14,14 @@ function memoryStorage() {
 describe('classroom membership', () => {
   beforeEach(() => {
     vi.stubGlobal('localStorage', memoryStorage());
+  });
+
+  it('keeps each student\'s save code so a teacher can rescue lost progress', () => {
+    const profile = { uuid: 'student-2', name: 'Ben', completedLevels: [1, 2], totalWords: 80, totalStars: 20 };
+    joinClass(profile, 'ROOM1');
+    const { saveCode } = getClassData('ROOM1')['student-2'];
+    expect(saveCode).toMatch(/^[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}$/);
+    expect(decodeRestoreCode(saveCode)).toMatchObject({ completedLevels: [1, 2], totalWords: 80, totalStars: 20 });
   });
 
   it('normalizes class codes and writes the current student snapshot', () => {

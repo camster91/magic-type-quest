@@ -5,6 +5,7 @@
  */
 
 import { summarizeStudent } from './reporting.js';
+import { encodeRestoreCode } from './restoreCode.js';
 
 const PREFIX = 'bloomtype-class';
 
@@ -59,6 +60,8 @@ export function syncToClass(profile) {
     completedLevels: profile.completedLevels || [],
     achievements: (profile.achievements || []).length,
     gardenCount: profile.gardenTotal ?? (profile.garden || []).length,
+    // The student's save code, so a teacher can rescue lost progress.
+    saveCode: encodeRestoreCode(profile),
     ...summarizeStudent(profile),
   };
   localStorage.setItem(key, JSON.stringify(data));
