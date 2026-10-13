@@ -1,4 +1,19 @@
-import { ALL_WORDS, ALL_SENTENCES } from './words.js';
+// The full word bank (about 70 KB) loads after the menu shows, so it never
+// slows the first screen. Until it arrives, each lesson uses its own words.
+let wordBank = null;
+let wordBankLoading = null;
+
+/** Start loading the full word bank. Safe to call more than once. */
+export function loadWordBank() {
+  wordBankLoading ||= import('./words.js')
+    .then((module) => { wordBank = module; })
+    .catch(() => { wordBankLoading = null; });
+  return wordBankLoading;
+}
+
+export function hasWordBank() {
+  return wordBank !== null;
+}
 // Each game level IS a typing lesson
 // Progressive curriculum that teaches proper touch typing
 
@@ -448,8 +463,8 @@ export function isTypableWord(word, requiresShift = false) {
 // Get lesson by game level — injects expanded word bank dynamically
 export function getLessonByLevel(level) {
   const base = LESSON_LEVELS[level] || LESSON_LEVELS[1];
-  const expanded = ALL_WORDS[level];
-  const sentences = ALL_SENTENCES[level];
+  const expanded = wordBank?.ALL_WORDS[level];
+  const sentences = wordBank?.ALL_SENTENCES[level];
   
   // Merge expanded words (if available) into base lesson. Only keep words
   // the game input can accept, so a learner never gets stuck on a phrase,
