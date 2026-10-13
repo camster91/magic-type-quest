@@ -1,7 +1,7 @@
 /**
  * BloomType - Main Entry Point v2
  */
-import { LESSON_LEVELS, getLessonByLevel, getFingerHint, getLessonWordsForPractice, isLevelUnlocked } from './lessonLevels.js';
+import { LESSON_LEVELS, getLessonByLevel, getFingerHint, getLessonWordsForPractice, isLevelUnlocked, loadWordBank } from './lessonLevels.js';
 import { deleteLocalProfile, gameState, loadProfile, saveProfile } from './state.js';
 import { init as initEngine, startGame, togglePause, quitGame, showScreen, startDrillMode, startDailyMoment, onAvatarChanged } from './gameEngine.js';
 import { highlightTargetKey, showKeyFeedback } from './gamePresentation.js';
@@ -1241,6 +1241,8 @@ function bindEvents() {
 
 // ===== INIT =====
 function init() {
+  // Fetch the full word bank once the menu is on screen.
+  (window.requestIdleCallback || ((fn) => setTimeout(fn, 200)))(() => loadWordBank());
   loadProfile();
   setLocale(gameState.profile?.locale || navigator.language?.split('-')[0] || 'en');
   applyTranslations();

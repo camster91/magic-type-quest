@@ -50,7 +50,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 ### Speed (home page 32 → 100)
 - [x] **Claude:** stop loading the old garden art ✅ #216 (home page 8 MB → ~100 KB). (about 5 MB of PNGs) that the play screen no longer shows. **Done when:** the home page downloads under 500 KB before the first tap.
 - [x] **Claude:** convert the remaining pet, particle and level PNGs to WebP ✅ #216 (pets 28.9 MB → 0.8 MB). at their display size. The particle sprite is 1.2 MB and is drawn at 20 px. **Done when:** no image over 150 KB loads on the home screen.
-- [ ] **Claude:** load the game code only after the menu shows (now at **99**: every other page and category is 100. The last point needs the 69 KB word list split out of the first download), and preload the Meadow art while the child is on the menu. **Done when:** Lighthouse Performance is 100 on the phone profile, and Total Blocking Time is under 200 ms.
+- [ ] **Claude:** load the game code only after the menu shows (now at **98–99**: every other page and category is 100. The word bank now loads after the menu, cutting the first JavaScript download from 62 KB to 43 KB gzipped. The last point needs the menu's critical CSS split from the rest, since the 12 KB stylesheet still blocks the first paint), and preload the Meadow art while the child is on the menu. **Done when:** Lighthouse Performance is 100 on the phone profile, and Total Blocking Time is under 200 ms.
 - [x] **Claude:** add a Lighthouse check to CI ✅ #216, as a page-weight budget e2e test (500 KB per page, 150 KB per image). that fails below 95 on any page. **Done when:** a PR that adds a 2 MB image fails CI.
 
 ### Looks (UI)
