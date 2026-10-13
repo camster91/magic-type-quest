@@ -44,6 +44,11 @@ let currentPracticeWord = '';
 let currentWordIndex = 0; // The index of the character being typed in currentPracticeWord
 let practiceInterval = null;
 
+// Re-assigning the same src makes some browsers fetch the image again.
+function setImageSrc(img, path) {
+  if (img.getAttribute('src') !== path) img.src = path;
+}
+
 function startPractice(lessonId) {
   practiceLesson = getLessonByLevel(lessonId);
   if (!practiceLesson) {
@@ -574,7 +579,7 @@ function updateHomePet() {
   // Apply class + image
   petHero.classList.remove('celebrate');
   if (state === 'celebrate') petHero.classList.add('celebrate');
-  petImg.src = getPetPath(avatar, state);
+  setImageSrc(petImg, getPetPath(avatar, state));
 
   // Bubble: show for 2.4s when the text changes.
   if (petBubble && bubbleText && petBubble.textContent !== bubbleText) {
@@ -642,7 +647,7 @@ function loadProfileScreen() {
   const avatar = p.avatar || '🌸';
   // Update both the kawaii image and the emoji fallback
   const img = $('avatar-preview-img');
-  if (img) img.src = getPetPath(avatar, 'idle');
+  if (img) setImageSrc(img, getPetPath(avatar, 'idle'));
   const emoji = $('avatar-preview-emoji');
   if (emoji) emoji.textContent = avatar;
   $('player-name') && ($('player-name').value = p.name || '');
@@ -1159,7 +1164,7 @@ function bindEvents() {
       // Update both the kawaii image preview and the emoji fallback
       const avatar = btn.dataset.avatar;
       const img = $('avatar-preview-img');
-      if (img) img.src = getPetPath(avatar, 'idle');
+      if (img) setImageSrc(img, getPetPath(avatar, 'idle'));
       const emoji = $('avatar-preview-emoji');
       if (emoji) emoji.textContent = avatar;
     });
