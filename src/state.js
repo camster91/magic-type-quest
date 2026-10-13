@@ -71,6 +71,7 @@ export const defaultState = {
     petEvolution: 1, // 1=sprout, 2=bud, 3=bloom
     seenEvolutions: [], // Track which evolutions the player has seen
     garden: [], // Persistent flower collection across sessions
+    fieldGuide: [], // Wildlife cards discovered by restoring meadows
     classCode: null, // Classroom code for teacher dashboard
     uuid: null, // Stable identifier for class sync
     keySR: {}, // Spaced repetition state for weak keys
@@ -78,7 +79,7 @@ export const defaultState = {
   },
 };
 
-const PROFILE_ARRAY_FIELDS = ['completedLevels', 'seenEvolutions', 'garden'];
+const PROFILE_ARRAY_FIELDS = ['completedLevels', 'seenEvolutions', 'garden', 'fieldGuide'];
 const PROFILE_OBJECT_FIELDS = ['keySR'];
 
 // ===== LIVE GAME STATE =====

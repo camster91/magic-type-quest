@@ -12,10 +12,16 @@ export const FIELD_GUIDE = [
   { id: 'milkweed', level: 4, image: 'assets/fieldguide/milkweed.webp' },
 ];
 
-/** Cards this profile has found, in Field Guide order. */
+const list = (value) => (Array.isArray(value) ? value : []);
+
+/**
+ * Cards this profile has found, in Field Guide order. Levels finished before
+ * the Field Guide existed count too, so older profiles see their cards.
+ */
 export function discoveredCards(profile = {}) {
-  const found = new Set(profile.fieldGuide || []);
-  return FIELD_GUIDE.filter((card) => found.has(card.id));
+  const found = new Set(list(profile?.fieldGuide));
+  const done = new Set(list(profile?.completedLevels));
+  return FIELD_GUIDE.filter((card) => found.has(card.id) || done.has(card.level));
 }
 
 /**
@@ -24,8 +30,8 @@ export function discoveredCards(profile = {}) {
  */
 export function discoverForLevel(profile, level) {
   if (!profile) return null;
-  const found = new Set(profile.fieldGuide || []);
-  const done = new Set([...(profile.completedLevels || []), level]);
+  const found = new Set(list(profile.fieldGuide));
+  const done = new Set([...list(profile.completedLevels), level]);
   let fresh = null;
   for (const card of FIELD_GUIDE) {
     if (done.has(card.level) && !found.has(card.id)) {

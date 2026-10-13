@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { FIELD_GUIDE, discoverForLevel, discoveredCards } from '../src/fieldGuide.js';
 import { dictionaries as translations } from '../src/i18n.js';
+import { normalizeProfile } from '../src/state.js';
 
 describe('Field Guide', () => {
   it('discovers the card for a level the first time it is finished', () => {
@@ -17,10 +18,28 @@ describe('Field Guide', () => {
     expect(discoveredCards(profile).map((c) => c.id)).toEqual(['monarch', 'bumblebee', 'bluebird', 'milkweed']);
   });
 
+  it('shows cards for levels finished before the Field Guide existed', () => {
+    expect(discoveredCards({ completedLevels: [1, 3] }).map((c) => c.id)).toEqual(['monarch', 'bluebird']);
+  });
+
+  it('copes with a damaged saved card list', () => {
+    for (const fieldGuide of [{}, 42, 'monarch']) {
+      const profile = { completedLevels: [1], fieldGuide };
+      expect(() => discoveredCards(profile)).not.toThrow();
+      expect(discoverForLevel(profile, 2)?.id).toBe('bumblebee');
+      expect(profile.fieldGuide).toEqual(['monarch', 'bumblebee']);
+    }
+  });
+
   it('ignores levels without a card', () => {
     const profile = {};
     expect(discoverForLevel(profile, 9)).toBeNull();
     expect(discoverForLevel(null, 1)).toBeNull();
+  });
+
+  it('repairs a damaged card list when the profile loads', () => {
+    expect(normalizeProfile({ fieldGuide: { a: 1 } }).fieldGuide).toEqual([]);
+    expect(normalizeProfile({ fieldGuide: ['monarch'] }).fieldGuide).toEqual(['monarch']);
   });
 
   it('has a name and a fact for every card in every language', () => {
