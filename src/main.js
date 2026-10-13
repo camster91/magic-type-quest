@@ -1321,6 +1321,9 @@ function init() {
   // F3: let gameEngine's endDailyMoment trigger a one-shot pet celebrate
   // when the kid lands back on the menu after a Daily Moment.
   window.__triggerPetHeroCelebrate = triggerPetHeroCelebrate;
+  // The built home page loads this code after the menu paints and holds any
+  // tap made before now (scripts/critical-css.mjs). Replay it.
+  window.__bloomtypeReady?.();
   // Static flag check so production builds drop the cloud code entirely.
   if (import.meta.env.VITE_CLOUD_CLASS_LOGIN === 'true') {
     import('./cloudLogin.js')
