@@ -102,7 +102,7 @@ describe('student reports', () => {
   it('exports a full class report as safe CSV', () => {
     const csv = createClassReportCSV([{ name: '=Ada', level: 3, bestWpm: 18, avgAccuracy: 93, weakKeys: ['q', 'z'], minutes7d: 6, minutesTotal: 40, words: 120, stars: 30, lastPlayed: '10/13/2026', assignment: 'Done' }]);
     const [header, row] = csv.split('\r\n');
-    expect(header).toBe('Name,Levels done,Best WPM,Accuracy %,Weak keys,Minutes (7 days),Minutes (total),Words,Stars,Last played,Assignment');
+    expect(header).toBe('Name,Levels done,Best WPM,Accuracy %,Weak keys,Minutes (7 days),Minutes (total),Words,Stars,Last played,Assignment,Save code');
     expect(row.startsWith("'=Ada,3,18,93,q z,6,40,120,30,10/13/2026,Done")).toBe(true);
   });
 });
