@@ -23,6 +23,7 @@ import {
 import { localizeAchievement, localizeAchievementCategory, localizeLesson, localizeQuest } from './contentTranslations.js';
 import { getCurriculumProgress } from './progression.js';
 import { FIELD_GUIDE, discoveredCards } from './fieldGuide.js';
+import { habitatForLevel, worldMap } from './habitats.js';
 import { recordPractice } from './practiceLog.js';
 import { assignmentStatus, buildClassWordsLesson, getClassMeta } from './classes.js';
 import { activePlayerId, listPlayers, startNewPlayer, switchPlayer } from './players.js';
@@ -264,6 +265,14 @@ function renderLevelCards() {
 
   container.innerHTML = Object.values(LESSON_LEVELS).map(rawLesson => {
     const lev = localizeLesson(rawLesson);
+    // Each habitat on the world map starts a new group of level cards.
+    const habitat = habitatForLevel(lev.id);
+    const heading = habitat && habitat.levels[0] === lev.id ? `
+      <h3 class="habitat-heading habitat--${habitat.id}" id="habitat-levels-${habitat.id}" tabindex="-1">
+        <span class="habitat-heading-emoji" aria-hidden="true">${habitat.emoji}</span>
+        <span>${escapeHTML(t(`map.${habitat.id}`))}</span>
+        <span class="habitat-heading-levels">${escapeHTML(t('map.levels', { first: habitat.levels[0], last: habitat.levels[habitat.levels.length - 1] }))}</span>
+      </h3>` : '';
     const unlocked = isLevelUnlocked(lev.id, gameState.profile);
     const done = completed.includes(lev.id);
     const status = done ? 'completed' : !unlocked ? 'locked' : 'play';
@@ -276,7 +285,7 @@ function renderLevelCards() {
     const shortTeaches = teachesRaw.length > 90 ? teachesRaw.slice(0, 88) + '…' : teachesRaw;
     const lockHint = lev.id > 1 ? t('lesson.completeToUnlock', { level: lev.id - 1 }) : t('lesson.locked');
 
-    return `
+    return `${heading}
       <button type="button" class="level-card ${status}" data-level="${lev.id}" ${status === 'locked' ? 'disabled' : ''} aria-label="${escapeHTML(`${lev.name}: ${shortTeaches}`)}" title="${status === 'locked' ? escapeHTML(lockHint) : ''}">
         <div class="level-card-art">
           <img class="level-card-img" src="assets/levels/${imgName}" alt="" aria-hidden="true"
@@ -297,6 +306,55 @@ function renderLevelCards() {
       const level = parseInt(card.dataset.level);
       showScreen('game');
       startGame(level);
+    });
+  });
+
+  renderWorldMap(completed);
+}
+
+// ===== WORLD MAP =====
+// Five habitats, two levels each. Each one fades back to colour as its
+// levels are finished. Art lives in CSS (one .habitat--<id> class each),
+// so painted pictures can replace the gradients later.
+function renderWorldMap(completed) {
+  const list = $('world-map-list');
+  if (!list) return;
+  list.innerHTML = worldMap(completed).map((h) => {
+    const name = t(`map.${h.id}`);
+    const levels = t('map.levels', { first: h.levels[0], last: h.levels[h.levels.length - 1] });
+    const status = !h.unlocked ? t('map.lockedHint', { level: h.unlockLevel })
+      : h.restored ? t('map.restored')
+      : t('map.progress', { done: h.stage, total: h.levels.length });
+    const pips = h.levels.map((_, i) => `<span class="habitat-pip${i < h.stage ? ' on' : ''}"></span>`).join('');
+    const state = !h.unlocked ? 'is-locked' : h.restored ? 'is-restored' : '';
+    return `
+      <li class="world-map-item">
+        <button type="button" class="habitat habitat--${h.id} ${state}" data-habitat="${h.id}" data-stage="${h.stage}"
+          aria-label="${escapeHTML(`${name}. ${levels}. ${status}`)}">
+          <span class="habitat-art" aria-hidden="true">
+            <span class="habitat-emoji">${h.emoji}</span>
+            ${h.restored ? '<span class="habitat-sparkle">✨</span>' : ''}
+            ${!h.unlocked ? '<span class="habitat-lock">🔒</span>' : ''}
+          </span>
+          <span class="habitat-text">
+            <span class="habitat-name">${escapeHTML(name)}</span>
+            <span class="habitat-pips" aria-hidden="true">${pips}</span>
+            <span class="habitat-status">${escapeHTML(status)}</span>
+          </span>
+        </button>
+      </li>`;
+  }).join('');
+
+  list.querySelectorAll('.habitat').forEach((button) => {
+    button.addEventListener('click', () => {
+      const heading = $(`habitat-levels-${button.dataset.habitat}`);
+      if (!heading) return;
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      heading.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      heading.focus({ preventScroll: true });
+      heading.classList.remove('is-target');
+      void heading.offsetWidth;
+      heading.classList.add('is-target');
     });
   });
 }

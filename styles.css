@@ -73,6 +73,13 @@
   --rgb-violet-deep: 91, 33, 182;
   --rgb-warning: 251, 191, 36;
   --rgb-white: 255, 255, 255;
+  /* World map habitats (placeholder art until the painted scenes land). */
+  --rgb-sky: 125, 211, 252;
+  --rgb-sea: 56, 189, 248;
+  --rgb-water: 14, 116, 144;
+  --rgb-sand: 253, 224, 160;
+  --rgb-snow: 241, 245, 249;
+  --rgb-stone: 100, 116, 139;
 }
 
 .sr-only {
@@ -692,6 +699,89 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .level-check { position: absolute; top: 6px; right: 6px; font-size: 1rem; }
 @media (max-width: 420px) {
   .level-grid { grid-template-columns: 1fr; }
+}
+
+/* ===== WORLD MAP =====
+   Five habitats, two levels each. A habitat starts faded and grey and comes
+   back to colour as its levels are finished (data-stage 0, 1, 2).
+   Art hook: each habitat has one class (.habitat--meadow …) whose
+   .habitat-art background is a gradient for now; swap in painted art there. */
+#lesson-select-screen .level-grid { flex: none; overflow: visible; }
+.world-map {
+  width: min(560px, 92vw); margin: 0 auto 14px; padding: 12px;
+  background: rgba(var(--rgb-white), 0.04); border: 1px solid var(--card-border);
+  border-radius: var(--radius); flex: none;
+}
+.world-map-title { font-size: 1.05rem; text-align: center; }
+.world-map-hint { font-size: 0.8rem; color: var(--text-dim); text-align: center; margin: 2px 0 10px; }
+.world-map-list { list-style: none; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; position: relative; }
+/* The trail that joins the habitats. */
+.world-map-list::before {
+  content: ''; position: absolute; left: 10%; right: 10%; top: 44px;
+  border-top: 3px dashed rgba(var(--rgb-gold), 0.35); pointer-events: none;
+}
+.world-map-item { display: flex; min-width: 0; position: relative; }
+.habitat {
+  width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 8px 4px 10px; font: inherit; color: var(--text); text-align: center; cursor: pointer;
+  background: rgba(var(--rgb-bg-1), 0.92); border: 1px solid var(--card-border); border-radius: var(--radius);
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.habitat:hover { transform: translateY(-2px); border-color: var(--primary-light); box-shadow: 0 6px 18px rgba(var(--rgb-primary), 0.25); }
+.habitat:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
+.habitat-art {
+  position: relative; width: 100%; max-width: 72px; aspect-ratio: 1; flex: none;
+  display: grid; place-items: center; border-radius: 18px; font-size: 2rem;
+  box-shadow: inset 0 -6px 0 rgba(var(--rgb-black), 0.15);
+  /* Faded and grey until restored. */
+  filter: grayscale(1) brightness(0.65); opacity: 0.8;
+  transition: filter 0.6s ease, opacity 0.6s ease, box-shadow 0.6s ease;
+}
+.habitat[data-stage="1"] .habitat-art { filter: grayscale(0.45) brightness(0.9); opacity: 0.95; }
+.habitat[data-stage="2"] .habitat-art { filter: none; opacity: 1; box-shadow: inset 0 -6px 0 rgba(var(--rgb-black), 0.12), 0 0 18px rgba(var(--rgb-gold), 0.55); }
+.habitat--meadow .habitat-art { background: linear-gradient(180deg, rgb(var(--rgb-sky)) 0%, rgb(var(--rgb-sky)) 45%, rgb(var(--rgb-hand-right)) 46%, rgb(var(--rgb-fern)) 100%); }
+.habitat--pond .habitat-art { background: radial-gradient(ellipse 70% 40% at 50% 70%, rgb(var(--rgb-sea)) 0 60%, transparent 62%), linear-gradient(180deg, rgb(var(--rgb-sky)) 0 40%, rgb(var(--rgb-leaf)) 41% 100%); }
+.habitat--forest .habitat-art { background: linear-gradient(180deg, rgb(var(--rgb-leaf)) 0%, rgb(var(--rgb-fern)) 60%, rgb(var(--rgb-moss)) 100%); }
+.habitat--shore .habitat-art { background: linear-gradient(180deg, rgb(var(--rgb-sky)) 0 35%, rgb(var(--rgb-sea)) 36% 62%, rgb(var(--rgb-sand)) 63% 100%); }
+.habitat--mountain .habitat-art { background: conic-gradient(from 135deg at 50% 25%, rgb(var(--rgb-snow)) 0 90deg, transparent 90deg), linear-gradient(180deg, rgb(var(--rgb-sky)) 0%, rgb(var(--rgb-stone)) 100%); }
+.habitat-emoji { filter: drop-shadow(0 2px 2px rgba(var(--rgb-black), 0.35)); }
+.habitat-sparkle { position: absolute; top: -6px; right: -6px; font-size: 1rem; }
+.habitat-lock { position: absolute; bottom: -4px; right: -4px; font-size: 1.1rem; filter: grayscale(0); }
+.habitat-text { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
+.habitat-name { font-weight: 800; font-size: 0.85rem; overflow-wrap: anywhere; }
+.habitat-pips { display: flex; gap: 4px; }
+.habitat-pip { width: 9px; height: 9px; border-radius: 50%; background: rgba(var(--rgb-white), 0.2); border: 1px solid rgba(var(--rgb-white), 0.35); }
+.habitat-pip.on { background: rgb(var(--rgb-honey)); border-color: rgb(var(--rgb-honey)); }
+.habitat-status { font-size: 0.75rem; line-height: 1.25; color: var(--text-dim); overflow-wrap: anywhere; }
+.habitat.is-restored { border-color: rgba(var(--rgb-gold), 0.55); }
+.habitat.is-restored .habitat-status { color: rgb(var(--rgb-gold)); font-weight: 700; }
+/* Locked: still visible and tappable (it shows its levels), but dimmed. */
+.habitat.is-locked { border-style: dashed; border-color: rgba(var(--rgb-slate), 0.55); }
+.habitat.is-locked .habitat-art { filter: grayscale(1) brightness(0.45); opacity: 0.6; }
+.habitat.is-locked .habitat-lock { opacity: 1; }
+/* Habitat headings group the level cards below the map. */
+.habitat-heading {
+  grid-column: 1 / -1; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px;
+  font-size: 1rem; padding: 6px 10px; margin-top: 6px; border-radius: var(--radius-sm);
+  background: rgba(var(--rgb-white), 0.05); scroll-margin-top: 12px;
+}
+.habitat-heading:first-child { margin-top: 0; }
+.habitat-heading-levels { font-size: 0.8rem; font-weight: 700; color: var(--text-dim); }
+.habitat-heading:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
+.habitat-heading.is-target { animation: habitatFound 1.2s ease-out; }
+@keyframes habitatFound { from { box-shadow: 0 0 0 3px rgba(var(--rgb-gold), 0.8); } to { box-shadow: 0 0 0 3px rgba(var(--rgb-gold), 0); } }
+@media (prefers-reduced-motion: reduce) {
+  .habitat:hover { transform: none; }
+  .habitat-heading.is-target { animation: none; box-shadow: 0 0 0 3px rgba(var(--rgb-gold), 0.8); }
+}
+/* Phones: a vertical trail, one habitat per row. */
+@media (max-width: 560px) {
+  .world-map-list { grid-template-columns: 1fr; gap: 6px; }
+  .world-map-list::before { left: 37px; right: auto; top: 12px; bottom: 12px; border-top: 0; border-left: 3px dashed rgba(var(--rgb-gold), 0.35); }
+  .habitat { flex-direction: row; text-align: left; padding: 6px 10px; gap: 12px; }
+  .habitat-art { width: 52px; font-size: 1.6rem; border-radius: 14px; }
+  .habitat-text { align-items: flex-start; flex: 1; }
+  .habitat-name { font-size: 0.95rem; }
 }
 
 /* ===== GAMEPLAY HUD — compact, no timer/hearts/WPM clutter ===== */
