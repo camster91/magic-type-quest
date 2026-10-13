@@ -3,7 +3,7 @@
  */
 import { LESSON_LEVELS, getLessonByLevel, getFingerHint, getLessonWordsForPractice, isLevelUnlocked } from './lessonLevels.js';
 import { deleteLocalProfile, gameState, loadProfile, saveProfile } from './state.js';
-import { init as initEngine, startGame, togglePause, showScreen, startDrillMode, startDailyMoment, onAvatarChanged } from './gameEngine.js';
+import { init as initEngine, startGame, togglePause, quitGame, showScreen, startDrillMode, startDailyMoment, onAvatarChanged } from './gameEngine.js';
 import { highlightTargetKey, showKeyFeedback } from './gamePresentation.js';
 import { getAchievementStats, getAllAchievements } from './achievements.js';
 import { getTodaysQuests, isStreakAtRisk } from './quests.js';
@@ -78,9 +78,9 @@ function updatePracticeDisplay() {
   let displayText = '';
   for (let i = 0; i < currentPracticeWord.length; i++) {
     if (i === currentWordIndex) {
-      displayText += `<span class="current-char">${currentPracticeWord[i]}</span>`;
+      displayText += `<span class="current-char">${escapeHTML(currentPracticeWord[i])}</span>`;
     } else {
-      displayText += currentPracticeWord[i];
+      displayText += escapeHTML(currentPracticeWord[i]);
     }
   }
   displayEl.innerHTML = displayText;
@@ -109,7 +109,17 @@ function updatePracticeDisplay() {
   highlightTargetKey(nextChar);
 }
 
+function stopPracticeTimer() {
+  if (practiceInterval) clearInterval(practiceInterval);
+  practiceInterval = null;
+}
+
 function updatePracticeStats() {
+  // Stop ticking once the learner has left practice by any route.
+  if (gameState.screen !== 'practice') {
+    stopPracticeTimer();
+    return;
+  }
   const elapsedSeconds = (performance.now() - gameState.practiceStartTime) / 1000;
   if (elapsedSeconds < 1) return;
 
@@ -128,6 +138,8 @@ function updatePracticeStats() {
 function handlePracticeKey(e) {
   if (gameState.screen !== 'practice') return;
   if (e.repeat) return;
+  // Shift, Tab, arrows and other non-character keys are not typing mistakes.
+  if (e.key.length !== 1) return;
   
   const pressedKey = e.key;
   const expectedChar = currentPracticeWord[currentWordIndex];
@@ -144,10 +156,12 @@ function handlePracticeKey(e) {
       gameState.practiceWordIndex++;
       if (gameState.practiceWordIndex >= gameState.currentPracticeWords.length) {
         // Lesson complete
-        clearInterval(practiceInterval);
+        stopPracticeTimer();
         showAchievement(t('practice.master'), t('practice.lessonComplete', { name: practiceLesson.name }), '🎯');
         // Reset and go back to menu after a delay
         setTimeout(() => {
+          // Only leave if the learner is still on the practice screen.
+          if (gameState.screen !== 'practice') return;
           showScreen('menu');
           // Optionally save practice stats to profile
           // gameState.profile.practiceStats[practiceLesson.id] = { wpm: gameState.practiceWPM, accuracy: gameState.practiceAccuracy };
@@ -633,7 +647,7 @@ function loadGardenScreen() {
   const p = gameState.profile || {};
   const garden = p.garden || [];
   const countEl = document.getElementById('garden-count');
-  if (countEl) countEl.textContent = garden.length;
+  if (countEl) countEl.textContent = p.gardenTotal ?? garden.length;
 
   const grid = document.getElementById('garden-grid');
   if (!grid) return;
@@ -714,7 +728,10 @@ function bindEvents() {
 
   // Back buttons
   $('btn-lesson-back')?.addEventListener('click', () => showScreen('menu'));
-  $('btn-practice-back')?.addEventListener('click', () => showScreen('menu'));
+  $('btn-practice-back')?.addEventListener('click', () => {
+    stopPracticeTimer();
+    showScreen('menu');
+  });
   $('btn-profile-back')?.addEventListener('click', () => showScreen('menu'));
   $('btn-garden-back')?.addEventListener('click', () => showScreen('menu'));
 
@@ -813,8 +830,7 @@ function bindEvents() {
   $('btn-pause')?.addEventListener('click', togglePause);
   $('btn-resume')?.addEventListener('click', togglePause);
   $('btn-quit')?.addEventListener('click', () => {
-    togglePause();
-    showScreen('menu');
+    quitGame();
     updateMenuStats();
   });
 

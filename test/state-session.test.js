@@ -11,7 +11,7 @@ vi.mock('../src/classroom.js', () => ({
   syncToClass: vi.fn(),
 }));
 
-import { buildLevelSessionSnapshot, finalizeLevelSession, gameState, saveProfile } from '../src/state.js';
+import { buildLevelSessionSnapshot, finalizeLevelSession, gameState, loadProfile, normalizeProfile, saveProfile } from '../src/state.js';
 
 function memoryStorage() {
   const values = new Map();
@@ -104,5 +104,29 @@ describe('terminal curriculum session persistence', () => {
     await vi.waitFor(() => expect(gameState.sessionLogged).toBe(true));
     finalizeLevelSession({ completed: true });
     expect(logSession).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('profile loading', () => {
+  beforeEach(() => {
+    vi.stubGlobal('localStorage', memoryStorage());
+  });
+
+  it('replaces damaged list fields so the game cannot crash', () => {
+    localStorage.setItem('bloomtype-profile', JSON.stringify({
+      name: 'Ada', completedLevels: 'oops', seenEvolutions: null, garden: {}, keySR: [],
+    }));
+    loadProfile();
+    expect(gameState.profile.name).toBe('Ada');
+    expect(gameState.profile.completedLevels).toEqual([]);
+    expect(gameState.profile.seenEvolutions).toEqual([]);
+    expect(gameState.profile.garden).toEqual([]);
+    expect(gameState.profile.keySR).toEqual({});
+  });
+
+  it('gives each new profile its own arrays', () => {
+    const first = normalizeProfile();
+    first.completedLevels.push(1);
+    expect(normalizeProfile().completedLevels).toEqual([]);
   });
 });

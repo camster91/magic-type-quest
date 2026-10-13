@@ -68,7 +68,45 @@ describe('game input controller', () => {
     controller.processKeystroke('a', false);
     expect(callbacks.onWrongKeystroke).toHaveBeenCalledWith('a');
     expect(callbacks.showShiftHint).toHaveBeenCalledOnce();
-    expect(state.totalKeystrokes).toBe(0);
+    // A missed Shift is a real attempt, so it lowers accuracy.
+    expect(state.totalKeystrokes).toBe(1);
+    expect(state.correctKeystrokes).toBe(0);
+  });
+
+  it('counts a key once when the hidden mobile input has focus', () => {
+    const word = { text: 'ask', isTarget: false, matched: 0 };
+    const state = {
+      screen: 'game', gameOver: false, paused: false,
+      totalKeystrokes: 0, correctKeystrokes: 0,
+      activeWords: [word], targetWord: null, targetIndex: 0,
+    };
+    const callbacks = {
+      onCorrectKeystroke: vi.fn(), onWrongKeystroke: vi.fn(), completeWord: vi.fn(),
+      skipWord: vi.fn(), togglePause: vi.fn(), showShiftHint: vi.fn(),
+      updateTargetDisplay: vi.fn(), updateKeyboardHighlight: vi.fn(),
+    };
+    const mobileInput = { id: 'mobile-input', tagName: 'INPUT', value: '' };
+    const controller = createGameInputController({
+      state,
+      getLesson: () => ({ requiresShift: false }),
+      measureTypedWidth: (text) => text.length * 10,
+      getActiveElement: () => mobileInput,
+      getOpenDialog: () => null,
+      ...callbacks,
+    });
+
+    // iOS and touch laptops send both a keydown and an input event per key.
+    controller.handleKey({ key: 'a', repeat: false, preventDefault: vi.fn() });
+    controller.handleMobileInput({ target: mobileInput, data: 'a', inputType: 'insertText' });
+
+    expect(state.totalKeystrokes).toBe(1);
+    expect(state.correctKeystrokes).toBe(1);
+    expect(callbacks.onWrongKeystroke).not.toHaveBeenCalled();
+
+    controller.handleKey({ key: ' ', repeat: false, preventDefault: vi.fn() });
+    expect(callbacks.skipWord).not.toHaveBeenCalled();
+    controller.handleMobileInput({ target: mobileInput, data: ' ', inputType: 'insertText' });
+    expect(callbacks.skipWord).toHaveBeenCalledOnce();
   });
 
   it('accepts an uppercase character from a mobile keyboard', () => {
