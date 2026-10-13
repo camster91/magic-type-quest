@@ -27,27 +27,75 @@
 </head>
 <body>
   <main>
-    <p class="hint">Print this page (Ctrl+P or ⌘P) for the classroom wall.</p>
-    <h1>🌱 Home row: where fingers rest</h1>
-    <p class="sub">Find the bumps on <strong>F</strong> and <strong>J</strong>. Every finger comes back home.</p>
+    <p class="hint" data-t="hint">Print this page (Ctrl+P or ⌘P) for the classroom wall.</p>
+    <h1 data-t="h1">🌱 Home row: where fingers rest</h1>
+    <p class="sub" data-t="sub">Find the bumps on <strong>F</strong> and <strong>J</strong>. Every finger comes back home.</p>
     <div class="keys">
-      <div class="key left">A<small>pinky</small></div>
-      <div class="key left">S<small>ring</small></div>
-      <div class="key left">D<small>middle</small></div>
-      <div class="key left"><span class="bump">F</span><small>pointer</small></div>
+      <div class="key left">A<small data-t="pinky">pinky</small></div>
+      <div class="key left">S<small data-t="ring">ring</small></div>
+      <div class="key left">D<small data-t="middle">middle</small></div>
+      <div class="key left"><span class="bump">F</span><small data-t="pointer">pointer</small></div>
       <div class="gap" aria-hidden="true"></div>
-      <div class="key right"><span class="bump">J</span><small>pointer</small></div>
-      <div class="key right">K<small>middle</small></div>
-      <div class="key right">L<small>ring</small></div>
-      <div class="key right">;<small>pinky</small></div>
+      <div class="key right"><span class="bump">J</span><small data-t="pointer">pointer</small></div>
+      <div class="key right">K<small data-t="middle">middle</small></div>
+      <div class="key right">L<small data-t="ring">ring</small></div>
+      <div class="key right">;<small data-t="pinky">pinky</small></div>
     </div>
     <ul>
-      <li>Sit tall, feet flat, wrists floating.</li>
-      <li>Eyes on the screen, not your hands.</li>
-      <li>Thumbs share the space bar.</li>
-      <li>Careful beats fast. Stars come from accuracy.</li>
+      <li data-t="tip1">Sit tall, feet flat, wrists floating.</li>
+      <li data-t="tip2">Eyes on the screen, not your hands.</li>
+      <li data-t="tip3">Thumbs share the space bar.</li>
+      <li data-t="tip4">Careful beats fast. Stars come from accuracy.</li>
     </ul>
-    <p class="goal">Our class goal: plant <strong>100 flowers</strong> together. Flowers so far: ______</p>
+    <p class="goal" data-t="goal">Our class goal: plant <strong>100 flowers</strong> together. Flowers so far: ______</p>
   </main>
+
+  <script>
+    var TEXT = {
+      fr: {
+        title: 'BloomType — Affiche de la rangée de repos',
+        hint: 'Imprimez cette page (Ctrl+P ou ⌘P) pour le mur de la classe.',
+        h1: '🌱 Rangée de repos : où posent les doigts',
+        sub: 'Trouvez les petites bosses sur <strong>F</strong> et <strong>J</strong>. Chaque doigt revient à la maison.',
+        pinky: 'auriculaire', ring: 'annulaire', middle: 'majeur', pointer: 'index',
+        tip1: 'Assieds-toi droit, pieds à plat, poignets légers.',
+        tip2: 'Les yeux sur l’écran, pas sur tes mains.',
+        tip3: 'Les pouces partagent la barre d’espace.',
+        tip4: 'Mieux vaut précis que rapide. Les étoiles viennent de la précision.',
+        goal: 'Notre objectif de classe : planter <strong>100 fleurs</strong> ensemble. Fleurs plantées : ______'
+      },
+      es: {
+        title: 'BloomType — Póster de la fila guía',
+        hint: 'Imprime esta página (Ctrl+P o ⌘P) para la pared del aula.',
+        h1: '🌱 Fila guía: dónde descansan los dedos',
+        sub: 'Busca las marcas en <strong>F</strong> y <strong>J</strong>. Cada dedo vuelve a casa.',
+        pinky: 'meñique', ring: 'anular', middle: 'medio', pointer: 'índice',
+        tip1: 'Siéntate derecho, pies planos, muñecas ligeras.',
+        tip2: 'Mira la pantalla, no tus manos.',
+        tip3: 'Los pulgares comparten la barra espaciadora.',
+        tip4: 'Mejor con cuidado que rápido. Las estrellas vienen de la precisión.',
+        goal: 'Meta de la clase: plantar <strong>100 flores</strong> juntos. Flores hasta ahora: ______'
+      }
+    };
+  </script>
+  <script>
+    // Same choice as the teacher page: ?lang=, then the saved profile, then the browser.
+    (function () {
+      var supported = ['en', 'fr', 'es'];
+      var lang = new URLSearchParams(location.search).get('lang');
+      if (supported.indexOf(lang) < 0) {
+        try { lang = (JSON.parse(localStorage.getItem('bloomtype-profile') || 'null') || {}).locale; } catch (e) { lang = null; }
+      }
+      if (supported.indexOf(lang) < 0) lang = (navigator.language || 'en').split('-')[0];
+      if (supported.indexOf(lang) < 0 || lang === 'en') return;
+      var t = TEXT[lang];
+      document.documentElement.lang = lang;
+      document.title = t.title;
+      document.querySelectorAll('[data-t]').forEach(function (el) {
+        var value = t[el.getAttribute('data-t')];
+        if (value) el.innerHTML = value;
+      });
+    })();
+  </script>
 </body>
 </html>

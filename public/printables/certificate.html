@@ -23,18 +23,58 @@
   </style>
 </head>
 <body>
-  <p class="hint">Print this page (Ctrl+P or ⌘P). Write the student's name by hand.</p>
+  <p class="hint" data-t="hint">Print this page (Ctrl+P or ⌘P). Write the student's name by hand.</p>
   <main class="cert">
     <div class="flowers" aria-hidden="true">🌸 🌼 🌻 🌷 🌺</div>
-    <h1>Typing Certificate</h1>
-    <p class="lead">This certificate is proudly given to</p>
+    <h1 data-t="h1">Typing Certificate</h1>
+    <p class="lead" data-t="lead">This certificate is proudly given to</p>
     <span class="name" aria-label="Student name"></span>
-    <p class="what">for growing a meadow full of flowers with careful, steady typing in BloomType.</p>
+    <p class="what" data-t="what">for growing a meadow full of flowers with careful, steady typing in BloomType.</p>
     <div class="row">
-      <div>Date</div>
-      <div>Level reached</div>
-      <div>Teacher or parent</div>
+      <div data-t="date">Date</div>
+      <div data-t="level">Level reached</div>
+      <div data-t="adult">Teacher or parent</div>
     </div>
   </main>
+
+  <script>
+    var TEXT = {
+      fr: {
+        title: 'BloomType — Certificat de dactylographie',
+        hint: 'Imprimez cette page (Ctrl+P ou ⌘P). Écrivez le nom de l’élève à la main.',
+        h1: 'Certificat de dactylographie',
+        lead: 'Ce certificat est fièrement remis à',
+        what: 'pour avoir fait pousser une prairie pleine de fleurs en tapant avec soin et régularité dans BloomType.',
+        date: 'Date', level: 'Niveau atteint', adult: 'Enseignant ou parent'
+      },
+      es: {
+        title: 'BloomType — Certificado de mecanografía',
+        hint: 'Imprime esta página (Ctrl+P o ⌘P). Escribe el nombre del estudiante a mano.',
+        h1: 'Certificado de mecanografía',
+        lead: 'Este certificado se entrega con orgullo a',
+        what: 'por hacer crecer una pradera llena de flores escribiendo con cuidado y constancia en BloomType.',
+        date: 'Fecha', level: 'Nivel alcanzado', adult: 'Docente o familia'
+      }
+    };
+  </script>
+  <script>
+    // Same choice as the teacher page: ?lang=, then the saved profile, then the browser.
+    (function () {
+      var supported = ['en', 'fr', 'es'];
+      var lang = new URLSearchParams(location.search).get('lang');
+      if (supported.indexOf(lang) < 0) {
+        try { lang = (JSON.parse(localStorage.getItem('bloomtype-profile') || 'null') || {}).locale; } catch (e) { lang = null; }
+      }
+      if (supported.indexOf(lang) < 0) lang = (navigator.language || 'en').split('-')[0];
+      if (supported.indexOf(lang) < 0 || lang === 'en') return;
+      var t = TEXT[lang];
+      document.documentElement.lang = lang;
+      document.title = t.title;
+      document.querySelectorAll('[data-t]').forEach(function (el) {
+        var value = t[el.getAttribute('data-t')];
+        if (value) el.innerHTML = value;
+      });
+    })();
+  </script>
 </body>
 </html>
