@@ -9,14 +9,14 @@
 
 ## Scorecard
 
-Lighthouse scores were measured on 2026-10-13 on a local production build (phone settings). The other scores are honest estimates; each phase below raises them.
+Lighthouse scores were measured on 2026-10-13 on a local production build (phone settings), before and after #216. The other scores are honest estimates; each phase below raises them.
 
 | Area | Now | Target | What "100" means here |
 |---|---|---|---|
-| **Speed: game home page** | 32 (measured) | 100 | Lighthouse Performance 100 on a phone profile |
-| **Speed: teacher, parent and landing pages** | 100 / 100 / 73 (measured) | 100 | Same |
-| **Accessibility** | 100 / 100 / 96 / 98 (measured); axe 0 errors | 100 | Lighthouse 100, axe 0, plus a real screen-reader and keyboard-only pass |
-| **SEO and best practices** | 90–100 (measured) | 100 | Lighthouse 100 on all 4 pages |
+| **Speed: game home page** | 32 → **99** (measured, #216) | 100 | Lighthouse Performance 100 on a phone profile |
+| **Speed: teacher, parent and landing pages** | 100 / 100 / 73 → **100 / 100 / 100** (#216) | 100 | Same |
+| **Accessibility** | 100 / 100 / 96 / 98 → **100 on all pages** (#216); axe 0 errors | 100 | Lighthouse 100, axe 0, plus a real screen-reader and keyboard-only pass |
+| **SEO and best practices** | 90–100 → **100 on all pages** (#216) | 100 | Lighthouse 100 on all 4 pages |
 | **UI (looks)** | ~65 (estimate) | 100 | Every child-facing screen uses the Meadow art style; no leftover v1 art |
 | **UX: children** | ~60 (estimate) | 100 | A 6-year-old can start playing alone in under 30 s; 3 of 4 test children ask to play again |
 | **UX: teachers** | ~45 (estimate) | 100 | A teacher sets up a class and reads a report in under 5 minutes, without help |
@@ -48,42 +48,42 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 ## Phase 1 — Fast, polished, and fun (next 2–3 weeks)
 
 ### Speed (home page 32 → 100)
-- [ ] **Claude:** stop loading the old garden art (about 5 MB of PNGs) that the play screen no longer shows. **Done when:** the home page downloads under 500 KB before the first tap.
-- [ ] **Claude:** convert the remaining pet, particle and level PNGs to WebP at their display size. The particle sprite is 1.2 MB and is drawn at 20 px. **Done when:** no image over 150 KB loads on the home screen.
-- [ ] **Claude:** load the game code only after the menu shows, and preload the Meadow art while the child is on the menu. **Done when:** Lighthouse Performance is 100 on the phone profile, and Total Blocking Time is under 200 ms.
-- [ ] **Claude:** add a Lighthouse check to CI that fails below 95 on any page. **Done when:** a PR that adds a 2 MB image fails CI.
+- [x] **Claude:** stop loading the old garden art ✅ #216 (home page 8 MB → ~100 KB). (about 5 MB of PNGs) that the play screen no longer shows. **Done when:** the home page downloads under 500 KB before the first tap.
+- [x] **Claude:** convert the remaining pet, particle and level PNGs to WebP ✅ #216 (pets 28.9 MB → 0.8 MB). at their display size. The particle sprite is 1.2 MB and is drawn at 20 px. **Done when:** no image over 150 KB loads on the home screen.
+- [ ] **Claude:** load the game code only after the menu shows (now at **99**: every other page and category is 100. The last point needs the 69 KB word list split out of the first download), and preload the Meadow art while the child is on the menu. **Done when:** Lighthouse Performance is 100 on the phone profile, and Total Blocking Time is under 200 ms.
+- [x] **Claude:** add a Lighthouse check to CI ✅ #216, as a page-weight budget e2e test (500 KB per page, 150 KB per image). that fails below 95 on any page. **Done when:** a PR that adds a 2 MB image fails CI.
 
 ### Looks (UI)
-- [ ] **Claude:** a "Meadow restored!" level-complete celebration: the whole scene glows, the fox dances, and stars count up.
-- [ ] **Claude:** a Meadow home screen, with the scene and the fox behind the menu instead of plain purple.
+- [x] **Claude:** a "Meadow restored!" level-complete celebration ✅ #217.: the whole scene glows, the fox dances, and stars count up.
+- [x] **Claude:** a Meadow home screen ✅ #217., with the scene and the fox behind the menu instead of plain purple.
 - [ ] **Claude (Higgsfield):** remake the 10 level tiles, the pets and the achievement badges in the Meadow painted style. **Done when:** no v1 3D-render art remains on a child-facing screen.
-- [ ] **Claude:** on phones, shrink the pet bubble so the meadow and the word have room.
-- [ ] **Claude:** one design system (colors, type, spacing, buttons) written down and used on all 4 pages. **Done when:** the CSS has no one-off colors outside the tokens.
+- [x] **Claude:** on phones, shrink the pet bubble ✅ #217. so the meadow and the word have room.
+- [ ] **Claude:** one design system (colors, type, spacing, buttons) written down and used on all 4 pages. (Not started.) **Done when:** the CSS has no one-off colors outside the tokens.
 
 ### Fun (game mechanics)
 - [x] **Claude:** no dead time between words (#215).
 - [x] **Claude:** every word visibly restores the meadow (#215).
-- [ ] **Claude:** a Field Guide: each restored meadow unlocks a wildlife card (monarch, bee, bluebird) with one fact a child can read.
+- [x] **Claude:** a Field Guide: ✅ #219 (4 cards; sources to confirm in `docs/v2/FIELD-GUIDE-FACTS.md`). each restored meadow unlocks a wildlife card (monarch, bee, bluebird) with one fact a child can read.
 - [ ] **Claude:** a world map with 5 habitats (Meadow, Pond, Forest, Shore, Mountain), one per pair of levels, using the same restoration idea.
 - [ ] **Claude:** gentle streaks and a "plant of the day" in place of punishments. No hearts and no losing (v2 product contract).
-- [ ] **Claude:** sound: soft nature ambience and a pleasant chime per word, with a mute button that is remembered.
+- [ ] **Claude:** sound: soft nature ambience and a pleasant chime per word, with a mute button that is remembered. (Mute switch and gentle mistake tone ✅ #219; nature ambience still to do.)
 - [ ] **Claude:** the fox speaks short encouragement with a pre-recorded voice in EN, FR and ES, made once (no live AI with children).
 
 ## Phase 2 — Teachers and parents love it (weeks 3–6)
 
 ### Teachers
-- [ ] **Claude:** a 3-step class setup: name the class, get a code, print student cards. **Done when:** a new teacher finishes it in under 2 minutes in a usability test.
-- [ ] **Claude:** a class report showing each student's speed, accuracy, weak keys, minutes practised and trend, with CSV and PDF export.
-- [ ] **Claude:** an assignments feature: "do 10 minutes of Level 3 by Friday", with a done/not-done view.
-- [ ] **Claude:** spelling-list lessons: a teacher pastes a word list and it becomes a typing lesson. The word filter keeps it safe.
+- [x] **Claude:** a 3-step class setup ✅ #220 (still needs a timed usability test with a real teacher).: name the class, get a code, print student cards. **Done when:** a new teacher finishes it in under 2 minutes in a usability test.
+- [x] **Claude:** a class report showing ✅ #220 (CSV done; PDF via the browser's print). each student's speed, accuracy, weak keys, minutes practised and trend, with CSV and PDF export.
+- [x] **Claude:** an assignments feature ✅ #220.: "do 10 minutes of Level 3 by Friday", with a done/not-done view.
+- [x] **Claude:** spelling-list lessons ✅ #220.: a teacher pastes a word list and it becomes a typing lesson. The word filter keeps it safe.
 - [ ] **Claude:** save codes on the teacher roster, so a teacher can rescue a student who forgot theirs (builds on #213).
-- [ ] **Claude:** a standards map showing which levels match ISTE and Common Core keyboarding expectations by grade.
+- [x] **Claude:** a standards map ✅ draft in #222. showing which levels match ISTE and Common Core keyboarding expectations by grade.
 
 ### Parents and homeschool
-- [ ] **Claude:** a weekly "what my child learned" card on the parent page: minutes, keys mastered, speed trend.
-- [ ] **Claude:** multiple children on one device, with a simple profile picker.
-- [ ] **Claude:** a printable homeschool record (a certificate plus a log of hours), which many US states ask homeschoolers to keep.
-- [ ] **Claude:** a parent PIN for settings, like the teacher PIN in #210.
+- [x] **Claude:** a weekly "what my child learned" card ✅ #221. on the parent page: minutes, keys mastered, speed trend.
+- [x] **Claude:** multiple children on one device ✅ #221., with a simple profile picker.
+- [x] **Claude:** a printable homeschool record ✅ #221. (a certificate plus a log of hours), which many US states ask homeschoolers to keep.
+- [ ] **Claude:** a parent PIN for settings, like the teacher PIN in #210. (Waiting for #210 to merge so it can reuse that code.)
 
 ### Everyone
 - [ ] **Claude:** an accessibility pass with a real screen reader (NVDA and VoiceOver), keyboard-only play, a dyslexia-friendly font option and high-contrast mode. **Done when:** checked in [DEVICE-ACCESSIBILITY-QA.md](DEVICE-ACCESSIBILITY-QA.md).
@@ -104,9 +104,9 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 
 ### Trust paperwork
 - [ ] **Owner:** sign the SDPC National Data Privacy Agreement.
-- [ ] **Claude:** a plain-language privacy page and a one-page security summary for IT staff. **Owner** approves both.
+- [x] **Claude:** a plain-language privacy page and a one-page security summary ✅ drafts in #222. for IT staff. **Owner** approves both.
 - [ ] **Owner:** request a Common Sense Privacy evaluation, and consider iKeepSafe COPPA certification.
-- [ ] **Claude:** an accessibility conformance report (VPAT) that school buyers can download.
+- [x] **Claude:** an accessibility conformance report (VPAT) ✅ draft in #222 (manual screen-reader pass still needed). that school buyers can download.
 
 ## Phase 4 — Prove it works and grow (months 3–6)
 
