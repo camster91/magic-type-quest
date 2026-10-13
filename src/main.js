@@ -958,6 +958,7 @@ function bindEvents() {
   });
 
   $('btn-link-code')?.addEventListener('click', async () => {
+    if (!grownUpAllows()) return;
     const button = $('btn-link-code');
     const output = $('link-code');
     const status = $('restore-code-status');
