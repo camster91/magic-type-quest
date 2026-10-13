@@ -44,6 +44,15 @@ describe('container publication trust boundary', () => {
     }
   });
 
+  it('runs pull request code only on GitHub-hosted runners', () => {
+    const runsOn = ciWorkflow.match(/^\s+runs-on:\s*(.+)$/m)?.[1] ?? '';
+    // The VPS labels may only be chosen for push events; everything else is hosted.
+    expect(runsOn).toMatch(/^\$\{\{ github\.event_name == 'push' && fromJSON\('\["self-hosted",[^)]*\]'\) \|\| 'ubuntu-latest' \}\}$/);
+    expect(ciWorkflow).toMatch(/^\s+pull_request:/m);
+    expect(ciWorkflow).not.toMatch(/pull_request_target/);
+    expect(imageWorkflow).not.toMatch(/^\s+pull_request/m);
+  });
+
   it('keeps repository housekeeping off the privileged Ashbi runner', () => {
     expect(autoMergeWorkflow).toContain('runs-on: ubuntu-latest');
     expect(staleWorkflow).toContain('runs-on: ubuntu-latest');

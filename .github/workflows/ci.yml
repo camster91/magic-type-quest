@@ -21,12 +21,18 @@ on:
 
 jobs:
   ci:
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: [self-hosted, Linux, X64, ashbi-vps, magic-type-quest]
+    # Pull requests run on GitHub-hosted runners (free for this public repo),
+    # so code from a pull request never runs on the privileged Ashbi VPS.
+    # Only pushes to main, which a maintainer has merged, use the VPS runner.
+    # A fork can still edit this file in its own pull request, so the
+    # repository must also require approval before outside contributors'
+    # workflows run (see docs/ASHBI-CI.md).
+    runs-on: ${{ github.event_name == 'push' && fromJSON('["self-hosted","Linux","X64","ashbi-vps","magic-type-quest"]') || 'ubuntu-latest' }}
     timeout-minutes: 20
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
-      options: --user 986:986
+      # The VPS runner's service user owns the workspace; hosted runners use the image default.
+      options: ${{ github.event_name == 'push' && '--user 986:986' || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - run: npm ci --no-audit --no-fund

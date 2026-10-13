@@ -44,3 +44,14 @@ test('learner profile controls have no automated WCAG A or AA violations', async
   const results = await new AxeBuilder({ page }).withTags(standards).analyze();
   expect(summarize(results.violations)).toEqual([]);
 });
+
+test('the unlocked teacher dashboard has no automated WCAG A or AA violations', async ({ page }) => {
+  await page.addInitScript(() => localStorage.clear());
+  await page.goto('teacher.html');
+  await page.locator('#pin-input').fill('2468');
+  await page.locator('#pin-confirm').fill('2468');
+  await page.locator('#btn-unlock').click();
+  await expect(page.locator('#teacher-dashboard')).toBeVisible();
+  const results = await new AxeBuilder({ page }).withTags(standards).analyze();
+  expect(summarize(results.violations)).toEqual([]);
+});
