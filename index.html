@@ -584,6 +584,25 @@
       <input type="checkbox" id="voice-toggle"> 🗣 <span data-i18n="profile.voice">Voice Narration</span>
     </label>
     <button type="button" id="btn-save-profile" class="btn btn-primary" data-i18n="profile.save">Save Profile</button>
+    <section class="grown-up-lock" aria-labelledby="grown-up-title">
+      <h3 id="grown-up-title" class="profile-label" data-i18n="parentLock.title">Grown-up lock</h3>
+      <p id="grown-up-status" class="profile-hint" role="status" aria-live="polite"></p>
+      <form id="grown-up-form" class="grown-up-form" novalidate>
+        <label for="grown-up-pin" class="profile-label" data-i18n="parentLock.pin">PIN (4 to 8 digits)</label>
+        <input type="password" id="grown-up-pin" class="profile-input" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off">
+        <div id="grown-up-confirm-row" hidden>
+          <label for="grown-up-pin-confirm" class="profile-label" data-i18n="parentLock.confirm">Type the PIN again</label>
+          <input type="password" id="grown-up-pin-confirm" class="profile-input" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off">
+        </div>
+        <button type="submit" id="btn-grown-up" class="btn btn-secondary"></button>
+        <p id="grown-up-message" class="profile-hint" role="alert"></p>
+      </form>
+      <div id="grown-up-unlocked" class="grown-up-actions" hidden>
+        <button type="button" id="btn-grown-up-lock" class="btn btn-secondary" data-i18n="parentLock.lock">🔒 Lock</button>
+        <button type="button" id="btn-grown-up-remove" class="btn btn-secondary" data-i18n="parentLock.remove">Remove PIN</button>
+      </div>
+      <p id="grown-up-forgot" class="profile-delete-hint" data-i18n="parentLock.forgot" hidden>Forgot the PIN? Clearing this site’s data in the browser removes it, along with the progress saved here.</p>
+    </section>
     <button type="button" id="btn-export-local-profile" class="btn btn-secondary" data-i18n="profile.exportLocal">Download local progress</button>
     <p class="profile-delete-hint" data-i18n="profile.exportLocalHint">Downloads this browser’s student profile as JSON.</p>
     <button type="button" id="btn-export-cloud-profile" class="btn btn-secondary" data-i18n="profile.exportCloud" hidden>Download school cloud progress</button>

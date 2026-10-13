@@ -83,7 +83,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [x] **Claude:** a weekly "what my child learned" card ✅ #221. on the parent page: minutes, keys mastered, speed trend.
 - [x] **Claude:** multiple children on one device ✅ #221., with a simple profile picker.
 - [x] **Claude:** a printable homeschool record ✅ #221. (a certificate plus a log of hours), which many US states ask homeschoolers to keep.
-- [ ] **Claude:** a parent PIN for settings, like the teacher PIN in #210. (Waiting for #210 to merge so it can reuse that code.)
+- [x] **Claude:** a parent PIN for settings, like the teacher PIN in #210 ✅ (grown-up lock on the profile screen).
 
 ### Everyone
 - [ ] **Claude:** an accessibility pass with a real screen reader (dyslexia-friendly font, high contrast and relaxed mode ✅ #223; manual screen-reader pass still to do) (NVDA and VoiceOver), keyboard-only play, a dyslexia-friendly font option and high-contrast mode. **Done when:** checked in [DEVICE-ACCESSIBILITY-QA.md](DEVICE-ACCESSIBILITY-QA.md).
