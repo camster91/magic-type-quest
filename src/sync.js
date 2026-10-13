@@ -194,11 +194,12 @@ export async function exportCloudProgress() {
   }
 }
 
+/** Returns true only when the profile and class membership both saved. */
 async function syncProfileSnapshot(profile) {
   const cloud = await getAuthenticatedSupabase();
-  if (!cloud) return;
+  if (!cloud) return false;
   const { sb, user } = cloud;
-  if (!navigator.onLine) return; // Local state remains authoritative; a later save retries.
+  if (!navigator.onLine) return false; // Local state remains authoritative; a later save retries.
   try {
     const updatedAt = new Date().toISOString();
     const { error } = await sb.from('profiles').upsert(
@@ -214,8 +215,10 @@ async function syncProfileSnapshot(profile) {
       buildClassMembershipArgs(profile),
     );
     if (rosterError) throw rosterError;
+    return true;
   } catch (e) {
     console.warn('Sync failed:', e);
+    return false;
   }
 }
 

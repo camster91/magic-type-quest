@@ -1,7 +1,9 @@
 /**
  * BloomType — Cloud class login (prepared, OFF by default)
- * Lets a student join a teacher's class online so progress follows them
- * between shared devices. It stays switched off until the privacy approvals
+ * Lets a student join a teacher's class online so the teacher sees their
+ * progress from anywhere. Each device signs in anonymously, so progress does
+ * not yet follow a child to a second device (that needs a recoverable
+ * student identity; see the note on PR #214). It stays switched off until the privacy approvals
  * in issue #132 are done: it needs BOTH the build flag below AND Supabase
  * credentials, and neither is set in production builds.
  */
@@ -43,8 +45,13 @@ export async function joinClassOnline(profile, code, {
     if (error) return { joined: false, reason: 'sign-in-failed' };
     if (!exists) return { joined: false, reason: 'unknown-class' };
 
+    // Only report success once the roster membership is really saved.
+    const previous = profile.classCode;
     profile.classCode = classCode;
-    await sync(profile);
+    if (await sync(profile) !== true) {
+      profile.classCode = previous;
+      return { joined: false, reason: 'sign-in-failed' };
+    }
     return { joined: true };
   } catch {
     return { joined: false, reason: 'sign-in-failed' };

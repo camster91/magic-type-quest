@@ -13,7 +13,7 @@ function fakeClient({ session = null, exists = true, signInError = null } = {}) 
 }
 
 const base = (sb, extra = {}) => ({
-  enabled: true, getClient: async () => sb, online: () => true, sync: vi.fn().mockResolvedValue(undefined), ...extra,
+  enabled: true, getClient: async () => sb, online: () => true, sync: vi.fn().mockResolvedValue(true), ...extra,
 });
 
 describe('cloud class login (off by default)', () => {
@@ -58,6 +58,13 @@ describe('cloud class login (off by default)', () => {
     const profile = { classCode: 'OLD1' };
     const result = await joinClassOnline(profile, 'NOPE99', base(fakeClient({ exists: false })));
     expect(result).toEqual({ joined: false, reason: 'unknown-class' });
+    expect(profile.classCode).toBe('OLD1');
+  });
+
+  it('does not report joining when the cloud save fails', async () => {
+    const profile = { classCode: 'OLD1' };
+    const result = await joinClassOnline(profile, 'ABC123', base(fakeClient(), { sync: vi.fn().mockResolvedValue(false) }));
+    expect(result).toEqual({ joined: false, reason: 'sign-in-failed' });
     expect(profile.classCode).toBe('OLD1');
   });
 

@@ -1,7 +1,7 @@
 export const dictionaries = {
   en: {
     'cloudLogin.join': 'Join class online', 'cloudLogin.joining': 'Joining your class…',
-    'cloudLogin.joined': 'You’re in! Your progress now follows you to any device.',
+    'cloudLogin.joined': 'You’re in! Your teacher can now see your progress.',
     'cloudLogin.bad-code': 'Type the class code from your teacher first.',
     'cloudLogin.unknown-class': 'We couldn’t find that class. Check the code with your teacher.',
     'cloudLogin.offline': 'Connect to the internet to join your class online.',
@@ -111,7 +111,7 @@ export const dictionaries = {
   },
   fr: {
     'cloudLogin.join': 'Rejoindre la classe en ligne', 'cloudLogin.joining': 'Connexion à ta classe…',
-    'cloudLogin.joined': 'C’est fait ! Tes progrès te suivent maintenant sur tous les appareils.',
+    'cloudLogin.joined': 'C’est fait ! Ton enseignant peut maintenant voir tes progrès.',
     'cloudLogin.bad-code': 'Tape d’abord le code de classe de ton enseignant.',
     'cloudLogin.unknown-class': 'Classe introuvable. Vérifie le code avec ton enseignant.',
     'cloudLogin.offline': 'Connecte-toi à Internet pour rejoindre ta classe en ligne.',
@@ -222,7 +222,7 @@ export const dictionaries = {
   },
   es: {
     'cloudLogin.join': 'Unirse a la clase en línea', 'cloudLogin.joining': 'Uniéndote a tu clase…',
-    'cloudLogin.joined': '¡Listo! Tu progreso ahora te sigue en cualquier dispositivo.',
+    'cloudLogin.joined': '¡Listo! Tu maestro ya puede ver tu progreso.',
     'cloudLogin.bad-code': 'Primero escribe el código de clase de tu maestro.',
     'cloudLogin.unknown-class': 'No encontramos esa clase. Revisa el código con tu maestro.',
     'cloudLogin.offline': 'Conéctate a Internet para unirte a tu clase en línea.',
