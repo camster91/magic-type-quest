@@ -111,10 +111,14 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
   position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center;
   justify-content: safe center; opacity: 0; visibility: hidden; pointer-events: none;
   transform: scale(0.96) translateY(12px);
-  transition: opacity 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1), visibility 0s linear 0.35s;
+  /* content-visibility: the browser skips laying out screens nobody can
+     see, which keeps the first paint and screen changes fast. It flips at
+     the end of the fade, like visibility, so leaving a screen still fades. */
+  content-visibility: hidden;
+  transition: opacity 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1), visibility 0s linear 0.35s, content-visibility 0s linear 0.35s allow-discrete;
   z-index: 0; overflow-y: auto; padding: 16px 0;
 }
-.screen.active { opacity: 1; visibility: visible; pointer-events: auto; transform: scale(1) translateY(0); z-index: 1; transition-delay: 0s; }
+.screen.active { opacity: 1; visibility: visible; content-visibility: visible; pointer-events: auto; transform: scale(1) translateY(0); z-index: 1; transition-delay: 0s; }
 
 /* ===== MENU BG — single subtle gradient, no busy forest ===== */
 #menu-screen {

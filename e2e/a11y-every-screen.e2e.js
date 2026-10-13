@@ -44,7 +44,7 @@ async function startLevel(page) {
   for (const id of ['#btn-close-finger-guide', '#btn-chapter-continue']) {
     if (await page.locator(id).isVisible().catch(() => false)) await page.locator(id).click();
   }
-  await expect.poll(() => page.evaluate(() => window.gameState.screen)).toBe('game');
+  await expect.poll(() => page.evaluate(() => window.gameState?.screen)).toBe('game');
 }
 
 async function typeWholeLevel(page) {
@@ -87,7 +87,7 @@ test('a whole level can be played with the keyboard alone', async ({ page }) => 
       await page.keyboard.press('Enter');
     }
   }
-  await expect.poll(() => page.evaluate(() => window.gameState.screen)).toBe('game');
+  await expect.poll(() => page.evaluate(() => window.gameState?.screen)).toBe('game');
   await typeWholeLevel(page);
   await expect(page.locator('#level-overlay')).toBeVisible();
   // The finish card's buttons are reachable by Tab, and Enter opens the lessons.

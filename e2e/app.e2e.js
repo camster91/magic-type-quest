@@ -258,6 +258,8 @@ test('language selection applies immediately and persists after reload', async (
 test('a weak-key drill finishes without changing curriculum progress', async ({ page }) => {
   await page.addInitScript(() => localStorage.clear());
   await page.goto('');
+  // The app code loads after the menu paints, so wait for it before poking it.
+  await page.waitForFunction(() => window.gameState?.profile);
 
   await page.evaluate(() => {
     window.gameState.profile.completedLevels = [1];
