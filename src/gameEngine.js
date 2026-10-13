@@ -138,6 +138,12 @@ function resizeCanvas() {
 
 // ===== GAME LOOP =====
 function gameLoop(timestamp) {
+  if (gameState.screen === 'game' && gameState.levelComplete && meadow.isCelebrating()) {
+    // Keep the restored meadow alive behind the level-complete card.
+    meadow.draw(1, gameState.wordsCompleted || 0);
+    animationId = requestAnimationFrame(gameLoop);
+    return;
+  }
   if (gameState.screen !== 'game' || gameState.gameOver) {
     animationId = null;
     return;
@@ -1098,6 +1104,7 @@ function levelComplete() {
   }
 
   // Show celebration
+  if (window.__bloomtypeT15Overlay && meadow.isReady()) meadow.celebrate();
   showLevelComplete();
   showPetReaction('celebrate', t('game.levelComplete'));
   spawnConfetti(gameState.canvasW/2, gameState.canvasH/2, 50);
@@ -1607,6 +1614,27 @@ function showGameOver() {
   showPetReaction('hurt', t('game.over'));
 }
 
+export function levelStars(accuracy) {
+  if (accuracy >= 95) return 3;
+  if (accuracy >= 80) return 2;
+  return 1;
+}
+
+function countUp(el, target) {
+  if (!el) return;
+  if (prefersReducedMotion() || target <= 0) {
+    el.textContent = target;
+    return;
+  }
+  const start = performance.now();
+  const step = (now) => {
+    const k = Math.min(1, (now - start) / 900);
+    el.textContent = Math.round(target * (1 - (1 - k) ** 3));
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
 function showLevelComplete() {
   const num = document.getElementById('level-complete-num');
   const score = document.getElementById('level-score');
@@ -1623,11 +1651,25 @@ function showLevelComplete() {
   if (words) words.textContent = gameState.wordsCompleted;
   if (combo) combo.textContent = gameState.maxCombo;
   
+  // Stars reward care, not speed: 3 for 95%+ accuracy, 2 for 80%+.
+  const total = gameState.totalKeystrokes || 0;
+  const accuracy = total > 0 ? (gameState.correctKeystrokes / total) * 100 : 100;
+  const stars = levelStars(accuracy);
+  const starsEl = overlay?.querySelector('.level-stars');
+  if (starsEl) {
+    starsEl.innerHTML = [1, 2, 3].map((n) => `<span class="level-star${n <= stars ? ' earned' : ''}" style="--i:${n}">★</span>`).join('');
+    starsEl.setAttribute('role', 'img');
+    starsEl.setAttribute('aria-label', t('game.starsEarned', { count: stars }));
+  }
+  const subtitle = document.getElementById('level-complete-sub');
+  if (subtitle) subtitle.textContent = t('game.levelCompleteNamed', { level: gameState.level });
+  countUp(score, gameState.score);
+
   if (isFinal) {
     if (cardTitle) cardTitle.textContent = `🎉 ${t('game.complete')}`;
     if (nextBtn) { nextBtn.textContent = `🏆 ${t('game.quit')}`; nextBtn.classList.add('final'); }
   } else {
-    if (cardTitle) cardTitle.textContent = t('game.levelCompleteNamed', { level: gameState.level });
+    if (cardTitle) cardTitle.textContent = `🌼 ${t('game.meadowRestored')}`;
     if (nextBtn) { nextBtn.textContent = `${t('game.next')} →`; nextBtn.classList.remove('final'); }
   }
   

@@ -1,5 +1,6 @@
 export const dictionaries = {
   en: {
+    'game.meadowRestored': 'Meadow restored!', 'game.starsEarned': '{count} of 3 stars',
     'nav.lessons': 'Lessons', 'nav.practice': 'Practice', 'nav.garden': 'Garden', 'nav.profile': 'Profile',
     'nav.parents': 'Parents', 'nav.progress': 'Progress', 'nav.schools': 'For Schools', 'nav.back': 'Back', 'nav.allLessons': 'All Lessons',
     'menu.cta': 'Type to plant', 'menu.daily': '60-second Daily Moment', 'menu.lowStress': '60s · low stress',
@@ -88,6 +89,7 @@ export const dictionaries = {
     'evolution.3.line': '“We’re UNSTOPPABLE together!” — Bloom',
   },
   fr: {
+    'game.meadowRestored': 'Prairie restaurée !', 'game.starsEarned': '{count} étoiles sur 3',
     'nav.lessons': 'Leçons', 'nav.practice': 'Pratique', 'nav.garden': 'Jardin', 'nav.profile': 'Profil',
     'nav.parents': 'Parents', 'nav.progress': 'Progrès', 'nav.schools': 'Pour les écoles', 'nav.back': 'Retour', 'nav.allLessons': 'Toutes les leçons',
     'menu.cta': 'Tape pour planter', 'menu.daily': 'Moment quotidien de 60 secondes', 'menu.lowStress': '60 s · sans stress',
@@ -177,6 +179,7 @@ export const dictionaries = {
     'evolution.3.line': '« Ensemble, nous sommes INARRÊTABLES ! » — Bloom',
   },
   es: {
+    'game.meadowRestored': '¡Pradera restaurada!', 'game.starsEarned': '{count} de 3 estrellas',
     'nav.lessons': 'Lecciones', 'nav.practice': 'Práctica', 'nav.garden': 'Jardín', 'nav.profile': 'Perfil',
     'nav.parents': 'Familias', 'nav.progress': 'Progreso', 'nav.schools': 'Para escuelas', 'nav.back': 'Volver', 'nav.allLessons': 'Todas las lecciones',
     'menu.cta': 'Escribe para plantar', 'menu.daily': 'Momento diario de 60 segundos', 'menu.lowStress': '60 s · sin presión',

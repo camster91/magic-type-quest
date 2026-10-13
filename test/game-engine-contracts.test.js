@@ -16,7 +16,8 @@ function fn(src, signature) {
 describe('game engine fixes — source contracts', () => {
   it('only ever runs one animation loop', () => {
     // Every start goes through startLoop, which cancels the previous loop.
-    expect(engineSrc.match(/animationId = requestAnimationFrame\(gameLoop\)/g)).toHaveLength(4);
+    // (The fifth keeps the restored meadow animating behind the level-complete card.)
+    expect(engineSrc.match(/animationId = requestAnimationFrame\(gameLoop\)/g)).toHaveLength(5);
     expect(fn(engineSrc, 'function startLoop()')).toMatch(/cancelAnimationFrame\(animationId\)/);
     for (const start of ['export function startGame(', 'export function startDrillMode(', 'export function startDailyMoment(']) {
       expect(fn(engineSrc, start), start).toMatch(/startLoop\(\);/);
@@ -42,5 +43,14 @@ describe('game engine fixes — source contracts', () => {
     expect(fn(mainSrc, 'function updatePracticeStats()')).toMatch(/gameState\.screen !== 'practice'\) \{\s*stopPracticeTimer\(\);/);
     expect(mainSrc).toMatch(/btn-practice-back'\)\?\.addEventListener\('click', \(\) => \{\s*stopPracticeTimer\(\);/);
     expect(fn(mainSrc, 'function handlePracticeKey(')).toMatch(/if \(e\.key\.length !== 1\) return;/);
+  });
+});
+
+describe('level stars', () => {
+  it('rewards accuracy, never speed', async () => {
+    const src = engineSrc;
+    expect(src).toMatch(/export function levelStars\(accuracy\)/);
+    expect(src).toMatch(/if \(accuracy >= 95\) return 3;/);
+    expect(src).toMatch(/if \(accuracy >= 80\) return 2;/);
   });
 });

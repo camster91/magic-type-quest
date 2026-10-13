@@ -106,6 +106,7 @@ export function createMeadowScene({
   let foxMood = { pose: 'foxIdle', until: 0 };
   let layerCache = { key: '', layers: {} };
   let lastFrame = 0;
+  let celebratingSince = 0;
 
   function load() {
     if (loading) return;
@@ -133,6 +134,12 @@ export function createMeadowScene({
     plantChanges.clear();
     arrivals.clear();
     foxMood = { pose: 'foxIdle', until: 0 };
+    celebratingSince = 0;
+  }
+
+  /** The level is done: the meadow glows, petals drift and the fox cheers. */
+  function celebrate() {
+    celebratingSince = now();
   }
 
   function cheer() {
@@ -279,9 +286,11 @@ export function createMeadowScene({
 
     // The fox guide sits in front, near the left of the meadow.
     if (foxMood.until && t > foxMood.until) foxMood = { pose: 'foxIdle', until: 0 };
+    if (celebratingSince) foxMood = { pose: 'foxHappy', until: 0 };
     const breathe = calm ? 1 : 1 + Math.sin(t / 800) * 0.01;
     const foxH = height * (foxMood.pose === 'foxIdle' ? 0.13 : 0.17);
-    drawSprite(foxMood.pose, width * 0.13, groundBottom, foxH, { squashX: breathe });
+    const hop = celebratingSince && !calm ? Math.abs(Math.sin(t / 260)) * height * 0.02 : 0;
+    drawSprite(foxMood.pose, width * 0.13, groundBottom - hop, foxH, { squashX: breathe });
 
     // Flying visitors drift over the flowers.
     if (visitors.has('bee')) {
@@ -298,7 +307,37 @@ export function createMeadowScene({
       const flap = calm ? 1 : 0.75 + Math.abs(Math.sin(t / 140 + phase)) * 0.25;
       drawSprite('monarch', x, y, height * 0.06, { alpha: a, squashX: flap });
     }
+
+    if (celebratingSince) drawCelebration(t - celebratingSince, width, height, calm);
   }
 
-  return { load, isReady, reset, draw, cheer, notice };
+  // A warm sunrise glow and drifting petals over the restored meadow.
+  function drawCelebration(elapsed, width, height, calm) {
+    const fadeIn = calm ? 1 : clamp01(elapsed / 800);
+    const pulse = calm ? 0.5 : 0.5 + Math.sin(elapsed / 600) * 0.15;
+    const glow = context.createRadialGradient(width / 2, height * 0.2, 0, width / 2, height * 0.2, Math.max(width, height) * 0.7);
+    glow.addColorStop(0, `rgba(255, 236, 170, ${0.55 * pulse * fadeIn})`);
+    glow.addColorStop(1, 'rgba(255, 236, 170, 0)');
+    context.fillStyle = glow;
+    context.fillRect(0, 0, width, height);
+    if (calm) return;
+    const colors = ['#f9c74f', '#f8961e', '#f4a3c0', '#ffffff', '#ffd6e0'];
+    for (let i = 0; i < 36; i++) {
+      // Each petal falls on its own loop, swaying side to side.
+      const speed = 0.04 + (i % 7) * 0.006;
+      const y = ((elapsed * speed + i * 97) % (height + 40)) - 20;
+      const x = (i * 137.5) % width + Math.sin(elapsed / 700 + i) * 24;
+      context.save();
+      context.globalAlpha = fadeIn * 0.9;
+      context.translate(x, y);
+      context.rotate(elapsed / 500 + i);
+      context.fillStyle = colors[i % colors.length];
+      context.beginPath();
+      context.ellipse(0, 0, 6, 3.2, 0, 0, Math.PI * 2);
+      context.fill();
+      context.restore();
+    }
+  }
+
+  return { load, isReady, reset, draw, cheer, notice, celebrate, isCelebrating: () => celebratingSince > 0 };
 }

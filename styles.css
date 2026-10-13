@@ -1436,3 +1436,46 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
    button does not jump down as the page loads. */
 .keyboard-mini { min-height: 27px; }
 @media (max-width: 480px) { .keyboard-mini { min-height: 25px; } }
+
+/* ===== Meadow restored! =====
+   Let the glowing, restored meadow show behind the level-complete card. */
+#level-overlay { background: rgba(15, 12, 40, 0.28); backdrop-filter: blur(0); align-items: flex-end; padding-bottom: max(24px, 8vh); }
+#level-overlay .level-complete-card { background: rgba(30, 27, 75, 0.9); border-color: rgba(253, 230, 138, 0.55); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), 0 0 48px rgba(253, 230, 138, 0.25); }
+.level-complete-sub { color: var(--text-dim); font-weight: 700; margin-top: -4px; }
+.level-stars { display: flex; justify-content: center; gap: 8px; font-size: 2.4rem; line-height: 1; }
+.level-star { color: rgba(255, 255, 255, 0.18); }
+.level-star.earned { color: #fcd34d; text-shadow: 0 0 14px rgba(252, 211, 77, 0.7); }
+#level-overlay:not(.hidden) .level-star.earned { animation: starPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; animation-delay: calc(var(--i, 1) * 0.18s + 0.2s); }
+@keyframes starPop { from { transform: scale(0) rotate(-40deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  #level-overlay:not(.hidden) .level-star.earned { animation: none; }
+}
+
+/* ===== Meadow menus =====
+   Menu screens sit on a soft, blurred copy of the restored Meadow, with a
+   dusk tint so cards and text stay readable. */
+.menu-bg {
+  background:
+    linear-gradient(180deg, rgba(24, 20, 66, 0.72) 0%, rgba(24, 20, 66, 0.45) 45%, rgba(24, 20, 66, 0.78) 100%),
+    url('/assets/home/meadow-home-wide.webp') center bottom / cover no-repeat,
+    var(--bg-1);
+}
+@media (max-aspect-ratio: 1/1) {
+  .menu-bg {
+    background:
+      linear-gradient(180deg, rgba(24, 20, 66, 0.72) 0%, rgba(24, 20, 66, 0.45) 45%, rgba(24, 20, 66, 0.78) 100%),
+      url('/assets/home/meadow-home-narrow.webp') center bottom / cover no-repeat,
+      var(--bg-1);
+  }
+}
+.menu-bg::after { display: none; }
+.progress-card, .menu-dock { background: rgba(24, 20, 66, 0.62); backdrop-filter: blur(6px); }
+/* Hide the empty word card and finger hint behind the finish card. */
+#game-screen:has(#level-overlay:not(.hidden)) :is(.target-word, .finger-hint, .live-hud, .hud, .virtual-keyboard) { visibility: hidden; }
+
+/* Phones: a smaller pet in the corner leaves room for the meadow and word. */
+@media (max-width: 600px) {
+  .pet-container { bottom: 158px; right: 10px; }
+  .pet-wrap { width: 76px; height: 76px; }
+  .pet-bubble { font-size: 0.75rem; max-width: 140px; }
+}
