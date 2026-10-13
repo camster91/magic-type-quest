@@ -9,7 +9,7 @@ const syncSource = readFileSync(resolve(root, 'src/sync.js'), 'utf8');
 
 describe('Supabase privacy boundary', () => {
   it('enables RLS on every student-data table', () => {
-    for (const table of ['profiles', 'game_sessions', 'class_roster', 'teacher_codes']) {
+    for (const table of ['profiles', 'game_sessions', 'class_roster', 'teacher_codes', 'student_link_codes', 'linked_devices']) {
       expect(schema).toContain(`alter table ${table} enable row level security`);
     }
   });
@@ -41,9 +41,11 @@ describe('Supabase privacy boundary', () => {
   });
 
   it('scopes student cloud exports to the authenticated identity', () => {
-    expect(syncSource).toContain("fetchAllOwnedRows(sb, 'profiles', 'id', userId");
-    expect(syncSource).toContain("fetchAllOwnedRows(sb, 'game_sessions', 'profile_id', userId");
-    expect(syncSource).toContain("fetchAllOwnedRows(sb, 'class_roster', 'profile_id', userId");
+    // Only the caller's own student: its account plus devices linked to it.
+    expect(syncSource).toContain("all('profiles', 'id')");
+    expect(syncSource).toContain("all('game_sessions', 'profile_id')");
+    expect(syncSource).toContain("all('class_roster', 'profile_id')");
+    expect(syncSource).toContain("sb.rpc('my_student_device_ids')");
     expect(syncSource).toContain(".eq(ownerColumn, userId)");
     expect(syncSource).not.toMatch(/access_token|refresh_token/);
   });
@@ -85,8 +87,8 @@ describe('Supabase privacy boundary', () => {
     expect(syncSource).not.toMatch(/from\('class_roster'\)\s*\.delete\(\)/);
   });
 
-  it('deletes the sign-in account itself, scoped to the caller', () => {
-    expect(schema).toMatch(/function public\.delete_my_account\(\)[\s\S]*?uid uuid := auth\.uid\(\)[\s\S]*?delete from auth\.users where id = uid/);
+  it('deletes the sign-in accounts themselves, scoped to the caller\'s own student', () => {
+    expect(schema).toMatch(/function public\.delete_my_account\(\)[\s\S]*?uid uuid := auth\.uid\(\)[\s\S]*?ids := array_append\(coalesce\(ids, '\{\}'\), uid\)[\s\S]*?delete from auth\.users where id = any\(ids\)/);
   });
 
   it('never lets anonymous callers run student RPCs', () => {
@@ -101,5 +103,30 @@ describe('Supabase privacy boundary', () => {
     expect(schema).toContain('create unique index if not exists idx_sessions_session_id');
     expect(schema).toContain('where session_id is not null');
     expect(syncSource).toContain("if (error?.code === '23505') return true");
+  });
+
+  it('links a child\'s devices only through hashed, expiring codes', () => {
+    // Link codes are stored as SHA-256 hashes and no policy exposes them.
+    expect(schema).toContain("encode(digest(code, 'sha256'), 'hex')");
+    expect(schema).toContain("now() + interval '14 days'");
+    expect(schema).not.toMatch(/create policy [^\n]+ on student_link_codes/);
+    expect(schema).toContain('revoke insert, update on linked_devices from authenticated');
+    for (const fn of ['create_link_code()', 'link_device(text)', 'student_profiles()', 'my_student_id()']) {
+      expect(schema).toContain(`revoke all on function public.${fn} from public, anon;`);
+      expect(schema).toContain(`grant execute on function public.${fn} to authenticated;`);
+    }
+  });
+
+  it('never lets a device pose as another child in the roster', () => {
+    expect(schema).toMatch(/function public\.set_roster_student_id\(\)[\s\S]*?new\.student_id := public\.my_student_id\(\);/);
+    expect(schema).toMatch(/create trigger roster_student_id\s+before insert or update on class_roster/);
+  });
+
+  it('lets linked devices read, and deletion remove, the whole student only', () => {
+    for (const table of ['profiles', 'game_sessions', 'class_roster']) {
+      expect(schema).toContain(`create policy "Student group read" on ${table} for select`);
+    }
+    expect(schema).toMatch(/function public\.delete_my_account\(\)[\s\S]*?from public\.my_student_device_ids\(\)[\s\S]*?delete from public\.profiles where id = any\(ids\)/);
+    expect(schema).toMatch(/function public\.link_device[\s\S]*?target := coalesce\(\(select student_id from linked_devices where device_id = target\), target\)/);
   });
 });

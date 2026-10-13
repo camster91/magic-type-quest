@@ -156,37 +156,57 @@ export async function fetchAllOwnedRows(sb, table, ownerColumn, userId, pageSize
   }
 }
 
+/**
+ * Export one student's cloud learning data. `deviceIds` lists the accounts of
+ * every device linked to the same child (just this account when none are).
+ */
 export async function buildCloudProgressExport(
   sb,
   userId,
   exportedAt = new Date().toISOString(),
   pageSize = 500,
+  deviceIds = [userId],
 ) {
+  const ids = [...new Set([userId, ...deviceIds])];
+  const all = (table, column) => Promise.all(ids.map((id) => fetchAllOwnedRows(sb, table, column, id, pageSize)))
+    .then((lists) => lists.flat());
   const [profiles, sessions, rosterMemberships] = await Promise.all([
-    fetchAllOwnedRows(sb, 'profiles', 'id', userId, pageSize),
-    fetchAllOwnedRows(sb, 'game_sessions', 'profile_id', userId, pageSize),
-    fetchAllOwnedRows(sb, 'class_roster', 'profile_id', userId, pageSize),
+    all('profiles', 'id'),
+    all('game_sessions', 'profile_id'),
+    all('class_roster', 'profile_id'),
   ]);
-  return {
+  const payload = {
     formatVersion: 1,
     exportedAt,
     source: 'cloud',
     accountId: userId,
-    profile: profiles[0] || null,
+    profile: profiles.find((row) => row.id === userId) || null,
     sessions,
     rosterMemberships,
   };
+  if (ids.length > 1) payload.linkedProfiles = profiles.filter((row) => row.id !== userId);
+  return payload;
 }
 
-/** Export only the authenticated user's cloud learning data. */
+/** The accounts of every device linked to the signed-in child. */
+async function fetchStudentDeviceIds(sb, userId) {
+  const { data, error } = await sb.rpc('my_student_device_ids');
+  if (error) throw error;
+  const ids = (Array.isArray(data) ? data : []).map((row) => (typeof row === 'string' ? row : row?.my_student_device_ids))
+    .filter(Boolean);
+  return ids.length ? ids : [userId];
+}
+
+/** Export the authenticated student's cloud learning data, across linked devices. */
 export async function exportCloudProgress() {
   const cloud = await getAuthenticatedSupabase();
   if (!cloud) return { exported: false, reason: 'not-authenticated' };
   if (!navigator.onLine) return { exported: false, reason: 'offline' };
   try {
+    const deviceIds = await fetchStudentDeviceIds(cloud.sb, cloud.user.id);
     return {
       exported: true,
-      payload: await buildCloudProgressExport(cloud.sb, cloud.user.id),
+      payload: await buildCloudProgressExport(cloud.sb, cloud.user.id, undefined, undefined, deviceIds),
     };
   } catch (error) {
     console.warn('Cloud export failed:', error);

@@ -69,3 +69,30 @@ export function createClassReportCSV(rows) {
   }).join(','));
   return [header, ...lines].join('\r\n');
 }
+
+/**
+ * Cloud roster rows from one child's linked devices share a student_id.
+ * Fold them into one row: the newest name and avatar, the highest totals and
+ * every level finished on any device.
+ */
+export function mergeLinkedRosterRows(rows = []) {
+  const byStudent = new Map();
+  for (const row of rows) {
+    const key = row.student_id || row.profile_id || row;
+    const seen = byStudent.get(key);
+    if (!seen) {
+      byStudent.set(key, { ...row, completed_levels: [...(row.completed_levels || [])] });
+      continue;
+    }
+    const newer = String(row.updated_at || '') > String(seen.updated_at || '');
+    const merged = newer ? { ...seen, ...row } : seen;
+    for (const field of ['total_words', 'total_stars', 'high_score']) {
+      merged[field] = Math.max(Number(seen[field]) || 0, Number(row[field]) || 0);
+    }
+    merged.completed_levels = [...new Set([...(seen.completed_levels || []), ...(row.completed_levels || [])])]
+      .sort((a, b) => a - b);
+    merged.updated_at = newer ? row.updated_at : seen.updated_at;
+    byStudent.set(key, merged);
+  }
+  return [...byStudent.values()];
+}

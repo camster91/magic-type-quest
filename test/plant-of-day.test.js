@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  MINUTES_TO_PLANT, PLANTS, gardenDays, grownPlants, plantForDay, plantToday, plantWaiting, plantedToday,
+  MINUTES_TO_PLANT, PLANTS, backfillPlants, gardenDays, grownPlants, plantForDay, plantToday, plantWaiting, plantedToday,
 } from '../src/plantOfDay.js';
 import { recordPractice } from '../src/practiceLog.js';
 import { dictionaries } from '../src/i18n.js';
@@ -43,6 +43,24 @@ describe('plant of the day', () => {
     expect(gardenDays(profile)).toBe(3);
     expect(plantWaiting(profile, day('2026-10-09'))).toBe(false);
     expect(grownPlants(profile).reduce((sum, p) => sum + p.count, 0)).toBe(3);
+  });
+
+  it('never plants the same calendar day twice, even if the clock goes back', () => {
+    const profile = {};
+    recordPractice(profile, 60_000, day('2026-10-13'));
+    recordPractice(profile, 60_000, day('2026-10-14'));
+    recordPractice(profile, 60_000, day('2026-10-13')); // clock corrected backwards
+    expect(gardenDays(profile)).toBe(2);
+    expect(profile.plantedDays).toEqual(['2026-10-13', '2026-10-14']);
+  });
+
+  it('gives children who played before plants existed the plants they earned', () => {
+    const profile = { totalWords: 90, practiceLog: { '2026-09-01': 4, '2026-09-03': 0.2, '2026-09-05': 2 } };
+    expect(plantWaiting(profile, day('2026-10-13'))).toBe(true); // returning child, even before backfill
+    expect(backfillPlants(profile)).toBe(2); // the 0.2-minute day is too short
+    expect(gardenDays(profile)).toBe(2);
+    expect(profile.lastPlantDate).toBe('2026-09-05');
+    expect(backfillPlants(profile)).toBe(0); // only once
   });
 
   it('does not nag a brand-new player', () => {

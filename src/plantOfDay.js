@@ -38,13 +38,38 @@ export function gardenDays(profile) {
   return Object.values(profile?.plants || {}).reduce((sum, n) => sum + (Number(n) || 0), 0);
 }
 
+const MAX_PLANTED_DAYS = 400;
+
+function plantedDays(profile) {
+  return Array.isArray(profile?.plantedDays) ? profile.plantedDays : [];
+}
+
 export function plantedToday(profile, date = new Date()) {
-  return profile?.lastPlantDate === dayKey(date);
+  const key = dayKey(date);
+  return profile?.lastPlantDate === key || plantedDays(profile).includes(key);
+}
+
+/** A child who has played before, even before plants existed. */
+function isReturning(profile) {
+  return gardenDays(profile) > 0
+    || (profile?.totalWords || 0) > 0
+    || (profile?.completedLevels || []).length > 0
+    || Object.keys(profile?.practiceLog || {}).length > 0;
 }
 
 /** True when today's plant is still waiting for a returning child. */
 export function plantWaiting(profile, date = new Date()) {
-  return gardenDays(profile) > 0 && !plantedToday(profile, date);
+  return isReturning(profile) && !plantedToday(profile, date);
+}
+
+function plantDay(profile, key) {
+  const plant = plantForDay(key);
+  const plants = profile.plants && typeof profile.plants === 'object' ? profile.plants : {};
+  profile.plants = { ...plants, [plant.id]: (Number(plants[plant.id]) || 0) + 1 };
+  // Each calendar day is planted at most once, even if the clock goes back.
+  profile.plantedDays = [...plantedDays(profile), key].sort().slice(-MAX_PLANTED_DAYS);
+  if (!profile.lastPlantDate || key > profile.lastPlantDate) profile.lastPlantDate = key;
+  return plant;
 }
 
 /** Plant today's plant once the day's practice is long enough. Returns it if new. */
@@ -52,11 +77,24 @@ export function plantToday(profile, date = new Date()) {
   if (!profile || plantedToday(profile, date)) return null;
   const key = dayKey(date);
   if ((Number(profile.practiceLog?.[key]) || 0) < MINUTES_TO_PLANT) return null;
-  const plant = plantForDay(key);
-  const plants = profile.plants && typeof profile.plants === 'object' ? profile.plants : {};
-  profile.plants = { ...plants, [plant.id]: (Number(plants[plant.id]) || 0) + 1 };
-  profile.lastPlantDate = key;
-  return plant;
+  return plantDay(profile, key);
+}
+
+/**
+ * Profiles from before plants existed: plant one for every day already
+ * practised, so a returning child starts with the meadow they earned.
+ * Returns how many plants were added.
+ */
+export function backfillPlants(profile) {
+  if (!profile || gardenDays(profile) > 0) return 0;
+  let added = 0;
+  for (const [key, minutes] of Object.entries(profile.practiceLog || {}).sort(([a], [b]) => a.localeCompare(b))) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(key) && (Number(minutes) || 0) >= MINUTES_TO_PLANT && !plantedDays(profile).includes(key)) {
+      plantDay(profile, key);
+      added++;
+    }
+  }
+  return added;
 }
 
 /** The child's plants, most grown first: [{ ...plant, count }]. */
