@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { webcrypto } from 'node:crypto';
-import { ATTEMPTS_KEY, LOCKOUT_MS, MAX_ATTEMPTS, PIN_KEY, createTeacherLock, isValidPin } from '../src/teacherLock.js';
+import { ATTEMPTS_KEY, LOCKOUT_MS, MAX_ATTEMPTS, PARENT_KEYS, PIN_KEY, createParentLock, createTeacherLock, isValidPin } from '../src/teacherLock.js';
 
 function memoryStorage() {
   const values = new Map();
@@ -84,5 +84,32 @@ describe('teacher PIN lock', () => {
     expect(lock.hasPin()).toBe(false);
     expect(lock.isUnlocked()).toBe(false);
     expect(await lock.unlock('2468')).toBe('wrong');
+  });
+});
+
+describe('grown-up PIN lock', () => {
+  it('is separate from the teacher lock on the same device', async () => {
+    const local = memoryStorage();
+    const session = memoryStorage();
+    const teacher = createTeacherLock({ local, session, crypto: webcrypto });
+    const parent = createParentLock({ local, session, crypto: webcrypto });
+    await parent.setPin('1357');
+    expect(local.getItem(PARENT_KEYS.pinKey)).not.toContain('1357');
+    expect(local.getItem(PIN_KEY)).toBeNull();
+    expect(teacher.hasPin()).toBe(false);
+    expect(teacher.isUnlocked()).toBe(false);
+  });
+
+  it('can only be removed while unlocked', async () => {
+    const local = memoryStorage();
+    const session = memoryStorage();
+    const parent = createParentLock({ local, session, crypto: webcrypto });
+    await parent.setPin('1357');
+    parent.lock();
+    expect(parent.removePin()).toBe(false);
+    expect(parent.hasPin()).toBe(true);
+    expect(await parent.unlock('1357')).toBe('ok');
+    expect(parent.removePin()).toBe(true);
+    expect(parent.hasPin()).toBe(false);
   });
 });
