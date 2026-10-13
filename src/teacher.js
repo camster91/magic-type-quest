@@ -187,7 +187,9 @@ function bindClassEvents() {
 function printSaveCodes() {
   const rows = currentRows.filter((row) => row.saveCode);
   if (!rows.length) {
-    alert(pageT('teacher.noSaveCodes'));
+    // Online students sign in to their account on any device, so they never
+    // need a save code.
+    alert(pageT(currentRows.some((row) => row.cloud) ? 'teacher.cloudNoSaveCodes' : 'teacher.noSaveCodes'));
     return;
   }
   $('print-cards').innerHTML = rows.map((row) => `<div class="print-card">
@@ -349,7 +351,7 @@ function renderRoster(students, isCloud) {
         <td>${row.minutes7d == null ? '—' : escapeHTML(formatNumber(row.minutes7d))}</td>
         <td>${escapeHTML(row.lastPlayed || '—')}</td>
         <td>${row.assignmentKey === 'none' ? '—' : `<span class="badge ${ASSIGNMENT_BADGES[row.assignmentKey]}">${escapeHTML(row.assignment)}</span>`}</td>
-        <td class="save-code">${row.saveCode ? escapeHTML(row.saveCode) : '—'}</td>
+        <td class="save-code">${row.saveCode ? escapeHTML(row.saveCode) : escapeHTML(row.cloud ? pageT('teacher.saveCodeCloud') : '—')}</td>
         <td><span class="badge ${row.badgeClass}">${escapeHTML(row.status)}</span></td>
       </tr>
     `).join('');
@@ -386,7 +388,8 @@ function studentRow(st, isCloud, assignment) {
     words: st.total_words ?? st.totalWords ?? 0,
     stars: st.total_stars ?? st.totalStars ?? 0,
     lastPlayed: lastPlayedRaw ? new Date(lastPlayedRaw).toLocaleDateString() : '',
-    saveCode: st.saveCode || '',
+    saveCode: isCloud ? '' : st.saveCode || '',
+    cloud: Boolean(isCloud),
     assignmentKey,
     assignment: assignmentKey === 'none' ? '' : pageT(`teacher.assign.${assignmentKey}`),
     status: pageT(statusKey),
