@@ -42,13 +42,26 @@
 
       --font: 'Nunito', system-ui, sans-serif;
       --display: 'Fredoka One', cursive;
+      /* Every colour on this page, as "r, g, b" for rgba(var(--rgb-x), a). */
+      --white: #FFFFFF;
+      --rgb-accent: 236, 72, 153;
+      --rgb-bg-night-1: 26, 16, 51;
+      --rgb-black: 0, 0, 0;
+      --rgb-green-ok: 52, 211, 153;
+      --rgb-lavender: 184, 164, 227;
+      --rgb-lavender-d: 139, 92, 246;
+      --rgb-lilac: 240, 230, 255;
+      --rgb-mint: 168, 227, 197;
+      --rgb-peach: 255, 201, 168;
+      --rgb-streak-gold: 255, 213, 107;
+      --rgb-white: 255, 255, 255;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
       font-family: var(--font);
-      color: #f0e6ff;
+      color: rgb(var(--rgb-lilac));
       background: var(--bg-night-1);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
@@ -60,9 +73,9 @@
     /* ===== Shared sky + stars (matches gameplay HUD) ===== */
     .sky-bg {
       background:
-        radial-gradient(circle at 20% 18%, rgba(255, 213, 107, 0.18) 0%, transparent 28%),
-        radial-gradient(circle at 78% 12%, rgba(184, 164, 227, 0.22) 0%, transparent 32%),
-        radial-gradient(circle at 50% 110%, rgba(255, 201, 168, 0.18) 0%, transparent 50%),
+        radial-gradient(circle at 20% 18%, rgba(var(--rgb-streak-gold), 0.18) 0%, transparent 28%),
+        radial-gradient(circle at 78% 12%, rgba(var(--rgb-lavender), 0.22) 0%, transparent 32%),
+        radial-gradient(circle at 50% 110%, rgba(var(--rgb-peach), 0.18) 0%, transparent 50%),
         linear-gradient(180deg, var(--bg-night-1) 0%, var(--bg-night-2) 55%, var(--bg-night-3) 100%);
     }
 
@@ -71,34 +84,34 @@
       position: sticky; top: 0; z-index: 50;
       display: flex; align-items: center; justify-content: space-between;
       padding: 16px 32px;
-      background: rgba(26, 16, 51, 0.78);
+      background: rgba(var(--rgb-bg-night-1), 0.78);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid rgba(var(--rgb-white), 0.08);
     }
     .nav-logo {
       display: flex; align-items: center; gap: 10px;
       font-family: var(--display);
       font-size: 1.4rem;
-      color: #fff;
+      color: var(--white);
       text-decoration: none;
     }
     .nav-logo .pet {
       width: 36px; height: 36px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(var(--rgb-white), 0.08);
       display: flex; align-items: center; justify-content: center;
       font-size: 22px;
     }
     .nav-links { display: flex; align-items: center; gap: 28px; }
     .nav-links a {
-      color: rgba(240, 230, 255, 0.82);
+      color: rgba(var(--rgb-lilac), 0.82);
       text-decoration: none;
       font-weight: 700;
       font-size: 0.95rem;
       transition: color 0.15s;
     }
-    .nav-links a:hover { color: #fff; }
+    .nav-links a:hover { color: var(--white); }
     .nav-cta {
       background: var(--streak-gold);
       color: var(--ink);
@@ -111,7 +124,7 @@
       transition: transform 0.15s, box-shadow 0.15s;
     }
     .nav-links .nav-cta { color: var(--ink); }
-    .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 0 32px rgba(255, 213, 107, 0.8); }
+    .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 0 32px rgba(var(--rgb-streak-gold), 0.8); }
 
     /* ===== HERO ===== */
     .hero {
@@ -122,8 +135,8 @@
     }
     .hero-eyebrow {
       display: inline-block;
-      background: rgba(168, 227, 197, 0.15);
-      border: 1px solid rgba(168, 227, 197, 0.4);
+      background: rgba(var(--rgb-mint), 0.15);
+      border: 1px solid rgba(var(--rgb-mint), 0.4);
       color: var(--mint);
       padding: 6px 16px;
       border-radius: 999px;
@@ -135,7 +148,7 @@
       font-family: var(--display);
       font-size: clamp(2.4rem, 5.5vw, 4rem);
       line-height: 1.1;
-      color: #fff;
+      color: var(--white);
       max-width: 900px;
       margin: 0 auto 20px;
       letter-spacing: -0.5px;
@@ -143,7 +156,7 @@
     .hero h1 span { color: var(--streak-gold); }
     .hero .lede {
       font-size: clamp(1.05rem, 1.6vw, 1.3rem);
-      color: rgba(240, 230, 255, 0.85);
+      color: rgba(var(--rgb-lilac), 0.85);
       max-width: 680px;
       margin: 0 auto 36px;
     }
@@ -167,13 +180,13 @@
       color: var(--ink);
       box-shadow: var(--shadow-glow);
     }
-    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 0 40px rgba(255, 213, 107, 0.85); }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 0 40px rgba(var(--rgb-streak-gold), 0.85); }
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(var(--rgb-white), 0.08);
+      color: var(--white);
+      border: 1px solid rgba(var(--rgb-white), 0.18);
     }
-    .btn-secondary:hover { background: rgba(255, 255, 255, 0.14); transform: translateY(-2px); }
+    .btn-secondary:hover { background: rgba(var(--rgb-white), 0.14); transform: translateY(-2px); }
 
     /* ===== 3 BETS GRID ===== */
     .bets {
@@ -185,13 +198,13 @@
     .bets-title {
       font-family: var(--display);
       font-size: clamp(1.5rem, 2.5vw, 2rem);
-      color: #fff;
+      color: var(--white);
       text-align: center;
       margin-bottom: 12px;
     }
     .bets-sub {
       text-align: center;
-      color: rgba(240, 230, 255, 0.7);
+      color: rgba(var(--rgb-lilac), 0.7);
       margin-bottom: 40px;
       font-size: 1.05rem;
     }
@@ -203,14 +216,14 @@
     .bet-card {
       position: relative;
       padding: 32px 28px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(var(--rgb-white), 0.06);
+      border: 1px solid rgba(var(--rgb-white), 0.12);
       border-radius: 24px;
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       transition: transform 0.2s, border-color 0.2s;
     }
-    .bet-card:hover { transform: translateY(-4px); border-color: rgba(255, 255, 255, 0.22); }
+    .bet-card:hover { transform: translateY(-4px); border-color: rgba(var(--rgb-white), 0.22); }
     .bet-num {
       display: inline-block;
       font-family: var(--display);
@@ -225,26 +238,26 @@
       width: 80px; height: 80px;
       margin-bottom: 20px;
       display: flex; align-items: center; justify-content: center;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(var(--rgb-white), 0.08);
       border-radius: 20px;
     }
     .bet-icon img { width: 64px; height: 64px; object-fit: contain; }
     .bet-card h3 {
       font-family: var(--display);
       font-size: 1.4rem;
-      color: #fff;
+      color: var(--white);
       margin-bottom: 10px;
       line-height: 1.2;
     }
     .bet-card p {
-      color: rgba(240, 230, 255, 0.78);
+      color: rgba(var(--rgb-lilac), 0.78);
       font-size: 0.98rem;
     }
     .bet-card .bet-tag {
       display: inline-block;
       margin-top: 14px;
       padding: 4px 10px;
-      background: rgba(168, 227, 197, 0.18);
+      background: rgba(var(--rgb-mint), 0.18);
       color: var(--mint);
       border-radius: 999px;
       font-size: 0.78rem;
@@ -255,7 +268,7 @@
     .demo {
       padding: 80px 32px;
       background:
-        radial-gradient(ellipse at top, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at top, rgba(var(--rgb-lavender-d), 0.12) 0%, transparent 50%),
         var(--bg-night-1);
     }
     .demo-inner {
@@ -269,12 +282,12 @@
     .demo h2 {
       font-family: var(--display);
       font-size: clamp(1.8rem, 3vw, 2.4rem);
-      color: #fff;
+      color: var(--white);
       margin-bottom: 16px;
     }
     .demo h2 span { color: var(--streak-gold); }
     .demo p {
-      color: rgba(240, 230, 255, 0.82);
+      color: rgba(var(--rgb-lilac), 0.82);
       font-size: 1.05rem;
       margin-bottom: 20px;
     }
@@ -282,7 +295,7 @@
     .demo li {
       padding: 10px 0 10px 32px;
       position: relative;
-      color: rgba(240, 230, 255, 0.88);
+      color: rgba(var(--rgb-lilac), 0.88);
       font-size: 1rem;
     }
     .demo li::before {
@@ -296,14 +309,14 @@
       aspect-ratio: 4/3;
       border-radius: 24px;
       overflow: hidden;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 24px 60px rgba(var(--rgb-black), 0.5);
+      border: 1px solid rgba(var(--rgb-white), 0.12);
     }
     .demo-stage canvas { display: block; width: 100%; height: 100%; }
     .demo-caption {
       text-align: center;
       margin-top: 16px;
-      color: rgba(240, 230, 255, 0.55);
+      color: rgba(var(--rgb-lilac), 0.55);
       font-size: 0.88rem;
       font-weight: 600;
     }
@@ -330,11 +343,11 @@
     .section-head h2 {
       font-family: var(--display);
       font-size: clamp(1.8rem, 3vw, 2.4rem);
-      color: #fff;
+      color: var(--white);
       margin-bottom: 12px;
     }
     .section-head p {
-      color: rgba(240, 230, 255, 0.72);
+      color: rgba(var(--rgb-lilac), 0.72);
       max-width: 640px;
       margin: 0 auto;
       font-size: 1.05rem;
@@ -346,12 +359,12 @@
     }
     .feature {
       padding: 24px 22px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(var(--rgb-white), 0.04);
+      border: 1px solid rgba(var(--rgb-white), 0.08);
       border-radius: 20px;
       transition: transform 0.15s, background 0.15s;
     }
-    .feature:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.08); }
+    .feature:hover { transform: translateY(-3px); background: rgba(var(--rgb-white), 0.08); }
     .feature-icon {
       font-size: 2rem;
       margin-bottom: 14px;
@@ -360,11 +373,11 @@
     .feature h3 {
       font-family: var(--display);
       font-size: 1.05rem;
-      color: #fff;
+      color: var(--white);
       margin-bottom: 8px;
     }
     .feature p {
-      color: rgba(240, 230, 255, 0.72);
+      color: rgba(var(--rgb-lilac), 0.72);
       font-size: 0.9rem;
       line-height: 1.5;
     }
@@ -373,7 +386,7 @@
     .pricing {
       padding: 80px 32px;
       background:
-        radial-gradient(ellipse at bottom, rgba(236, 72, 153, 0.10) 0%, transparent 50%),
+        radial-gradient(ellipse at bottom, rgba(var(--rgb-accent), 0.10) 0%, transparent 50%),
         var(--bg-night-2);
     }
     .pricing-inner { max-width: 980px; margin: 0 auto; }
@@ -385,14 +398,14 @@
     }
     .price-card {
       padding: 36px 32px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(var(--rgb-white), 0.06);
+      border: 1px solid rgba(var(--rgb-white), 0.12);
       border-radius: 24px;
       position: relative;
     }
     .price-card.featured {
       border-color: var(--streak-gold);
-      box-shadow: 0 0 40px rgba(255, 213, 107, 0.2);
+      box-shadow: 0 0 40px rgba(var(--rgb-streak-gold), 0.2);
     }
     .price-card.featured::before {
       content: "Most popular";
@@ -408,7 +421,7 @@
     .price-tier {
       font-family: var(--display);
       font-size: 1.5rem;
-      color: #fff;
+      color: var(--white);
       margin-bottom: 8px;
     }
     .price-card.featured .price-tier { color: var(--streak-gold); }
@@ -419,11 +432,11 @@
     .price-amount .num {
       font-family: var(--display);
       font-size: 2.8rem;
-      color: #fff;
+      color: var(--white);
       line-height: 1;
     }
     .price-amount .per {
-      color: rgba(240, 230, 255, 0.65);
+      color: rgba(var(--rgb-lilac), 0.65);
       font-size: 0.95rem;
     }
     .price-tag {
@@ -439,7 +452,7 @@
     .price-features li {
       padding: 8px 0 8px 28px;
       position: relative;
-      color: rgba(240, 230, 255, 0.85);
+      color: rgba(var(--rgb-lilac), 0.85);
       font-size: 0.95rem;
     }
     .price-features li::before {
@@ -460,15 +473,15 @@
     }
     .price-cta.gold { background: var(--streak-gold); color: var(--ink); }
     .price-cta.gold:hover { transform: translateY(-2px); }
-    .price-cta.ghost { background: transparent; color: #fff; border: 1px solid rgba(255, 255, 255, 0.3); }
-    .price-cta.ghost:hover { background: rgba(255, 255, 255, 0.08); }
+    .price-cta.ghost { background: transparent; color: var(--white); border: 1px solid rgba(var(--rgb-white), 0.3); }
+    .price-cta.ghost:hover { background: rgba(var(--rgb-white), 0.08); }
     .price-foot {
       text-align: center;
       margin-top: 32px;
-      color: rgba(240, 230, 255, 0.6);
+      color: rgba(var(--rgb-lilac), 0.6);
       font-size: 0.92rem;
     }
-    .price-foot strong { color: rgba(240, 230, 255, 0.9); }
+    .price-foot strong { color: rgba(var(--rgb-lilac), 0.9); }
 
     /* ===== PRIVACY ===== */
     .privacy {
@@ -484,13 +497,13 @@
     }
     .privacy-card {
       padding: 24px;
-      background: rgba(52, 211, 153, 0.06);
-      border: 1px solid rgba(52, 211, 153, 0.25);
+      background: rgba(var(--rgb-green-ok), 0.06);
+      border: 1px solid rgba(var(--rgb-green-ok), 0.25);
       border-radius: 18px;
     }
     .privacy-card .check {
       width: 40px; height: 40px;
-      background: rgba(52, 211, 153, 0.2);
+      background: rgba(var(--rgb-green-ok), 0.2);
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       color: var(--green-ok);
@@ -501,17 +514,17 @@
     .privacy-card h3 {
       font-family: var(--display);
       font-size: 1.1rem;
-      color: #fff;
+      color: var(--white);
       margin-bottom: 8px;
     }
     .privacy-card p {
-      color: rgba(240, 230, 255, 0.75);
+      color: rgba(var(--rgb-lilac), 0.75);
       font-size: 0.92rem;
     }
     .privacy-foot {
       margin-top: 32px;
       text-align: center;
-      color: rgba(240, 230, 255, 0.65);
+      color: rgba(var(--rgb-lilac), 0.65);
       font-size: 0.95rem;
     }
     .privacy-foot a {
@@ -526,17 +539,17 @@
       padding: 100px 32px;
       text-align: center;
       background:
-        radial-gradient(ellipse at center, rgba(255, 213, 107, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at center, rgba(var(--rgb-streak-gold), 0.12) 0%, transparent 50%),
         var(--bg-night-1);
     }
     .signup h2 {
       font-family: var(--display);
       font-size: clamp(2rem, 4vw, 2.8rem);
-      color: #fff;
+      color: var(--white);
       margin-bottom: 16px;
     }
     .signup p {
-      color: rgba(240, 230, 255, 0.82);
+      color: rgba(var(--rgb-lilac), 0.82);
       max-width: 600px;
       margin: 0 auto 32px;
       font-size: 1.1rem;
@@ -544,21 +557,21 @@
     .signup-mail-link {
       display: inline-block; background: var(--streak-gold); color: var(--ink);
       padding: 14px 24px; border-radius: 10px; font-weight: 900;
-      text-decoration: none; box-shadow: 0 8px 24px rgba(255,213,107,0.25);
+      text-decoration: none; box-shadow: 0 8px 24px rgba(var(--rgb-streak-gold), 0.25);
     }
     .signup-mail-link:hover { transform: translateY(-2px); }
     .signup-foot {
       margin-top: 16px;
-      color: rgba(240, 230, 255, 0.5);
+      color: rgba(var(--rgb-lilac), 0.5);
       font-size: 0.85rem;
     }
     /* ===== FOOTER ===== */
     footer {
       padding: 40px 32px;
-      background: rgba(0, 0, 0, 0.4);
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(var(--rgb-black), 0.4);
+      border-top: 1px solid rgba(var(--rgb-white), 0.08);
       text-align: center;
-      color: rgba(240, 230, 255, 0.55);
+      color: rgba(var(--rgb-lilac), 0.55);
       font-size: 0.88rem;
     }
     footer a { color: var(--lavender-l); text-decoration: none; }
