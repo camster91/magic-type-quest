@@ -46,6 +46,9 @@ describe('world map habitats', () => {
     expect(isHabitatUnlocked('pond', [1])).toBe(false);
     expect(isHabitatUnlocked('pond', [1, 2])).toBe(true);
     expect(isHabitatUnlocked('mountain', [8])).toBe(true);
+    // Sparse restored or linked progress: Forest has level 5 done without level 4.
+    expect(isHabitatUnlocked('forest', [1, 5])).toBe(true);
+    expect(isHabitatUnlocked('shore', [1, 5])).toBe(false);
   });
 
   it('describes the whole map for a profile', () => {

@@ -39,12 +39,17 @@ export function habitatStage(habitat, completedLevels) {
   return h.levels.filter((level) => done.has(level)).length;
 }
 
-/** A habitat opens when its first level does: level 1, or the level before it is done. */
+/**
+ * A habitat opens when its first level does (level 1, or the level before it
+ * is done), or once any of its own levels is done: restored or linked
+ * progress can skip a level, and finished work should never look locked.
+ */
 export function isHabitatUnlocked(habitat, completedLevels) {
   const h = resolve(habitat);
   if (!h) return false;
   const first = h.levels[0];
-  return first === 1 || completedSet(completedLevels).has(first - 1);
+  const done = completedSet(completedLevels);
+  return first === 1 || done.has(first - 1) || h.levels.some((level) => done.has(level));
 }
 
 /** Everything the world map needs to draw each habitat. */
