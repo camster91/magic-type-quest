@@ -606,6 +606,8 @@ function loadProfileScreen() {
   $('relaxed-toggle') && ($('relaxed-toggle').checked = a11y.relaxed);
   $('language-select') && ($('language-select').value = p.locale || 'en');
   refreshCloudControls();
+  // Static flag check so production builds drop the cloud login code entirely.
+  $('btn-join-class-online') && ($('btn-join-class-online').hidden = import.meta.env.VITE_CLOUD_CLASS_LOGIN !== 'true');
   $('restore-code') && ($('restore-code').textContent = encodeRestoreCode(p));
 
   document.querySelectorAll('.avatar-btn').forEach(btn => {
@@ -847,6 +849,25 @@ function bindEvents() {
     updateMenuStats();
     showScreen('menu');
     showAchievement(t('profile.deleted'), t('profile.deletedDesc'), '🗑️');
+  });
+
+  $('btn-join-class-online')?.addEventListener('click', async () => {
+    const button = $('btn-join-class-online');
+    const status = $('join-class-online-status');
+    button.disabled = true;
+    status.hidden = false;
+    status.textContent = t('cloudLogin.joining');
+    let result = { joined: false, reason: 'disabled' };
+    if (import.meta.env.VITE_CLOUD_CLASS_LOGIN === 'true') {
+      const { joinClassOnline } = await import('./cloudLogin.js');
+      result = await joinClassOnline(gameState.profile, $('class-code')?.value);
+    }
+    button.disabled = false;
+    status.textContent = t(result.joined ? 'cloudLogin.joined' : `cloudLogin.${result.reason}`);
+    if (result.joined) {
+      saveProfile();
+      refreshCloudControls();
+    }
   });
 
   $('btn-copy-restore-code')?.addEventListener('click', async () => {

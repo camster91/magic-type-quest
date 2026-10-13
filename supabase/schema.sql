@@ -27,7 +27,9 @@ drop policy if exists "Self update" on profiles;
 drop policy if exists "Self insert" on profiles;
 drop policy if exists "Self delete" on profiles;
 create policy "Owner read" on profiles for select using (auth.uid() = id);
-create policy "Self update" on profiles for update using (auth.uid() = id);
+create policy "Self update" on profiles for update
+  using (auth.uid() = id)
+  with check (auth.uid() = id);
 create policy "Self insert" on profiles for insert with check (auth.uid() = id);
 create policy "Self delete" on profiles for delete using (auth.uid() = id);
 
@@ -114,6 +116,20 @@ create policy "Teacher read own codes" on teacher_codes for select
 create policy "Teacher delete own codes" on teacher_codes for delete
   using (auth.uid() = teacher_id);
 
+-- Students cannot read teacher_codes, so this narrow check answers only
+-- "does this class exist?" without exposing who owns it.
+create or replace function public.class_code_exists(code text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (select 1 from teacher_codes where class_code = code);
+$$;
+revoke all on function public.class_code_exists(text) from public, anon;
+grant execute on function public.class_code_exists(text) to authenticated;
+
 -- Class ownership is provisioned only by a trusted administrator or service
 -- role. Authenticated browser clients must never claim or transfer codes.
 revoke insert, update on teacher_codes from authenticated;
@@ -129,26 +145,18 @@ create policy "Roster self read" on class_roster for select
     )
   );
 create policy "Roster self insert" on class_roster for insert
-  with check (auth.uid() = profile_id);
+  with check (auth.uid() = profile_id and public.class_code_exists(class_code));
 create policy "Roster self update" on class_roster for update
   using (auth.uid() = profile_id)
-  with check (auth.uid() = profile_id);
+  with check (auth.uid() = profile_id and public.class_code_exists(class_code));
 create policy "Roster self delete" on class_roster for delete
   using (auth.uid() = profile_id);
-create policy "Teacher class read" on profiles for select
-  using (
-    auth.uid() = id or exists (
-      select 1 from teacher_codes tc
-      where tc.class_code = profiles.class_code
-        and tc.teacher_id = auth.uid()
-    )
-  );
 create policy "Teacher session read" on game_sessions for select
   using (
     auth.uid() = profile_id or exists (
-      select 1 from profiles p
-      join teacher_codes tc on tc.class_code = p.class_code
-      where p.id = game_sessions.profile_id
+      select 1 from class_roster cr
+      join teacher_codes tc on tc.class_code = cr.class_code
+      where cr.profile_id = game_sessions.profile_id
         and tc.teacher_id = auth.uid()
     )
   );
@@ -159,3 +167,72 @@ create policy "Teacher session read" on game_sessions for select
 -- projects so they cannot remain as an unnecessary PostgREST attack surface.
 drop function if exists class_wpm_trends(text);
 drop function if exists red_flag_students(text);
+
+-- ===== STUDENT RPCS =====
+-- Replace the student's class membership in one transaction so a failed
+-- write can never leave them in two classes or in none. Runs as the caller,
+-- so every row still passes the roster RLS policies above.
+create or replace function public.sync_class_membership(
+  p_class_code text,
+  p_name text,
+  p_avatar text,
+  p_total_words integer,
+  p_total_stars integer,
+  p_high_score integer,
+  p_completed_levels integer[]
+)
+returns void
+language plpgsql
+security invoker
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'not authenticated' using errcode = '28000';
+  end if;
+  delete from class_roster
+    where profile_id = auth.uid()
+      and (p_class_code is null or class_code <> p_class_code);
+  if p_class_code is not null then
+    insert into class_roster (
+      class_code, profile_id, name, avatar, total_words, total_stars,
+      high_score, completed_levels, updated_at
+    ) values (
+      p_class_code, auth.uid(), left(p_name, 40), left(p_avatar, 16),
+      greatest(p_total_words, 0), greatest(p_total_stars, 0),
+      greatest(p_high_score, 0), coalesce(p_completed_levels, '{}'), now()
+    )
+    on conflict (class_code, profile_id) do update set
+      name = excluded.name,
+      avatar = excluded.avatar,
+      total_words = excluded.total_words,
+      total_stars = excluded.total_stars,
+      high_score = excluded.high_score,
+      completed_levels = excluded.completed_levels,
+      updated_at = excluded.updated_at;
+  end if;
+end;
+$$;
+revoke all on function public.sync_class_membership(text, text, text, integer, integer, integer, integer[]) from public, anon;
+grant execute on function public.sync_class_membership(text, text, text, integer, integer, integer, integer[]) to authenticated;
+
+-- Delete the caller's learning data AND their sign-in account. Sessions and
+-- roster rows cascade from profiles. Only ever acts on auth.uid().
+create or replace function public.delete_my_account()
+returns void
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+declare
+  uid uuid := auth.uid();
+begin
+  if uid is null then
+    raise exception 'not authenticated' using errcode = '28000';
+  end if;
+  delete from public.profiles where id = uid;
+  delete from auth.users where id = uid;
+end;
+$$;
+revoke all on function public.delete_my_account() from public, anon;
+grant execute on function public.delete_my_account() to authenticated;

@@ -27,7 +27,7 @@ describe('Supabase privacy boundary', () => {
     expect(schema).toContain('tc.teacher_id = auth.uid()');
     expect(syncSource).toContain('sb.auth.getSession()');
     expect(syncSource).toContain('if (!data.session?.user) return null');
-    expect(syncSource).toContain(".eq('profile_id', user.id)");
+    expect(syncSource).toContain("sb.rpc(\n      'sync_class_membership'");
     expect(syncSource).not.toContain('st.id || st.name');
   });
 
@@ -36,7 +36,7 @@ describe('Supabase privacy boundary', () => {
     expect(schema).toContain('using (auth.uid() = id)');
     expect(schema).toContain('profile_id uuid references profiles(id) on delete cascade');
     expect(schema).toContain('profile_id uuid not null references profiles(id) on delete cascade');
-    expect(syncSource).toContain(".eq('id', userId)");
+    expect(syncSource).toContain("sb.rpc('delete_my_account')");
     expect(syncSource).toContain("signOut({ scope: 'local' })");
   });
 
@@ -61,6 +61,39 @@ describe('Supabase privacy boundary', () => {
     expect(schema).toContain('drop function if exists red_flag_students(text)');
     expect(schema).not.toMatch(/create or replace function\s+(?:class_wpm_trends|red_flag_students)/i);
     expect(syncSource).not.toMatch(/\.rpc\(['"](?:class_wpm_trends|red_flag_students)/);
+  });
+
+  it('requires explicit WITH CHECK on profile updates', () => {
+    expect(schema).toMatch(/create policy "Self update" on profiles for update\s+using \(auth\.uid\(\) = id\)\s+with check \(auth\.uid\(\) = id\)/);
+  });
+
+  it('lets students join only classes a teacher actually owns', () => {
+    expect(schema).toContain('with check (auth.uid() = profile_id and public.class_code_exists(class_code))');
+    expect(schema).toMatch(/function public\.class_code_exists[\s\S]*?security definer[\s\S]*?set search_path = public/);
+    expect(schema.indexOf('create or replace function public.class_code_exists'))
+      .toBeLessThan(schema.indexOf('create policy "Roster self insert"'));
+  });
+
+  it('never lets teachers read whole student profiles', () => {
+    expect(schema).not.toContain('create policy "Teacher class read"');
+    expect(schema).toContain('drop policy if exists "Teacher class read" on profiles');
+    expect(schema).toMatch(/"Teacher session read"[\s\S]*?from class_roster cr[\s\S]*?tc\.teacher_id = auth\.uid\(\)/);
+  });
+
+  it('syncs class membership in one transaction under RLS', () => {
+    expect(schema).toMatch(/function public\.sync_class_membership[\s\S]*?security invoker/);
+    expect(syncSource).not.toMatch(/from\('class_roster'\)\s*\.delete\(\)/);
+  });
+
+  it('deletes the sign-in account itself, scoped to the caller', () => {
+    expect(schema).toMatch(/function public\.delete_my_account\(\)[\s\S]*?uid uuid := auth\.uid\(\)[\s\S]*?delete from auth\.users where id = uid/);
+  });
+
+  it('never lets anonymous callers run student RPCs', () => {
+    for (const fn of ['class_code_exists(text)', 'delete_my_account()']) {
+      expect(schema).toContain(`revoke all on function public.${fn} from public, anon`);
+    }
+    expect(schema).toMatch(/revoke all on function public\.sync_class_membership\([^)]*\) from public, anon/);
   });
 
   it('deduplicates ambiguous session retries without rewriting legacy rows', () => {

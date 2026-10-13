@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
-import { buildCloudProgressExport, deleteCloudProfileRows } from '../src/sync.js';
+import { buildCloudProgressExport } from '../src/sync.js';
 
 const REQUIRED_ENV = [
   'BLOOMTYPE_QA_SUPABASE_URL',
@@ -66,6 +66,13 @@ async function expectRows(query, label) {
   return data || [];
 }
 
+// The QA accounts are reused between drills, so delete only their learning
+// rows here. The app's delete_my_account() RPC would remove the accounts too.
+async function deleteOwnLearningRows(sb, userId) {
+  const { error } = await sb.from('profiles').delete().eq('id', userId);
+  if (error) throw error;
+}
+
 function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
@@ -92,7 +99,7 @@ async function seedStudent(sb, user, classCode, label) {
 
 async function safeOwnCleanup(sb, userId) {
   if (!sb || !userId) return;
-  try { await deleteCloudProfileRows(sb, userId); } catch { /* preserve primary drill failure */ }
+  try { await deleteOwnLearningRows(sb, userId); } catch { /* preserve primary drill failure */ }
   try { await sb.auth.signOut({ scope: 'local' }); } catch { /* no secrets or sessions are persisted */ }
 }
 
@@ -132,6 +139,15 @@ export async function runCloudBoundaryDrill(config, log = console.log) {
       'Teacher could not read the provisioned owned class. Verify teacher_codes provisioning.');
     assert(otherRoster.length === 0, 'Teacher could read the unowned isolation class.');
 
+    const teacherProfileRead = await expectRows(
+      teacherClient.from('profiles').select('id').eq('id', studentA.id), 'teacher whole-profile read');
+    assert(teacherProfileRead.length === 0, 'Teacher could read a whole student profile instead of the roster summary.');
+
+    const { error: fakeJoinError } = await studentBClient.from('class_roster').insert({
+      class_code: 'NOCLASS0', profile_id: studentB.id, name: 'QA Student B',
+    });
+    assert(fakeJoinError, 'A student could join a class code that no teacher owns.');
+
     const exported = await buildCloudProgressExport(studentAClient, studentA.id, new Date().toISOString(), 2);
     assert(exported.profile?.id === studentA.id, 'Student export did not contain the signed-in profile.');
     assert(exported.sessions.length > 0 && exported.sessions.every((row) => row.profile_id === studentA.id),
@@ -141,7 +157,7 @@ export async function runCloudBoundaryDrill(config, log = console.log) {
     'Student export contained missing or foreign roster rows.');
     assert(!JSON.stringify(exported).match(/access_token|refresh_token/iu), 'Student export contained an authentication token field.');
 
-    await deleteCloudProfileRows(studentAClient, studentA.id);
+    await deleteOwnLearningRows(studentAClient, studentA.id);
     const [deletedProfile, deletedSessions, deletedRoster] = await Promise.all([
       expectRows(studentAClient.from('profiles').select('id').eq('id', studentA.id), 'deleted profile check'),
       expectRows(studentAClient.from('game_sessions').select('id').eq('profile_id', studentA.id), 'deleted session check'),
@@ -152,7 +168,7 @@ export async function runCloudBoundaryDrill(config, log = console.log) {
 
     const result = {
       status: 'passed',
-      checks: ['student isolation', 'teacher class isolation', 'complete self export', 'cascading learning-data deletion'],
+      checks: ['student isolation', 'teacher class isolation', 'teacher profile isolation', 'fake class rejected', 'complete self export', 'cascading learning-data deletion'],
       projectOrigin: new URL(config.url).origin,
     };
     log(JSON.stringify(result, null, 2));
