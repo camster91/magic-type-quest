@@ -2,13 +2,13 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   buildCloudProfileRow,
   buildCloudProgressExport,
-  buildCloudRosterRow,
+  buildClassMembershipArgs,
   buildCloudSessionRow,
   buildLocalProgressExport,
   createCloudProfileController,
   createLatestSyncQueue,
   deleteAuthenticatedCloudProfile,
-  deleteCloudProfileRows,
+  deleteCloudAccount,
   fetchAllOwnedRows,
 } from '../src/sync.js';
 
@@ -29,21 +29,20 @@ describe('authenticated cloud row mapping', () => {
     expect(buildCloudProfileRow(profile, 'auth-user-id', timestamp)).toMatchObject({
       id: 'auth-user-id', class_code: 'ABC123', total_words: 20,
     });
-    expect(buildCloudRosterRow(profile, 'auth-user-id', timestamp)).toEqual({
-      class_code: 'ABC123',
-      profile_id: 'auth-user-id',
-      name: 'Ada',
-      avatar: '🌸',
-      total_words: 20,
-      total_stars: 3,
-      high_score: 80,
-      completed_levels: [1, 2],
-      updated_at: timestamp,
+    expect(buildClassMembershipArgs(profile)).toEqual({
+      p_class_code: 'ABC123',
+      p_name: 'Ada',
+      p_avatar: '🌸',
+      p_total_words: 20,
+      p_total_stars: 3,
+      p_high_score: 80,
+      p_completed_levels: [1, 2],
     });
+    expect(JSON.stringify(buildClassMembershipArgs(profile))).not.toContain('local-only-id');
   });
 
-  it('does not create a roster row after the student leaves a class', () => {
-    expect(buildCloudRosterRow({ ...profile, classCode: null }, 'auth-user-id')).toBeNull();
+  it('asks the server to drop the roster row after the student leaves a class', () => {
+    expect(buildClassMembershipArgs({ ...profile, classCode: null }).p_class_code).toBeNull();
   });
 
   it('maps a stable attempt id into an idempotent session row', () => {
@@ -100,31 +99,22 @@ describe('latest profile sync queue', () => {
 });
 
 describe('cloud profile deletion', () => {
-  it('deletes only the authenticated profile row', async () => {
-    const eq = vi.fn().mockResolvedValue({ error: null });
-    const remove = vi.fn(() => ({ eq }));
-    const from = vi.fn(() => ({ delete: remove }));
-
-    await deleteCloudProfileRows({ from }, 'auth-user-id');
-
-    expect(from).toHaveBeenCalledWith('profiles');
-    expect(remove).toHaveBeenCalledOnce();
-    expect(eq).toHaveBeenCalledWith('id', 'auth-user-id');
+  it('deletes the account through the self-scoped RPC', async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: null });
+    await deleteCloudAccount({ rpc });
+    expect(rpc).toHaveBeenCalledWith('delete_my_account');
   });
 
-  it('surfaces a rejected profile deletion instead of reporting success', async () => {
+  it('surfaces a rejected account deletion instead of reporting success', async () => {
     const failure = { message: 'denied' };
-    const eq = vi.fn().mockResolvedValue({ error: failure });
-    const sb = { from: vi.fn(() => ({ delete: () => ({ eq }) })) };
-    await expect(deleteCloudProfileRows(sb, 'auth-user-id')).rejects.toBe(failure);
+    const rpc = vi.fn().mockResolvedValue({ error: failure });
+    await expect(deleteCloudAccount({ rpc })).rejects.toBe(failure);
   });
 
-  it('signs out only the current browser after deleting cloud learning data', async () => {
-    const eq = vi.fn().mockResolvedValue({ error: null });
+  it('signs out only the current browser after deleting the account', async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: null });
     const signOut = vi.fn().mockResolvedValue({ error: null });
-    const sb = { from: () => ({ delete: () => ({ eq }) }), auth: { signOut } };
-
-    await expect(deleteAuthenticatedCloudProfile(sb, 'auth-user-id')).resolves.toEqual({
+    await expect(deleteAuthenticatedCloudProfile({ rpc, auth: { signOut } })).resolves.toEqual({
       deleted: true,
       signedOut: true,
     });
@@ -132,13 +122,11 @@ describe('cloud profile deletion', () => {
   });
 
   it('reports deleted data truthfully when local sign-out fails', async () => {
-    const eq = vi.fn().mockResolvedValue({ error: null });
     const sb = {
-      from: () => ({ delete: () => ({ eq }) }),
+      rpc: vi.fn().mockResolvedValue({ error: null }),
       auth: { signOut: vi.fn().mockResolvedValue({ error: { message: 'network' } }) },
     };
-
-    await expect(deleteAuthenticatedCloudProfile(sb, 'auth-user-id')).resolves.toEqual({
+    await expect(deleteAuthenticatedCloudProfile(sb)).resolves.toEqual({
       deleted: true,
       signedOut: false,
       reason: 'sign-out-failed',

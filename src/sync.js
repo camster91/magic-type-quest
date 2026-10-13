@@ -102,18 +102,15 @@ export function buildCloudProfileRow(profile, userId, updatedAt = new Date().toI
   };
 }
 
-export function buildCloudRosterRow(profile, userId, updatedAt = new Date().toISOString()) {
-  if (!profile.classCode) return null;
+export function buildClassMembershipArgs(profile) {
   return {
-    class_code: profile.classCode,
-    profile_id: userId,
-    name: profile.name,
-    avatar: profile.avatar,
-    total_words: profile.totalWords || 0,
-    total_stars: profile.totalStars || 0,
-    high_score: profile.highScore || 0,
-    completed_levels: profile.completedLevels || [],
-    updated_at: updatedAt,
+    p_class_code: profile.classCode || null,
+    p_name: profile.name,
+    p_avatar: profile.avatar,
+    p_total_words: profile.totalWords || 0,
+    p_total_stars: profile.totalStars || 0,
+    p_high_score: profile.highScore || 0,
+    p_completed_levels: profile.completedLevels || [],
   };
 }
 
@@ -211,36 +208,28 @@ async function syncProfileSnapshot(profile) {
     if (error) throw error;
 
     // Keep exactly one self-owned roster membership in sync with the profile.
-    // RLS restricts both deletion and insertion to the authenticated user ID.
-    const { error: deleteError } = await sb
-      .from('class_roster')
-      .delete()
-      .eq('profile_id', user.id);
-    if (deleteError) throw deleteError;
-
-    const rosterRow = buildCloudRosterRow(profile, user.id, updatedAt);
-    if (rosterRow) {
-      const { error: rosterError } = await sb
-        .from('class_roster')
-        .upsert(rosterRow, { onConflict: 'class_code,profile_id' });
-      if (rosterError) throw rosterError;
-    }
+    // One RPC call is one transaction, and it still runs under roster RLS.
+    const { error: rosterError } = await sb.rpc(
+      'sync_class_membership',
+      buildClassMembershipArgs(profile),
+    );
+    if (rosterError) throw rosterError;
   } catch (e) {
     console.warn('Sync failed:', e);
   }
 }
 
-/** Delete all self-owned learning data. Foreign keys cascade sessions/roster. */
-export async function deleteCloudProfileRows(sb, userId) {
-  const { error } = await sb
-    .from('profiles')
-    .delete()
-    .eq('id', userId);
+/**
+ * Delete all self-owned learning data and the sign-in account itself. The
+ * RPC acts only on auth.uid(); foreign keys cascade sessions and roster rows.
+ */
+export async function deleteCloudAccount(sb) {
+  const { error } = await sb.rpc('delete_my_account');
   if (error) throw error;
 }
 
-export async function deleteAuthenticatedCloudProfile(sb, userId) {
-  await deleteCloudProfileRows(sb, userId);
+export async function deleteAuthenticatedCloudProfile(sb) {
+  await deleteCloudAccount(sb);
   const { error } = await sb.auth.signOut({ scope: 'local' });
   return error
     ? { deleted: true, signedOut: false, reason: 'sign-out-failed' }
@@ -251,9 +240,9 @@ async function deleteCloudProfileSnapshot() {
   const cloud = await getAuthenticatedSupabase();
   if (!cloud) return { deleted: false, reason: 'not-authenticated' };
   if (!navigator.onLine) return { deleted: false, reason: 'offline' };
-  const { sb, user } = cloud;
+  const { sb } = cloud;
   try {
-    const result = await deleteAuthenticatedCloudProfile(sb, user.id);
+    const result = await deleteAuthenticatedCloudProfile(sb);
     if (!result.signedOut) console.warn('Cloud data deleted, but sign-out failed');
     return result;
   } catch (e) {

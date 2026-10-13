@@ -122,13 +122,16 @@ Required configuration names are `BLOOMTYPE_QA_SUPABASE_URL`,
 `BLOOMTYPE_QA_SUPABASE_ANON_KEY`, email and password pairs for
 `BLOOMTYPE_QA_STUDENT_A`, `BLOOMTYPE_QA_STUDENT_B`, and
 `BLOOMTYPE_QA_TEACHER`, plus `BLOOMTYPE_QA_TEACHER_CLASS_CODE` and
-`BLOOMTYPE_QA_OTHER_CLASS_CODE`. Store their values only in an approved secret
+`BLOOMTYPE_QA_OTHER_CLASS_CODE`. Both class codes must exist in `teacher_codes`
+(the other one owned by a different teacher), because students can now join
+only classes a teacher owns. Store their values only in an approved secret
 manager or ignored local environment file; `.env` and `.env.*` are excluded
 from version control.
 
 The drill creates disposable learning rows only for the designated QA students,
 then proves student-to-student denial, teacher owned-class access and
-foreign-class denial, complete self-export without token fields, and cascading
+foreign-class denial, teacher whole-profile denial, fake-class join denial,
+complete self-export without token fields, and cascading
 profile/session/roster deletion. It deletes those QA learning rows in cleanup,
 does not delete Auth identities, does not print account credentials or emails,
 and must never be run with real student accounts. Record the command timestamp,
