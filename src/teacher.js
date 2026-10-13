@@ -425,14 +425,20 @@ function downloadBlob(blob, extension) {
 function clearAllData() {
   if (!confirm(pageT('teacher.clearConfirm'))) return;
   clearStudentStorage();
+  currentClassCode = '';
+  renderClassList();
+  renderClassSettings();
   loadLocalData();
 }
 
+// Every student and class record on this device: profile copies, class
+// snapshots, the class list and the active player's own progress.
 function clearStudentStorage() {
   const keys = [];
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key?.startsWith('bloomtype_') || key?.startsWith('bloomtype-class-')) keys.push(key);
+    if (key?.startsWith('bloomtype_') || key?.startsWith('bloomtype-class-')
+      || key === 'bloomtype-classes' || key === 'bloomtype-profile') keys.push(key);
   }
   keys.forEach(k => localStorage.removeItem(k));
 }

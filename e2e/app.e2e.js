@@ -393,13 +393,17 @@ test('the teacher dashboard stays locked until the PIN is entered', async ({ pag
   await other.locator('#pin-input').fill('2468');
   await other.locator('#btn-unlock').click();
   await expect(other.locator('#student-body')).toContainText('Grace');
+  await other.locator('#new-class-name').fill('Room 1');
+  await other.locator('#new-class-form button[type="submit"]').click();
+  await expect(other.locator('.class-chip')).toHaveCount(1);
 
   // Forgetting the PIN is only possible by also deleting the class data.
   await page.reload();
   page.once('dialog', (dialog) => dialog.accept());
   await page.locator('#btn-forgot-pin').click();
   await expect(page.locator('#lock-title')).toHaveText('🔒 Create a teacher PIN');
-  expect(await page.evaluate(() => Object.keys(localStorage).filter((key) => key.startsWith('bloomtype_profile_') || key === 'bloomtype-teacher-pin'))).toEqual([]);
+  expect(await page.evaluate(() => Object.keys(localStorage).filter((key) => key.startsWith('bloomtype_profile_')
+    || ['bloomtype-teacher-pin', 'bloomtype-profile', 'bloomtype-classes'].includes(key)))).toEqual([]);
 });
 
 test('skipping words never finishes a level, but typing them does', async ({ page }) => {
