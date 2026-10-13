@@ -58,7 +58,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [x] **Claude:** a Meadow home screen ✅ #217., with the scene and the fox behind the menu instead of plain purple.
 - [ ] **Claude (Higgsfield):** remake the 10 level tiles, the pets and the achievement badges in the Meadow painted style. **Done when:** no v1 3D-render art remains on a child-facing screen.
 - [x] **Claude:** on phones, shrink the pet bubble ✅ #217. so the meadow and the word have room.
-- [ ] **Claude:** one design system (colors, type, spacing, buttons) written down and used on all 4 pages. (Not started.) **Done when:** the CSS has no one-off colors outside the tokens.
+- [ ] **Claude:** one design system (colors, type, spacing, buttons) written down and used on all 4 pages. (Written down in `docs/DESIGN-SYSTEM.md`; about 190 old one-off colours still to replace.) **Done when:** the CSS has no one-off colors outside the tokens.
 
 ### Fun (game mechanics)
 - [x] **Claude:** no dead time between words (#215).
@@ -66,7 +66,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [x] **Claude:** a Field Guide: ✅ #219 (4 cards; sources to confirm in `docs/v2/FIELD-GUIDE-FACTS.md`). each restored meadow unlocks a wildlife card (monarch, bee, bluebird) with one fact a child can read.
 - [ ] **Claude:** a world map with 5 habitats (Meadow, Pond, Forest, Shore, Mountain), one per pair of levels, using the same restoration idea.
 - [ ] **Claude:** gentle streaks and a "plant of the day" in place of punishments. No hearts and no losing (v2 product contract).
-- [ ] **Claude:** sound: soft nature ambience and a pleasant chime per word, with a mute button that is remembered. (Mute switch and gentle mistake tone ✅ #219; nature ambience still to do.)
+- [x] **Claude:** sound: soft nature ambience and a pleasant chime per word, with a mute button that is remembered. ✅ #219 (mute, gentle tones) and #224 (breeze and birdsong).
 - [ ] **Claude:** the fox speaks short encouragement with a pre-recorded voice in EN, FR and ES, made once (no live AI with children).
 
 ## Phase 2 — Teachers and parents love it (weeks 3–6)
@@ -86,7 +86,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [ ] **Claude:** a parent PIN for settings, like the teacher PIN in #210. (Waiting for #210 to merge so it can reuse that code.)
 
 ### Everyone
-- [ ] **Claude:** an accessibility pass with a real screen reader (NVDA and VoiceOver), keyboard-only play, a dyslexia-friendly font option and high-contrast mode. **Done when:** checked in [DEVICE-ACCESSIBILITY-QA.md](DEVICE-ACCESSIBILITY-QA.md).
+- [ ] **Claude:** an accessibility pass with a real screen reader (dyslexia-friendly font, high contrast and relaxed mode ✅ #223; manual screen-reader pass still to do) (NVDA and VoiceOver), keyboard-only play, a dyslexia-friendly font option and high-contrast mode. **Done when:** checked in [DEVICE-ACCESSIBILITY-QA.md](DEVICE-ACCESSIBILITY-QA.md).
 - [ ] **Claude:** a full French and Spanish pass on the new screens. **Done when:** checked in [LANGUAGE-QA.md](LANGUAGE-QA.md).
 - [ ] **Owner:** test on real devices: a school Chromebook, an iPad, an Android phone and an old Windows laptop. Record the results.
 
