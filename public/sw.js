@@ -53,9 +53,14 @@ async function store(request, response) {
   }
 }
 
-function fetchAndStore(request) {
+// The cache write is handed to event.waitUntil so the worker is not shut
+// down before the response is saved for offline use.
+function fetchAndStore(request, event) {
   return fetch(request).then((response) => {
-    if (isCacheable(response)) store(request, response.clone()).catch(() => {});
+    if (isCacheable(response)) {
+      const saving = store(request, response.clone()).catch(() => {});
+      event?.waitUntil?.(saving);
+    }
     return response;
   });
 }
@@ -70,9 +75,9 @@ function withTimeout(promise, ms) {
   });
 }
 
-async function networkFirst(request) {
+async function networkFirst(request, event) {
   try {
-    return await withTimeout(fetchAndStore(request), NETWORK_TIMEOUT_MS);
+    return await withTimeout(fetchAndStore(request, event), NETWORK_TIMEOUT_MS);
   } catch {
     const cached = await caches.match(request, { ignoreSearch: request.mode === "navigate" });
     if (cached) return cached;
@@ -84,14 +89,14 @@ async function networkFirst(request) {
   }
 }
 
-async function cacheFirst(request) {
+async function cacheFirst(request, event) {
   const cached = await caches.match(request);
-  return cached || fetchAndStore(request);
+  return cached || fetchAndStore(request, event);
 }
 
 async function staleWhileRevalidate(request, event) {
   const cached = await caches.match(request);
-  const refresh = fetchAndStore(request).catch(() => cached || Response.error());
+  const refresh = fetchAndStore(request, event).catch(() => cached || Response.error());
   if (cached) {
     event.waitUntil(refresh);
     return cached;

@@ -45,9 +45,11 @@ function loadWorker({ network }) {
   const fetch = async (request) => network(request.url);
   new Function('self', 'caches', 'fetch', 'Response', source)(self, caches, fetch, FakeResponse);
 
+  const waitLog = [];
   async function request(url, { mode = 'no-cors' } = {}) {
     let responded;
     const waits = [];
+    waitLog.push(waits);
     listeners.fetch({
       request: { url, mode, method: 'GET' },
       respondWith: (promise) => { responded = promise; },
@@ -59,7 +61,7 @@ function loadWorker({ network }) {
     await new Promise((done) => setTimeout(done, 0));
     return response;
   }
-  return { store, request };
+  return { store, request, waitLog };
 }
 
 describe('service worker caching', () => {
@@ -85,6 +87,14 @@ describe('service worker caching', () => {
     expect((await worker.request(BASE, { mode: 'navigate' })).body).toBe('release 1');
     served[BASE] = 'release 2';
     expect((await worker.request(BASE, { mode: 'navigate' })).body).toBe('release 2');
+  });
+
+  it('keeps the worker alive until a fetched page is saved for offline use', async () => {
+    const worker = loadWorker({ network });
+    await worker.request(BASE, { mode: 'navigate' });
+    // The cache write is handed to waitUntil, so the browser cannot stop the
+    // worker before the page is stored.
+    expect(worker.waitLog.at(-1).length).toBeGreaterThanOrEqual(1);
   });
 
   it('falls back to the cached page and app shell when offline', async () => {
