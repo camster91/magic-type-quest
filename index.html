@@ -5,7 +5,10 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <meta charset="UTF-8">
+  <meta name="description" content="BloomType is a free, ad-free typing game for kids. Type words to bring a meadow back to life. Works offline; no account needed.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preload" href="/fonts/fredoka-one-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/nunito-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <title>🌸 BloomType - Garden Typing Adventure</title>
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <meta name="theme-color" content="#8B5CF6">
@@ -36,8 +39,8 @@
        behind the at-risk streak warning). -->
   <div class="progress-card" aria-label="Your progress" data-i18n-aria-label="a11y.yourProgress">
     <div class="progress-row">
-      <span class="progress-level" id="menu-level-badge">Level 1 · Home Row</span>
-      <span class="progress-next" id="menu-level-next">Type 5 more words to unlock Lv 2</span>
+      <span class="progress-level" id="menu-level-badge">Level 1 · Home Row Garden 🌸</span>
+      <span class="progress-next" id="menu-level-next">Master the home row garden 🌸 to unlock Lv 2</span>
     </div>
     <div class="progress-bar-row" aria-hidden="true">
       <div class="progress-bar">
@@ -53,11 +56,16 @@
     </div>
   </div>
 
+  <div id="class-banner" class="class-banner" hidden>
+    <span id="class-banner-text"></span>
+    <button type="button" id="btn-class-words" class="class-words-btn" hidden data-i18n="class.words">📝 Practice class words</button>
+  </div>
+
   <!-- Pet: the brand. Centered, single focal point with the CTA. -->
   <!-- F3 contract: must contain #pet-hero with .pet-hero-img, .pet-hero-bubble, and .pet-evolution -->
   <div id="pet-hero" class="pet-hero" aria-label="Your pet companion" data-i18n-aria-label="a11y.petCompanion">
     <div class="pet-hero-stage">
-      <img id="pet-hero-img" class="pet-hero-img" src="assets/pets/flower-idle.png" alt="Your pet" />
+      <img id="pet-hero-img" class="pet-hero-img" src="assets/pets/flower-idle.webp" alt="Your pet" width="180" height="180" fetchpriority="high" />
       <div id="pet-hero-bubble" class="pet-hero-bubble" aria-live="polite">Hi! I'm Bloom 🌸</div>
     </div>
     <div class="pet-evolution" id="pet-evolution" aria-label="Pet evolution stage" data-i18n-aria-label="a11y.petEvolution">
@@ -226,6 +234,7 @@
         <span id="heart-4" class="heart">❤</span>
         <span id="heart-5" class="heart">❤</span>
       </div>
+      <button type="button" id="btn-sound" class="btn-icon-only" aria-pressed="true" aria-label="Sound on" title="Sound">🔊</button>
       <button type="button" id="btn-pause" class="btn-icon-only" aria-label="Pause game" data-i18n-aria-label="a11y.pauseGame" title="Pause Game (Esc)">⏸</button>
     </div>
   </div>
@@ -244,7 +253,7 @@
   <!-- Pet -->
   <div class="pet-container">
     <div class="pet-wrap">
-      <img id="pet-img" class="pet-face" src="assets/pets/flower-idle.png" alt="pet">
+      <img id="pet-img" class="pet-face" src="assets/pets/flower-idle.webp" alt="pet">
     </div>
     <div id="pet-bubble" class="pet-bubble">Type the word!</div>
   </div>
@@ -352,12 +361,17 @@
   <!-- Level Complete Overlay -->
   <div id="level-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="level-complete-title">
     <div class="overlay-card level-complete-card">
-      <div class="level-stars">🌸🌸🌸</div>
-      <h2 id="level-complete-title">Level <span id="level-complete-num">1</span> Complete!</h2>
+      <div class="level-stars"><span class="level-star earned">★</span><span class="level-star earned">★</span><span class="level-star earned">★</span></div>
+      <h2 id="level-complete-title">Meadow restored!</h2>
+      <p id="level-complete-sub" class="level-complete-sub">Level <span id="level-complete-num">1</span> complete!</p>
       <div class="level-stats">
         <p><span data-i18n="metric.score">Score</span>: <span id="level-score">0</span></p>
         <p><span data-i18n="metric.words">Words</span>: <span id="level-words">0</span></p>
         <p><span data-i18n="game.bestCombo">Best Combo</span>: <span id="level-combo">0</span></p>
+      </div>
+      <div id="level-new-card" class="level-new-card" hidden>
+        <img id="level-new-card-img" src="" alt="" width="72" height="96">
+        <div><strong data-i18n="fieldguide.new">New Field Guide card!</strong><span id="level-new-card-name"></span></div>
       </div>
       <button type="button" id="btn-next-level" class="btn btn-primary"><span data-i18n="game.next">Next Level</span> →</button>
       <button type="button" id="btn-replay" class="btn btn-secondary" data-i18n="game.replay">Replay</button>
@@ -458,7 +472,7 @@
   </div>
   <div class="profile-card">
     <div class="avatar-preview" id="avatar-preview">
-      <img id="avatar-preview-img" src="assets/pets/flower-idle.png" alt="Your pet" />
+      <img id="avatar-preview-img" src="assets/pets/flower-idle.webp" alt="Your pet" />
       <span class="avatar-preview-emoji" id="avatar-preview-emoji" style="display:none">🌸</span>
     </div>
     <input type="text" id="player-name" class="player-name-input" placeholder="Your Name" data-i18n-placeholder="profile.name" maxlength="12">
@@ -474,6 +488,11 @@
       <button type="button" class="avatar-btn" data-avatar="🦉" aria-label="Select Owl Avatar">🦉</button>
       <button type="button" class="avatar-btn" data-avatar="🐶" aria-label="Select Puppy Avatar">🐶</button>
     </div>
+    <section class="players-section" aria-labelledby="players-title">
+      <h3 id="players-title" class="profile-label" data-i18n="players.title">Players on this device</h3>
+      <div id="players-list" class="players-list"></div>
+      <button type="button" id="btn-add-player" class="btn btn-secondary" data-i18n="players.add">➕ Add a player</button>
+    </section>
     <div class="profile-stats">
       <div class="profile-stat">
         <span class="ps-icon">🌸</span>
@@ -537,6 +556,23 @@
       <option value="es">Español</option>
     </select>
 
+    <fieldset class="a11y-settings">
+      <legend class="profile-label" data-i18n="a11y.settings">Reading and play</legend>
+      <label class="profile-label" for="font-select" data-i18n="a11y.font">Letters</label>
+      <select id="font-select" class="profile-input">
+        <option value="default" data-i18n="a11y.fontDefault">Standard</option>
+        <option value="readable" data-i18n="a11y.fontReadable">Easy-read (Atkinson Hyperlegible)</option>
+        <option value="dyslexic" data-i18n="a11y.fontDyslexic">OpenDyslexic</option>
+      </select>
+      <label class="toggle-label">
+        <input type="checkbox" id="contrast-toggle"> <span data-i18n="a11y.highContrast">High contrast</span>
+      </label>
+      <label class="toggle-label">
+        <input type="checkbox" id="relaxed-toggle"> <span data-i18n="a11y.relaxed">Relaxed mode: no time pressure</span>
+      </label>
+      <p class="profile-hint" data-i18n="a11y.relaxedHint">Words wait for you and the Daily Moment has no clock.</p>
+    </fieldset>
+
     <label class="toggle-label">
       <input type="checkbox" id="voice-toggle"> 🗣 <span data-i18n="profile.voice">Voice Narration</span>
     </label>
@@ -559,6 +595,13 @@
     <button type="button" id="btn-garden-back" class="btn-back">← <span data-i18n="nav.back">Back</span></button>
     <h2>🌺 <span data-i18n="garden.title">My Garden</span></h2>
   </div>
+  <section class="field-guide" aria-labelledby="field-guide-title">
+    <div class="field-guide-head">
+      <h3 id="field-guide-title">🦋 <span data-i18n="fieldguide.title">Field Guide</span></h3>
+      <span id="field-guide-count" class="field-guide-count"></span>
+    </div>
+    <div id="field-guide-grid" class="field-guide-grid"></div>
+  </section>
   <div class="garden-stats" id="garden-stats">
     <span>🌸 <span id="garden-count">0</span> <span data-i18n="garden.plantedLabel">flowers planted</span></span>
   </div>

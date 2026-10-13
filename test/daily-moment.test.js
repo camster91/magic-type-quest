@@ -51,8 +51,30 @@ describe('Daily Moment (F1) — source contracts', () => {
     expect(engineSrc).toMatch(/gameState\.profile\.lastDailyMomentDate\s*=\s*new Date\(\)\.toISOString\(\)/);
   });
 
-  it('gameEngine.js: endDailyMoment runs a 60s setTimeout', () => {
-    expect(engineSrc).toMatch(/setTimeout\(\(\)\s*=>\s*endDailyMoment\(\{\s*reason:\s*['"]timeUp['"]\s*\}\),\s*60_000\)/);
+  it('gameEngine.js: the countdown ends the session when time runs out', () => {
+    const hud = engineSrc.match(/function updateDailyMomentHUD\(\)[\s\S]*?\n\}/)?.[0] || '';
+    expect(hud).toMatch(/gameState\.paused\) return/);
+    expect(hud).toMatch(/endDailyMoment\(\{\s*reason:\s*['"]timeUp['"]\s*\}\)/);
+  });
+
+  it('gameEngine.js: pausing does not use up Daily Moment time', () => {
+    const pause = engineSrc.match(/export function togglePause\(\)[\s\S]*?\n\}/)?.[0] || '';
+    expect(pause).toMatch(/moment\.pausedAt = performance\.now\(\)/);
+    expect(pause).toMatch(/moment\.startTime \+= performance\.now\(\) - moment\.pausedAt/);
+  });
+
+  it('gameEngine.js: quitting stops timers, music and the loop without rewards', () => {
+    const quit = engineSrc.match(/export function quitGame\(\)[\s\S]*?\n\}/)?.[0] || '';
+    expect(quit).toMatch(/stopDailyMomentTimers\(\)/);
+    expect(quit).toMatch(/stopAmbient\(\)/);
+    expect(quit).toMatch(/stopLoop\(\)/);
+    expect(quit).not.toMatch(/endDailyMoment|bumpStreakIfToday|saveProfile/);
+    expect(mainSrc).toMatch(/\$\('btn-quit'\)\?\.addEventListener\('click', \(\) => \{\s*quitGame\(\);/);
+  });
+
+  it('gameEngine.js: a Daily Moment never completes a curriculum level', () => {
+    const check = engineSrc.match(/function checkLevelComplete\(\)[\s\S]*?\n\}/)?.[0] || '';
+    expect(check).toMatch(/if \(gameState\.dailyMoment\?\.active\) return;/);
   });
 
   it('gameEngine.js: endDailyMoment body calls evaluateQuests then saveProfile (for streak/quest progress)', () => {
