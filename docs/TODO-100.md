@@ -87,7 +87,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 
 ### Everyone
 - [ ] **Claude:** an accessibility pass with a real screen reader (dyslexia-friendly font, high contrast and relaxed mode ✅ #223; manual screen-reader pass still to do) (NVDA and VoiceOver), keyboard-only play, a dyslexia-friendly font option and high-contrast mode. **Done when:** checked in [DEVICE-ACCESSIBILITY-QA.md](DEVICE-ACCESSIBILITY-QA.md).
-- [ ] **Claude:** a full French and Spanish pass on the new screens. **Done when:** checked in [LANGUAGE-QA.md](LANGUAGE-QA.md).
+- [ ] **Claude:** a full French and Spanish pass on the new screens (Claude pre-review pass ✅ recorded in LANGUAGE-QA.md; still needs sign-off from a fluent French and a fluent Spanish reviewer). **Done when:** checked in [LANGUAGE-QA.md](LANGUAGE-QA.md).
 - [ ] **Owner:** test on real devices: a school Chromebook, an iPad, an Android phone and an old Windows laptop. Record the results.
 
 ## Phase 3 — Ready for schools to buy (weeks 6–12)

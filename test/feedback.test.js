@@ -96,11 +96,10 @@ describe('T26 - Audio + visual feedback on every keypress', () => {
       expect(engineSrc).toMatch(/gameState\.combo\+\+;[\s\S]{0,200}showComboFloater\(gameState\.combo\)/);
     });
 
-    it('showComboFloater renders "COMBO x{N}!" text with the milestone number', () => {
-      // The actual text is `COMBO x${combo}! 🔥`. The 🔥 emoji is fine in
-      // source code but breaks string-equality in the test runner's regex
-      // parser, so we anchor on the templated portion only.
-      expect(engineSrc).toMatch(/el\.textContent\s*=\s*`COMBO x\$\{combo\}!/);
+    it('showComboFloater renders the localized combo text with the milestone number', () => {
+      // Routed through i18n (game.combo) so French and Spanish players see
+      // their own language instead of a hard-coded English "COMBO x5!".
+      expect(engineSrc).toMatch(/el\.textContent\s*=\s*t\('game\.combo',\s*\{\s*count:\s*combo\s*\}\)/);
     });
 
     it('CSS .combo-floater animates over 0.8s', () => {

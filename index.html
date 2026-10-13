@@ -9,7 +9,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="preload" href="/fonts/fredoka-one-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fonts/nunito-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <title>🌸 BloomType - Garden Typing Adventure</title>
+  <title data-i18n="app.title">🌸 BloomType - Garden Typing Adventure</title>
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <meta name="theme-color" content="#8B5CF6">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
@@ -65,13 +65,13 @@
   <!-- F3 contract: must contain #pet-hero with .pet-hero-img, .pet-hero-bubble, and .pet-evolution -->
   <div id="pet-hero" class="pet-hero" aria-label="Your pet companion" data-i18n-aria-label="a11y.petCompanion">
     <div class="pet-hero-stage">
-      <img id="pet-hero-img" class="pet-hero-img" src="assets/pets/flower-idle.webp" alt="Your pet" width="180" height="180" fetchpriority="high" />
+      <img id="pet-hero-img" class="pet-hero-img" src="assets/pets/flower-idle.webp" alt="Your pet" data-i18n-alt="a11y.yourPet" width="180" height="180" fetchpriority="high" />
       <div id="pet-hero-bubble" class="pet-hero-bubble" aria-live="polite">Hi! I'm Bloom 🌸</div>
     </div>
     <div class="pet-evolution" id="pet-evolution" aria-label="Pet evolution stage" data-i18n-aria-label="a11y.petEvolution">
-      <span class="evo-dot active" data-stage="1" title="Sprout">🌱</span>
-      <span class="evo-dot" data-stage="2" title="Bud">🌿</span>
-      <span class="evo-dot" data-stage="3" title="Bloom">🌸</span>
+      <span class="evo-dot active" data-stage="1" title="Sprout" data-i18n-title="evolution.stage1">🌱</span>
+      <span class="evo-dot" data-stage="2" title="Bud" data-i18n-title="evolution.stage2">🌿</span>
+      <span class="evo-dot" data-stage="3" title="Bloom" data-i18n-title="evolution.stage3">🌸</span>
     </div>
   </div>
 
@@ -99,16 +99,16 @@
   <!-- F3 contract: <div class="menu-dock"> with 8+ .menu-dock-item children.
        T15 visual: a 4-icon row. Hidden 8-item dock is in DOM for contract. -->
   <div class="menu-dock" aria-label="Other screens" data-i18n-aria-label="a11y.otherScreens">
-    <button type="button" class="menu-dock-item menu-icon" aria-label="Lessons" id="btn-lesson-select">
+    <button type="button" class="menu-dock-item menu-icon" aria-label="Lessons" data-i18n-aria-label="nav.lessons" id="btn-lesson-select">
       <span class="mi-emoji">📚</span><span class="mi-label" data-i18n="nav.lessons">Lessons</span>
     </button>
-    <button type="button" class="menu-dock-item menu-icon" aria-label="Practice" id="btn-practice">
+    <button type="button" class="menu-dock-item menu-icon" aria-label="Practice" data-i18n-aria-label="nav.practice" id="btn-practice">
       <span class="mi-emoji">🎯</span><span class="mi-label" data-i18n="nav.practice">Practice</span>
     </button>
-    <button type="button" class="menu-dock-item menu-icon" aria-label="My Garden" id="btn-garden">
+    <button type="button" class="menu-dock-item menu-icon" aria-label="My Garden" data-i18n-aria-label="garden.title" id="btn-garden">
       <span class="mi-emoji">🌺</span><span class="mi-label" data-i18n="nav.garden">Garden</span>
     </button>
-    <button type="button" class="menu-dock-item menu-icon" aria-label="Profile" id="btn-profile">
+    <button type="button" class="menu-dock-item menu-icon" aria-label="Profile" data-i18n-aria-label="nav.profile" id="btn-profile">
       <span class="mi-emoji">👤</span><span class="mi-label" data-i18n="nav.profile">Profile</span>
     </button>
     <!-- Contract fillers (F3 expects 8+ items; semantically present, visually hidden) -->
@@ -126,7 +126,7 @@
     <span class="menu-divider"></span>
     <a href="./parents.html" class="menu-link" data-i18n="nav.parents">Parents</a>
     <a href="./teacher.html" class="menu-link" data-i18n="nav.progress">Progress</a>
-    <a href="./landing.html" class="menu-link" aria-label="BloomType for schools" data-i18n="nav.schools">For Schools</a>
+    <a href="./landing.html" class="menu-link" aria-label="BloomType for schools" data-i18n-aria-label="a11y.schools" data-i18n="nav.schools">For Schools</a>
   </footer>
 
   <!-- Daily Quests: collapsible, hidden by default unless streak/quest is active. -->
@@ -166,7 +166,7 @@
     <span id="practice-count">1 / 26</span>
   </div>
   <div class="practice-stats">
-    <div class="practice-stat">⚡ <span id="practice-wpm">0</span> WPM</div>
+    <div class="practice-stat">⚡ <span id="practice-wpm">0</span> <span data-i18n="metric.wpm">WPM</span></div>
     <div class="practice-stat">🎯 <span id="practice-accuracy">0</span> <span data-i18n="metric.accuracy">Accuracy</span></div>
   </div>
 
@@ -204,7 +204,7 @@
       <span class="key" tabindex="0" data-key="m" data-finger="ri" data-finger-label="R-Index">M</span>
     </div>
     <div class="kb-row kb-space-row">
-      <span class="key key-space" tabindex="0" data-key=" ">SPACE</span>
+      <span class="key key-space" tabindex="0" data-key=" " data-i18n="key.space">SPACE</span>
     </div>
   </div>
 </div>
@@ -218,8 +218,8 @@
   <div class="hud">
     <div class="hud-left">
       <div class="hud-score">🌸 <span id="score">0</span></div>
-      <div class="hud-level">Lv <span id="level">1</span></div>
-      <div class="hud-wpm">⚡ <span id="wpm">0</span> WPM</div>
+      <div class="hud-level"><span data-i18n="hud.levelShort">Lv</span> <span id="level">1</span></div>
+      <div class="hud-wpm">⚡ <span id="wpm">0</span> <span data-i18n="metric.wpm">WPM</span></div>
       <div class="hud-focus" id="focus-display">🎯 <span id="focus-score">100</span>%</div>
     </div>
     <div class="hud-center">
@@ -235,14 +235,14 @@
         <span id="heart-5" class="heart">❤</span>
       </div>
       <button type="button" id="btn-sound" class="btn-icon-only" aria-pressed="true" aria-label="Sound on" title="Sound">🔊</button>
-      <button type="button" id="btn-pause" class="btn-icon-only" aria-label="Pause game" data-i18n-aria-label="a11y.pauseGame" title="Pause Game (Esc)">⏸</button>
+      <button type="button" id="btn-pause" class="btn-icon-only" aria-label="Pause game" data-i18n-aria-label="a11y.pauseGame" title="Pause game (Esc)" data-i18n-title="a11y.pauseShortcut">⏸</button>
     </div>
   </div>
 
   <!-- T30: live gameplay HUD — WPM, accuracy, words done. Subtle pill, top-left, -->
   <!-- small + low-opacity so the centered word stays the dominant focal point.   -->
   <div id="live-hud" class="live-hud" aria-live="polite" aria-label="Live typing progress" data-i18n-aria-label="a11y.liveProgress">
-    <div class="lh-row lh-stats"><span class="lh-emoji">⚡</span> <span id="live-wpm">0</span> <span class="lh-unit">wpm</span> <span class="lh-dot">·</span> <span id="live-accuracy">100</span><span class="lh-unit">%</span></div>
+    <div class="lh-row lh-stats"><span class="lh-emoji">⚡</span> <span id="live-wpm">0</span> <span class="lh-unit" data-i18n="metric.wpm">WPM</span> <span class="lh-dot">·</span> <span id="live-accuracy">100</span><span class="lh-unit">%</span></div>
     <div class="lh-row lh-words"><span class="lh-emoji">🌸</span> <span id="live-words">0</span><span class="lh-unit"> / </span><span id="live-words-target">5</span></div>
     <div class="lh-progress" aria-hidden="true"><div class="lh-progress-fill" id="live-progress-fill"></div></div>
   </div>
@@ -311,7 +311,7 @@
       <span class="key" tabindex="0" data-key="m" data-finger="ri" data-finger-label="R-Index">M</span>
     </div>
     <div class="kb-row kb-space-row">
-      <span class="key key-space" tabindex="0" data-key=" ">SPACE</span>
+      <span class="key key-space" tabindex="0" data-key=" " data-i18n="key.space">SPACE</span>
     </div>
   </div>
 
@@ -362,12 +362,12 @@
   <div id="level-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="level-complete-title">
     <div class="overlay-card level-complete-card">
       <div class="level-stars"><span class="level-star earned">★</span><span class="level-star earned">★</span><span class="level-star earned">★</span></div>
-      <h2 id="level-complete-title">Meadow restored!</h2>
+      <h2 id="level-complete-title" data-i18n="game.meadowRestored">Meadow restored!</h2>
       <p id="level-complete-sub" class="level-complete-sub">Level <span id="level-complete-num">1</span> complete!</p>
       <div class="level-stats">
-        <p><span data-i18n="metric.score">Score</span>: <span id="level-score">0</span></p>
-        <p><span data-i18n="metric.words">Words</span>: <span id="level-words">0</span></p>
-        <p><span data-i18n="game.bestCombo">Best Combo</span>: <span id="level-combo">0</span></p>
+        <p><span data-i18n="metric.score">Score</span><span data-i18n="common.colon">:</span> <span id="level-score">0</span></p>
+        <p><span data-i18n="metric.words">Words</span><span data-i18n="common.colon">:</span> <span id="level-words">0</span></p>
+        <p><span data-i18n="game.bestCombo">Best Combo</span><span data-i18n="common.colon">:</span> <span id="level-combo">0</span></p>
       </div>
       <div id="level-new-card" class="level-new-card" hidden>
         <img id="level-new-card-img" src="" alt="" width="72" height="96">
@@ -386,9 +386,9 @@
       <h2 id="gameover-title" data-i18n="game.almost">Almost!</h2>
       <p class="gameover-message" data-i18n="game.overMessage">The words snuck past us! Bloom believes in you — try again!</p>
       <div class="gameover-stats">
-        <p>🌸 <span data-i18n="metric.finalScore">Final Score</span>: <span id="final-score">0</span></p>
-        <p>🔥 <span data-i18n="game.bestCombo">Best Combo</span>: <span id="final-combo">0</span></p>
-        <p>📝 <span data-i18n="metric.wordsTyped">Words Typed</span>: <span id="final-words">0</span></p>
+        <p>🌸 <span data-i18n="metric.finalScore">Final Score</span><span data-i18n="common.colon">:</span> <span id="final-score">0</span></p>
+        <p>🔥 <span data-i18n="game.bestCombo">Best Combo</span><span data-i18n="common.colon">:</span> <span id="final-combo">0</span></p>
+        <p>📝 <span data-i18n="metric.wordsTyped">Words Typed</span><span data-i18n="common.colon">:</span> <span id="final-words">0</span></p>
       </div>
       <div class="gameover-buttons">
         <button type="button" id="btn-retry" class="btn btn-primary" data-i18n="game.tryAgain">Try Again</button>
@@ -472,21 +472,21 @@
   </div>
   <div class="profile-card">
     <div class="avatar-preview" id="avatar-preview">
-      <img id="avatar-preview-img" src="assets/pets/flower-idle.webp" alt="Your pet" />
+      <img id="avatar-preview-img" src="assets/pets/flower-idle.webp" alt="Your pet" data-i18n-alt="a11y.yourPet" />
       <span class="avatar-preview-emoji" id="avatar-preview-emoji" style="display:none">🌸</span>
     </div>
     <input type="text" id="player-name" class="player-name-input" placeholder="Your Name" data-i18n-placeholder="profile.name" maxlength="12">
     <div class="avatar-picker">
-      <button type="button" class="avatar-btn active" data-avatar="🌸" aria-label="Select Flower Avatar">🌸</button>
-      <button type="button" class="avatar-btn" data-avatar="🌻" aria-label="Select Sunflower Avatar">🌻</button>
-      <button type="button" class="avatar-btn" data-avatar="🐉" aria-label="Select Dragon Avatar">🐉</button>
-      <button type="button" class="avatar-btn" data-avatar="🐱" aria-label="Select Cat Avatar">🐱</button>
-      <button type="button" class="avatar-btn" data-avatar="🐰" aria-label="Select Bunny Avatar">🐰</button>
-      <button type="button" class="avatar-btn" data-avatar="🦊" aria-label="Select Fox Avatar">🦊</button>
-      <button type="button" class="avatar-btn" data-avatar="🐼" aria-label="Select Panda Avatar">🐼</button>
-      <button type="button" class="avatar-btn" data-avatar="🤖" aria-label="Select Robot Avatar">🤖</button>
-      <button type="button" class="avatar-btn" data-avatar="🦉" aria-label="Select Owl Avatar">🦉</button>
-      <button type="button" class="avatar-btn" data-avatar="🐶" aria-label="Select Puppy Avatar">🐶</button>
+      <button type="button" class="avatar-btn active" data-avatar="🌸" data-avatar-name="flower" aria-label="Select Flower Avatar">🌸</button>
+      <button type="button" class="avatar-btn" data-avatar="🌻" data-avatar-name="sunflower" aria-label="Select Sunflower Avatar">🌻</button>
+      <button type="button" class="avatar-btn" data-avatar="🐉" data-avatar-name="dragon" aria-label="Select Dragon Avatar">🐉</button>
+      <button type="button" class="avatar-btn" data-avatar="🐱" data-avatar-name="cat" aria-label="Select Cat Avatar">🐱</button>
+      <button type="button" class="avatar-btn" data-avatar="🐰" data-avatar-name="bunny" aria-label="Select Bunny Avatar">🐰</button>
+      <button type="button" class="avatar-btn" data-avatar="🦊" data-avatar-name="fox" aria-label="Select Fox Avatar">🦊</button>
+      <button type="button" class="avatar-btn" data-avatar="🐼" data-avatar-name="panda" aria-label="Select Panda Avatar">🐼</button>
+      <button type="button" class="avatar-btn" data-avatar="🤖" data-avatar-name="robot" aria-label="Select Robot Avatar">🤖</button>
+      <button type="button" class="avatar-btn" data-avatar="🦉" data-avatar-name="owl" aria-label="Select Owl Avatar">🦉</button>
+      <button type="button" class="avatar-btn" data-avatar="🐶" data-avatar-name="puppy" aria-label="Select Puppy Avatar">🐶</button>
     </div>
     <section class="players-section" aria-labelledby="players-title">
       <h3 id="players-title" class="profile-label" data-i18n="players.title">Players on this device</h3>
@@ -523,7 +523,7 @@
       <div class="achievements-categories" id="achievements-categories">
         <!-- Populated by JS -->
       </div>
-      <div class="achievements-grid" id="achievements-grid" tabindex="0" role="region" aria-label="Achievements list">
+      <div class="achievements-grid" id="achievements-grid" tabindex="0" role="region" aria-label="Achievements list" data-i18n-aria-label="a11y.achievementsList">
         <!-- Populated by JS -->
       </div>
     </div>
