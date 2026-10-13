@@ -6,17 +6,22 @@ import { join } from 'node:path';
 import { Buffer } from 'node:buffer';
 import { checkAssets, readWebpInfo } from '../scripts/check-v2-assets.mjs';
 
-/** Smallest WebP header the checker reads: RIFF + VP8X with size and alpha flag. */
-function webpHeader(width, height, alpha) {
-  const buffer = Buffer.alloc(30);
+/** Smallest valid WebP: RIFF + VP8X (size and alpha flag) + a tiny VP8L image chunk. */
+function webpHeader(width, height, alpha, imageBytes = 5) {
+  const image = Buffer.alloc(imageBytes);
+  image[0] = 0x2f;
+  const buffer = Buffer.alloc(30 + 8 + image.length + (image.length % 2));
   buffer.write('RIFF', 0, 'ascii');
-  buffer.writeUInt32LE(22, 4);
+  buffer.writeUInt32LE(buffer.length - 8, 4);
   buffer.write('WEBP', 8, 'ascii');
   buffer.write('VP8X', 12, 'ascii');
   buffer.writeUInt32LE(10, 16);
   buffer[20] = alpha ? 0x10 : 0;
   buffer.writeUIntLE(width - 1, 24, 3);
   buffer.writeUIntLE(height - 1, 27, 3);
+  buffer.write('VP8L', 30, 'ascii');
+  buffer.writeUInt32LE(image.length, 34);
+  image.copy(buffer, 38);
   return buffer;
 }
 
@@ -99,9 +104,20 @@ test('accepts Field Guide cards with their own budget', () => fixture(
 
 test('enforces sprite edge and size budgets', () => fixture(
   [asset({ width: 2048, height: 800 })],
-  { 'meadow/wildlife.monarch.webp': Buffer.concat([webpHeader(2048, 800, true), Buffer.alloc(250_000)]) },
+  { 'meadow/wildlife.monarch.webp': webpHeader(2048, 800, true, 250_000) },
   (root) => assert.deepEqual(checkAssets(root), [
     'wildlife.monarch: longest edge 2048px is over 1024px',
-    'wildlife.monarch: 250030 bytes is over the sprite budget of 200000',
+    'wildlife.monarch: 250038 bytes is over the sprite budget of 200000',
   ]),
 ));
+
+test('rejects cut-off, forged and imageless WebP files', () => {
+  const good = webpHeader(600, 800, true);
+  assert.throws(() => readWebpInfo(good.subarray(0, good.length - 3)), /does not match file size/);
+  const forged = Buffer.from(good.subarray(0, 30));
+  forged.writeUInt32LE(22, 4);
+  assert.throws(() => readWebpInfo(forged), /no image data/);
+  const longChunk = Buffer.from(good);
+  longChunk.writeUInt32LE(999, 34);
+  assert.throws(() => readWebpInfo(longChunk), /VP8L chunk is cut off/);
+});
