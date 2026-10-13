@@ -220,6 +220,35 @@ $$;
 revoke all on function public.my_student_id() from public, anon;
 grant execute on function public.my_student_id() to authenticated;
 
+-- Every account that belongs to the caller's student: the student's own
+-- account and each device linked to it.
+create or replace function public.my_student_device_ids()
+returns setof uuid
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select public.my_student_id() where auth.uid() is not null
+  union
+  select device_id from linked_devices
+    where student_id = public.my_student_id() and auth.uid() is not null;
+$$;
+revoke all on function public.my_student_device_ids() from public, anon;
+grant execute on function public.my_student_device_ids() to authenticated;
+
+-- A child's linked devices may read each other's learning data, so progress
+-- and exports cover the whole student. Writes stay limited to the caller.
+drop policy if exists "Student group read" on profiles;
+create policy "Student group read" on profiles for select
+  using (id in (select public.my_student_device_ids()));
+drop policy if exists "Student group read" on game_sessions;
+create policy "Student group read" on game_sessions for select
+  using (profile_id in (select public.my_student_device_ids()));
+drop policy if exists "Student group read" on class_roster;
+create policy "Student group read" on class_roster for select
+  using (profile_id in (select public.my_student_device_ids()));
+
 -- Make (or replace) the caller's link code. Returns the plain code once.
 create or replace function public.create_link_code()
 returns text
@@ -277,6 +306,9 @@ begin
   select owner_id into target from student_link_codes
     where code_hash = encode(digest(clean, 'sha256'), 'hex')
       and expires_at > now();
+  -- A code made before its owner was itself linked points at that owner's
+  -- student, so every device joins the same one-level group.
+  target := coalesce((select student_id from linked_devices where device_id = target), target);
   if target is null or target = uid then
     return target;
   end if;
@@ -285,6 +317,8 @@ begin
     raise exception 'this device already has linked devices' using errcode = '22023';
   end if;
   insert into profiles (id) values (uid) on conflict (id) do nothing;
+  -- This device now belongs to another student: its own code stops working.
+  delete from student_link_codes where owner_id = uid;
   insert into linked_devices (device_id, student_id) values (uid, target)
     on conflict (device_id) do update
       set student_id = excluded.student_id, linked_at = now();
@@ -384,8 +418,9 @@ $$;
 revoke all on function public.sync_class_membership(text, text, text, integer, integer, integer, integer[]) from public, anon;
 grant execute on function public.sync_class_membership(text, text, text, integer, integer, integer, integer[]) to authenticated;
 
--- Delete the caller's learning data AND their sign-in account. Sessions and
--- roster rows cascade from profiles. Only ever acts on auth.uid().
+-- Delete the caller's student: the learning data AND sign-in accounts of the
+-- caller and every device linked to the same child. Sessions, roster rows and
+-- links cascade from profiles. Only ever acts on auth.uid()'s own student.
 create or replace function public.delete_my_account()
 returns void
 language plpgsql
@@ -394,12 +429,15 @@ set search_path = public, auth
 as $$
 declare
   uid uuid := auth.uid();
+  ids uuid[];
 begin
   if uid is null then
     raise exception 'not authenticated' using errcode = '28000';
   end if;
-  delete from public.profiles where id = uid;
-  delete from auth.users where id = uid;
+  select array_agg(id) into ids from public.my_student_device_ids() as id;
+  ids := array_append(coalesce(ids, '{}'), uid);
+  delete from public.profiles where id = any(ids);
+  delete from auth.users where id = any(ids);
 end;
 $$;
 revoke all on function public.delete_my_account() from public, anon;
