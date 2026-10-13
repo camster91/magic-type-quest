@@ -4,6 +4,8 @@
  * totals and weekly summaries; nothing here leaves the browser.
  */
 
+import { plantToday } from './plantOfDay.js';
+
 const MAX_DAYS = 400;
 // One sitting counts for at most 30 minutes, so a tab left open overnight
 // does not inflate the record.
@@ -30,6 +32,7 @@ export function recordPractice(profile, ms, date = new Date()) {
   for (const old of keys.slice(0, Math.max(0, keys.length - MAX_DAYS))) delete log[old];
   profile.practiceLog = log;
   profile.minutesPractised = round1((profile.minutesPractised || 0) + minutes);
+  plantToday(profile, date);
   return minutes;
 }
 

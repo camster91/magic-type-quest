@@ -65,7 +65,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [x] **Claude:** every word visibly restores the meadow (#215).
 - [x] **Claude:** a Field Guide: ✅ #219 (4 cards; sources to confirm in `docs/v2/FIELD-GUIDE-FACTS.md`). each restored meadow unlocks a wildlife card (monarch, bee, bluebird) with one fact a child can read.
 - [ ] **Claude:** a world map with 5 habitats (Meadow, Pond, Forest, Shore, Mountain), one per pair of levels, using the same restoration idea.
-- [ ] **Claude:** gentle streaks and a "plant of the day" in place of punishments. No hearts and no losing (v2 product contract).
+- [x] **Claude:** gentle streaks and a "plant of the day" in place of punishments ✅ (plants only grow; no red warnings, no "keep me" pet). No hearts and no losing (v2 product contract).
 - [x] **Claude:** sound: soft nature ambience and a pleasant chime per word, with a mute button that is remembered. ✅ #219 (mute, gentle tones) and #224 (breeze and birdsong).
 - [ ] **Claude:** the fox speaks short encouragement with a pre-recorded voice in EN, FR and ES, made once (no live AI with children).
 
