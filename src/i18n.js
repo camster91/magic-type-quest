@@ -1,6 +1,6 @@
 export const dictionaries = {
   en: {
-    'players.title': 'Players on this device', 'players.add': '➕ Add a player', 'players.switchTo': 'Switch to {name}', 'players.onlyOne': 'Brothers and sisters can each have their own player here.',
+    'players.title': 'Players on this device', 'players.add': '➕ Add a player', 'players.switchTo': 'Switch to {name}', 'players.onlyOne': 'Brothers and sisters can each have their own player here.', 'players.cloudOnly': 'Signed in to a class account. Sign out to switch players on this device.',
     'class.assignment': 'Your teacher asks: finish Level {level} by {due}.', 'class.assignmentNoDue': 'Your teacher asks: finish Level {level}.',
     'class.assignmentDone': 'Assignment done: Level {level}! 🎉', 'class.words': '📝 Practice class words',
     'fieldguide.title': 'Field Guide', 'fieldguide.new': 'New Field Guide card!',
@@ -99,7 +99,7 @@ export const dictionaries = {
     'evolution.3.line': '“We’re UNSTOPPABLE together!” — Bloom',
   },
   fr: {
-    'players.title': 'Joueurs sur cet appareil', 'players.add': '➕ Ajouter un joueur', 'players.switchTo': 'Passer à {name}', 'players.onlyOne': 'Chaque enfant de la famille peut avoir son propre joueur ici.',
+    'players.title': 'Joueurs sur cet appareil', 'players.add': '➕ Ajouter un joueur', 'players.switchTo': 'Passer à {name}', 'players.onlyOne': 'Chaque enfant de la famille peut avoir son propre joueur ici.', 'players.cloudOnly': 'Connecté à un compte de classe. Déconnecte-toi pour changer de joueur sur cet appareil.',
     'class.assignment': 'Ton enseignant demande : termine le niveau {level} pour le {due}.', 'class.assignmentNoDue': 'Ton enseignant demande : termine le niveau {level}.',
     'class.assignmentDone': 'Devoir fait : niveau {level} ! 🎉', 'class.words': '📝 Mots de la classe',
     'fieldguide.title': 'Guide nature', 'fieldguide.new': 'Nouvelle carte du guide nature !',
@@ -199,7 +199,7 @@ export const dictionaries = {
     'evolution.3.line': '« Ensemble, nous sommes INARRÊTABLES ! » — Bloom',
   },
   es: {
-    'players.title': 'Jugadores en este dispositivo', 'players.add': '➕ Añadir jugador', 'players.switchTo': 'Cambiar a {name}', 'players.onlyOne': 'Cada hermano o hermana puede tener su propio jugador aquí.',
+    'players.title': 'Jugadores en este dispositivo', 'players.add': '➕ Añadir jugador', 'players.switchTo': 'Cambiar a {name}', 'players.onlyOne': 'Cada hermano o hermana puede tener su propio jugador aquí.', 'players.cloudOnly': 'Sesión iniciada en una cuenta de clase. Cierra sesión para cambiar de jugador en este dispositivo.',
     'class.assignment': 'Tu maestro pide: termina el nivel {level} antes del {due}.', 'class.assignmentNoDue': 'Tu maestro pide: termina el nivel {level}.',
     'class.assignmentDone': '¡Tarea hecha: nivel {level}! 🎉', 'class.words': '📝 Palabras de clase',
     'fieldguide.title': 'Guía de campo', 'fieldguide.new': '¡Nueva tarjeta de la guía de campo!',

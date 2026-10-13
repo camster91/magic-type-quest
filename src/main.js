@@ -565,12 +565,22 @@ function renderPlayers() {
   list.innerHTML = others.length
     ? others.map((player) => `<button type="button" class="player-chip" data-player="${escapeHTML(player.uuid)}" aria-label="${escapeHTML(t('players.switchTo', { name: player.name || 'Player' }))}"><span aria-hidden="true">${escapeHTML(player.avatar || '🌸')}</span> ${escapeHTML(player.name || 'Player')}</button>`).join('')
     : `<p class="profile-hint">${escapeHTML(t('players.onlyOne'))}</p>`;
+  // A signed-in class account saves to one cloud profile, so a sibling's
+  // progress would overwrite it. Switching stays off until sign-out.
+  hasCloudSync().then((signedIn) => {
+    if (!signedIn) return;
+    list.innerHTML = `<p class="profile-hint">${escapeHTML(t('players.cloudOnly'))}</p>`;
+    $('btn-add-player')?.classList.add('hidden');
+  });
 }
 
 // Keep the current player's progress before handing the device to someone else.
+// Switching is not play, so the saved "last played" time is left alone.
 function saveCurrentPlayerIfUsed() {
   const p = gameState.profile || {};
-  if ((p.totalWords || 0) > 0 || (p.name && p.name !== 'Player') || (p.completedLevels || []).length) saveProfile();
+  if ((p.totalWords || 0) > 0 || (p.name && p.name !== 'Player') || (p.completedLevels || []).length) {
+    saveProfile({ markPlayed: false });
+  }
 }
 
 function loadProfileScreen() {
@@ -912,13 +922,14 @@ function bindEvents() {
     const lesson = buildClassWordsLesson(getClassMeta(gameState.profile?.classCode));
     if (lesson) startDrillMode(lesson);
   });
-  $('players-list')?.addEventListener('click', (event) => {
+  $('players-list')?.addEventListener('click', async (event) => {
     const chip = event.target.closest('.player-chip');
-    if (!chip) return;
+    if (!chip || await hasCloudSync()) return;
     saveCurrentPlayerIfUsed();
     if (switchPlayer(chip.dataset.player)) window.location.reload();
   });
-  $('btn-add-player')?.addEventListener('click', () => {
+  $('btn-add-player')?.addEventListener('click', async () => {
+    if (await hasCloudSync()) return;
     saveCurrentPlayerIfUsed();
     startNewPlayer();
     window.location.reload();

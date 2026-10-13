@@ -57,6 +57,15 @@ describe('game engine fixes — source contracts', () => {
   });
 });
 
+describe('players on one device', () => {
+  it('switching players keeps last-played and is off for signed-in class accounts', () => {
+    expect(fn(mainSrc, 'function saveCurrentPlayerIfUsed()')).toMatch(/saveProfile\(\{ markPlayed: false \}\)/);
+    expect(fn(mainSrc, 'function renderPlayers()')).toMatch(/hasCloudSync\(\)\.then/);
+    expect(mainSrc).toMatch(/if \(!chip \|\| await hasCloudSync\(\)\) return;/);
+    expect(mainSrc).toMatch(/btn-add-player'\)\?\.addEventListener\('click', async \(\) => \{\s*if \(await hasCloudSync\(\)\) return;/);
+  });
+});
+
 describe('level stars', () => {
   it('rewards accuracy, never speed', async () => {
     const src = engineSrc;

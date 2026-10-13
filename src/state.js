@@ -121,7 +121,8 @@ export function loadProfile() {
   }
 }
 
-export function saveProfile() {
+/** Save the profile. markPlayed: false keeps the "last played" time as it was. */
+export function saveProfile({ markPlayed = true } = {}) {
   try {
     const p = gameState.profile;
     if (gameState.score > p.highScore) p.highScore = gameState.score;
@@ -131,7 +132,7 @@ export function saveProfile() {
     p.totalStars += Math.max(0, scoreStars - (gameState.savedScoreStars || 0));
     gameState.savedWordsTyped = wordsTyped;
     gameState.savedScoreStars = scoreStars;
-    p.lastPlayed = new Date().toISOString();
+    if (markPlayed) p.lastPlayed = new Date().toISOString();
     
     // Ensure uuid for class sync
     if (!p.uuid) p.uuid = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;

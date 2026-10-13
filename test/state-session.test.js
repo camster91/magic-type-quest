@@ -80,6 +80,14 @@ describe('terminal curriculum session persistence', () => {
     expect(gameState.profile.levelStats[3]).toMatchObject({ wpm: 18, bestWpm: 30, completed: true });
   });
 
+  it('can save without marking the player as having just played', () => {
+    gameState.profile.lastPlayed = '2026-01-01T00:00:00.000Z';
+    saveProfile({ markPlayed: false });
+    expect(gameState.profile.lastPlayed).toBe('2026-01-01T00:00:00.000Z');
+    saveProfile();
+    expect(gameState.profile.lastPlayed).not.toBe('2026-01-01T00:00:00.000Z');
+  });
+
   it('never logs analytics during routine autosaves', () => {
     saveProfile();
     saveProfile();
