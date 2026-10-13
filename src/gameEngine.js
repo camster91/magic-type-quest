@@ -143,7 +143,8 @@ function gameLoop(timestamp) {
   if (gameState.screen === 'game' && gameState.levelComplete && meadow.isCelebrating()) {
     // Keep the restored meadow alive behind the level-complete card.
     meadow.draw(1, gameState.wordsCompleted || 0);
-    animationId = requestAnimationFrame(gameLoop);
+    // With reduced motion the scene is still, so one frame is enough.
+    animationId = prefersReducedMotion() ? null : requestAnimationFrame(gameLoop);
     return;
   }
   if (gameState.screen !== 'game' || gameState.gameOver) {
@@ -1559,6 +1560,13 @@ function preloadImages() {
 
 export function togglePause() {
   gameState.paused = !gameState.paused;
+  // Paused time is not practice time, for WPM or the teacher's minutes.
+  if (gameState.paused) {
+    gameState.pausedAt = performance.now();
+  } else if (gameState.pausedAt) {
+    if (gameState.levelStartTime) gameState.levelStartTime += performance.now() - gameState.pausedAt;
+    gameState.pausedAt = 0;
+  }
   const moment = gameState.dailyMoment;
   if (moment?.active && dailyMomentCountdownId) {
     if (gameState.paused) {

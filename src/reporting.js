@@ -33,7 +33,7 @@ export function weakKeysFrom(keySR = {}, count = 3) {
 /** The numbers a teacher or parent needs, from one student profile. */
 export function summarizeStudent(profile = {}, now = new Date()) {
   const stats = Object.values(profile.levelStats || {});
-  const wpm = stats.map((s) => Number(s.wpm) || 0).filter((n) => n > 0);
+  const wpm = stats.map((s) => Number(s.bestWpm ?? s.wpm) || 0).filter((n) => n > 0);
   const accuracy = stats.map((s) => Number(s.accuracy) || 0).filter((n) => n > 0);
   const log = profile.practiceLog || {};
   let minutes7d = 0;
