@@ -27,8 +27,8 @@
   <!-- Compact top bar: brand left, streak right. ONE thing per side. -->
   <header class="menu-top">
     <h1 class="menu-brand">BloomType</h1>
-    <div id="streak-prominent" class="streak-prominent streak-chip streak-hidden" role="status" aria-live="polite" aria-label="Daily streak" data-i18n-aria-label="a11y.dailyStreak">
-      <span class="streak-icon" aria-hidden="true">🔥</span>
+    <div id="streak-prominent" class="streak-prominent streak-chip streak-hidden" role="status" aria-live="polite" aria-label="Plants grown" data-i18n-aria-label="a11y.dailyStreak">
+      <span class="streak-icon" aria-hidden="true">🌱</span>
       <span class="streak-value"><span id="streak-count">0</span></span>
     </div>
   </header>
@@ -76,8 +76,8 @@
   </div>
 
   <!-- Secondary: Daily Moment as the 60s quick path. Hidden by default.
-       Surfaces as a streak warning (amber + pulse) when isStreakAtRisk is true:
-       streak >= 2 AND lastDailyMoment > 20h ago. T25. -->
+       Shows today's plant waiting for a returning child who has not
+       practised yet today. An invitation, never a warning. -->
   <div id="daily-moment-warning" class="daily-moment-warning" hidden>
     <button type="button" id="btn-daily-moment" class="btn-daily-moment" aria-label="Start a 60-second Daily Moment" data-i18n-aria-label="a11y.startDaily">
       <span class="btn-icon">⚡</span>
@@ -133,7 +133,7 @@
   <div class="daily-quests" id="daily-quests" style="display:none">
     <div class="quests-header">
       <span>📅 <span data-i18n="menu.dailyQuests">Daily Quests</span></span>
-      <span class="streak-badge" id="quest-streak">🔥 0</span>
+      <span class="streak-badge" id="quest-streak">🌱 0</span>
     </div>
     <div class="quests-list" id="quests-list"></div>
   </div>
@@ -621,6 +621,14 @@
     <button type="button" id="btn-garden-back" class="btn-back">← <span data-i18n="nav.back">Back</span></button>
     <h2>🌺 <span data-i18n="garden.title">My Garden</span></h2>
   </div>
+  <section class="meadow-plants" aria-labelledby="meadow-plants-title">
+    <div class="field-guide-head">
+      <h3 id="meadow-plants-title">🌱 <span data-i18n="plant.title">Plants I’ve grown</span></h3>
+      <span id="meadow-plants-count" class="field-guide-count"></span>
+    </div>
+    <p id="meadow-plants-today" class="profile-hint"></p>
+    <ul id="meadow-plants-list" class="meadow-plants-list"></ul>
+  </section>
   <section class="field-guide" aria-labelledby="field-guide-title">
     <div class="field-guide-head">
       <h3 id="field-guide-title">🦋 <span data-i18n="fieldguide.title">Field Guide</span></h3>
@@ -631,7 +639,7 @@
   <div class="garden-stats" id="garden-stats">
     <span>🌸 <span id="garden-count">0</span> <span data-i18n="garden.plantedLabel">flowers planted</span></span>
   </div>
-  <div class="garden-grid" id="garden-grid">
+  <div class="garden-grid" id="garden-grid" tabindex="0" role="region" aria-label="My Garden" data-i18n-aria-label="garden.title">
     <!-- Populated by JS -->
   </div>
 </div>

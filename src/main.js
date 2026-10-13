@@ -6,7 +6,8 @@ import { deleteLocalProfile, gameState, loadProfile, saveProfile } from './state
 import { init as initEngine, startGame, togglePause, quitGame, showScreen, startDrillMode, startDailyMoment, onAvatarChanged } from './gameEngine.js';
 import { highlightTargetKey, showKeyFeedback } from './gamePresentation.js';
 import { getAchievementStats, getAllAchievements } from './achievements.js';
-import { getTodaysQuests, isStreakAtRisk } from './quests.js';
+import { getTodaysQuests } from './quests.js';
+import { gardenDays, grownPlants, plantForDay, plantWaiting, plantedToday } from './plantOfDay.js';
 import { getWeakKeys, buildDrillLesson } from './drills.js';
 import { getDueKeys } from './spacedRep.js';
 import { decodeRestoreCode, encodeRestoreCode, mergeRestoredProgress } from './restoreCode.js';
@@ -334,37 +335,37 @@ function updateMenuStats() {
   if (menuBottom) menuBottom.classList.toggle('menu-bottom-empty', totalStats === 0);
   // Render daily quests
   const quests = getTodaysQuests(gameState.profile);
-  const streak = gameState.profile.streak || 0;
+  // Plant of the day: one native plant per day, planted by practising. The
+  // count only grows; a missed day is never lost (v2: no punishments).
+  const grown = gardenDays(gameState.profile);
+  const todaysPlant = plantForDay();
+  const plantName = `${todaysPlant.emoji} ${t(`plant.${todaysPlant.id}`)}`;
   const streakEl = document.getElementById('quest-streak');
-  if (streakEl) streakEl.textContent = streak > 0 ? `🔥 ${streak}` : '';
+  if (streakEl) streakEl.textContent = grown > 0 ? `🌱 ${grown}` : '';
 
-  // F2: render the prominent streak card on the home screen.
-  // States: streak=0 → hidden (no fake streak per F2 anti-features).
-  //         streak>=7 → gold gradient. at-risk (>20h since last Daily Moment) → pulsing red border.
+  // The garden chip: hidden until the first plant, gold from 7 plants.
   const streakCard = document.getElementById('streak-prominent');
   if (streakCard) {
     const streakCountEl = document.getElementById('streak-count');
-    if (streakCountEl) streakCountEl.textContent = streak;
-    streakCard.classList.remove('streak-hidden', 'streak-gold', 'streak-at-risk');
-    if (streak < 1) {
+    if (streakCountEl) streakCountEl.textContent = grown;
+    streakCard.classList.remove('streak-hidden', 'streak-gold');
+    if (grown < 1) {
       streakCard.classList.add('streak-hidden');
-    } else {
-      if (streak >= 7) streakCard.classList.add('streak-gold');
-      if (isStreakAtRisk(gameState.profile)) streakCard.classList.add('streak-at-risk');
+    } else if (grown >= 7) {
+      streakCard.classList.add('streak-gold');
     }
   }
-  // T25: streak warning on the Daily Moment button. Surfaces only when
-  // isStreakAtRisk is true (streak >= 2 AND last Daily Moment > 20h ago).
-  // Hidden for brand-new players and for kids who already played today.
+  // A returning child who has not practised today sees today's plant waiting
+  // on the Daily Moment button: an invitation, never a warning.
   const dmWrapper = document.getElementById('daily-moment-warning');
   const dmButton = document.getElementById('btn-daily-moment');
   const dmSubtitle = document.getElementById('btn-daily-moment-subtitle');
   const dmStreakChip = document.getElementById('btn-daily-moment-streak');
-  const atRisk = isStreakAtRisk(gameState.profile);
-  if (dmWrapper) dmWrapper.hidden = !atRisk;
-  if (dmButton) dmButton.classList.toggle('at-risk', atRisk);
-  if (dmSubtitle) dmSubtitle.textContent = atRisk ? t('menu.keepStreak') : t('menu.lowStress');
-  if (dmStreakChip) dmStreakChip.textContent = atRisk && streak > 0 ? t('menu.atRisk', { count: streak }) : '';
+  const waiting = plantWaiting(gameState.profile);
+  if (dmWrapper) dmWrapper.hidden = !waiting;
+  if (dmButton) dmButton.classList.toggle('plant-waiting', waiting);
+  if (dmSubtitle) dmSubtitle.textContent = waiting ? t('plant.waiting', { plant: plantName }) : t('menu.lowStress');
+  if (dmStreakChip) dmStreakChip.textContent = '';
   const list = document.getElementById('quests-list');
   if (list) {
     list.innerHTML = '';
@@ -488,8 +489,9 @@ function updateHomePet() {
 
   const profile = gameState.profile || {};
   const avatar = profile.avatar || '🌸';
-  const streak = profile.streak || 0;
-  const atRisk = streak >= 1 && isStreakAtRisk(profile);
+  const grown = gardenDays(profile);
+  const waiting = plantWaiting(profile);
+  const todaysPlant = plantForDay();
 
   // Pick the pet state. Celebrate flag is a transient window signal set
   // by gameEngine.endDailyMoment so the pet pops after a Daily Moment
@@ -500,38 +502,28 @@ function updateHomePet() {
     state = 'celebrate';
     window.__petHeroState = null; // single-shot
     bubbleText = t('pet.celebrate');
-  } else if (atRisk) {
-    state = 'idle'; // base state; .warning class drives the shake + red glow
-    bubbleText = streak >= 7 ? t('pet.tap') : t('pet.playKeep');
-  } else if (streak >= 7) {
+  } else if (waiting) {
     state = 'idle';
-    bubbleText = t('pet.streak', { count: streak });
-  } else if (streak >= 1) {
+    bubbleText = t('pet.plantWaiting', { plant: `${todaysPlant.emoji} ${t(`plant.${todaysPlant.id}`)}` });
+  } else if (grown >= 1 && plantedToday(profile)) {
     state = 'idle';
-    bubbleText = t(streak === 1 ? 'pet.keepStreakOne' : 'pet.keepStreakMany', { count: streak });
+    bubbleText = t(grown === 1 ? 'pet.keepStreakOne' : 'pet.keepStreakMany', { count: grown });
   } else {
     state = 'idle';
     bubbleText = t('pet.greeting', { pet: avatar });
   }
 
   // Apply class + image
-  petHero.classList.remove('celebrate', 'warning');
+  petHero.classList.remove('celebrate');
   if (state === 'celebrate') petHero.classList.add('celebrate');
-  if (atRisk) petHero.classList.add('warning');
   petImg.src = getPetPath(avatar, state);
 
-  // Bubble: show for 2.4s when text changes; persistent while at-risk
-  if (petBubble) {
-    if (bubbleText && petBubble.textContent !== bubbleText) {
-      petBubble.textContent = bubbleText;
-      petBubble.classList.add('visible');
-      if (petBubble._hideTimer) clearTimeout(petBubble._hideTimer);
-      petBubble._hideTimer = setTimeout(() => {
-        if (!atRisk) petBubble.classList.remove('visible');
-      }, 2400);
-    } else if (atRisk) {
-      petBubble.classList.add('visible');
-    }
+  // Bubble: show for 2.4s when the text changes.
+  if (petBubble && bubbleText && petBubble.textContent !== bubbleText) {
+    petBubble.textContent = bubbleText;
+    petBubble.classList.add('visible');
+    if (petBubble._hideTimer) clearTimeout(petBubble._hideTimer);
+    petBubble._hideTimer = setTimeout(() => petBubble.classList.remove('visible'), 2400);
   }
 
   // Evolution dots — drive from profile.petEvolution (1/2/3)
@@ -775,6 +767,19 @@ const FLOWER_EMOJIS = {
   flower: '🌸', sunflower: '🌻', daisy: '🌼', tulip: '🌷', rose: '🌹'
 };
 
+function renderMeadowPlants(p) {
+  const list = document.getElementById('meadow-plants-list');
+  if (!list) return;
+  const plants = grownPlants(p);
+  const today = plantForDay();
+  const todayName = `${today.emoji} ${t(`plant.${today.id}`)}`;
+  document.getElementById('meadow-plants-count').textContent = t('plant.count', { count: gardenDays(p) });
+  document.getElementById('meadow-plants-today').textContent = t(plantedToday(p) ? 'plant.plantedToday' : 'plant.today', { plant: todayName });
+  list.innerHTML = plants.length
+    ? plants.map((plant) => `<li><span aria-hidden="true">${plant.emoji}</span> ${escapeHTML(t(`plant.${plant.id}`))}${plant.count > 1 ? ` <span class="plant-count">×${plant.count}</span>` : ''}</li>`).join('')
+    : `<li class="meadow-plants-empty">${escapeHTML(t('plant.none'))}</li>`;
+}
+
 function renderFieldGuide(p) {
   const grid = document.getElementById('field-guide-grid');
   if (!grid) return;
@@ -805,6 +810,7 @@ function updateSoundButton() {
 
 function loadGardenScreen() {
   const p = gameState.profile || {};
+  renderMeadowPlants(p);
   renderFieldGuide(p);
   const garden = p.garden || [];
   const countEl = document.getElementById('garden-count');

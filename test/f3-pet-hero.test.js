@@ -99,11 +99,12 @@ describe('F3 — Pet hero: state machine in main.js', () => {
     expect(body).toMatch(/window\.__petHeroState = null/);
   });
 
-  it('updateHomePet applies the warning class when isStreakAtRisk is true', () => {
+  it('updateHomePet invites the child to plant today\'s flower, never warns or shakes', () => {
     const fnMatch = mainSrc.match(/function updateHomePet\s*\(\s*\)\s*\{[\s\S]*?\n\}/);
     const body = fnMatch[0];
-    expect(body).toMatch(/isStreakAtRisk\(profile\)/);
-    expect(body).toMatch(/petHero\.classList\.add\('warning'\)/);
+    expect(body).toMatch(/plantWaiting\(profile\)/);
+    expect(body).toMatch(/t\('pet\.plantWaiting'/);
+    expect(body).not.toMatch(/'warning'/);
   });
 
   it('updateHomePet uses getPetPath(avatar, state) to set the image src', () => {
@@ -158,10 +159,10 @@ describe('F3 — Pet hero: CSS contracts', () => {
     expect(stylesSrc).toMatch(/\.evo-dot\.active\s*\{/);
   });
 
-  it('declares all 3 keyframe animations (idle / celebrate / warning)', () => {
+  it('declares the idle and celebrate animations, and no warning shake', () => {
     expect(stylesSrc).toMatch(/@keyframes petHeroIdle\s*\{/);
     expect(stylesSrc).toMatch(/@keyframes petHeroCelebrate\s*\{/);
-    expect(stylesSrc).toMatch(/@keyframes petHeroWarning\s*\{/);
+    expect(stylesSrc).not.toMatch(/petHeroWarning/);
   });
 
   it('respects prefers-reduced-motion on the pet hero', () => {

@@ -4,6 +4,7 @@
 import { removeStudentFromAllClasses, syncToClass } from './classroom.js';
 import { syncProfile, logSession } from './sync.js';
 import { recordPractice } from './practiceLog.js';
+import { backfillPlants } from './plantOfDay.js';
 import { activePlayMs } from './gameSession.js';
 
 // ===== DEFAULT STATE =====
@@ -73,6 +74,8 @@ export const defaultState = {
     seenEvolutions: [], // Track which evolutions the player has seen
     garden: [], // Persistent flower collection across sessions
     fieldGuide: [], // Wildlife cards discovered by restoring meadows
+    plants: {}, // Plant of the day: how many of each plant this child has grown
+    plantedDays: [], // Days already planted, so no day counts twice
     classCode: null, // Classroom code for teacher dashboard
     uuid: null, // Stable identifier for class sync
     keySR: {}, // Spaced repetition state for weak keys
@@ -80,8 +83,8 @@ export const defaultState = {
   },
 };
 
-const PROFILE_ARRAY_FIELDS = ['completedLevels', 'seenEvolutions', 'garden', 'fieldGuide'];
-const PROFILE_OBJECT_FIELDS = ['keySR'];
+const PROFILE_ARRAY_FIELDS = ['completedLevels', 'seenEvolutions', 'garden', 'fieldGuide', 'plantedDays'];
+const PROFILE_OBJECT_FIELDS = ['keySR', 'plants'];
 
 // ===== LIVE GAME STATE =====
 export const gameState = createGameState();
@@ -115,6 +118,7 @@ export function loadProfile() {
     if (saved) {
       const parsed = JSON.parse(saved);
       gameState.profile = normalizeProfile(parsed);
+      backfillPlants(gameState.profile);
     }
   } catch (e) {
     console.warn('Failed to load profile:', e);

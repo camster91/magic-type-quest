@@ -177,30 +177,26 @@ describe('F2 — Streak-prominent card: HTML structure', () => {
   });
 });
 
-describe('F2 — updateMenuStats renders the three states', () => {
-  it('imports isStreakAtRisk from quests.js', () => {
-    expect(mainSrc).toMatch(/import\s*\{[^}]*\bisStreakAtRisk\b[^}]*\}\s*from\s*['"]\.\/quests\.js['"]/);
+describe('Plant of the day — the garden chip on the home screen', () => {
+  const menuStats = () => mainSrc.match(/function updateMenuStats\s*\(\s*\)\s*\{[\s\S]*?\n\}/)[0];
+
+  it('counts plants grown (it never resets), not a streak that can be lost', () => {
+    expect(mainSrc).toMatch(/import\s*\{[^}]*\bgardenDays\b[^}]*\}\s*from\s*['"]\.\/plantOfDay\.js['"]/);
+    expect(menuStats()).toMatch(/const grown = gardenDays\(gameState\.profile\)/);
+    expect(mainSrc).not.toMatch(/isStreakAtRisk/);
   });
 
-  it('updateMenuStats removes all three state classes (hidden/gold/at-risk) before re-adding', () => {
-    const fnMatch = mainSrc.match(/function updateMenuStats\s*\(\s*\)\s*\{[\s\S]*?\n\}/);
-    expect(fnMatch).toBeTruthy();
-    expect(fnMatch[0]).toMatch(/streak-prominent/);
-    expect(fnMatch[0]).toMatch(/streak-hidden/);
-    expect(fnMatch[0]).toMatch(/streak-gold/);
-    expect(fnMatch[0]).toMatch(/streak-at-risk/);
-    expect(fnMatch[0]).toMatch(/isStreakAtRisk/);
+  it('hides the chip until the first plant and turns gold from 7 plants', () => {
+    expect(menuStats()).toMatch(/streakCard\.classList\.remove\('streak-hidden', 'streak-gold'\)/);
+    expect(menuStats()).toMatch(/if\s*\(\s*grown\s*<\s*1\s*\)/);
+    expect(menuStats()).toMatch(/streakCard\.classList\.add\(['"]streak-hidden['"]\)/);
+    expect(menuStats()).toMatch(/grown\s*>=\s*7/);
   });
 
-  it('hides the card when streak < 1 (anti-feature: no fake streak)', () => {
-    const fnMatch = mainSrc.match(/function updateMenuStats\s*\(\s*\)\s*\{[\s\S]*?\n\}/);
-    expect(fnMatch[0]).toMatch(/if\s*\(\s*streak\s*<\s*1\s*\)/);
-    expect(fnMatch[0]).toMatch(/streakCard\.classList\.add\(['"]streak-hidden['"]\)/);
-  });
-
-  it('adds streak-gold when streak >= 7', () => {
-    const fnMatch = mainSrc.match(/function updateMenuStats\s*\(\s*\)\s*\{[\s\S]*?\n\}/);
-    expect(fnMatch[0]).toMatch(/if\s*\(\s*streak\s*>=\s*7\s*\)/);
+  it('shows a plant, not fire', () => {
+    expect(indexHtml).toMatch(/<span class="streak-icon" aria-hidden="true">🌱<\/span>/);
+    const chip = indexHtml.match(/<div id="streak-prominent"[\s\S]*?<\/div>/)[0];
+    expect(chip).not.toMatch(/🔥/);
   });
 });
 
@@ -218,9 +214,8 @@ describe('F2 — CSS: visual states + mobile + reduced motion', () => {
     expect(stylesSrc).toMatch(/\.streak-prominent\.streak-gold\s*\{/);
   });
 
-  it('pulsing red border variant when at-risk', () => {
-    expect(stylesSrc).toMatch(/\.streak-prominent\.streak-at-risk\s*\{/);
-    expect(stylesSrc).toMatch(/@keyframes\s+streakAtRiskPulse/);
+  it('has no red "at risk" warning state', () => {
+    expect(stylesSrc).not.toMatch(/streak-at-risk|streakAtRiskPulse/);
   });
 
   it('mobile (max-width 600px) keeps min-height 44px tap target', () => {
@@ -251,12 +246,9 @@ describe('F2 — CSS: visual states + mobile + reduced motion', () => {
     expect(found).toBeTruthy();
   });
 
-  it('respects prefers-reduced-motion for the pulse', () => {
-    expect(stylesSrc).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{[\s\S]*?\.streak-prominent\.streak-at-risk\s*\{[\s\S]*?animation:\s*none/);
-  });
 });
 
-describe('T25 — Daily Moment streak-warning button: at-risk state', () => {
+describe('Daily Moment button: today\'s plant waiting', () => {
   it('index.html: #daily-moment-warning wrapper contains the Daily Moment button + subtitle + streak chip', () => {
     const wrapMatch = indexHtml.match(/<div[^>]*id=["']daily-moment-warning["'][\s\S]*?<\/div>/);
     expect(wrapMatch).toBeTruthy();
@@ -285,36 +277,20 @@ describe('T25 — Daily Moment streak-warning button: at-risk state', () => {
     expect(subMatch[1].trim()).toBe('60s · low stress');
   });
 
-  it('main.js: updateMenuStats reads isStreakAtRisk and toggles .at-risk + .hidden on the warning', () => {
+  it('main.js: shows today\'s plant waiting on the Daily Moment button for a returning child', () => {
     const fnMatch = mainSrc.match(/function updateMenuStats\s*\(\s*\)\s*\{[\s\S]*?\n\}/);
-    expect(fnMatch).toBeTruthy();
-    expect(fnMatch[0]).toMatch(/isStreakAtRisk\s*\(\s*gameState\.profile\s*\)/);
-    expect(fnMatch[0]).toMatch(/dmButton/);
-    expect(fnMatch[0]).toMatch(/dmWrapper/);
-    expect(fnMatch[0]).toMatch(/dmSubtitle/);
-    expect(fnMatch[0]).toMatch(/dmStreakChip/);
-    expect(fnMatch[0]).toMatch(/dmButton\.classList\.toggle\(\s*['"]at-risk['"]/);
-    expect(fnMatch[0]).toMatch(/dmWrapper\.hidden\s*=\s*!atRisk/);
-    expect(fnMatch[0]).toMatch(/t\(['"]menu\.keepStreak['"]\)/);
+    expect(fnMatch[0]).toMatch(/const waiting = plantWaiting\(gameState\.profile\)/);
+    expect(fnMatch[0]).toMatch(/dmWrapper\.hidden\s*=\s*!waiting/);
+    expect(fnMatch[0]).toMatch(/dmButton\.classList\.toggle\(\s*['"]plant-waiting['"]/);
+    expect(fnMatch[0]).toMatch(/t\('plant\.waiting', \{ plant: plantName \}\)/);
     expect(fnMatch[0]).toMatch(/t\(['"]menu\.lowStress['"]\)/);
   });
 
-  it('main.js: at-risk streak chip renders "🔥 N — at risk!" when streak > 0', () => {
-    const fnMatch = mainSrc.match(/function updateMenuStats\s*\(\s*\)\s*\{[\s\S]*?\n\}/);
-    expect(fnMatch[0]).toMatch(/t\(['"]menu\.atRisk['"],\s*\{\s*count:\s*streak\s*\}\)/);
-  });
-
-  it('CSS: .btn-daily-moment uses a warm amber gradient in the at-risk variant', () => {
-    expect(stylesSrc).toMatch(/\.btn-daily-moment\.at-risk\s*\{[\s\S]*?linear-gradient/);
-  });
-
-  it('CSS: at-risk variant has a pulse animation', () => {
-    expect(stylesSrc).toMatch(/\.btn-daily-moment\.at-risk\s*\{[\s\S]*?animation:/);
-    expect(stylesSrc).toMatch(/@keyframes\s+dailyMomentAtRiskPulse/);
-  });
-
-  it('CSS: at-risk pulse respects prefers-reduced-motion', () => {
-    expect(stylesSrc).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{[\s\S]*?\.btn-daily-moment\.at-risk\s*\{[\s\S]*?animation:\s*none/);
+  it('CSS: the invitation is calm: no pulse, no red', () => {
+    const rule = stylesSrc.match(/\.btn-daily-moment\.plant-waiting\s*\{[^}]*\}/);
+    expect(rule).toBeTruthy();
+    expect(rule[0]).not.toMatch(/animation|239,\s*68,\s*68/);
+    expect(stylesSrc).not.toMatch(/dailyMomentAtRiskPulse|\.btn-daily-moment\.at-risk/);
   });
 
   it('CSS: .daily-moment-warning[hidden] is display:none (wrapper stays off-screen until at-risk)', () => {
