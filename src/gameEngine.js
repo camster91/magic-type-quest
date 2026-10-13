@@ -18,6 +18,7 @@ import { getLevelScoreBonus, resetGameSession } from './gameSession.js';
 import { createGameInputController, trapDialogFocus } from './gameInput.js';
 import { createCanvasEffects } from './gameCanvas.js';
 import { createMeadowScene } from './v2/meadowScene.js';
+import { discoverForLevel } from './fieldGuide.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -1084,6 +1085,7 @@ function levelComplete() {
   if (wasFirstCompletion) {
     gameState.profile.completedLevels.push(gameState.level);
   }
+  pendingFieldGuideCard = discoverForLevel(gameState.profile, gameState.level);
   gameState.profile.totalStars += 10;
   
   // Check pet evolution
@@ -1635,6 +1637,9 @@ function countUp(el, target) {
   requestAnimationFrame(step);
 }
 
+// The Field Guide card discovered by the level that just ended, if any.
+let pendingFieldGuideCard = null;
+
 function showLevelComplete() {
   const num = document.getElementById('level-complete-num');
   const score = document.getElementById('level-score');
@@ -1664,6 +1669,15 @@ function showLevelComplete() {
   const subtitle = document.getElementById('level-complete-sub');
   if (subtitle) subtitle.textContent = t('game.levelCompleteNamed', { level: gameState.level });
   countUp(score, gameState.score);
+  const newCard = document.getElementById('level-new-card');
+  if (newCard) {
+    newCard.hidden = !pendingFieldGuideCard;
+    if (pendingFieldGuideCard) {
+      document.getElementById('level-new-card-img').src = pendingFieldGuideCard.image;
+      document.getElementById('level-new-card-name').textContent = t(`fieldguide.${pendingFieldGuideCard.id}.name`);
+    }
+    pendingFieldGuideCard = null;
+  }
 
   if (isFinal) {
     if (cardTitle) cardTitle.textContent = `🎉 ${t('game.complete')}`;

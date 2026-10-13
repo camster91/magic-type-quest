@@ -227,6 +227,7 @@
         <span id="heart-4" class="heart">❤</span>
         <span id="heart-5" class="heart">❤</span>
       </div>
+      <button type="button" id="btn-sound" class="btn-icon-only" aria-pressed="true" aria-label="Sound on" title="Sound">🔊</button>
       <button type="button" id="btn-pause" class="btn-icon-only" aria-label="Pause game" data-i18n-aria-label="a11y.pauseGame" title="Pause Game (Esc)">⏸</button>
     </div>
   </div>
@@ -360,6 +361,10 @@
         <p><span data-i18n="metric.score">Score</span>: <span id="level-score">0</span></p>
         <p><span data-i18n="metric.words">Words</span>: <span id="level-words">0</span></p>
         <p><span data-i18n="game.bestCombo">Best Combo</span>: <span id="level-combo">0</span></p>
+      </div>
+      <div id="level-new-card" class="level-new-card" hidden>
+        <img id="level-new-card-img" src="" alt="" width="72" height="96">
+        <div><strong data-i18n="fieldguide.new">New Field Guide card!</strong><span id="level-new-card-name"></span></div>
       </div>
       <button type="button" id="btn-next-level" class="btn btn-primary"><span data-i18n="game.next">Next Level</span> →</button>
       <button type="button" id="btn-replay" class="btn btn-secondary" data-i18n="game.replay">Replay</button>
@@ -548,6 +553,13 @@
     <button type="button" id="btn-garden-back" class="btn-back">← <span data-i18n="nav.back">Back</span></button>
     <h2>🌺 <span data-i18n="garden.title">My Garden</span></h2>
   </div>
+  <section class="field-guide" aria-labelledby="field-guide-title">
+    <div class="field-guide-head">
+      <h3 id="field-guide-title">🦋 <span data-i18n="fieldguide.title">Field Guide</span></h3>
+      <span id="field-guide-count" class="field-guide-count"></span>
+    </div>
+    <div id="field-guide-grid" class="field-guide-grid"></div>
+  </section>
   <div class="garden-stats" id="garden-stats">
     <span>🌸 <span id="garden-count">0</span> <span data-i18n="garden.plantedLabel">flowers planted</span></span>
   </div>

@@ -20,6 +20,8 @@ import {
 } from './sync.js';
 import { localizeAchievement, localizeAchievementCategory, localizeLesson, localizeQuest } from './contentTranslations.js';
 import { getCurriculumProgress } from './progression.js';
+import { FIELD_GUIDE, discoveredCards } from './fieldGuide.js';
+import { isSoundOn, playAmbient, stopAmbient } from './audio.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -643,8 +645,37 @@ const FLOWER_EMOJIS = {
   flower: '🌸', sunflower: '🌻', daisy: '🌼', tulip: '🌷', rose: '🌹'
 };
 
+function renderFieldGuide(p) {
+  const grid = document.getElementById('field-guide-grid');
+  if (!grid) return;
+  const found = new Set(discoveredCards(p).map((card) => card.id));
+  const count = document.getElementById('field-guide-count');
+  if (count) count.textContent = t('fieldguide.count', { found: found.size, total: FIELD_GUIDE.length });
+  grid.innerHTML = FIELD_GUIDE.map((card) => found.has(card.id)
+    ? `<article class="fg-card">
+        <img src="${escapeHTML(card.image)}" alt="" width="180" height="239" loading="lazy">
+        <h4>${escapeHTML(t(`fieldguide.${card.id}.name`))}</h4>
+        <p>${escapeHTML(t(`fieldguide.${card.id}.fact`))}</p>
+      </article>`
+    : `<article class="fg-card locked">
+        <div class="fg-mystery" aria-hidden="true">?</div>
+        <p>${escapeHTML(t('fieldguide.locked', { level: card.level }))}</p>
+      </article>`).join('');
+}
+
+function updateSoundButton() {
+  const button = $('btn-sound');
+  if (!button) return;
+  const on = isSoundOn();
+  button.textContent = on ? '🔊' : '🔇';
+  button.setAttribute('aria-pressed', String(on));
+  button.setAttribute('aria-label', t(on ? 'sound.on' : 'sound.off'));
+  button.title = t(on ? 'sound.on' : 'sound.off');
+}
+
 function loadGardenScreen() {
   const p = gameState.profile || {};
+  renderFieldGuide(p);
   const garden = p.garden || [];
   const countEl = document.getElementById('garden-count');
   if (countEl) countEl.textContent = p.gardenTotal ?? garden.length;
@@ -828,6 +859,14 @@ function bindEvents() {
 
   // Game overlays
   $('btn-pause')?.addEventListener('click', togglePause);
+  $('btn-sound')?.addEventListener('click', () => {
+    gameState.profile.soundEnabled = !isSoundOn();
+    if (isSoundOn()) playAmbient(); else stopAmbient();
+    saveProfile();
+    updateSoundButton();
+    document.getElementById('game-screen')?.focus();
+  });
+  updateSoundButton();
   $('btn-resume')?.addEventListener('click', togglePause);
   $('btn-quit')?.addEventListener('click', () => {
     quitGame();

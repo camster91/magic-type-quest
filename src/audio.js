@@ -42,8 +42,13 @@ export function initAudio() {
 let ambientNodes = [];
 let ambientGain = null;
 
+// Children and teachers can mute everything; the choice is saved.
+export function isSoundOn() {
+	return gameState.profile?.soundEnabled !== false;
+}
+
 export function playAmbient() {
-	if (!audioCtx) return;
+	if (!audioCtx || !isSoundOn()) return;
 	stopAmbient();
 	try {
 		ambientGain = audioCtx.createGain();
@@ -89,7 +94,7 @@ export function speakWord(text) {
 }
 
 export function playSound(type) {
-	if (!audioCtx) return;
+	if (!audioCtx || !isSoundOn()) return;
 	const osc = audioCtx.createOscillator();
 	const gain = audioCtx.createGain();
 	osc.connect(gain);
@@ -116,10 +121,11 @@ export function playSound(type) {
 			cleanup(osc, gain);
 			break;
 		case "wrong":
-			osc.type = "sawtooth";
-			osc.frequency.setValueAtTime(200, now);
-			osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
-			gain.gain.setValueAtTime(0.1, now);
+			// A soft, low "boop": a gentle nudge, never a buzzer.
+			osc.type = "sine";
+			osc.frequency.setValueAtTime(330, now);
+			osc.frequency.exponentialRampToValueAtTime(247, now + 0.15);
+			gain.gain.setValueAtTime(0.08, now);
 			gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
 			osc.start(now);
 			osc.stop(now + 0.2);
