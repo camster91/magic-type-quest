@@ -1090,7 +1090,7 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .btn-glow { box-shadow: 0 0 20px rgba(139,92,246,0.5); }
 .btn-icon-only { background: var(--card); color: var(--text); border: 1px solid var(--card-border); border-radius: 10px; width: 44px; height: 44px; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
 .btn-icon { margin-right: 4px; }
-.btn-shortcut { font-size: 0.75rem; opacity: 0.7; margin-left: 6px; font-weight: 400; }
+.btn-shortcut { font-size: 0.75rem; opacity: 0.9; margin-left: 6px; font-weight: 400; }
 
 /* ===== STATS / MISC OLD (kept for gameover/level overlays) ===== */
 .stats-bar { display: flex; gap: 10px; }
@@ -1404,6 +1404,9 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     transition-delay: 0s !important;
+    /* No transitions at all: even a 0.01ms visibility transition keeps a
+       just-opened dialog "hidden" for a frame, so focus could not move in. */
+    transition-property: none !important;
   }
   .screen { transform: none; }
   .plus-one-floater,
