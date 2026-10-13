@@ -9,9 +9,11 @@ function fakeNode() {
   };
 }
 
+const created = [];
+
 class FakeAudioContext {
   constructor() { this.currentTime = 0; this.sampleRate = 8000; this.destination = {}; this.state = 'running'; }
-  createGain() { return fakeNode(); }
+  createGain() { const node = fakeNode(); created.push(node); return node; }
   createOscillator() { return fakeNode(); }
   createBiquadFilter() { return fakeNode(); }
   createBufferSource() { return fakeNode(); }
@@ -52,6 +54,19 @@ describe('meadow ambience', () => {
     expect(vi.getTimerCount()).toBe(1);
     audio.stopAmbient();
     expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('cuts off a chirp that is still playing when the meadow goes quiet', async () => {
+    vi.useFakeTimers();
+    const { audio, gameState } = await loadAudio();
+    gameState.profile.soundEnabled = true;
+    audio.initAudio();
+    created.length = 0;
+    audio.playAmbient();
+    const ambientGain = created[0];
+    vi.runOnlyPendingTimers(); // a bird starts singing
+    audio.stopAmbient();
+    expect(ambientGain.disconnect).toHaveBeenCalled();
   });
 
   it('stays silent when sound is off', async () => {

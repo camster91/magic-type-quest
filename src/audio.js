@@ -137,6 +137,8 @@ export function stopAmbient() {
 		try { n.stop ? n.stop() : n.disconnect(); } catch {}
 	}
 	ambientNodes = [];
+	// Unplugging the shared volume also silences a chirp that is mid-song.
+	try { ambientGain?.disconnect(); } catch {}
 	ambientGain = null;
 }
 
