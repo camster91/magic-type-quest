@@ -10,7 +10,8 @@ function seed(page, profile) {
     window.__foxPauses = 0;
     // Record clip playback instead of making noise in the test browser.
     window.HTMLMediaElement.prototype.play = function play() {
-      window.__foxPlays.push(this.src);
+      // The silent clip that unlocks audio on iOS isn't a fox line.
+      if (!this.src.startsWith('data:')) window.__foxPlays.push(this.src);
       return Promise.resolve();
     };
     window.HTMLMediaElement.prototype.pause = function pause() { window.__foxPauses += 1; };
@@ -104,4 +105,25 @@ test('the Fox voice setting can be switched off and is remembered', async ({ pag
   await page.waitForTimeout(1500);
   expect(await page.evaluate(() => window.__foxPlays)).toEqual([]);
   expect(requests).toEqual([]);
+});
+
+test.describe('slow network', () => {
+  // The service worker would fetch the voice code itself, out of reach of page.route.
+  test.use({ serviceWorkers: 'block' });
+
+test('quitting while the fox voice is still loading keeps the home screen quiet', async ({ page }) => {
+  await seed(page, {});
+  // A slow network: the voice code arrives after the child has already quit.
+  await page.route(/\/foxVoice[-.][^/]*\.js$/, async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await route.continue();
+  });
+  await page.goto('');
+  await startPlaying(page);
+  await page.locator('#btn-pause').click();
+  await page.locator('#btn-quit').click();
+  await expect(page.locator('#menu-screen')).toHaveClass(/active/);
+  await page.waitForTimeout(2500);
+  expect(await page.evaluate(() => window.__foxPlays)).toEqual([]);
+});
 });

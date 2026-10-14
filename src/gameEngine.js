@@ -109,10 +109,29 @@ let lastFrameTime = 0;
 let fox = null;
 let foxStartPending = false;
 let missesThisWord = 0;
+// Bumped whenever the fox must go quiet (quit, new level, leaving play), so
+// a line still loading from a slow network is dropped instead of playing later.
+let foxSession = 0;
+// iOS plays sound only if a tap started it. The tap that starts a level primes
+// this one element, and every fox line reuses it.
+const SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+let foxAudio = null;
+function primeFoxAudio() {
+  if (!foxVoiceAllowed(gameState.profile) || typeof Audio === 'undefined') return;
+  foxAudio ??= new Audio();
+  foxAudio.src = SILENT_WAV;
+  foxAudio.play()?.catch?.(() => {});
+}
 function foxSay(moment) {
   if (!foxVoiceAllowed(gameState.profile)) return;
+  const session = foxSession;
   import('./foxVoice.js').then((m) => {
-    fox = m.foxVoice();
+    if (session !== foxSession) return;
+    fox = m.foxVoice({ createAudio: (src) => {
+      const audio = foxAudio ?? new Audio();
+      audio.src = src;
+      return audio;
+    } });
     fox.say(moment, { onLine: (text) => {
       showPetBubble(`🦊 ${text}`, 2600);
       m.announceFoxLine(text);
@@ -120,7 +139,7 @@ function foxSay(moment) {
     } });
   }).catch(() => {});
 }
-export function stopFoxVoice() { fox?.stop(); }
+export function stopFoxVoice() { foxSession++; fox?.stop(); }
 
 // Run exactly one animation loop. Starting a new game cancels any loop that
 // is still scheduled, so loops never pile up across games.
@@ -1463,6 +1482,7 @@ export function startGame(level = 1) {
   initAudio();
   playAmbient();
   stopFoxVoice();
+  primeFoxAudio();
   foxStartPending = true;
 
   const lesson = getLessonByLevel(level);
@@ -1809,6 +1829,7 @@ export function init() {
 }
 
 export function showScreen(name) {
+  if (name !== 'game') stopFoxVoice();
   gameState.screen = name;
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const target = document.getElementById(`${name}-screen`);

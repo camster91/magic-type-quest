@@ -151,10 +151,10 @@ export function createFoxVoice({
   return { say, stop, whenQuiet, isSpeaking };
 }
 
-// One shared voice for the game.
+// One shared voice for the game. Options apply when it is first made.
 let shared = null;
-export function foxVoice() {
-  shared ??= createFoxVoice();
+export function foxVoice(options) {
+  shared ??= createFoxVoice(options);
   return shared;
 }
 
