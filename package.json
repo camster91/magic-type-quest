@@ -8,6 +8,7 @@
     "build": "vite build",
     "verify:local-only-build": "node scripts/verify-local-only-build.mjs dist",
     "verify:cloud-boundary": "node scripts/verify-cloud-boundary.mjs",
+    "pilot:report": "node scripts/pilot-report.mjs",
     "preview": "vite preview",
     "test": "vitest",
     "test:e2e": "npm run build && npm run verify:local-only-build && playwright test",
