@@ -1,7 +1,7 @@
 {
-	"name": "Bloom Typing",
-	"short_name": "Bloom Typing",
-	"description": "A beautiful typing game for kids! Type words to collect stars and grow your garden.",
+	"name": "BloomType",
+	"short_name": "BloomType",
+	"description": "A touch-typing game for kids. Type words to bring the meadow back to life. Free for families, no ads.",
   "start_url": "./",
 	"display": "standalone",
 	"background_color": "#1E1B4B",
