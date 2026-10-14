@@ -6,3 +6,6 @@ playwright-report/
 .env.*
 
 gauntlet-*
+
+# Encrypted database backups (scripts/backup-db.sh); never commit them
+backups/
