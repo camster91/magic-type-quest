@@ -120,8 +120,11 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [ ] **Claude:** a landing page with a 30-second Meadow trailer (Higgsfield), a teacher demo video, the free-for-families promise and the school price list. Lighthouse 100.
 - [x] **Claude:** homeschool curriculum guides, plus a "Typing Week" classroom event kit (certificates and posters) ✅ (`docs/homeschool/CURRICULUM-GUIDE.md`, `docs/school/TYPING-WEEK-KIT.md`, printable poster and certificate linked from the teacher page).
 - [ ] **Owner:** list it in homeschool directories, state ESA (education savings account) approved-vendor lists, the Google for Education marketplace, ClassLink and Clever.
+  - Copy-paste text, tags and an asset checklist: [growth/DIRECTORY-LISTINGS.md](growth/DIRECTORY-LISTINGS.md).
 - [ ] **Owner:** contact homeschool influencers and co-ops.
+  - Email and DM templates, a follow-up and a tracking table: [growth/OUTREACH-TEMPLATES.md](growth/OUTREACH-TEMPLATES.md).
 - [ ] **Owner:** go to one teacher conference (ISTE, or a provincial one), with materials made by Claude.
+  - Booth one-pager, demo script, talk outline, handout, interest form, packing list and follow-up: [growth/CONFERENCE-KIT.md](growth/CONFERENCE-KIT.md).
 
 ### Success targets
 - [ ] 1,000 homeschool families active monthly.
