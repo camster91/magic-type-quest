@@ -1,7 +1,10 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { setLocale } from '../src/i18n.js';
+import { loadLocale, setLocale } from '../src/i18n.js';
 import { highlightTargetKey, showKeyFeedback } from '../src/gamePresentation.js';
+
+// French and Spanish load on demand (src/lang/); the checks below need them.
+await Promise.all(['fr', 'es'].map((locale) => loadLocale(locale)));
 
 beforeEach(() => {
   vi.useFakeTimers();

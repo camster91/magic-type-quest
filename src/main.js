@@ -13,7 +13,7 @@ import { getDueKeys } from './spacedRep.js';
 import { decodeRestoreCode, encodeRestoreCode, mergeRestoredProgress } from './restoreCode.js';
 import { joinClass, normalizeClassCode } from './classroom.js';
 import { escapeHTML } from './utils.js';
-import { applyTranslations, formatDate, formatNumber, localizeFingerLabel, setLocale, t } from './i18n.js';
+import { applyTranslations, formatDate, formatNumber, getLocale, isLocaleLoaded, loadLocale, localizeFingerLabel, setLocale, t, whenLocaleLoaded } from './i18n.js';
 import {
   buildLocalProgressExport,
   deleteCloudProfile,
@@ -760,6 +760,11 @@ function saveProfileScreen() {
   p.foxVoiceEnabled = $('fox-voice-toggle')?.checked !== false;
   p.locale = setLocale($('language-select')?.value || 'en');
   applyTranslations();
+  // Picking the language already started loading it; if it is still on its
+  // way, redraw once it arrives.
+  if (!isLocaleLoaded(p.locale)) {
+    loadLocale(p.locale).then(() => { if (getLocale() === p.locale) refreshLanguage(); });
+  }
   const code = $('class-code')?.value?.trim();
   // Changing the class is a grown-up setting when the lock is on.
   const classChanged = normalizeClassCode(code) !== normalizeClassCode(p.classCode);
@@ -1080,17 +1085,19 @@ function bindEvents() {
     }
     input?.removeAttribute('aria-invalid');
     mergeRestoredProgress(gameState.profile, data);
-    setLocale(gameState.profile.locale);
-    applyTranslations();
     saveProfile();
-    updateMenuStats();
-    onAvatarChanged();
-    loadProfileScreen();
-    if (input) input.value = '';
-    if (status) {
-      status.hidden = false;
-      status.textContent = t('restore.done');
-    }
+    whenLocaleLoaded(gameState.profile.locale, () => {
+      setLocale(gameState.profile.locale);
+      applyTranslations();
+      updateMenuStats();
+      onAvatarChanged();
+      loadProfileScreen();
+      if (input) input.value = '';
+      if (status) {
+        status.hidden = false;
+        status.textContent = t('restore.done');
+      }
+    });
   });
 
   $('btn-export-local-profile')?.addEventListener('click', () => {
@@ -1150,12 +1157,13 @@ function bindEvents() {
   });
 
   $('language-select')?.addEventListener('change', (event) => {
-    gameState.profile.locale = setLocale(event.target.value);
-    applyTranslations();
-    updateSoundButton();
-    updateMenuStats();
-    renderLevelCards();
-    loadProfileScreen();
+    const locale = event.target.value;
+    whenLocaleLoaded(locale, () => {
+      // A quicker second pick wins over a language still loading.
+      if (event.target.value !== locale) return;
+      gameState.profile.locale = setLocale(locale);
+      refreshLanguage();
+    });
   });
   
   // Avatar picker
@@ -1305,12 +1313,29 @@ function bindEvents() {
   });
 }
 
+// Redraws everything that shows text after a language change.
+function refreshLanguage() {
+  applyTranslations();
+  updateSoundButton();
+  updateMenuStats();
+  renderLevelCards();
+  loadProfileScreen();
+}
+
 // ===== INIT =====
 function init() {
   // Fetch the full word bank once the menu is on screen.
   (window.requestIdleCallback || ((fn) => setTimeout(fn, 200)))(() => loadWordBank());
   loadProfile();
-  setLocale(gameState.profile?.locale || navigator.language?.split('-')[0] || 'en');
+  // English starts straight away; French or Spanish first fetch their
+  // strings (src/lang/), so the menu never flashes English at them. Taps
+  // made meanwhile are held until start() (scripts/critical-css.mjs).
+  const locale = gameState.profile?.locale || navigator.language?.split('-')[0] || 'en';
+  whenLocaleLoaded(locale, () => start(locale));
+}
+
+function start(locale) {
+  setLocale(locale);
   applyTranslations();
   bindEvents();
   initEngine();
