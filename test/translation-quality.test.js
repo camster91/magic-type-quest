@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { JSDOM } from 'jsdom';
 import { dictionaries } from '../src/i18n.js';
 import { pageDictionaries } from '../src/pageTranslations.js';
 import { translatedContent } from '../src/contentTranslations.js';
@@ -86,6 +87,53 @@ describe('static markup and dictionaries stay in sync', () => {
     const block = markup.match(/data-page-i18n-html="parent\.privacy">([\s\S]*?)<\/div>/)[1];
     const headings = [...block.matchAll(/<h3>([^<]+)<\/h3>/g)].map((m) => m[1]);
     for (const heading of headings) expect(pageDictionaries.en['parent.privacy']).toContain(`<h3>${heading}</h3>`);
+  });
+});
+
+describe('For Schools page (landing.html) translations', () => {
+  const markup = readFileSync(resolve(root, 'landing.html'), 'utf8');
+  const doc = new JSDOM(markup).window.document;
+  const collapse = (text) => String(text).replace(/\s+/g, ' ').trim();
+  const tagged = (attribute) => [...doc.querySelectorAll(`[${attribute}]`)].map((element) => [element.getAttribute(attribute), element]);
+  // Strings the page keeps outside data-page-i18n*: src/landing.js sets them.
+  const attributeStrings = () => [
+    ['landing.metaDescription', doc.querySelector('meta[name="description"]').getAttribute('content')],
+    ['landing.mostPopular', doc.querySelector('.price-card.featured').dataset.badge],
+    ['landing.demoStreak', doc.getElementById('demo-canvas').dataset.streakLabel],
+    ['landing.demoRank', doc.getElementById('demo-canvas').dataset.rankLabel],
+  ];
+
+  it.each(['en', 'fr', 'es'])('defines every data-page-i18n* key used by landing.html in %s', (locale) => {
+    const referenced = [...markup.matchAll(/data-page-(?:title|i18n|i18n-html|i18n-placeholder|i18n-aria-label)="([^"]+)"/g)]
+      .map((match) => match[1]);
+    expect(referenced.length).toBeGreaterThan(80);
+    expect(referenced.filter((key) => !key.startsWith('landing.'))).toEqual([]);
+    expect([...new Set(referenced.filter((key) => !(key in pageDictionaries[locale])))]).toEqual([]);
+    expect(attributeStrings().map(([key]) => key).filter((key) => !(key in pageDictionaries[locale]))).toEqual([]);
+  });
+
+  it('keeps the English dictionary identical to the static page, its source of truth', () => {
+    const differences = [
+      ...tagged('data-page-i18n').map(([key, element]) => [key, collapse(element.textContent)]),
+      ...tagged('data-page-i18n-html').map(([key, element]) => [key, collapse(element.innerHTML)]),
+      ...tagged('data-page-i18n-aria-label').map(([key, element]) => [key, element.getAttribute('aria-label')]),
+      [doc.documentElement.dataset.pageTitle, doc.title],
+      ...attributeStrings(),
+    ].filter(([key, text]) => pageDictionaries.en[key] !== text);
+    expect(differences).toEqual([]);
+  });
+
+  it('leaves no visible English text outside a translated element', () => {
+    for (const element of doc.querySelectorAll('script, style')) element.remove();
+    const walker = doc.createTreeWalker(doc.body, 4 /* NodeFilter.SHOW_TEXT */);
+    const untranslated = [];
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const text = collapse(node.textContent);
+      // Emoji, prices and ✓ marks carry no words; BloomType is the product name.
+      if (!/\p{L}/u.test(text) || text === 'BloomType') continue;
+      if (!node.parentElement.closest('[data-page-i18n], [data-page-i18n-html]')) untranslated.push(text);
+    }
+    expect(untranslated).toEqual([]);
   });
 });
 
