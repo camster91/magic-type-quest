@@ -71,6 +71,28 @@ scripts/restore-db.sh bloomtype-YYYYMMDDTHHMMSSZ.tar.gz.age
 It ends with `restore verified`, or stops with `verification FAILED`. Do not
 point the app at a database that failed verification.
 
+### What a fresh-project restore cannot bring back: sign-ins
+
+This script restores BloomType's **data**. It does not carry devices'
+sign-ins across to a new Supabase project. Devices sign in anonymously
+(`signInAnonymously()` in `src/cloudLogin.js`), and their sessions are signed
+with the old project's keys. A new project has different keys, so each device
+gets a **new user ID** the next time it syncs, and row-level security keeps it
+away from the rows saved under its old ID. `restore verified` checks the data,
+not this.
+
+What that means in practice:
+
+- **Children lose no progress.** BloomType is local-first, so each device
+  still has its own progress and syncs it again under its new ID.
+- **Class rosters point at the old IDs.** Teachers see students as "not synced"
+  until each device re-joins the class (class code, or a link code for a
+  child's second device).
+- So this path is a **last resort** for when the project itself is gone.
+  Supabase's own backups and point-in-time recovery restore the same project
+  with its keys and sessions, and keep every device signed in. Always try
+  those first (runbook step 2).
+
 ### Why the restore resets privileges
 
 A new Supabase database grants `anon` and `authenticated` full table rights on

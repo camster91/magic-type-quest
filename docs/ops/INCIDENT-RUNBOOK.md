@@ -279,6 +279,9 @@ Use this when cloud data is lost or damaged. Backups and how they are made:
    new is lost or mixed in.
 2. **Try Supabase's own restore first** (Dashboard > Database > Backups, or
    point-in-time recovery). It restores the whole project, including sign-ins.
+   The steps below are a last resort: they restore the data into a new
+   project, but every device gets a new user ID on its next sync (see
+   [BACKUPS.md](BACKUPS.md#what-a-fresh-project-restore-cannot-bring-back-sign-ins)).
 3. If that is not possible, **pick the backup**: the newest one made before the
    problem started. Note its time. Data after that time will be lost; write
    that down for the review and any notices.
@@ -296,7 +299,10 @@ Use this when cloud data is lost or damaged. Backups and how they are made:
 7. **Re-run the RLS checks** from [CLOUD-CLASS-LOGIN.md](../CLOUD-CLASS-LOGIN.md).
 8. **Point the pilot build at the new project** (new URL and anon key), test
    it, then turn cloud sync back on.
-9. **Tell schools** what happened and any data that was lost.
+9. **Ask every class to re-join.** Each device keeps its own progress and
+   syncs it again, but under a new user ID. Teachers re-share the class code
+   (and link codes for second devices) so the roster fills again.
+10. **Tell schools** what happened and any data that was lost.
 
 ## 9. After the incident: review template
 
