@@ -35,11 +35,18 @@ export function showKeyFeedback(key, correct) {
 }
 
 /** Tell screen readers something once, through the page's polite live region. */
-export function announce(message) {
+export function announce(message, { queue = false } = {}) {
   const region = document.getElementById('sr-announcer');
   if (!region || !message) return;
   // Empty it first so the same words said twice in a row are read twice.
   region.textContent = '';
   clearTimeout(announce.timer);
-  announce.timer = setTimeout(() => { region.textContent = message; }, 60);
+  // A newer message replaces one not yet read (typing prompts go stale fast),
+  // unless it asks to queue: then both are read, e.g. a quest toast followed
+  // a moment later by "level complete".
+  announce.pending = queue && announce.pending ? `${announce.pending} ${message}` : message;
+  announce.timer = setTimeout(() => {
+    region.textContent = announce.pending;
+    announce.pending = '';
+  }, 60);
 }

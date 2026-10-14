@@ -234,6 +234,20 @@ function showTutorialSlide(n) {
   document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === n));
 }
 
+// Focus would otherwise stay on the now-hidden tutorial button. Once the
+// game has drawn, move it to the card that opened (the chapter intro or the
+// finger guide) or else into the game, so screen readers enter application
+// mode and letter keys reach the game.
+function focusAfterTutorial(framesLeft = 30) {
+  requestAnimationFrame(() => {
+    const card = document.querySelector('[role="dialog"][aria-hidden="false"]');
+    const target = card?.querySelector('button') ?? $('game-screen');
+    target?.focus();
+    // While the game screen is still fading in, focus doesn't stick yet.
+    if (target && document.activeElement !== target && framesLeft > 0) focusAfterTutorial(framesLeft - 1);
+  });
+}
+
 function nextTutorialSlide() {
   tutorialSlide++;
   if (tutorialSlide >= 3) {
@@ -241,6 +255,7 @@ function nextTutorialSlide() {
     overlay.classList.add('hidden');
     overlay.setAttribute('aria-hidden', 'true');
     startGame(1);
+    focusAfterTutorial();
     return;
   }
   showTutorialSlide(tutorialSlide);
@@ -1306,6 +1321,7 @@ function bindEvents() {
     overlay.classList.add('hidden');
     overlay.setAttribute('aria-hidden', 'true');
     startGame(1);
+    focusAfterTutorial();
   });
 
   // Keyboard handler

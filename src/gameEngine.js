@@ -1734,7 +1734,7 @@ function showLevelComplete() {
     overlay.classList.remove('hidden');
     overlay.setAttribute('aria-hidden', 'false');
     nextBtn?.focus();
-    announce(`${t('game.levelCompleteNamed', { level: gameState.level })} ${t('game.starsEarned', { count: stars })}`);
+    announce(`${t('game.levelCompleteNamed', { level: gameState.level })} ${t('game.starsEarned', { count: stars })}`, { queue: true });
   }
 }
 

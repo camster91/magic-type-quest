@@ -125,6 +125,15 @@ describe('announce', () => {
     announce('second');
     vi.advanceTimersByTime(100);
     expect(region.textContent).toBe('second');
+    // ...unless it queues: a quest toast and then "level complete" are both read.
+    announce('Quest complete!');
+    announce('Level 1 Complete!', { queue: true });
+    vi.advanceTimersByTime(100);
+    expect(region.textContent).toBe('Quest complete! Level 1 Complete!');
+    // The queue is emptied once read.
+    announce('Type: cat', { queue: true });
+    vi.advanceTimersByTime(100);
+    expect(region.textContent).toBe('Type: cat');
   });
 });
 
