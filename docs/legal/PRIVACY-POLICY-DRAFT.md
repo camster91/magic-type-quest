@@ -9,7 +9,7 @@
 ## The short version
 
 - **No accounts for children, no ads, no tracking.** Children play without signing up.
-- **Progress stays on the device.** In the public version, everything a child does is saved in that browser only. It is not sent to BloomType, Ashbi Design or anyone else.
+- **Progress stays on the device.** In the public version, a child's game progress and the other gameplay data the game saves are kept in that browser only. They are not sent to BloomType, Ashbi Design or anyone else. (Loading the website still sends ordinary web requests to our server; see [section 5](#5-information-we-may-receive-in-other-ways).)
 - **No AI talks to children.** The pictures, sounds and voices were made once, in advance, and ship with the game.
 - **You stay in control.** Progress can be downloaded or deleted from the Profile screen at any time.
 - **Cloud features are switched off.** They will only be switched on for a school after a signed data-privacy agreement and the other approvals listed below.
@@ -29,12 +29,13 @@ This policy is for parents, guardians, teachers, schools and school boards. It e
 
 ## 3. What is saved, and where
 
-In the public version, everything below is stored in the browser's **local storage** on the device the child uses. **It is not sent to us.**
+In the public version, everything below is stored in the browser's **local storage** on the device the child uses. **It is not sent to us.** This covers the data the game saves; it does not cover the ordinary web requests a browser makes to load the site (see section 5).
 
 | What | Why | Where |
 |---|---|---|
 | Display name the child types (a first name or nickname) | Shows on the profile, the teacher roster and the parent page | This browser |
 | Avatar picture choice | Shows the child's pet | This browser |
+| A random player ID (a UUID the game makes the first time it saves) | Tells apart two children with the same name on one device, and links a child to the classes they joined. It is stored in the active profile and in the profile copy the teacher and parent pages read. It is not shown to the child and does not contain any personal details. | This browser |
 | Levels completed, stars, words typed, best speed and accuracy per level | Progress and rewards | This browser |
 | Which keys are hard and which are learned | Picks practice words | This browser |
 | Minutes practised per day | Parent page, teacher report and homeschool record | This browser |
@@ -43,6 +44,7 @@ In the public version, everything below is stored in the browser's **local stora
 | Teacher's classes, assignments and spelling words | Teacher tools | The teacher's browser |
 | Language, sound and voice settings | Preferences | This browser |
 | Pilot survey answers (only if a grown-up chooses to fill it in) | Pilot feedback | The grown-up's browser |
+| Teacher PIN and grown-up lock PIN (stored only as a scrambled, salted hash), plus a count of wrong tries | Keeps the teacher page and profile settings locked | That browser |
 
 Because this data stays on the device, **anyone who can use that device and browser may be able to see it.** The teacher page has a PIN, and the profile screen has a grown-up lock, to help.
 
@@ -69,10 +71,11 @@ The game itself sends no student data to us. We may still receive some informati
 
 ## 6. Your choices: download and delete
 
-- **Delete:** Profile → *Delete local progress*. This removes the child's profile, progress and class membership from that browser. Clearing the browser's site data for BloomType also removes everything.
+- **Delete one child (game or parent):** Profile → *Delete local progress*. This removes the **current** child's profile (including their settings and player ID), their saved profile copies and their class memberships from that browser. It does not remove other children's profiles on the same device, the teacher's classes, any PINs, or pilot survey answers. The parent page points to this same Profile action; it has no separate delete button.
 - **Download:** Profile → *Download local progress* saves the child's data as a file.
-- **Teachers:** the teacher page can export a class report (CSV) and clear all BloomType data on that device (*Clear All*).
+- **Teachers (*Clear All*):** the teacher page can export a class report (CSV) and clear student data on that device. *Clear All* removes every player profile and profile copy, every class roster record, and the teacher's class list (classes, assignments and spelling words). It does **not** remove the pilot survey answers, the teacher PIN and grown-up lock PIN records, or the wrong-try counters.
 - **Pilot survey:** *Delete my answers* removes saved survey answers.
+- **Remove everything:** clear the browser's site data (cookies and site data / storage) for `bloomtype.ashbi.ca`. This deletes all BloomType data in that browser, including PINs, pilot answers and the offline copy of the app.
 
 Because we do not hold a copy of the data in the public version, **we cannot see, correct or delete it for you, and we cannot recover it once deleted.** You do this yourself on the device. If you have a question or need help, email cameron@ashbi.ca.
 
@@ -92,9 +95,13 @@ and after we have recorded and approved the lawful basis and consent process, wh
 **When it is on, for that school only:**
 
 - Students still never make an account or type an email. Each device signs in anonymously.
-- The extra data stored can include a display name, avatar, scores, lesson progress, achievements, garden state, weak-key practice state, class code and session performance. It must not include email, birth date, address, advertising identifiers, free-form student content or precise location.
+- **Student data** stored can include the player ID, a display name, avatar, scores, lesson progress, achievements, garden state, weak-key practice state, class code and session performance (level, score, words typed, combos). It must not include email, birth date, address, advertising identifiers, free-form student content or precise location.
+- **Linked devices:** which anonymous device IDs belong to the same student, so a teacher sees one student.
+- **Imported rosters:** if a teacher imports a class list (from Google Classroom or a CSV file; ClassLink and Clever later), we store, for each student, the roster provider, the provider's opaque student ID and the display name. No email, birth date or photo. This lets the teacher dashboard match imported names to students who joined with the class code.
+- **Teacher accounts:** teachers sign in with Google. Our sign-in provider receives the teacher's Google account ID, name and email address so the teacher can sign in, and we store the teacher's account ID, display name, role (teacher or admin) and school. Teachers' classes are stored with a class name, class code and, if imported, the roster provider and its class ID. `[OWNER/LEGAL: confirm exactly which Google profile fields and Classroom permissions are requested, and how long Google access tokens are kept.]`
+- **Schools and staff invites:** a school record holds the school name. A school admin can invite staff by school email; we store the invited email, the school, the role, who sent the invite (their account ID) and when. Only adult staff emails are stored; children never have invites.
 - A child who uses two devices can link them with a 12-character link code. The code works for 14 days, and the server stores only a scrambled (hashed) copy.
-- Database rules let a student see only their own data, and a teacher see only the classes they own.
+- Database rules let a student see only their own data, a teacher see only the classes they own, and a school admin see only their own school's teachers and invites.
 - The profile screen offers a cloud export (only that student's own data) and a confirmed cloud deletion.
 - Hosting in Canada is planned for Canadian school boards. `[OWNER/LEGAL: confirm the region once the Supabase project exists (#133), and list Supabase (and any other provider) as a service provider.]`
 - Encrypted daily backups are kept for 30 days by default. `[OWNER/LEGAL: confirm backup retention in the retention policy (#132).]`
