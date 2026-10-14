@@ -1,3 +1,5 @@
+import { supportedLocales } from './locales.js';
+
 export const dictionaries = {
   en: {
     'cloudLogin.join': 'Join class online', 'cloudLogin.joining': 'Joining your class…',
@@ -459,7 +461,7 @@ export const dictionaries = {
   },
 };
 
-export const supportedLocales = ['en', 'fr', 'es'];
+export { supportedLocales };
 let activeLocale = 'en';
 
 export function setLocale(locale) {
