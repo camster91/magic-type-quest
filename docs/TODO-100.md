@@ -87,7 +87,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [x] **Claude:** a parent PIN for settings, like the teacher PIN in #210 ✅ (grown-up lock on the profile screen).
 
 ### Everyone
-- [ ] **Claude:** an accessibility pass with a real screen reader (dyslexia-friendly font, high contrast and relaxed mode ✅ #223; manual screen-reader pass still to do) (NVDA and VoiceOver), keyboard-only play, a dyslexia-friendly font option and high-contrast mode. **Done when:** checked in [DEVICE-ACCESSIBILITY-QA.md](DEVICE-ACCESSIBILITY-QA.md).
+- [ ] **Claude:** an accessibility pass with a real screen reader (dyslexia-friendly font, high contrast and relaxed mode ✅ #223; automated / virtual screen-reader pass ✅ 2026-10-14, see [DEVICE-ACCESSIBILITY-QA.md](DEVICE-ACCESSIBILITY-QA.md#automated--virtual-screen-reader-pass--2026-10-14); manual NVDA and VoiceOver pass still to do by a person, using the [manual script](DEVICE-ACCESSIBILITY-QA.md#manual-screen-reader-script-nvda-and-voiceover)) (NVDA and VoiceOver), keyboard-only play, a dyslexia-friendly font option and high-contrast mode. **Done when:** checked in [DEVICE-ACCESSIBILITY-QA.md](DEVICE-ACCESSIBILITY-QA.md).
 - [ ] **Claude:** a full French and Spanish pass on the new screens (Claude pre-review pass ✅ recorded in LANGUAGE-QA.md; still needs sign-off from a fluent French and a fluent Spanish reviewer). **Done when:** checked in [LANGUAGE-QA.md](LANGUAGE-QA.md).
 - [ ] **Owner:** test on real devices: a school Chromebook, an iPad, an Android phone and an old Windows laptop. Record the results.
 

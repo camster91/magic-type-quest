@@ -30,6 +30,13 @@ export function trapDialogFocus(event, root = document) {
   }
 }
 
+// Cards that only tell the child something: Esc presses their button.
+const ESCAPE_DISMISS = {
+  'chapter-intro': 'btn-chapter-continue',
+  'finger-guide': 'btn-close-finger-guide',
+  'evolution-overlay': 'btn-evolution-continue',
+};
+
 export function createGameInputController({
   state,
   getLesson,
@@ -110,7 +117,17 @@ export function createGameInputController({
   }
 
   function handleKey(event) {
-    if (state.screen !== 'game' || state.gameOver || event.repeat) return;
+    if (state.screen !== 'game' || event.repeat) return;
+    if (event.key === 'Escape') {
+      // Esc closes a "read this, then carry on" card the same way its button does.
+      const dismiss = ESCAPE_DISMISS[getOpenDialog()?.id];
+      if (dismiss) {
+        event.preventDefault();
+        document.getElementById(dismiss)?.click();
+        return;
+      }
+    }
+    if (state.gameOver) return;
 
     if (event.key === 'Escape') {
       const openDialog = getOpenDialog();
