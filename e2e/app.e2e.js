@@ -271,6 +271,8 @@ test('a weak-key drill finishes without changing curriculum progress', async ({ 
 
   await expect.poll(() => page.evaluate(() => window.gameState.level)).toBe('drill');
   expect(await page.evaluate(() => Number.isFinite(window.gameState.score))).toBe(true);
+  // The HUD shows a drill marker, not a level number formatted from the word 'drill'.
+  await expect(page.locator('#level')).toHaveText('🎯');
   const starsBeforeCompletion = await page.evaluate(() => window.gameState.profile.totalStars);
   await page.evaluate(() => {
     const { drillLesson } = window.gameState;
