@@ -9,11 +9,11 @@ function seed(page, profile) {
     window.__foxPlays = [];
     window.__foxPauses = 0;
     // Record clip playback instead of making noise in the test browser.
-    HTMLMediaElement.prototype.play = function play() {
+    window.HTMLMediaElement.prototype.play = function play() {
       window.__foxPlays.push(this.src);
       return Promise.resolve();
     };
-    HTMLMediaElement.prototype.pause = function pause() { window.__foxPauses += 1; };
+    window.HTMLMediaElement.prototype.pause = function pause() { window.__foxPauses += 1; };
     if (sessionStorage.getItem('seeded')) return;
     sessionStorage.setItem('seeded', '1');
     localStorage.clear();
