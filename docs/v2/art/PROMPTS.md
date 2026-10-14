@@ -110,3 +110,17 @@ Field Guide cards (3:4, opaque) use this frame:
 | `props.meadow.growthstages.v1` | (3:2) Three growth stages of a black-eyed Susan in a row, each from the same soil mound: seedling, young plant with bud, flowering plant |
 | `companion.fox.sniff.v1` | Fox sheet as a second reference. The fox gently sniffing a single black-eyed Susan, side view |
 | `companion.fox.approach.v1` | Fox sheet as a second reference. The fox walking toward the viewer, front three-quarter view, mouth closed |
+
+## Round 5: pets, level tiles and achievement medallions (2026-10-14)
+
+All use the style anchor as an image reference (`gpt_image_2_5`, quality `high`). These replace the v1 3D-render art on child-facing screens. The pets are the game's own characters (flower, sunflower, dragon, cat, robot, bunny, panda, fox, owl, puppy), so they keep friendly storybook faces; the fantasy guardrail is dropped for the dragon and the robot only.
+
+**Pet sheets** (3:2, 2k, one per pet), then the Higgsfield Image Background Remover merged with a white-key cut (the remover drops loose petals and leaves), sliced into five sprites and exported at 360 px:
+
+> Match the exact painting style of the reference image [style anchor]. Paint a character reference sheet of ONE small friendly pet character for a children's typing game, shown five times in five different poses, three in the top row and two centred in the bottom row, well separated, on a plain flat pure white background. The character: **[pet]**. The five poses: (1) idle: calm and content, eyes softly closed; (2) happy: big smile, both arms raised; (3) hurt: a little 'oops', one eye squeezed shut, a small tear, gentle not scary; (4) celebrate: jumping and cheering, a few painted petals tossed in the air; (5) on a roll: bursting with excited energy, wrapped in a swirl of warm orange and golden painted autumn leaves and petals. No magic, no glowing, no sparkles, no fire, no text, not a 3D render, not glossy, not plastic.
+
+The five poses map to the game states `idle`, `happy`, `hurt`, `celebrate` and `fire` (`public/assets/pets/<pet>-<state>.webp`).
+
+**Level tiles** (1:1, 1k, exported at 128 px to `public/assets/levels/`): one vignette per level, full bleed, no text: garden bed (1, `home-row`), big sky with a bluebird (2, `top-row`), seashore with shells (3, `bottom-row`), woodland clearing with a red squirrel (4, `all-letters`), storybook hill town (5, `capitals`), gentle twilight sky with moon and a ringed planet (6, `numbers`), a hare bounding through the meadow (7, `speed`), a mountain path up to a cairn (8, `accuracy`), a river valley with a footbridge (9, `master`), a small stone castle on a hill (10, `legend`).
+
+**Achievement medallions** (3:2, 2k, one sheet, background remover, exported at 144 px to `public/assets/badges/<category>.webp`): five matching round medallions with a cream and warm gold carved-wood rim: hare (speed), dragonfly on a daisy (accuracy), autumn-leaf swirl (combo), open storybook with a pressed flower (volume), wildflower and laurel crown (mastery). The achievement's own symbol shows as a small chip on the medallion.

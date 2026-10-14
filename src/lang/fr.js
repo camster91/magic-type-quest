@@ -117,6 +117,7 @@ export const ui = {
   'metric.wpm': 'MPM', 'hud.levelShort': 'Niv.', 'key.space': 'ESPACE', 'a11y.pauseShortcut': 'Mettre le jeu en pause (Échap)',
   'a11y.yourPet': 'Ton compagnon', 'a11y.petAlt': 'Compagnon : {name}', 'a11y.selectAvatar': 'Choisir l’avatar {name}',
   'a11y.achievementsList': 'Liste des réussites', 'players.unnamed': 'Joueur',
+  'a11y.wordDone': 'Bravo : {word}. {count} sur {total}.',
   'evolution.stage1': 'Pousse', 'evolution.stage2': 'Bouton', 'evolution.stage3': 'Fleur',
   'avatar.flower': 'fleur', 'avatar.sunflower': 'tournesol', 'avatar.dragon': 'dragon', 'avatar.cat': 'chat',
   'avatar.bunny': 'lapin', 'avatar.fox': 'renard', 'avatar.panda': 'panda', 'avatar.robot': 'robot',

@@ -235,7 +235,7 @@ test('language selection applies immediately and persists after reload', async (
   await page.click('#btn-profile');
 
   await expect(page.locator('#language-select')).toHaveValue('fr');
-  await expect(page.locator('#profile-screen h2')).toContainText('Mon profil');
+  await expect(page.locator('#profile-screen h1')).toContainText('Mon profil');
 
   await page.goto('parents.html');
   await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
@@ -441,16 +441,21 @@ test('skipping words never finishes a level, but typing them does', async ({ pag
       name: 'Tester', tutorialSeen: true, seenFingerGuide: true, completedLevels: [1],
     }));
   });
+  // Typing 25 words one by one is slow on a busy CI runner.
+  test.setTimeout(90_000);
+  const slow = { timeout: 15_000 };
   await page.goto('');
+  // The game code loads after the menu paints; a click before then does nothing.
+  await page.waitForFunction(() => window.gameState?.profile);
   await page.locator('#btn-start').click();
-  await expect.poll(() => page.evaluate(() => window.gameState.screen)).toBe('game');
-  await expect.poll(() => page.evaluate(() => window.gameState.paused)).toBe(false);
+  await expect.poll(() => page.evaluate(() => window.gameState.screen), slow).toBe('game');
+  await expect.poll(() => page.evaluate(() => window.gameState.paused), slow).toBe(false);
 
   // Level 1 has 10 words. Skipping more than that must not finish it.
   for (let i = 0; i < 15; i++) {
     // Let the next word appear now instead of after the 4s spawn delay.
     await page.evaluate(() => { window.gameState.lastSpawn = -Infinity; });
-    await expect.poll(() => page.evaluate(() => Boolean(window.gameState.targetWord))).toBe(true);
+    await expect.poll(() => page.evaluate(() => Boolean(window.gameState.targetWord)), slow).toBe(true);
     await page.keyboard.press('Space');
   }
   expect(await page.evaluate(() => window.gameState.levelComplete)).toBe(false);
@@ -458,10 +463,11 @@ test('skipping words never finishes a level, but typing them does', async ({ pag
 
   for (let i = 0; i < 10; i++) {
     await page.evaluate(() => { window.gameState.lastSpawn = -Infinity; });
-    await expect.poll(() => page.evaluate(() => window.gameState.targetWord?.text || '')).not.toBe('');
+    await expect.poll(() => page.evaluate(() => window.gameState.targetWord?.text || ''), slow).not.toBe('');
     const text = await page.evaluate(() => window.gameState.targetWord.text);
     await page.keyboard.type(text);
+    await expect.poll(() => page.evaluate(() => window.gameState.wordsCompleted), slow).toBe(i + 1);
   }
-  await expect.poll(() => page.evaluate(() => window.gameState.levelComplete)).toBe(true);
+  await expect.poll(() => page.evaluate(() => window.gameState.levelComplete), slow).toBe(true);
   expect(await page.evaluate(() => window.gameState.wordsCompleted)).toBe(10);
 });

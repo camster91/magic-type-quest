@@ -115,6 +115,7 @@ export const dictionaries = {
     'metric.wpm': 'WPM', 'hud.levelShort': 'Lv', 'key.space': 'SPACE', 'a11y.pauseShortcut': 'Pause game (Esc)',
     'a11y.yourPet': 'Your pet', 'a11y.petAlt': '{name} pet', 'a11y.selectAvatar': 'Select {name} avatar',
     'a11y.achievementsList': 'Achievements list', 'players.unnamed': 'Player',
+    'a11y.wordDone': 'Well done: {word}. {count} of {total}.',
     'evolution.stage1': 'Sprout', 'evolution.stage2': 'Bud', 'evolution.stage3': 'Bloom',
     'avatar.flower': 'Flower', 'avatar.sunflower': 'Sunflower', 'avatar.dragon': 'Dragon', 'avatar.cat': 'Cat',
     'avatar.bunny': 'Bunny', 'avatar.fox': 'Fox', 'avatar.panda': 'Panda', 'avatar.robot': 'Robot',

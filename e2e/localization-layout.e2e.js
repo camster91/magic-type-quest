@@ -77,7 +77,7 @@ for (const locale of locales) {
 
     await page.goto('');
     await page.locator('#btn-profile').click();
-    await expect(page.locator('#profile-screen h2')).toContainText(locale.profileTitle);
+    await expect(page.locator('#profile-screen h1')).toContainText(locale.profileTitle);
     await expect(page.locator('#menu-screen')).toBeHidden();
     await enlargeText(page);
     await expectNoHorizontalClipping(page, `${locale.code} learner profile`);

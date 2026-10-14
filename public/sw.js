@@ -5,7 +5,7 @@
 // fallback. Vite's fingerprinted JS/CSS never change, so they are cache-first.
 // Other same-origin files (art, icons) are served from cache and refreshed in
 // the background.
-const CACHE_NAME = "bloomtype-v21";
+const CACHE_NAME = "bloomtype-v22";
 const MAX_CACHE_ENTRIES = 200;
 const NETWORK_TIMEOUT_MS = 4000;
 const PRECACHE_ASSETS = [
@@ -66,8 +66,16 @@ async function store(request, response) {
 
 // The cache write is handed to event.waitUntil so the worker is not shut
 // down before the response is saved for offline use.
+// Ask the server whether a file changed (a cheap 304 when it hasn't) instead of
+// trusting the browser's own HTTP cache, which can hold old art for an hour
+// after a release and would copy it into the new cache. Page navigations
+// can't take request options and are network-first anyway.
+function freshFetch(request) {
+  return request.mode === "navigate" ? fetch(request) : fetch(request, { cache: "no-cache" });
+}
+
 function fetchAndStore(request, event) {
-  return fetch(request).then((response) => {
+  return freshFetch(request).then((response) => {
     if (isCacheable(response)) {
       const saving = store(request, response.clone()).catch(() => {});
       event?.waitUntil?.(saving);

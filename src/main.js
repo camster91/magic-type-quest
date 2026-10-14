@@ -4,7 +4,7 @@
 import { LESSON_LEVELS, getLessonByLevel, getFingerHint, getLessonWordsForPractice, isLevelUnlocked, loadWordBank } from './lessonLevels.js';
 import { deleteLocalProfile, gameState, loadProfile, saveProfile } from './state.js';
 import { init as initEngine, startGame, togglePause, quitGame, showScreen, startDrillMode, startDailyMoment, onAvatarChanged, stopFoxVoice } from './gameEngine.js';
-import { highlightTargetKey, showKeyFeedback } from './gamePresentation.js';
+import { highlightTargetKey, showKeyFeedback, announce } from './gamePresentation.js';
 import { getAchievementStats, getAllAchievements } from './achievements.js';
 import { getTodaysQuests } from './quests.js';
 import { gardenDays, grownPlants, plantForDay, plantWaiting, plantedToday } from './plantOfDay.js';
@@ -193,15 +193,18 @@ function handlePracticeKey(e) {
           // saveProfile();
         }, 3000);
       } else {
+        const typedWord = currentPracticeWord;
         currentPracticeWord = gameState.currentPracticeWords[gameState.practiceWordIndex];
         currentWordIndex = 0;
-        showAchievement(t('practice.wordTyped'), t('practice.typedWord', { word: currentPracticeWord }), '✅');
+        showAchievement(t('practice.wordTyped'), t('practice.typedWord', { word: typedWord }), '✅');
+        announce(`${t('practice.typedWord', { word: typedWord })} ${t('practice.type', { word: currentPracticeWord })}`);
       }
     }
     updatePracticeDisplay();
   } else if (pressedKey.length === 1) { // Only count single character wrong keys
     gameState.practiceErrors++;
     showKeyFeedback(pressedKey, false);
+    announce(`${t('pet.tryAgain')} ${expectedChar}`);
     // Optionally shake the word display
     const display = $('practice-char-display');
     display.classList.add('shake');
@@ -231,6 +234,20 @@ function showTutorialSlide(n) {
   document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === n));
 }
 
+// Focus would otherwise stay on the now-hidden tutorial button. Once the
+// game has drawn, move it to the card that opened (the chapter intro or the
+// finger guide) or else into the game, so screen readers enter application
+// mode and letter keys reach the game.
+function focusAfterTutorial(framesLeft = 30) {
+  requestAnimationFrame(() => {
+    const card = document.querySelector('[role="dialog"][aria-hidden="false"]');
+    const target = card?.querySelector('button') ?? $('game-screen');
+    target?.focus();
+    // While the game screen is still fading in, focus doesn't stick yet.
+    if (target && document.activeElement !== target && framesLeft > 0) focusAfterTutorial(framesLeft - 1);
+  });
+}
+
 function nextTutorialSlide() {
   tutorialSlide++;
   if (tutorialSlide >= 3) {
@@ -238,6 +255,7 @@ function nextTutorialSlide() {
     overlay.classList.add('hidden');
     overlay.setAttribute('aria-hidden', 'true');
     startGame(1);
+    focusAfterTutorial();
     return;
   }
   showTutorialSlide(tutorialSlide);
@@ -250,6 +268,7 @@ function showAchievement(title, desc, icon) {
   $('toast-desc').textContent = desc;
   const toast = $('achievement-toast');
   toast.classList.remove('hidden');
+  announce(`${title} ${desc}`);
   setTimeout(() => toast.classList.add('hidden'), 3000);
 }
 
@@ -259,13 +278,12 @@ function renderLevelCards() {
   if (!container) return;
 
   const completed = gameState.profile?.completedLevels || [];
-  // Unique artwork per lesson where it exists. Lessons 4, 7, 8, 9, 10 fall back
-  // to the big "master" badge — we render the lesson's emoji icon over it instead
-  // of leaning on a generic illustration.
+  // One painted Meadow-style scene per lesson, matching its name
+  // (garden, sky, seashore, forest, town, night sky, meadow, peak, valley, castle).
   const levelImages = {
     1: 'home-row.webp', 2: 'top-row.webp', 3: 'bottom-row.webp',
-    4: 'master.webp', 5: 'capitals.webp', 6: 'numbers.webp',
-    7: 'master.webp', 8: 'master.webp', 9: 'master.webp', 10: 'master.webp'
+    4: 'all-letters.webp', 5: 'capitals.webp', 6: 'numbers.webp',
+    7: 'speed.webp', 8: 'accuracy.webp', 9: 'master.webp', 10: 'legend.webp'
   };
 
   container.innerHTML = Object.values(LESSON_LEVELS).map(rawLesson => {
@@ -273,11 +291,11 @@ function renderLevelCards() {
     // Each habitat on the world map starts a new group of level cards.
     const habitat = habitatForLevel(lev.id);
     const heading = habitat && habitat.levels[0] === lev.id ? `
-      <h3 class="habitat-heading habitat--${habitat.id}" id="habitat-levels-${habitat.id}" tabindex="-1">
+      <h2 class="habitat-heading habitat--${habitat.id}" id="habitat-levels-${habitat.id}" tabindex="-1">
         <span class="habitat-heading-emoji" aria-hidden="true">${habitat.emoji}</span>
         <span>${escapeHTML(t(`map.${habitat.id}`))}</span>
         <span class="habitat-heading-levels">${escapeHTML(t('map.levels', { first: habitat.levels[0], last: habitat.levels[habitat.levels.length - 1] }))}</span>
-      </h3>` : '';
+      </h2>` : '';
     const unlocked = isLevelUnlocked(lev.id, gameState.profile);
     const done = completed.includes(lev.id);
     const status = done ? 'completed' : !unlocked ? 'locked' : 'play';
@@ -291,7 +309,7 @@ function renderLevelCards() {
     const lockHint = lev.id > 1 ? t('lesson.completeToUnlock', { level: lev.id - 1 }) : t('lesson.locked');
 
     return `${heading}
-      <button type="button" class="level-card ${status}" data-level="${lev.id}" ${status === 'locked' ? 'disabled' : ''} aria-label="${escapeHTML(`${lev.name}: ${shortTeaches}`)}" title="${status === 'locked' ? escapeHTML(lockHint) : ''}">
+      <button type="button" class="level-card ${status}" data-level="${lev.id}" ${status === 'locked' ? 'disabled' : ''} aria-label="${escapeHTML(`${lev.name}: ${shortTeaches}${done ? `. ${t('game.levelCompleteNamed', { level: lev.id })}` : status === 'locked' ? `. ${lockHint}` : ''}`)}" title="${status === 'locked' ? escapeHTML(lockHint) : ''}">
         <div class="level-card-art">
           <img class="level-card-img" src="assets/levels/${imgName}" alt="" aria-hidden="true"
                onerror="this.style.display='none'">
@@ -525,6 +543,7 @@ function updateHomeProgressCard() {
     const span = document.createElement('span');
     span.className = 'km-key' + (masteredSet.has(k) ? ' mastered' : ' learning');
     span.textContent = k.toUpperCase();
+    span.setAttribute('role', 'img');
     span.setAttribute('aria-label', t(masteredSet.has(k) ? 'a11y.masteredKey' : 'a11y.learningKey', { key: k.toUpperCase() }));
     mini.appendChild(span);
   }
@@ -673,7 +692,9 @@ function loadProfileScreen() {
   renderGrownUpLock();
 
   document.querySelectorAll('.avatar-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.avatar === (p.avatar || '🌸'));
+    const on = btn.dataset.avatar === (p.avatar || '🌸');
+    btn.classList.toggle('active', on);
+    btn.setAttribute('aria-pressed', on);
   });
 
   // Render achievements
@@ -705,7 +726,7 @@ function loadProfileScreen() {
       const item = document.createElement('div');
       item.className = `achievement-item ${ach.unlocked ? 'unlocked' : ''}`;
       item.innerHTML = `
-        <div class="ach-icon">${ach.unlocked ? escapeHTML(ach.icon) : '🔒'}</div>
+        <div class="ach-icon" aria-hidden="true"><img class="ach-medal" src="assets/badges/${escapeHTML(ach.category)}.webp" alt="" width="48" height="48" loading="lazy" onerror="this.style.display='none'"><span class="ach-emoji">${ach.unlocked ? escapeHTML(ach.icon) : '🔒'}</span></div>${ach.unlocked ? '' : `<span class="sr-only">${escapeHTML(t('lesson.locked'))}</span>`}
         <div class="ach-title">${escapeHTML(ach.title)}</div>
         <div class="ach-desc">${escapeHTML(ach.desc)}</div>
       `;
@@ -819,11 +840,14 @@ async function submitGrownUpPin(event) {
     if (pin !== $('grown-up-pin-confirm').value.trim()) return say('parentLock.mismatch');
     await parentLock.setPin(pin);
     renderGrownUpLock();
+    $('btn-grown-up-lock')?.focus();
     return;
   }
   const result = await parentLock.unlock(pin);
   if (result === 'ok') {
     renderGrownUpLock();
+    // The PIN form is hidden now; keep focus on the lock controls.
+    $('btn-grown-up-lock')?.focus();
     return;
   }
   $('grown-up-pin').value = '';
@@ -858,7 +882,7 @@ function renderFieldGuide(p) {
   grid.innerHTML = FIELD_GUIDE.map((card) => found.has(card.id)
     ? `<article class="fg-card">
         <img src="${escapeHTML(card.image)}" alt="" width="180" height="239" loading="lazy">
-        <h4>${escapeHTML(t(`fieldguide.${card.id}.name`))}</h4>
+        <h3>${escapeHTML(t(`fieldguide.${card.id}.name`))}</h3>
         <p>${escapeHTML(t(`fieldguide.${card.id}.fact`))}</p>
       </article>`
     : `<article class="fg-card locked">
@@ -892,7 +916,7 @@ function loadGardenScreen() {
   if (garden.length === 0) {
     grid.innerHTML = `
       <div class="garden-empty">
-        <div class="garden-empty-emoji">🌱</div>
+        <div class="garden-empty-emoji" aria-hidden="true">🌱</div>
         <p>${t('garden.empty')}</p>
         <p class="garden-empty-hint">${t('garden.emptyHint')}</p>
       </div>
@@ -981,10 +1005,12 @@ function bindEvents() {
   $('btn-grown-up-lock')?.addEventListener('click', () => {
     parentLock.lock();
     renderGrownUpLock();
+    $('grown-up-pin')?.focus();
   });
   $('btn-grown-up-remove')?.addEventListener('click', () => {
     parentLock.removePin();
     renderGrownUpLock();
+    $('grown-up-pin')?.focus();
   });
 
   $('btn-delete-profile')?.addEventListener('click', () => {
@@ -1168,8 +1194,7 @@ function bindEvents() {
   // Avatar picker
   document.querySelectorAll('.avatar-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      document.querySelectorAll('.avatar-btn').forEach(b => { b.classList.toggle('active', b === btn); b.setAttribute('aria-pressed', b === btn); });
       // Update both the kawaii image preview and the emoji fallback
       const avatar = btn.dataset.avatar;
       const img = $('avatar-preview-img');
@@ -1304,6 +1329,7 @@ function bindEvents() {
     overlay.classList.add('hidden');
     overlay.setAttribute('aria-hidden', 'true');
     startGame(1);
+    focusAfterTutorial();
   });
 
   // Keyboard handler
@@ -1335,6 +1361,9 @@ function init() {
 }
 
 function start() {
+  // Practice shows the same keyboard picture as the game: copy it instead of
+  // shipping it twice in the home page.
+  $('virtual-keyboard-practice').innerHTML = $('virtual-keyboard-game').innerHTML;
   applyTranslations();
   bindEvents();
   initEngine();

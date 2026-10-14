@@ -1152,10 +1152,10 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .profile-input:focus { border-color: var(--primary-light); }
 .profile-hint { font-size: 0.68rem; color: var(--text-dim); text-align: center; }
 .profile-restore-section { width: 100%; max-width: 420px; margin: 6px 0; display: flex; flex-direction: column; gap: 6px; padding: 10px; border: 1px solid var(--card-border); border-radius: var(--radius-sm); background: var(--card); }
-.profile-restore-section h3 { margin: 0; }
+.profile-restore-section h2 { margin: 0; }
 .restore-code-row { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; }
 .grown-up-lock { width: 100%; max-width: 420px; margin: 6px 0; display: flex; flex-direction: column; gap: 6px; padding: 10px; border: 1px solid var(--card-border); border-radius: var(--radius-sm); background: var(--card); }
-.grown-up-lock h3 { margin: 0; }
+.grown-up-lock h2 { margin: 0; }
 .grown-up-form { display: flex; flex-direction: column; gap: 6px; }
 .grown-up-form[hidden], .grown-up-actions[hidden] { display: none; }
 .grown-up-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
@@ -1183,13 +1183,16 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .achievement-item { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 8px 4px; border-radius: 10px; background: rgba(var(--rgb-slate-ink), 0.28); border: 1px solid var(--card-border); transition: all 0.2s ease; }
 .achievement-item:not(.unlocked) .ach-icon { filter: grayscale(1); opacity: 0.7; }
 .achievement-item.unlocked { background: rgba(var(--rgb-primary), 0.1); border-color: rgba(var(--rgb-primary), 0.3); }
-.achievement-item .ach-icon { font-size: 1.4rem; margin-bottom: 2px; }
+.achievement-item .ach-icon { position: relative; width: 56px; height: 52px; margin-bottom: 4px; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; }
+/* Painted Meadow medallion per category, with the achievement's own symbol as a small chip */
+.achievement-item .ach-medal { width: 48px; height: 48px; display: block; }
+.achievement-item .ach-medal + .ach-emoji { position: absolute; right: 0; bottom: 0; font-size: 0.9rem; line-height: 1; padding: 2px; border-radius: 999px; background: var(--card); border: 1px solid var(--card-border); }
 .achievement-item .ach-title { font-size: 0.68rem; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
 .achievement-item .ach-desc { font-size: 0.55rem; color: var(--text-dim); overflow-wrap: anywhere; margin-top: 1px; }
 
 /* ===== SCREEN HEADER ===== */
 .screen-header { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 720px; padding: 12px 16px; z-index: 2; }
-.screen-header h2 { font-size: 1.3rem; }
+.screen-header h1 { font-size: 1.3rem; }
 .btn-back { background: var(--card); color: var(--text); border: 1px solid var(--card-border); border-radius: 10px; padding: 6px 12px; min-height: 44px; font-size: 0.85rem; font-weight: 700; }
 
 /* ===== BUTTONS (kept for non-menu screens) ===== */
@@ -1344,7 +1347,7 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .finger-guide { position: fixed; inset: 0; z-index: 35; background: rgba(var(--rgb-ink-deep), 0.92); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; }
 .finger-guide.hidden { display: none; }
 .finger-guide-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 18px; padding: 24px; text-align: center; max-width: 380px; width: 90%; }
-.finger-guide-card h3 { font-family: 'Fredoka One', cursive; font-size: 1.2rem; margin-bottom: 16px; color: var(--text); }
+.finger-guide-card h2 { font-family: 'Fredoka One', cursive; font-size: 1.2rem; margin-bottom: 16px; color: var(--text); }
 .finger-hands { display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 16px; }
 .hand { display: flex; gap: 4px; }
 .hand-gap { width: 24px; }
@@ -1603,12 +1606,12 @@ button:focus-visible, a:focus-visible, .btn:focus-visible, .key:focus-visible { 
 .meadow-plants-list .meadow-plants-empty { border-style: dashed; }
 .plant-count { opacity: 0.8; font-weight: 700; }
 .field-guide-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
-.field-guide-head h3 { font-size: 1.05rem; }
+.field-guide-head h2 { font-size: 1.05rem; }
 .field-guide-count { color: var(--text-dim); font-size: 0.8rem; font-weight: 700; }
 .field-guide-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
 .fg-card { background: rgba(var(--rgb-night), 0.72); border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 8px; text-align: center; }
 .fg-card img { width: 100%; height: auto; border-radius: 8px; display: block; }
-.fg-card h4 { font-size: 0.85rem; margin: 6px 0 2px; color: rgb(var(--rgb-gold)); }
+.fg-card h3 { font-size: 0.85rem; margin: 6px 0 2px; color: rgb(var(--rgb-gold)); }
 .fg-card p { font-size: 0.75rem; color: var(--text); line-height: 1.3; }
 .fg-card.locked { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 170px; opacity: 0.85; }
 .fg-mystery { font-size: 2.4rem; color: rgba(var(--rgb-white), 0.35); font-family: 'Fredoka One', cursive; }
