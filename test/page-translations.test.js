@@ -20,9 +20,9 @@ describe('parent and teacher page localization', () => {
     expect(Object.keys(pageDictionaries.es).sort()).toEqual(englishKeys);
   });
 
-  it('defines every translation key referenced by the parent and teacher markup', () => {
+  it('defines every translation key referenced by the parent, teacher and landing markup', () => {
     const root = resolve(import.meta.dirname, '..');
-    const markup = ['parents.html', 'teacher.html']
+    const markup = ['parents.html', 'teacher.html', 'landing.html']
       .map((file) => readFileSync(resolve(root, file), 'utf8'))
       .join('\n');
     const referenced = [...markup.matchAll(/data-page-(?:title|i18n|i18n-html|i18n-placeholder|i18n-aria-label)="([^"]+)"/g)]

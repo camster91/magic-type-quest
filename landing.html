@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-page-title="landing.title">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -408,7 +408,7 @@
       box-shadow: 0 0 40px rgba(var(--rgb-streak-gold), 0.2);
     }
     .price-card.featured::before {
-      content: "Most popular";
+      content: attr(data-badge);
       position: absolute;
       top: -12px; left: 24px;
       background: var(--streak-gold);
@@ -601,65 +601,65 @@
 <body class="sky-bg">
 
 <!-- ===== NAV ===== -->
-<nav class="nav" aria-label="Primary">
+<nav class="nav" aria-label="Primary" data-page-i18n-aria-label="landing.navLabel">
   <a href="./landing.html" class="nav-logo">
     <span class="pet">🌸</span>
     BloomType
   </a>
   <div class="nav-links">
-    <a href="#bets">What's new</a>
-    <a href="#demo">How it works</a>
-    <a href="#classroom">For teachers</a>
-    <a href="#pricing">Pricing</a>
-    <a href="#privacy">Privacy</a>
-    <a href="#signup" class="nav-cta">Get started</a>
+    <a href="#bets" data-page-i18n="landing.navNew">What's new</a>
+    <a href="#demo" data-page-i18n="landing.navHow">How it works</a>
+    <a href="#classroom" data-page-i18n="landing.forTeachers">For teachers</a>
+    <a href="#pricing" data-page-i18n="landing.pricing">Pricing</a>
+    <a href="#privacy" data-page-i18n="landing.privacy">Privacy</a>
+    <a href="#signup" class="nav-cta" data-page-i18n="landing.navCta">Get started</a>
   </div>
 </nav>
 
 <!-- ===== HERO ===== -->
 <header class="hero">
-  <div class="hero-eyebrow">🌸 For grades 2-6 · Local-first · No ads or behavioral tracking</div>
-  <h1>Typing that <span>grows with your class</span> — one 60-second moment at a time</h1>
-  <p class="lede">BloomType turns keyboard practice into a calm, garden-typing adventure. Kids build a 7-day streak. Teachers can review and export progress stored on the same classroom browser.</p>
+  <div class="hero-eyebrow" data-page-i18n="landing.eyebrow">🌸 For grades 2-6 · Local-first · No ads or behavioral tracking</div>
+  <h1 data-page-i18n-html="landing.heroTitle">Typing that <span>grows with your class</span> — one 60-second moment at a time</h1>
+  <p class="lede" data-page-i18n="landing.lede">BloomType turns keyboard practice into a calm, garden-typing adventure. Kids build a 7-day streak. Teachers can review and export progress stored on the same classroom browser.</p>
   <div class="hero-actions">
-    <a href="./index.html" class="btn btn-primary">🌸 Try it free with your class</a>
-    <a href="#demo" class="btn btn-secondary">▶ See it in action</a>
+    <a href="./index.html" class="btn btn-primary" data-page-i18n="landing.ctaTry">🌸 Try it free with your class</a>
+    <a href="#demo" class="btn btn-secondary" data-page-i18n="landing.ctaDemo">▶ See it in action</a>
   </div>
 
   <!-- ===== 3 BETS (T5) ===== -->
   <section id="bets" class="bets" aria-labelledby="bets-title">
-    <h2 id="bets-title" class="bets-title">Three bets we're shipping this term</h2>
-    <p class="bets-sub">Three bets from our T5 strategy synthesis. Each one solves a real friction we saw in 9-10 year-old typing apps.</p>
+    <h2 id="bets-title" class="bets-title" data-page-i18n="landing.betsTitle">Three bets we're shipping this term</h2>
+    <p class="bets-sub" data-page-i18n="landing.betsSub">Three bets from our T5 strategy synthesis. Each one solves a real friction we saw in 9-10 year-old typing apps.</p>
 
     <div class="bets-grid">
       <article class="bet-card">
-        <span class="bet-num">BET 1</span>
+        <span class="bet-num" data-page-i18n="landing.bet1Num">BET 1</span>
         <div class="bet-icon" aria-hidden="true">
           <img src="assets/ui/streak.webp" alt="" onerror="this.parentElement.textContent='⚡'">
         </div>
-        <h3>Daily 60-second Moment</h3>
-        <p>A low-stress daily entry point. No game-over. Awards streak + daily quest just for showing up. Replaces "30-minute session or nothing."</p>
-        <span class="bet-tag">Live now</span>
+        <h3 data-page-i18n="landing.dailyMoment">Daily 60-second Moment</h3>
+        <p data-page-i18n="landing.bet1Text">A low-stress daily entry point. No game-over. Awards streak + daily quest just for showing up. Replaces "30-minute session or nothing."</p>
+        <span class="bet-tag" data-page-i18n="landing.betLive">Live now</span>
       </article>
 
       <article class="bet-card">
-        <span class="bet-num">BET 2</span>
+        <span class="bet-num" data-page-i18n="landing.bet2Num">BET 2</span>
         <div class="bet-icon" aria-hidden="true">
           <img src="assets/pets/flower-celebrate.webp" alt="" onerror="this.parentElement.textContent='🌸'">
         </div>
-        <h3>Pet as the front of the house</h3>
-        <p>The pet IS the brand. Visible on the home screen, reacts to streak state, evolves over time. Kids come back for the pet, not the points.</p>
-        <span class="bet-tag">Live now</span>
+        <h3 data-page-i18n="landing.bet2Title">Pet as the front of the house</h3>
+        <p data-page-i18n="landing.bet2Text">The pet IS the brand. Visible on the home screen, reacts to streak state, evolves over time. Kids come back for the pet, not the points.</p>
+        <span class="bet-tag" data-page-i18n="landing.betLive">Live now</span>
       </article>
 
       <article class="bet-card">
-        <span class="bet-num">BET 3</span>
+        <span class="bet-num" data-page-i18n="landing.bet3Num">BET 3</span>
         <div class="bet-icon" aria-hidden="true">
           <img src="assets/ui/badge-gold.webp" alt="" onerror="this.parentElement.textContent='🏆'">
         </div>
-        <h3>Local class dashboard + this page</h3>
-        <p>Teacher-facing: a same-browser roster, progress summary, inactivity alert, and CSV/JSON export. Adult-facing: this public overview for teachers, parents, and district coordinators.</p>
-        <span class="bet-tag">You're here</span>
+        <h3 data-page-i18n="landing.bet3Title">Local class dashboard + this page</h3>
+        <p data-page-i18n="landing.bet3Text">Teacher-facing: a same-browser roster, progress summary, inactivity alert, and CSV/JSON export. Adult-facing: this public overview for teachers, parents, and district coordinators.</p>
+        <span class="bet-tag" data-page-i18n="landing.betHere">You're here</span>
       </article>
     </div>
   </section>
@@ -669,20 +669,20 @@
 <section id="demo" class="demo" aria-labelledby="demo-title">
   <div class="demo-inner">
     <div>
-      <h2 id="demo-title">The <span>30-second loop</span> that makes typing feel like a verb, not a chore</h2>
-      <p>Words fall. You type. They burst. The pet celebrates. A new flower grows in your garden, and the local progress record updates.</p>
+      <h2 data-page-i18n-html="landing.demoTitle" id="demo-title">The <span>30-second loop</span> that makes typing feel like a verb, not a chore</h2>
+      <p data-page-i18n="landing.demoText">Words fall. You type. They burst. The pet celebrates. A new flower grows in your garden, and the local progress record updates.</p>
       <ul>
-        <li><strong>Word-as-enemy.</strong> Each word has 100→0 focus as it falls. Type it before it lands for a 1.0× score multiplier. After? 0.5×. Visible juice, not hidden math.</li>
-        <li><strong>Pet-as-protagonist.</strong> Your pet cheers, worries, and celebrates with you. Idle, happy, hurt, celebrate, fire — five states, three evolution stages.</li>
-        <li><strong>Calm by design.</strong> No timers on pressure. Hearts refill. Streaks are soft. Daily quests are <em>invitations</em>, not obligations.</li>
-        <li><strong>No real-money IAP.</strong> Ever. The only thing we sell is the teacher dashboard.</li>
+        <li data-page-i18n-html="landing.demoItem1"><strong>Word-as-enemy.</strong> Each word has 100→0 focus as it falls. Type it before it lands for a 1.0× score multiplier. After? 0.5×. Visible juice, not hidden math.</li>
+        <li data-page-i18n-html="landing.demoItem2"><strong>Pet-as-protagonist.</strong> Your pet cheers, worries, and celebrates with you. Idle, happy, hurt, celebrate, fire — five states, three evolution stages.</li>
+        <li data-page-i18n-html="landing.demoItem3"><strong>Calm by design.</strong> No timers on pressure. Hearts refill. Streaks are soft. Daily quests are <em>invitations</em>, not obligations.</li>
+        <li data-page-i18n-html="landing.demoItem4"><strong>No real-money IAP.</strong> Ever. The only thing we sell is the teacher dashboard.</li>
       </ul>
     </div>
     <div>
       <div class="demo-stage">
-        <canvas id="demo-canvas" aria-label="Animated typing-gameplay demo" role="img"></canvas>
+        <canvas id="demo-canvas" aria-label="Animated typing-gameplay demo" role="img" data-page-i18n-aria-label="landing.demoLabel" data-streak-label="{count} day streak" data-rank-label="Class rank #2"></canvas>
       </div>
-      <p class="demo-caption">Live demo · auto-loops every 6 seconds · no sound</p>
+      <p data-page-i18n="landing.demoCaption" class="demo-caption">Live demo · auto-loops every 6 seconds · no sound</p>
     </div>
   </div>
 </section>
@@ -690,51 +690,51 @@
 <!-- ===== CLASSROOM FEATURES ===== -->
 <section id="classroom" class="classroom" aria-labelledby="classroom-title">
   <div class="section-head">
-    <span class="kicker">For teachers</span>
-    <h2 id="classroom-title">A classroom dashboard that respects your time</h2>
-    <p>Set up a class in 60 seconds. Get the data you actually need for parent-teacher night. Export it as CSV when the district asks.</p>
+    <span class="kicker" data-page-i18n="landing.forTeachers">For teachers</span>
+    <h2 data-page-i18n="landing.classroomTitle" id="classroom-title">A classroom dashboard that respects your time</h2>
+    <p data-page-i18n="landing.classroomText">Set up a class in 60 seconds. Get the data you actually need for parent-teacher night. Export it as CSV when the district asks.</p>
   </div>
 
   <div class="features-grid">
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">🪴</span>
-      <h3>6-digit class codes</h3>
-      <p>Kids join with a code. No emails, no accounts, no friction. Works on Chromebooks, iPads, BYOD.</p>
+      <h3 data-page-i18n="landing.feature1Title">6-digit class codes</h3>
+      <p data-page-i18n="landing.feature1Text">Kids join with a code. No emails, no accounts, no friction. Works on Chromebooks, iPads, BYOD.</p>
     </article>
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">📊</span>
-      <h3>Real progress data</h3>
-      <p>WPM, accuracy, streaks, words typed per week. Red-flag alerts for students who haven't logged in for 3+ days.</p>
+      <h3 data-page-i18n="landing.feature2Title">Real progress data</h3>
+      <p data-page-i18n="landing.feature2Text">WPM, accuracy, streaks, words typed per week. Red-flag alerts for students who haven't logged in for 3+ days.</p>
     </article>
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">🏆</span>
-      <h3>Local class dashboard</h3>
-      <p>Teachers can review progress from students who use the same browser and class code. There is no global matchmaking or public ranking.</p>
+      <h3 data-page-i18n="landing.feature3Title">Local class dashboard</h3>
+      <p data-page-i18n="landing.feature3Text">Teachers can review progress from students who use the same browser and class code. There is no global matchmaking or public ranking.</p>
     </article>
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">📥</span>
-      <h3>CSV + JSON export</h3>
-      <p>Take your data anywhere. The district asks, you deliver. No vendor lock-in, no "contact us for export."</p>
+      <h3 data-page-i18n="landing.feature4Title">CSV + JSON export</h3>
+      <p data-page-i18n="landing.feature4Text">Take your data anywhere. The district asks, you deliver. No vendor lock-in, no "contact us for export."</p>
     </article>
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">⚡</span>
-      <h3>Daily Moment nudges</h3>
-      <p>Quiet reminders when a class drops below 50% daily engagement. We tell you, the kids see nothing.</p>
+      <h3 data-page-i18n="landing.feature5Title">Daily Moment nudges</h3>
+      <p data-page-i18n="landing.feature5Text">Quiet reminders when a class drops below 50% daily engagement. We tell you, the kids see nothing.</p>
     </article>
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">🎯</span>
-      <h3>Adaptive difficulty</h3>
-      <p>Words pick themselves based on the kid's last session. Easy days build confidence. Hard days build skill.</p>
+      <h3 data-page-i18n="landing.feature6Title">Adaptive difficulty</h3>
+      <p data-page-i18n="landing.feature6Text">Words pick themselves based on the kid's last session. Easy days build confidence. Hard days build skill.</p>
     </article>
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">📴</span>
-      <h3>Works offline</h3>
-      <p>Spots without wifi? BloomType keeps playing and saves progress locally in the browser. Cloud synchronization is disabled in the public deployment.</p>
+      <h3 data-page-i18n="landing.feature7Title">Works offline</h3>
+      <p data-page-i18n="landing.feature7Text">Spots without wifi? BloomType keeps playing and saves progress locally in the browser. Cloud synchronization is disabled in the public deployment.</p>
     </article>
     <article class="feature">
       <span class="feature-icon" aria-hidden="true">🔒</span>
-      <h3>Privacy-first by default</h3>
-      <p>No third-party analytics, ads, or behavioral profiling. Progress stays on the device unless an authenticated school deployment enables cloud sync.</p>
+      <h3 data-page-i18n="landing.feature8Title">Privacy-first by default</h3>
+      <p data-page-i18n="landing.feature8Text">No third-party analytics, ads, or behavioral profiling. Progress stays on the device unless an authenticated school deployment enables cloud sync.</p>
     </article>
   </div>
 </section>
@@ -743,48 +743,48 @@
 <section id="pricing" class="pricing" aria-labelledby="pricing-title">
   <div class="pricing-inner">
     <div class="section-head">
-      <span class="kicker">Pricing</span>
-      <h2 id="pricing-title">Student play is free. Supervised school pilots are available by request.</h2>
-      <p>Teacher pricing is a proposed model, not an open commercial offer, while privacy and pilot validation remain incomplete.</p>
+      <span class="kicker" data-page-i18n="landing.pricing">Pricing</span>
+      <h2 data-page-i18n="landing.pricingTitle" id="pricing-title">Student play is free. Supervised school pilots are available by request.</h2>
+      <p data-page-i18n="landing.pricingText">Teacher pricing is a proposed model, not an open commercial offer, while privacy and pilot validation remain incomplete.</p>
     </div>
 
     <div class="price-table">
       <article class="price-card">
-        <div class="price-tier">For Students</div>
+        <div data-page-i18n="landing.tierStudents" class="price-tier">For Students</div>
         <div class="price-amount">
           <span class="num">$0</span>
         </div>
-        <div class="price-tag">Always free</div>
+        <div data-page-i18n="landing.alwaysFree" class="price-tag">Always free</div>
         <ul class="price-features">
-          <li>Full game, all 10 levels</li>
-          <li>Pet evolution + garden</li>
-          <li>Daily 60-second Moment</li>
-          <li>Optional local class-code membership</li>
-          <li>Works on any device, offline</li>
+          <li data-page-i18n="landing.studentFeature1">Full game, all 10 levels</li>
+          <li data-page-i18n="landing.studentFeature2">Pet evolution + garden</li>
+          <li data-page-i18n="landing.dailyMoment">Daily 60-second Moment</li>
+          <li data-page-i18n="landing.studentFeature3">Optional local class-code membership</li>
+          <li data-page-i18n="landing.studentFeature4">Works on any device, offline</li>
         </ul>
-        <a href="./index.html" class="price-cta ghost">🌸 Start playing free</a>
+        <a data-page-i18n="landing.studentCta" href="./index.html" class="price-cta ghost">🌸 Start playing free</a>
       </article>
 
-      <article class="price-card featured">
-        <div class="price-tier">For Teachers</div>
+      <article class="price-card featured" data-badge="Most popular">
+        <div data-page-i18n="landing.tierTeachers" class="price-tier">For Teachers</div>
         <div class="price-amount">
           <span class="num">$10</span>
-          <span class="per">/month per teacher</span>
+          <span data-page-i18n="landing.perTeacher" class="per">/month per teacher</span>
         </div>
-        <div class="price-tag">Proposed pilot pricing · not yet generally available</div>
+        <div data-page-i18n="landing.teacherTag" class="price-tag">Proposed pilot pricing · not yet generally available</div>
         <ul class="price-features">
-          <li>Everything in Student, plus:</li>
-          <li>Same-browser class dashboard + exports</li>
-          <li>CSV + JSON data export</li>
-          <li>Red-flag alerts for inactive students</li>
-          <li>Adaptive difficulty controls</li>
-          <li>Priority support for your school</li>
+          <li data-page-i18n="landing.teacherFeature1">Everything in Student, plus:</li>
+          <li data-page-i18n="landing.teacherFeature2">Same-browser class dashboard + exports</li>
+          <li data-page-i18n="landing.teacherFeature3">CSV + JSON data export</li>
+          <li data-page-i18n="landing.teacherFeature4">Red-flag alerts for inactive students</li>
+          <li data-page-i18n="landing.teacherFeature5">Adaptive difficulty controls</li>
+          <li data-page-i18n="landing.teacherFeature6">Priority support for your school</li>
         </ul>
-        <a href="#signup" class="price-cta gold">Request a supervised pilot</a>
+        <a data-page-i18n="landing.teacherCta" href="#signup" class="price-cta gold">Request a supervised pilot</a>
       </article>
     </div>
 
-    <p class="price-foot">
+    <p data-page-i18n-html="landing.priceFoot" class="price-foot">
       <strong>Planning a district evaluation?</strong> <a href="#signup" style="color: var(--lavender-l);">Contact us</a> to discuss requirements; production enrollment is not open yet.
     </p>
   </div>
@@ -793,54 +793,56 @@
 <!-- ===== PRIVACY ===== -->
 <section id="privacy" class="privacy" aria-labelledby="privacy-title">
   <div class="section-head">
-    <span class="kicker">Privacy</span>
-    <h2 id="privacy-title">Built for the school counsel that asks hard questions</h2>
-    <p>BloomType is the kid-typing app that does <em>less</em> than the others. By design.</p>
+    <span class="kicker" data-page-i18n="landing.privacy">Privacy</span>
+    <h2 data-page-i18n="landing.privacyTitle" id="privacy-title">Built for the school counsel that asks hard questions</h2>
+    <p data-page-i18n-html="landing.privacyText">BloomType is the kid-typing app that does <em>less</em> than the others. By design.</p>
   </div>
 
   <div class="privacy-grid">
     <article class="privacy-card">
       <div class="check">✓</div>
-      <h3>No third-party trackers</h3>
-      <p>No Google Analytics, Facebook pixel, or Mixpanel. In the default deployment, typing progress stays in the browser on the device.</p>
+      <h3 data-page-i18n="landing.privacy1Title">No third-party trackers</h3>
+      <p data-page-i18n="landing.privacy1Text">No Google Analytics, Facebook pixel, or Mixpanel. In the default deployment, typing progress stays in the browser on the device.</p>
     </article>
     <article class="privacy-card">
       <div class="check">✓</div>
-      <h3>Cloud sync requires school setup</h3>
-      <p>Cloud storage remains disabled until authenticated access, school consent, retention, and deletion procedures are configured and approved.</p>
+      <h3 data-page-i18n="landing.privacy2Title">Cloud sync requires school setup</h3>
+      <p data-page-i18n="landing.privacy2Text">Cloud storage remains disabled until authenticated access, school consent, retention, and deletion procedures are configured and approved.</p>
     </article>
     <article class="privacy-card">
       <div class="check">✓</div>
-      <h3>No ads. No IAP for kids.</h3>
-      <p>Zero in-game purchases on the kid surface. The only money flows from schools to us. No data sales. No behavioral profiling.</p>
+      <h3 data-page-i18n="landing.privacy3Title">No ads. No IAP for kids.</h3>
+      <p data-page-i18n="landing.privacy3Text">Zero in-game purchases on the kid surface. The only money flows from schools to us. No data sales. No behavioral profiling.</p>
     </article>
   </div>
 
-  <p class="privacy-foot">
+  <p data-page-i18n-html="landing.privacyFoot" class="privacy-foot">
     <strong>Current data practices</strong> are explained in plain language on the <a href="./parents.html">parent information page →</a>
   </p>
 </section>
 
 <!-- ===== SIGN-UP CTA ===== -->
 <section id="signup" class="signup" aria-labelledby="signup-title">
-  <h2 id="signup-title">Request a supervised school pilot</h2>
-  <p>Cloud enrollment is not open yet. Email us to discuss a small, consented pilot after your school’s privacy review.</p>
-  <a class="signup-mail-link" href="mailto:cameron@ashbi.ca?subject=BloomType%20school%20pilot">Email Ashbi about a pilot</a>
-  <p class="signup-foot">This opens your email app. The BloomType website does not collect or store your address.</p>
-  <p class="signup-foot">Or just <a href="./index.html" style="color: var(--lavender-l);">play the game</a> — students don't need an account to start.</p>
+  <h2 data-page-i18n="landing.signupTitle" id="signup-title">Request a supervised school pilot</h2>
+  <p data-page-i18n="landing.signupText">Cloud enrollment is not open yet. Email us to discuss a small, consented pilot after your school’s privacy review.</p>
+  <a data-page-i18n="landing.signupMail" class="signup-mail-link" href="mailto:cameron@ashbi.ca?subject=BloomType%20school%20pilot">Email Ashbi about a pilot</a>
+  <p data-page-i18n="landing.signupNote" class="signup-foot">This opens your email app. The BloomType website does not collect or store your address.</p>
+  <p data-page-i18n-html="landing.signupPlay" class="signup-foot">Or just <a href="./index.html" style="color: var(--lavender-l);">play the game</a> — students don't need an account to start.</p>
 </section>
 
 <!-- ===== FOOTER ===== -->
 <footer>
   <div class="footer-links">
-    <a href="./index.html">Play the game</a>
-    <a href="./parents.html">For parents</a>
-    <a href="./teacher.html">Teacher dashboard</a>
-    <a href="mailto:cameron@ashbi.ca?subject=BloomType%20privacy">Privacy</a>
-    <a href="mailto:cameron@ashbi.ca">Contact</a>
+    <a data-page-i18n="landing.footerPlay" href="./index.html">Play the game</a>
+    <a data-page-i18n="landing.footerParents" href="./parents.html">For parents</a>
+    <a data-page-i18n="landing.footerTeacher" href="./teacher.html">Teacher dashboard</a>
+    <a data-page-i18n="landing.privacy" href="mailto:cameron@ashbi.ca?subject=BloomType%20privacy">Privacy</a>
+    <a data-page-i18n="landing.footerContact" href="mailto:cameron@ashbi.ca">Contact</a>
   </div>
-  <p>© 2026 BloomType · Made in Toronto by <a href="https://ashbi.ca">Ashbi Design</a> · A garden-typing adventure for grades 2-6.</p>
+  <p data-page-i18n-html="landing.footerCopy">© 2026 BloomType · Made in Toronto by <a href="https://ashbi.ca">Ashbi Design</a> · A garden-typing adventure for grades 2-6.</p>
 </footer>
+
+<script type="module" src="/src/landing.js"></script>
 
 <script>
 /* ===== Inline demo canvas: animates the word-as-enemy mechanic =====
@@ -1046,8 +1048,8 @@
     }
 
     // HUD chips
-    drawChip(ctx, 14, 14, '🔥', flowers + ' day streak', 'gold');
-    drawChip(ctx, w - 110, 14, '🏆', 'Class rank #2', 'lavender');
+    drawChip(ctx, 14, 14, '🔥', (canvas.dataset.streakLabel || '{count} day streak').replace('{count}', flowers), 'gold');
+    drawChip(ctx, -14, 14, '🏆', canvas.dataset.rankLabel || 'Class rank #2', 'lavender');
 
     // Loop: reset every ~6s if no words cleared recently
     if (flowers > 4) { flowers = 0; }
@@ -1065,6 +1067,9 @@
     const tw = ctx.measureText(icon + ' ' + text).width;
     const w = tw + 28;
     const h = 30;
+    // A negative x right-aligns the chip that far from the canvas edge, so a
+    // longer translated label never runs off the canvas.
+    if (x < 0) x = W() + x - w;
     ctx.fillStyle = c.bg;
     ctx.strokeStyle = c.border;
     ctx.lineWidth = 1;

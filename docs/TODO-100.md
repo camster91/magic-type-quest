@@ -9,11 +9,11 @@
 
 ## Scorecard
 
-Lighthouse scores were measured on 2026-10-13 on a local production build (phone settings), before and after #216. The other scores are honest estimates; each phase below raises them.
+Lighthouse scores were measured on 2026-10-13 on a local production build (phone settings), before and after #216 and #239. The other scores are honest estimates; each phase below raises them.
 
 | Area | Now | Target | What "100" means here |
 |---|---|---|---|
-| **Speed: game home page** | 32 → **99** (measured, #216) | 100 | Lighthouse Performance 100 on a phone profile |
+| **Speed: game home page** | 32 → 99 (#216) → **100** (#239) | 100 | Lighthouse Performance 100 on a phone profile |
 | **Speed: teacher, parent and landing pages** | 100 / 100 / 73 → **100 / 100 / 100** (#216) | 100 | Same |
 | **Accessibility** | 100 / 100 / 96 / 98 → **100 on all pages** (#216); axe 0 errors | 100 | Lighthouse 100, axe 0, plus a real screen-reader and keyboard-only pass |
 | **SEO and best practices** | 90–100 → **100 on all pages** (#216) | 100 | Lighthouse 100 on all 4 pages |
@@ -31,7 +31,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 
 ## Phase 0 — Merge what's done (this week)
 
-- [ ] **Owner:** merge the open PRs in this order:
+- [x] **Owner:** merge the open PRs in this order ✅ all eight are merged:
   - #207 game bug fixes
   - #209 Meadow art
   - #215 Meadow play screen
@@ -43,7 +43,8 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [ ] **Owner:** revoke the leaked Google key ([GOOGLE-KEY-INCIDENT.md](GOOGLE-KEY-INCIDENT.md)).
 - [ ] **Owner:** in GitHub, require approval before outside contributors' workflows run.
 - [ ] **Owner:** check the Higgsfield usage you don't recognize (about 106 credits).
-- [ ] **Claude:** fix `npm audit` and the flaky accessibility test on `main` itself. Today these fixes ride along in each PR. **Done when:** main CI is green on its own.
+- [x] **Claude:** fix `npm audit` and the flaky accessibility test on `main` itself. ✅ `npm audit` finds 0 vulnerabilities; #232 fixed the flaky test, and main CI has passed on its own on every merge since (#232 to #239). **Done when:** main CI is green on its own.
+- [ ] **Owner:** decide on the older open PRs: merge or close the Dependabot updates (#218 supabase-js, #203 codeql-action), the README draft (#205) and the two early Nature Quest v2 PRs (#199, #200), which later work may have replaced.
 
 ## Phase 1 — Fast, polished, and fun (next 2–3 weeks)
 
