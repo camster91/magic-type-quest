@@ -25,11 +25,57 @@ let currentRows = [];
 // The raw student records behind those rows, for the anonymised pilot summary.
 let currentStudents = [];
 
+// True while the dashboard is open through a Google teacher sign-in only:
+// cloud classes show, but student data saved on this device stays behind
+// the PIN (a shared classroom device may hold other children's progress).
+let cloudOnly = false;
+const lockListeners = [];
+// Pilot builds: while a teacher is signed in with Google, typed class codes
+// are read with the teacher's own Supabase client (never the student one).
+let cloudRosterReader = null;
+
 function init() {
   initializePageTranslations();
   bindLock();
   if (lock.isUnlocked()) showDashboard();
   else showLock();
+  // Pilot builds only: this static check removes the cloud code (and every
+  // Supabase marker) from the public build.
+  if (import.meta.env.VITE_CLOUD_CLASS_LOGIN === 'true') {
+    import('./teacherCloudUI.js').then(({ mountTeacherCloud }) => mountTeacherCloud(cloudHost()));
+  }
+}
+
+// What the pilot cloud dashboard may do on this page. It reuses the same
+// report table, stats, alerts and CSV/JSON exports as the local dashboard.
+function cloudHost() {
+  return {
+    isPinUnlocked: () => lock.isUnlocked(),
+    openCloudOnly() {
+      if (lock.isUnlocked()) return;
+      showDashboard({ cloudOnly: true });
+    },
+    showCloudClass(code, rows) {
+      currentMode = 'cloud';
+      currentClassCode = code;
+      renderToolbar();
+      renderClassList();
+      renderClassSettings();
+      $('class-code-display').textContent = code;
+      if (rows.length) renderRoster(rows, true);
+      else showEmpty(pageT('teacher.cloud.emptyClass'));
+    },
+    clearReport() {
+      currentClassCode = '';
+      showEmpty(pageT('teacher.cloud.pickClass'));
+    },
+    onLock(listener) { lockListeners.push(listener); },
+    setRosterReader(reader) { cloudRosterReader = reader; },
+    lockPage() {
+      lock.lock();
+      showLock();
+    },
+  };
 }
 
 // ===== PIN LOCK =====
@@ -45,6 +91,9 @@ function showLock(message = '') {
   if ($('class-settings')) $('class-settings').hidden = true;
   currentRows = [];
   currentStudents = [];
+  cloudOnly = false;
+  document.body.classList.remove('cloud-only');
+  lockListeners.forEach((listener) => listener());
   $('teacher-lock').classList.remove('hidden');
   $('lock-title').textContent = pageT(settingUp ? 'teacher.lockTitleSet' : 'teacher.lockTitle');
   $('lock-intro').textContent = pageT(settingUp ? 'teacher.lockIntroSet' : 'teacher.lockIntro');
@@ -57,7 +106,9 @@ function showLock(message = '') {
   $('pin-input').focus();
 }
 
-function showDashboard() {
+function showDashboard({ cloudOnly: onlyCloud = false } = {}) {
+  cloudOnly = onlyCloud;
+  document.body.classList.toggle('cloud-only', cloudOnly);
   $('teacher-lock').classList.add('hidden');
   $('teacher-dashboard').classList.remove('hidden');
   if (!dashboardBound) {
@@ -66,6 +117,11 @@ function showDashboard() {
     dashboardBound = true;
   }
   renderToolbar();
+  if (cloudOnly) {
+    currentMode = 'cloud';
+    showEmpty(pageT('teacher.cloud.pickClass'));
+    return;
+  }
   renderClassList();
   loadLocalData();
 }
@@ -257,11 +313,13 @@ async function loadClass(code) {
   renderClassSettings();
   
   if (currentMode === 'cloud') {
-    const rows = await fetchClassRoster(currentClassCode);
+    const rows = await (cloudRosterReader || fetchClassRoster)(currentClassCode);
     // A child on several linked devices shows as one student.
     const roster = rows ? mergeLinkedRosterRows(rows) : rows;
     if (roster?.length) renderRoster(roster, true);
     else showEmpty(pageT('teacher.noCloud'));
+  } else if (cloudOnly) {
+    showEmpty(pageT('teacher.cloud.pinForLocal'));
   } else {
     const data = getLocalClassData(currentClassCode);
     const students = data ? Object.values(data) : [];
@@ -271,6 +329,11 @@ async function loadClass(code) {
 }
 
 function loadLocalData() {
+  // Signed in with Google only: this device's student data needs the PIN.
+  if (cloudOnly) {
+    showEmpty(pageT('teacher.cloud.pinForLocal'));
+    return;
+  }
   currentClassCode = '';
   renderClassList();
   renderClassSettings();
@@ -333,6 +396,7 @@ function renderRoster(students, isCloud) {
   
   // Red-flag alerts
   const redFlags = students.filter(st => {
+    if (st.notJoined) return false;
     const lp = lastPlayedOf(st);
     if (!lp) return true;
     const daysSince = (Date.now() - new Date(lp).getTime()) / 86400000;
@@ -390,7 +454,7 @@ function studentRow(st, isCloud, assignment) {
     minutes7d: st.minutes7d ?? null,
     minutesTotal: st.minutesTotal ?? null,
   };
-  const statusKey = level >= 10 ? 'teacher.completed' : level >= 5 ? 'teacher.onTrack' : level > 0 ? 'teacher.gettingStarted' : 'teacher.notStarted';
+  const statusKey = st.notJoined ? 'teacher.cloud.notJoined' : level >= 10 ? 'teacher.completed' : level >= 5 ? 'teacher.onTrack' : level > 0 ? 'teacher.gettingStarted' : 'teacher.notStarted';
   const lastPlayedRaw = lastPlayedOf(st);
   const assignmentKey = assignmentStatus(completed, assignment);
   return {
@@ -406,7 +470,7 @@ function studentRow(st, isCloud, assignment) {
     assignmentKey,
     assignment: assignmentKey === 'none' ? '' : pageT(`teacher.assign.${assignmentKey}`),
     status: pageT(statusKey),
-    badgeClass: level >= 10 ? 'badge-green' : level >= 5 ? 'badge-yellow' : 'badge-red',
+    badgeClass: st.notJoined ? 'badge-blue' : level >= 10 ? 'badge-green' : level >= 5 ? 'badge-yellow' : 'badge-red',
     source: isCloud ? pageT('teacher.cloud') : pageT('teacher.local'),
   };
 }
@@ -468,6 +532,7 @@ function downloadBlob(blob, extension) {
 }
 
 function clearAllData() {
+  if (cloudOnly) return;
   if (!confirm(pageT('teacher.clearConfirm'))) return;
   clearStudentStorage();
   currentClassCode = '';

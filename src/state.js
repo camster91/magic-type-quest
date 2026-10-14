@@ -173,6 +173,9 @@ export function buildLevelSessionSnapshot(state, completed = false) {
     wordsCompleted: state.wordsCompleted || 0,
     maxCombo: state.maxCombo || 0,
     skipsUsed: state.skipsUsed || 0,
+    // Active play time for the weekly minutes reports, capped like the
+    // local practice log (one sitting counts for at most 30 minutes).
+    durationSeconds: Math.min(1800, Math.round(activePlayMs(state, performance.now()) / 1000)),
     completed: Boolean(completed),
   };
 }
