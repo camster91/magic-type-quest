@@ -23,4 +23,33 @@ async function translatePage() {
   }
 }
 
-if (getPreferredLocale() !== 'en') translatePage();
+// Captions start in the page language. The videos themselves stay unloaded
+// (preload="none") until someone presses play.
+function selectCaptionLanguage(locale) {
+  for (const video of document.querySelectorAll('video.landing-video')) {
+    for (const track of video.querySelectorAll('track')) track.default = track.srclang === locale;
+  }
+}
+
+// Posters load as a video nears the screen, so they never compete with the
+// fonts and the hero on first load. Without IntersectionObserver, load now.
+function lazyPosters() {
+  const videos = [...document.querySelectorAll('video[data-poster]')];
+  const show = (video) => { video.poster = video.dataset.poster; };
+  if (!('IntersectionObserver' in window)) return videos.forEach(show);
+  const observer = new window.IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      show(entry.target);
+      observer.unobserve(entry.target);
+    }
+  }, { rootMargin: '600px 0px' });
+  videos.forEach((video) => observer.observe(video));
+}
+
+lazyPosters();
+const locale = getPreferredLocale();
+if (locale !== 'en') {
+  selectCaptionLanguage(locale);
+  translatePage();
+}
