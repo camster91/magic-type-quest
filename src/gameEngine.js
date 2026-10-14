@@ -21,6 +21,7 @@ import { createMeadowScene } from './v2/meadowScene.js';
 import { discoverForLevel } from './fieldGuide.js';
 import { recordPractice } from './practiceLog.js';
 import { isRelaxed } from './accessibility.js';
+import { foxVoiceAllowed, isFoxNudge, isFoxStreak } from './foxMoments.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -103,6 +104,24 @@ const NEXT_WORD_DELAY_MS = 450;
 let animationId = null;
 let lastFrameTime = 0;
 
+// The fox's pre-recorded encouragement (src/foxVoice.js). The module and its
+// clips load only when the fox has something to say, never when muted.
+let fox = null;
+let foxStartPending = false;
+let missesThisWord = 0;
+function foxSay(moment) {
+  if (!foxVoiceAllowed(gameState.profile)) return;
+  import('./foxVoice.js').then((m) => {
+    fox = m.foxVoice();
+    fox.say(moment, { onLine: (text) => {
+      showPetBubble(`🦊 ${text}`, 2600);
+      m.announceFoxLine(text);
+      if (!prefersReducedMotion()) meadow.cheer();
+    } });
+  }).catch(() => {});
+}
+export function stopFoxVoice() { fox?.stop(); }
+
 // Run exactly one animation loop. Starting a new game cancels any loop that
 // is still scheduled, so loops never pile up across games.
 function startLoop() {
@@ -156,6 +175,10 @@ function gameLoop(timestamp) {
   if (gameState.paused) {
     animationId = requestAnimationFrame(gameLoop);
     return;
+  }
+  if (foxStartPending) {
+    foxStartPending = false;
+    foxSay('start');
   }
 
   const deltaTime = lastFrameTime ? Math.min((timestamp - lastFrameTime) / 1000, 0.05) : 0.016;
@@ -262,6 +285,7 @@ function updateWords(deltaTime) {
       nextWord.isTarget = true;
       gameState.targetWord = nextWord;
       gameState.targetIndex = 0;
+      missesThisWord = 0;
       updateTargetDisplay();
       updateKeyboardHighlight();
       speakWord(nextWord.text);
@@ -377,6 +401,7 @@ function onWrongKeystroke(key) {
   gameState.combo = 0;
   updateCombo();
   meadow.notice();
+  if (isFoxNudge(++missesThisWord)) foxSay('miss');
   if (gameState.targetWord) {
     gameState.targetWord.shake = 1;
   }
@@ -482,6 +507,7 @@ function completeWord() {
   if (gameState.combo >= 2) playSound('combo');
   // T26: COMBO x5 / x10 / x15 milestone callout floats up for 800ms.
   showComboFloater(gameState.combo);
+  if (isFoxStreak(gameState.combo)) foxSay('streak');
   
   // Stats
   gameState.wordsTyped++;
@@ -1075,6 +1101,7 @@ function levelComplete() {
   gameState.gameOver = true;
   gameState.levelComplete = true;
   playSound('level');
+  foxSay('complete');
 
   // T26: soft pink 300ms screen flash (was: harsh white 800ms). Pink reads
   // as celebratory, not jarring — and 300ms is short enough to feel snappy
@@ -1434,6 +1461,8 @@ export function endDailyMoment({ reason } = {}) {
 export function startGame(level = 1) {
   initAudio();
   playAmbient();
+  stopFoxVoice();
+  foxStartPending = true;
 
   const lesson = getLessonByLevel(level);
   
@@ -1609,6 +1638,7 @@ export function quitGame() {
   gameState.gameOver = true;
   stopLoop();
   stopAmbient();
+  stopFoxVoice();
   showScreen('menu');
 }
 
@@ -1718,11 +1748,15 @@ function speakWord(word) {
   if (!('speechSynthesis' in window)) return;
   if (gameState.profile?.voiceEnabled === false) return;
   
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(word);
-  utterance.rate = 0.85;
-  utterance.pitch = 1.2;
-  window.speechSynthesis.speak(utterance);
+  const speak = () => {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(word);
+    utterance.rate = 0.85;
+    utterance.pitch = 1.2;
+    window.speechSynthesis.speak(utterance);
+  };
+  // Never talk over the fox: read the word once it has finished.
+  if (fox) fox.whenQuiet(speak); else speak();
 }
 
 // ===== INIT =====
