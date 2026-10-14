@@ -230,7 +230,58 @@ scroll. The final run found 0 issues.
   fluent reviewer's choice.
 - The weak-key drill lesson in `src/drills.js` still has an English name,
   subtitle and description. No current screen shows them.
-- `landing.html` (the For Schools page) is English-only and has no
-  translation dictionary.
+- `landing.html` (the For Schools page) is now translated; see the
+  section below. It still needs the fluent reviewers' sign-off.
 - The human reviewers still need to run the full A–F journey matrix
   (live gameplay, deletion, offline and 200% zoom).
+
+## Claude pre-review pass: For Schools page (2026-10-14)
+
+`landing.html` now opens in French or Spanish, using the same system as the
+parent and teacher pages. This is a **pre-review only**: a fluent French
+reviewer and a fluent Spanish reviewer still have to sign it off, and the
+language gate stays open until they do.
+
+- Setup: branch `i18n/landing-fr-es`, local `vite build` + `vite preview`,
+  headless Chromium with the browser language set to `fr-CA` and `es-MX`.
+- Locales and audience: the page is for adults (teachers, principals, IT
+  staff). Canadian French uses `vous`; neutral Latin American Spanish uses
+  `usted`. Product names (BloomType, Chromebook, Ashbi Design) and prices
+  ($0, $10) are unchanged.
+- How it works: every visible string has a `landing.*` key in
+  `src/pageTranslations.js` (95 keys per language). `src/landing.js` picks
+  the saved profile language, else the browser language. English visitors
+  download no dictionaries, because the static page is already English.
+  There is no language switcher on this page.
+- Strings that are not in `data-page-i18n*` attributes are set by
+  `src/landing.js`: the meta description, the "Most popular" badge, and the
+  two chips drawn on the demo canvas.
+
+### Automated checks (in `test/translation-quality.test.js`)
+
+| Check | Result |
+|---|---|
+| Every `data-page-i18n*` key in `landing.html` exists in `en`, `fr` and `es` | Pass |
+| The English dictionary matches the static page word for word | Pass |
+| No visible text with letters is left outside a translated element (except the name BloomType) | Pass |
+| Key, placeholder and HTML-structure parity, and no still-English strings | Pass |
+
+### Rendered checks
+
+- `en`, `fr` and `es` at 360×800 and 1280×800: no horizontal scroll, no
+  clipped or off-screen text, and no console errors.
+- The demo canvas chips are now right-aligned, so a longer label stays on
+  the canvas. The English "Class rank #2" chip used to run 24 px past the
+  right edge.
+
+### For the fluent reviewers
+
+- French: "dactylo" for typing, "compagnon" for the pet (as in the game),
+  "conseil scolaire" for district, "infonuagique" for cloud, "session" for
+  term. Please confirm these suit a Canadian school audience.
+- Spanish: "panel docente" (as on the teacher page), "compañero" for the
+  pet, "periodo escolar" for term, "padres de familia".
+- Demo canvas chips: French uses "Série : {count} j" and Spanish uses
+  "Racha: {count}". Both avoid a wrong plural when the count is 0 or 1, and
+  both fit a 360 px phone.
+- The words that fall in the demo canvas (garden, bloom, …) stay in English.
