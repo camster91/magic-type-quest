@@ -113,9 +113,13 @@ test.describe('slow network', () => {
 
 test('quitting while the fox voice is still loading keeps the home screen quiet', async ({ page }) => {
   await seed(page, {});
-  // A slow network: the voice code arrives after the child has already quit.
+  // A slow network: the voice code arrives only after the child has already
+  // quit. Holding it until then (rather than for a fixed time) keeps the test
+  // honest on a busy machine, where reaching the quit button can take longer.
+  let releaseVoice;
+  const voiceHeld = new Promise((resolve) => { releaseVoice = resolve; });
   await page.route(/\/foxVoice[-.][^/]*\.js$/, async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await voiceHeld;
     await route.continue();
   });
   await page.goto('');
@@ -123,6 +127,7 @@ test('quitting while the fox voice is still loading keeps the home screen quiet'
   await page.locator('#btn-pause').click();
   await page.locator('#btn-quit').click();
   await expect(page.locator('#menu-screen')).toHaveClass(/active/);
+  releaseVoice();
   await page.waitForTimeout(2500);
   expect(await page.evaluate(() => window.__foxPlays)).toEqual([]);
 });
