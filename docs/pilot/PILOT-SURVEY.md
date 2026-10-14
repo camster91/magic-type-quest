@@ -116,3 +116,6 @@ contact, along with your survey if you filled it in.
 - Text: `pilot.*` keys in `src/pageTranslations.js` (en, fr, es).
 - Any new field must stay non-identifying. Add it to the tests that check
   exports for names and ids.
+- Turning the exports into the 6-week report: `npm run pilot:report -- <folder>`;
+  see [PILOT-REPORT-TEMPLATE.md](PILOT-REPORT-TEMPLATE.md). A change to either
+  export format needs the same change in `scripts/pilot-report.mjs`.

@@ -1,0 +1,15 @@
+{
+  "type": "bloomtype-pilot-feedback",
+  "version": 1,
+  "role": "parent",
+  "language": "en",
+  "savedOn": "2026-10-13",
+  "answers": {
+    "setupEase": 3,
+    "childEnjoyment": 9,
+    "typingImprovement": "x",
+    "minutesPerWeek": "sometimes",
+    "wouldRecommend": 4,
+    "comments": ""
+  }
+}

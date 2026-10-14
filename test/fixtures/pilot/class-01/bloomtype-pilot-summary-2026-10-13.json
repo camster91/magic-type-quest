@@ -1,0 +1,40 @@
+{
+  "type": "bloomtype-pilot-summary",
+  "version": 1,
+  "generatedOn": "2026-10-13",
+  "dateRange": {
+    "from": "2026-09-01",
+    "to": "2026-10-13"
+  },
+  "studentCount": 20,
+  "wpm": {
+    "median": 12,
+    "average": 12.5,
+    "studentsCounted": 20
+  },
+  "accuracyPercent": {
+    "median": 90,
+    "average": 89,
+    "studentsCounted": 20
+  },
+  "minutes": {
+    "last7Days": 300,
+    "last28Days": 1200,
+    "studentsCounted7Days": 20,
+    "studentsCounted28Days": 20,
+    "activeStudentsLast7Days": 16
+  },
+  "levelsReached": {
+    "0": 0,
+    "1": 0,
+    "2": 20,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0,
+    "7": 0,
+    "8": 0,
+    "9": 0,
+    "10": 0
+  }
+}
