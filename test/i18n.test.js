@@ -1,5 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { dictionaries, formatDate, formatNumber, getLocale, localizeFingerLabel, setLocale, supportedLocales, t } from '../src/i18n.js';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import {
+  dictionaries, formatDate, formatNumber, getLocale, isLocaleLoaded, loadLocale, localizeFingerLabel, onLocalePack,
+  setLocale, supportedLocales, t, whenLocaleLoaded,
+} from '../src/i18n.js';
+
+// French and Spanish load on demand (src/lang/); the checks below need them.
+await Promise.all(['fr', 'es'].map((locale) => loadLocale(locale)));
 
 beforeEach(() => {
   globalThis.document = { documentElement: { lang: 'en' } };
@@ -53,5 +61,27 @@ describe('localization', () => {
     expect(localizeFingerLabel('Right Index (hold LEFT Shift!)')).toBe('index droit (maintiens la touche Maj gauche !)');
     setLocale('es');
     expect(localizeFingerLabel('Right Ring')).toBe('anular derecho');
+  });
+});
+
+describe('on-demand languages', () => {
+  it('keeps French and Spanish out of the main i18n module', () => {
+    // English is built in; the others come from src/lang/ (page weight).
+    const source = readFileSync(resolve(import.meta.dirname, '../src/i18n.js'), 'utf8');
+    expect(source).not.toMatch(/^\s+(fr|es): \{/m);
+    expect(isLocaleLoaded('en')).toBe(true);
+    expect(isLocaleLoaded('de')).toBe(true); // falls back to English
+  });
+
+  it('hands loaded packs to listeners that register late', () => {
+    const seen = [];
+    onLocalePack((locale, pack) => seen.push([locale, typeof pack.ui, typeof pack.content, typeof pack.pet]));
+    expect(seen.sort()).toEqual([['es', 'object', 'object', 'object'], ['fr', 'object', 'object', 'object']]);
+  });
+
+  it('runs a callback straight away once a language is loaded', () => {
+    let ran = false;
+    whenLocaleLoaded('fr', () => { ran = true; });
+    expect(ran).toBe(true);
   });
 });

@@ -6,7 +6,10 @@ import {
 import { LESSON_LEVELS } from '../src/lessonLevels.js';
 import { generateDailyQuests } from '../src/quests.js';
 import { CHAPTERS } from '../src/story.js';
-import { setLocale } from '../src/i18n.js';
+import { loadLocale, setLocale } from '../src/i18n.js';
+
+// French and Spanish load on demand (src/lang/); the checks below need them.
+await Promise.all(['fr', 'es'].map((locale) => loadLocale(locale)));
 
 beforeEach(() => {
   globalThis.document = { documentElement: { lang: 'en' } };

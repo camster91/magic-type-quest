@@ -8,7 +8,10 @@ import {
   isFoxNudge, isFoxStreak, pickFoxLine, planFoxLine,
 } from '../src/foxVoice.js';
 import { FOX_VOICE_LINES } from '../src/foxVoiceLines.js';
-import { dictionaries, setLocale, t } from '../src/i18n.js';
+import { loadLocale, dictionaries, setLocale, t } from '../src/i18n.js';
+
+// French and Spanish load on demand (src/lang/); the checks below need them.
+await Promise.all(['fr', 'es'].map((locale) => loadLocale(locale)));
 
 const ROOT = resolve(import.meta.dirname, '..');
 

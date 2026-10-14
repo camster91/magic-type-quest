@@ -1,10 +1,11 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import { criticalCss } from './scripts/critical-css.mjs';
+import { swLocaleChunks } from './scripts/sw-locale-chunks.mjs';
 
 export default defineConfig({
   base: '/magic-type-quest/',
-  plugins: [criticalCss()],
+  plugins: [criticalCss(), swLocaleChunks()],
   build: {
     rollupOptions: {
       input: {
