@@ -13,7 +13,7 @@ import { getDueKeys } from './spacedRep.js';
 import { decodeRestoreCode, encodeRestoreCode, mergeRestoredProgress } from './restoreCode.js';
 import { joinClass, normalizeClassCode } from './classroom.js';
 import { escapeHTML } from './utils.js';
-import { applyTranslations, formatDate, formatNumber, localizeFingerLabel, setLocale, t } from './i18n.js';
+import { applyTranslations, changeLocale, formatDate, formatNumber, getLocale, isLocaleLoaded, localizeFingerLabel, setLocale, t } from './i18n.js';
 import {
   buildLocalProgressExport,
   deleteCloudProfile,
@@ -682,7 +682,8 @@ function loadProfileScreen() {
   $('font-select') && ($('font-select').value = a11y.font);
   $('contrast-toggle') && ($('contrast-toggle').checked = a11y.highContrast);
   $('relaxed-toggle') && ($('relaxed-toggle').checked = a11y.relaxed);
-  $('language-select') && ($('language-select').value = p.locale || 'en');
+  // The language on screen: a saved one that could not load yet shows as English.
+  $('language-select') && ($('language-select').value = getLocale());
   refreshCloudControls();
   // Static flag check so production builds drop the cloud login code entirely.
   $('btn-join-class-online') && ($('btn-join-class-online').hidden = import.meta.env.VITE_CLOUD_CLASS_LOGIN !== 'true');
@@ -779,7 +780,10 @@ function saveProfileScreen() {
   p.avatar = document.querySelector('.avatar-btn.active')?.dataset?.avatar || '🌸';
   p.voiceEnabled = $('voice-toggle')?.checked !== false;
   p.foxVoiceEnabled = $('fox-voice-toggle')?.checked !== false;
-  p.locale = setLocale($('language-select')?.value || 'en');
+  // Picking a language loads it (see #language-select below); until it is
+  // here, keep the language the screen is in.
+  const pickedLocale = $('language-select')?.value || 'en';
+  p.locale = isLocaleLoaded(pickedLocale) ? setLocale(pickedLocale) : getLocale();
   applyTranslations();
   const code = $('class-code')?.value?.trim();
   // Changing the class is a grown-up setting when the lock is on.
@@ -1106,17 +1110,19 @@ function bindEvents() {
     }
     input?.removeAttribute('aria-invalid');
     mergeRestoredProgress(gameState.profile, data);
-    setLocale(gameState.profile.locale);
-    applyTranslations();
-    saveProfile();
-    updateMenuStats();
-    onAvatarChanged();
-    loadProfileScreen();
-    if (input) input.value = '';
-    if (status) {
-      status.hidden = false;
-      status.textContent = t('restore.done');
-    }
+    changeLocale(gameState.profile.locale, (locale) => {
+      gameState.profile.locale = locale;
+      saveProfile();
+      applyTranslations();
+      updateMenuStats();
+      onAvatarChanged();
+      loadProfileScreen();
+      if (input) input.value = '';
+      if (status) {
+        status.hidden = false;
+        status.textContent = t('restore.done');
+      }
+    });
   });
 
   $('btn-export-local-profile')?.addEventListener('click', () => {
@@ -1176,12 +1182,13 @@ function bindEvents() {
   });
 
   $('language-select')?.addEventListener('change', (event) => {
-    gameState.profile.locale = setLocale(event.target.value);
-    applyTranslations();
-    updateSoundButton();
-    updateMenuStats();
-    renderLevelCards();
-    loadProfileScreen();
+    const picked = event.target.value;
+    // A quicker second pick wins over a language still loading. If the
+    // language cannot load (offline), the current one stays selected.
+    changeLocale(picked, (locale) => {
+      gameState.profile.locale = locale;
+      refreshLanguage();
+    }, () => event.target.value === picked);
   });
   
   // Avatar picker
@@ -1331,12 +1338,29 @@ function bindEvents() {
   });
 }
 
+// Redraws everything that shows text after a language change.
+function refreshLanguage() {
+  applyTranslations();
+  updateSoundButton();
+  updateMenuStats();
+  renderLevelCards();
+  loadProfileScreen();
+}
+
 // ===== INIT =====
 function init() {
   // Fetch the full word bank once the menu is on screen.
   (window.requestIdleCallback || ((fn) => setTimeout(fn, 200)))(() => loadWordBank());
   loadProfile();
-  setLocale(gameState.profile?.locale || navigator.language?.split('-')[0] || 'en');
+  // English starts straight away; French or Spanish first fetch their
+  // strings (src/lang/), so the menu never flashes English at them. Taps
+  // made meanwhile are held until start() (scripts/critical-css.mjs). If
+  // they cannot be fetched the game starts in English, and the saved choice
+  // is kept for the next start.
+  changeLocale(gameState.profile?.locale || navigator.language?.split('-')[0] || 'en', start);
+}
+
+function start() {
   // Practice shows the same keyboard picture as the game: copy it instead of
   // shipping it twice in the home page.
   $('virtual-keyboard-practice').innerHTML = $('virtual-keyboard-game').innerHTML;

@@ -19,13 +19,22 @@ const PRECACHE_ASSETS = [
   "assets/icon-512.png",
   "manifest.json",
 ];
+// French and Spanish load only when a player picks them (src/i18n.js), so
+// the page never fetches them while online for an English player. Cache
+// them here so an installed app can still switch language offline. The
+// build fills this in with the fingerprinted chunk names
+// (scripts/sw-locale-chunks.mjs); it stays empty in dev.
+const LOCALE_CHUNKS = [];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
+    caches.open(CACHE_NAME).then((cache) =>
       // precache what we can; ignore missing files gracefully
-      return cache.addAll(PRECACHE_ASSETS).catch(() => {});
-    })
+      Promise.all([
+        cache.addAll(PRECACHE_ASSETS).catch(() => {}),
+        cache.addAll(LOCALE_CHUNKS).catch(() => {}),
+      ])
+    )
   );
   self.skipWaiting();
 });
@@ -99,8 +108,12 @@ async function networkFirst(request, event) {
   }
 }
 
+// Fingerprinted files never change, so a cached copy fits any request for
+// them. ignoreVary matters for the precached language chunks: they were
+// stored by a plain request, while import() sends an Origin header, and a
+// server that answers with "Vary: Origin" would otherwise never match.
 async function cacheFirst(request, event) {
-  const cached = await caches.match(request);
+  const cached = await caches.match(request, { ignoreVary: true });
   return cached || fetchAndStore(request, event);
 }
 

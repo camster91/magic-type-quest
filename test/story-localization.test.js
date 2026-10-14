@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { setLocale } from '../src/i18n.js';
+import { loadLocale, setLocale } from '../src/i18n.js';
 import { PET_PERSONALITY, PET_PERSONALITY_TRANSLATIONS, say } from '../src/story.js';
+
+// French and Spanish load on demand (src/lang/); the checks below need them.
+await Promise.all(['fr', 'es'].map((locale) => loadLocale(locale)));
 
 beforeEach(() => {
   globalThis.document = { documentElement: { lang: 'en' } };

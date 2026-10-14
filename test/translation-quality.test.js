@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { JSDOM } from 'jsdom';
-import { dictionaries } from '../src/i18n.js';
+import { loadLocale, dictionaries } from '../src/i18n.js';
 import { pageDictionaries } from '../src/pageTranslations.js';
 import { translatedContent } from '../src/contentTranslations.js';
+
+// French and Spanish load on demand (src/lang/); the checks below need them.
+await Promise.all(['fr', 'es'].map((locale) => loadLocale(locale)));
 
 const root = resolve(import.meta.dirname, '..');
 const placeholders = (text) => (String(text).match(/\{\w+\}/g) || []).sort();

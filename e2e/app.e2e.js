@@ -332,6 +332,28 @@ test('the installed app shell reloads while offline', async ({ context, page }) 
   }
 });
 
+test('the installed app switches to French while offline', async ({ context, page }) => {
+  await page.goto('');
+  await page.evaluate(async () => navigator.serviceWorker.ready);
+  await page.reload();
+  await page.waitForFunction(() => window.gameState);
+  expect(await page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
+
+  // French was never loaded on this page: only the worker's install cached it.
+  await context.setOffline(true);
+  try {
+    await page.locator('#language-select').evaluate((select) => {
+      select.value = 'fr';
+      select.dispatchEvent(new window.Event('change'));
+    });
+    await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+    await expect(page.locator('#btn-start')).toContainText('Tape pour planter');
+    expect(await page.evaluate(() => window.gameState.profile.locale)).toBe('fr');
+  } finally {
+    await context.setOffline(false);
+  }
+});
+
 test('service-worker activation removes stale BloomType caches', async ({ page }) => {
   await page.goto('');
   await page.evaluate(async () => {

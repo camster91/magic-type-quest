@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { FIELD_GUIDE, discoverForLevel, discoveredCards } from '../src/fieldGuide.js';
-import { dictionaries as translations } from '../src/i18n.js';
+import { loadLocale, dictionaries as translations } from '../src/i18n.js';
 import { normalizeProfile } from '../src/state.js';
+
+// French and Spanish load on demand (src/lang/); the checks below need them.
+await Promise.all(['fr', 'es'].map((locale) => loadLocale(locale)));
 
 describe('Field Guide', () => {
   it('discovers the card for a level the first time it is finished', () => {

@@ -10,13 +10,15 @@
  * off, and always in the child's language. The fox never scolds.
  */
 import { gameState } from './state.js';
-import { dictionaries, getLocale, t } from './i18n.js';
+import { dictionaries, getLocale, onLocalePack, t } from './i18n.js';
 import { FOX_VOICE_LINES, registerFoxVoiceText } from './foxVoiceLines.js';
 import { foxVoiceAllowed } from './foxMoments.js';
 
 export { FOX_MISSES_BEFORE_NUDGE, FOX_STREAK_EVERY, foxVoiceAllowed, isFoxNudge, isFoxStreak } from './foxMoments.js';
 
 registerFoxVoiceText(dictionaries);
+// French and Spanish strings may arrive after this module (loadLocale).
+onLocalePack(() => registerFoxVoiceText(dictionaries));
 
 export const FOX_MOMENTS = ['start', 'streak', 'complete', 'miss'];
 export const FOX_COOLDOWN_MS = 20_000;

@@ -3,7 +3,10 @@ import {
   MINUTES_TO_PLANT, PLANTS, backfillPlants, gardenDays, grownPlants, plantForDay, plantToday, plantWaiting, plantedToday,
 } from '../src/plantOfDay.js';
 import { recordPractice } from '../src/practiceLog.js';
-import { dictionaries } from '../src/i18n.js';
+import { loadLocale, dictionaries } from '../src/i18n.js';
+
+// French and Spanish load on demand (src/lang/); the checks below need them.
+await Promise.all(['fr', 'es'].map((locale) => loadLocale(locale)));
 
 const day = (iso) => new Date(`${iso}T12:00:00`);
 
