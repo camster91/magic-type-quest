@@ -194,6 +194,18 @@
     .pilot-btn { min-height: 44px; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text); font: inherit; font-weight: 700; cursor: pointer; }
     .pilot-btn-primary { background: var(--primary); color: var(--white); border-color: var(--primary-light); }
     .pilot-status { min-height: 1.2em; margin-top: 8px; color: var(--success); font-weight: 700; }
+
+    /* Online classes (pilot builds only; hidden otherwise) */
+    [hidden] { display: none !important; }
+    .cloud-only .local-only { display: none !important; }
+    .cloud-signin { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--glass-border); }
+    .btn-google { background: var(--white); color: var(--bg); border: 1px solid var(--glass-border); min-height: 44px; }
+    .btn-google:hover { background: var(--primary-light); }
+    .cloud-tools { margin-top: 12px; }
+    .cloud-import { margin-top: 12px; }
+    .cloud-import summary { cursor: pointer; font-weight: 800; padding: 10px 0; min-height: 44px; }
+    .course-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .admin-totals { color: var(--text-dim); font-weight: 700; margin-bottom: 10px; }
   </style>
 </head>
 <body>
@@ -201,6 +213,11 @@
   <p class="subtitle" data-page-i18n="teacher.subtitle">Track typing progress for your classroom.</p>
 
   <section id="teacher-lock" class="lock-panel" aria-labelledby="lock-title">
+    <div id="cloud-signin" class="cloud-signin" hidden>
+      <button type="button" class="btn btn-google" id="btn-google-signin" data-page-i18n="teacher.cloud.signInGoogle">Sign in with Google</button>
+      <p class="lock-note" data-page-i18n="teacher.cloud.signInNote">For pilot schools with online classes. Your PIN below still opens the progress saved on this device.</p>
+      <p id="cloud-signin-status" class="lock-message" role="status"></p>
+    </div>
     <h2 id="lock-title"></h2>
     <p id="lock-intro" class="lock-intro"></p>
     <form id="lock-form" class="lock-form" novalidate>
@@ -218,7 +235,53 @@
   </section>
 
   <div id="teacher-dashboard" class="hidden">
-  <section class="panel" aria-labelledby="classes-title">
+  <section id="cloud-panel" class="panel" aria-labelledby="cloud-title" hidden>
+    <h2 id="cloud-title" data-page-i18n="teacher.cloud.title">Online classes</h2>
+    <p class="hint" id="cloud-intro" data-page-i18n="teacher.cloud.intro">Sign in with your school Google account to see your online classes.</p>
+    <div class="row">
+      <button type="button" class="btn btn-google" id="btn-cloud-signin" data-page-i18n="teacher.cloud.signInGoogle">Sign in with Google</button>
+      <span id="cloud-teacher-name"></span>
+      <button type="button" class="btn-link" id="btn-cloud-signout" data-page-i18n="teacher.cloud.signOut" hidden>Sign out of Google</button>
+    </div>
+    <div id="cloud-classes" hidden>
+      <div class="row cloud-tools">
+        <label for="cloud-class-select" data-page-i18n="teacher.cloud.switchClass">Class</label>
+        <select id="cloud-class-select" class="field"></select>
+        <label><input type="checkbox" id="cloud-show-archived"> <span data-page-i18n="teacher.cloud.showArchived">Show archived classes</span></label>
+      </div>
+      <form id="cloud-new-class-form" class="row cloud-tools">
+        <label for="cloud-new-class-name" data-page-i18n="teacher.newClassName">New class name</label>
+        <input id="cloud-new-class-name" class="field" maxlength="60" placeholder="e.g. Room 12" data-page-i18n-placeholder="teacher.newClassPlaceholder" required>
+        <button type="submit" class="btn btn-primary" data-page-i18n="teacher.createClass">➕ Create class</button>
+      </form>
+      <div id="cloud-class-tools" hidden>
+        <p class="hint cloud-tools"><span data-page-i18n="teacher.cloud.codeLabel">Class code for students:</span> <span class="big-code" id="cloud-class-code"></span> <span id="cloud-archived-note" data-page-i18n="teacher.cloud.archivedNote" hidden>Archived: students can no longer join.</span></p>
+        <form id="cloud-rename-form" class="row cloud-tools">
+          <label for="cloud-rename-input" data-page-i18n="teacher.cloud.renameLabel">Class name</label>
+          <input id="cloud-rename-input" class="field" maxlength="60" required>
+          <button type="submit" class="btn btn-primary" data-page-i18n="teacher.cloud.rename">Rename</button>
+          <button type="button" class="btn" id="btn-cloud-archive" data-page-i18n="teacher.cloud.archive">Archive class</button>
+        </form>
+        <details class="cloud-import" id="cloud-import">
+          <summary data-page-i18n="teacher.cloud.importTitle">Import a class list</summary>
+          <p class="hint" data-page-i18n="teacher.cloud.importPrivacy">Only each student's first name, last initial and the provider's student number are saved. Never emails or photos.</p>
+          <div class="row">
+            <button type="button" class="btn btn-primary" id="btn-import-google" data-page-i18n="teacher.cloud.importGoogle">Google Classroom</button>
+            <label for="import-csv-file" data-page-i18n="teacher.cloud.importCsv">CSV file</label>
+            <input type="file" id="import-csv-file" class="field" accept=".csv,text/csv">
+            <button type="button" class="btn" id="btn-import-classlink" disabled data-page-i18n="teacher.cloud.importClassLink">ClassLink (coming soon)</button>
+            <button type="button" class="btn" id="btn-import-clever" disabled data-page-i18n="teacher.cloud.importClever">Clever (coming soon)</button>
+          </div>
+          <p class="hint" data-page-i18n="teacher.cloud.csvHint">CSV columns: name (or first name and last name), and an optional student number.</p>
+          <div id="google-course-list" class="course-list"></div>
+          <p class="status-line" id="import-status" role="status"></p>
+        </details>
+      </div>
+    </div>
+    <p class="status-line" id="cloud-status" role="status"></p>
+  </section>
+
+  <section class="panel local-only" aria-labelledby="classes-title">
     <h2 id="classes-title" data-page-i18n="teacher.myClasses">My classes</h2>
     <p class="hint" data-page-i18n="teacher.classesHint">Make a class, give students the code, then watch their progress here.</p>
     <div id="class-list" class="class-list"></div>
@@ -266,7 +329,7 @@
     </div>
   </section>
 
-  <div class="mode-bar">
+  <div class="mode-bar local-only">
     <button class="mode-btn active" id="btn-local-mode" data-mode="local" data-page-i18n="teacher.local">💾 Local</button>
     <button class="mode-btn" id="btn-cloud-mode" data-mode="cloud" data-page-i18n="teacher.cloud">☁️ Cloud</button>
   </div>
@@ -275,10 +338,10 @@
     <label for="class-code-input" class="sr-only" data-page-i18n="teacher.classCode">Class Code</label>
     <input type="text" id="class-code-input" class="input-code" placeholder="Class code (e.g. ABC123)" data-page-i18n-placeholder="teacher.classPlaceholder" maxlength="10">
     <button class="btn btn-primary" id="btn-load-class" data-page-i18n="teacher.load">🔍 Load Class</button>
-    <button class="btn btn-primary" id="btn-all-students" data-page-i18n="teacher.all">🔄 All Students</button>
+    <button class="btn btn-primary local-only" id="btn-all-students" data-page-i18n="teacher.all">🔄 All Students</button>
     <button class="btn btn-export" id="btn-export-csv" data-page-i18n="teacher.exportCsv">📊 Export CSV</button>
     <button class="btn btn-export" id="btn-export-json" data-page-i18n="teacher.exportJson">📋 Export JSON</button>
-    <button class="btn btn-danger" id="btn-clear-data" data-page-i18n="teacher.clear">🗑 Clear All</button>
+    <button class="btn btn-danger local-only" id="btn-clear-data" data-page-i18n="teacher.clear">🗑 Clear All</button>
     <button class="btn btn-primary" id="btn-lock" data-page-i18n="teacher.lock">🔒 Lock</button>
     <span class="class-badge" id="class-code-display" data-page-i18n="teacher.allLocal">All Students (Local)</span>
   </div>
@@ -311,6 +374,40 @@
     <h2 data-page-i18n="teacher.noData">No data yet</h2>
     <p data-page-i18n="teacher.emptyHint">Students will appear here after they play BloomType. 🌸</p>
   </div>
+
+  <!-- The school admin overview sits after the class report, so the
+       report table stays the first table on the page. -->
+  <section id="admin-panel" class="panel" aria-labelledby="admin-title" hidden>
+    <h2 id="admin-title" data-page-i18n="admin.title">School overview</h2>
+    <p class="hint" data-page-i18n="admin.hint">Class totals only. Student names are never shown here.</p>
+    <p class="admin-totals" id="admin-totals"></p>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="School classes" data-page-i18n-aria-label="admin.tableLabel">
+      <table>
+        <thead>
+          <tr>
+            <th data-page-i18n="admin.class">Class</th>
+            <th data-page-i18n="admin.teacher">Teacher</th>
+            <th data-page-i18n="admin.students">Students</th>
+            <th data-page-i18n="admin.active">Active this week</th>
+            <th data-page-i18n="admin.minutes">Minutes this week</th>
+          </tr>
+        </thead>
+        <tbody id="admin-body"></tbody>
+      </table>
+    </div>
+    <form id="admin-invite-form" class="row">
+      <label for="admin-invite-email" data-page-i18n="admin.inviteLabel">Invite a teacher (school email)</label>
+      <input id="admin-invite-email" type="email" class="field" maxlength="254" autocomplete="off" required>
+      <label for="admin-invite-role" class="sr-only" data-page-i18n="admin.roleLabel">Role</label>
+      <select id="admin-invite-role" class="field">
+        <option value="teacher" data-page-i18n="admin.roleTeacher">Teacher</option>
+        <option value="admin" data-page-i18n="admin.roleAdmin">School admin</option>
+      </select>
+      <button type="submit" class="btn btn-primary" data-page-i18n="admin.invite">Invite</button>
+    </form>
+    <p class="status-line" id="admin-status" role="status"></p>
+  </section>
+
   <section class="panel pilot-card" id="pilot-panel" aria-labelledby="pilot-title">
     <h2 id="pilot-title" data-page-i18n="pilot.title">Pilot feedback</h2>
     <h3 data-page-i18n="pilot.summaryTitle">Pilot summary</h3>

@@ -442,3 +442,481 @@ end;
 $$;
 revoke all on function public.delete_my_account() from public, anon;
 grant execute on function public.delete_my_account() to authenticated;
+
+
+-- =====================================================================
+-- ===== TEACHER ACCOUNTS, SCHOOLS AND CLASSES (pilot builds only) =====
+-- =====================================================================
+-- Everything below is additive: the tables, policies and RPCs above keep
+-- working unchanged. Teachers sign in with Google (Supabase Auth); children
+-- still sign in anonymously and never appear in these tables except as an
+-- imported display name.
+--
+-- Who can do what:
+--   * schools and the first admin of each school are provisioned by the
+--     owner with the service role (see docs/CLOUD-CLASS-LOGIN.md);
+--   * a school admin invites teachers by email; a teacher claims the invite
+--     on first Google sign-in (claim_teacher_invite). Anonymous accounts can
+--     never become teachers, so a child cannot open a class;
+--   * a teacher sees only their own classes, imported rosters and the
+--     joined students of those classes (via teacher_codes, as before);
+--   * an admin sees their school's classes only as aggregates
+--     (school_class_summary): counts and minutes, never student names.
+
+-- Practice minutes for the weekly reports. A sitting counts for at most 30
+-- minutes, matching the local practice log. Older rows stay null.
+alter table game_sessions add column if not exists duration_seconds integer;
+do $$ begin
+  alter table game_sessions add constraint game_sessions_duration_range
+    check (duration_seconds is null or duration_seconds between 0 and 1800);
+exception when duplicate_object then null; end $$;
+create index if not exists idx_sessions_created on game_sessions(created_at);
+
+-- True when the caller signed in anonymously (every child does). Supabase
+-- puts the flag in the JWT claims. A token with no email also counts as
+-- anonymous, so only a real (Google) teacher account passes.
+create or replace function public.caller_is_anonymous()
+returns boolean
+language sql
+stable
+set search_path = public
+as $$
+  select coalesce(
+    (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'is_anonymous')::boolean,
+    false
+  ) or coalesce(nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'email', '') = '';
+$$;
+revoke all on function public.caller_is_anonymous() from public, anon;
+grant execute on function public.caller_is_anonymous() to authenticated;
+
+create or replace function public.caller_email()
+returns text
+language sql
+stable
+set search_path = public
+as $$
+  select lower(nullif(nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'email', ''));
+$$;
+revoke all on function public.caller_email() from public, anon;
+grant execute on function public.caller_email() to authenticated;
+
+-- ===== SCHOOLS =====
+create table if not exists schools (
+  id uuid primary key default gen_random_uuid(),
+  name text not null check (length(name) between 1 and 120),
+  created_at timestamptz default now()
+);
+alter table schools enable row level security;
+revoke all on schools from anon;
+revoke insert, update, delete on schools from authenticated;
+
+-- ===== TEACHERS =====
+create table if not exists teachers (
+  id uuid primary key references auth.users(id) on delete cascade,
+  school_id uuid references schools(id) on delete set null,
+  role text not null default 'teacher' check (role in ('teacher', 'admin')),
+  display_name text check (display_name is null or length(display_name) <= 80),
+  created_at timestamptz default now()
+);
+create index if not exists idx_teachers_school on teachers(school_id);
+alter table teachers enable row level security;
+-- Roles and schools are never self-assigned: rows are written by the owner
+-- (service role) or by the RPCs below.
+revoke all on teachers from anon;
+revoke insert, update, delete on teachers from authenticated;
+
+-- Small security-definer helpers so policies never recurse through RLS.
+create or replace function public.is_teacher()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (select 1 from teachers where id = auth.uid()) and not public.caller_is_anonymous();
+$$;
+revoke all on function public.is_teacher() from public, anon;
+grant execute on function public.is_teacher() to authenticated;
+
+create or replace function public.my_admin_school_id()
+returns uuid
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select school_id from teachers
+  where id = auth.uid() and role = 'admin' and school_id is not null
+    and not public.caller_is_anonymous();
+$$;
+revoke all on function public.my_admin_school_id() from public, anon;
+grant execute on function public.my_admin_school_id() to authenticated;
+
+drop policy if exists "Teacher self read" on teachers;
+drop policy if exists "Admin school teachers read" on teachers;
+create policy "Teacher self read" on teachers for select
+  using (auth.uid() = id);
+create policy "Admin school teachers read" on teachers for select
+  using (school_id is not null and school_id = public.my_admin_school_id());
+
+drop policy if exists "Member school read" on schools;
+create policy "Member school read" on schools for select
+  using (id in (select school_id from teachers where id = auth.uid()));
+
+-- ===== TEACHER INVITES =====
+-- An admin invites a teacher's school email. Only adult staff emails are
+-- stored here; children never have invites.
+create table if not exists teacher_invites (
+  email text primary key check (email = lower(email) and email like '%_@_%'),
+  school_id uuid not null references schools(id) on delete cascade,
+  role text not null default 'teacher' check (role in ('teacher', 'admin')),
+  invited_by uuid references auth.users(id) on delete set null,
+  created_at timestamptz default now()
+);
+alter table teacher_invites enable row level security;
+revoke all on teacher_invites from anon;
+revoke insert, update, delete on teacher_invites from authenticated;
+drop policy if exists "Admin invites read" on teacher_invites;
+create policy "Admin invites read" on teacher_invites for select
+  using (school_id = public.my_admin_school_id());
+
+-- ===== CLASSES =====
+-- A class owns one class code in teacher_codes, so the existing roster and
+-- session policies (which check teacher_codes) cover it with no change.
+create table if not exists classes (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references teachers(id) on delete cascade,
+  school_id uuid references schools(id) on delete set null,
+  class_code text not null unique references teacher_codes(class_code) on delete cascade,
+  name text not null check (length(name) between 1 and 60),
+  archived_at timestamptz,
+  roster_provider text check (roster_provider in ('google', 'classlink', 'clever', 'csv')),
+  external_class_id text check (external_class_id is null or length(external_class_id) <= 128),
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+create index if not exists idx_classes_owner on classes(owner_id);
+create index if not exists idx_classes_school on classes(school_id);
+alter table classes enable row level security;
+-- Writes go through the RPCs below, which check ownership.
+revoke all on classes from anon;
+revoke insert, update, delete on classes from authenticated;
+drop policy if exists "Teacher own classes read" on classes;
+create policy "Teacher own classes read" on classes for select
+  using (owner_id = auth.uid() and public.is_teacher());
+
+-- ===== IMPORTED ROSTERS =====
+-- The names a teacher imported (Google Classroom, CSV, later ClassLink or
+-- Clever). Only a display name and the provider's opaque id: no email, no
+-- birth date, no photo. Children who join with the class code still appear
+-- in class_roster as before; the dashboard matches the two by name.
+create table if not exists roster_students (
+  id bigserial primary key,
+  class_id uuid not null references classes(id) on delete cascade,
+  provider text not null check (provider in ('google', 'classlink', 'clever', 'csv')),
+  external_id text not null check (length(external_id) between 1 and 128 and position('@' in external_id) = 0),
+  display_name text not null check (length(display_name) between 1 and 40 and position('@' in display_name) = 0),
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  unique (class_id, provider, external_id)
+);
+alter table roster_students enable row level security;
+revoke all on roster_students from anon;
+revoke insert, update on roster_students from authenticated;
+drop policy if exists "Teacher roster read" on roster_students;
+drop policy if exists "Teacher roster delete" on roster_students;
+create policy "Teacher roster read" on roster_students for select
+  using (public.is_teacher() and exists (
+    select 1 from classes c
+    where c.id = roster_students.class_id and c.owner_id = auth.uid()
+  ));
+create policy "Teacher roster delete" on roster_students for delete
+  using (public.is_teacher() and exists (
+    select 1 from classes c
+    where c.id = roster_students.class_id and c.owner_id = auth.uid()
+  ));
+
+-- Students may join a class only while it is open: an archived class keeps
+-- its data for the teacher but accepts no new members. Codes made before
+-- classes existed (no classes row) keep working.
+create or replace function public.class_code_exists(code text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (select 1 from teacher_codes where class_code = code)
+    and not exists (select 1 from classes where class_code = code and archived_at is not null);
+$$;
+revoke all on function public.class_code_exists(text) from public, anon;
+grant execute on function public.class_code_exists(text) to authenticated;
+
+-- ===== TEACHER RPCS =====
+-- First Google sign-in: turn a pending invite for this email into a
+-- teacher row. Returns the caller's role, or null without an invite.
+create or replace function public.claim_teacher_invite(p_display_name text default null)
+returns text
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+  invite teacher_invites%rowtype;
+  existing text;
+begin
+  if uid is null or public.caller_is_anonymous() then
+    raise exception 'teacher sign-in required' using errcode = '42501';
+  end if;
+  select role into existing from teachers where id = uid;
+  if existing is not null then
+    return existing;
+  end if;
+  select * into invite from teacher_invites where email = public.caller_email();
+  if not found then
+    return null;
+  end if;
+  insert into teachers (id, school_id, role, display_name)
+    values (uid, invite.school_id, invite.role, left(nullif(trim(p_display_name), ''), 80));
+  delete from teacher_invites where email = invite.email;
+  return invite.role;
+end;
+$$;
+revoke all on function public.claim_teacher_invite(text) from public, anon;
+grant execute on function public.claim_teacher_invite(text) to authenticated;
+
+-- An admin invites a teacher (or another admin) to their own school. An
+-- invite already held by another school is left alone.
+create or replace function public.admin_invite_teacher(p_email text, p_role text default 'teacher')
+returns boolean
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+declare
+  school uuid := public.my_admin_school_id();
+  clean text := lower(trim(coalesce(p_email, '')));
+begin
+  if school is null then
+    raise exception 'school admin only' using errcode = '42501';
+  end if;
+  if clean !~ '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$' or length(clean) > 254 then
+    raise exception 'invalid email' using errcode = '22023';
+  end if;
+  if coalesce(p_role, '') not in ('teacher', 'admin') then
+    raise exception 'invalid role' using errcode = '22023';
+  end if;
+  insert into teacher_invites (email, school_id, role, invited_by)
+    values (clean, school, p_role, auth.uid())
+    on conflict (email) do update
+      set role = excluded.role, invited_by = excluded.invited_by
+      where teacher_invites.school_id = school;
+  return found;
+end;
+$$;
+revoke all on function public.admin_invite_teacher(text, text) from public, anon;
+grant execute on function public.admin_invite_teacher(text, text) to authenticated;
+
+-- Create a class with a fresh, unguessable 8-character code. The code is
+-- generated here, so a teacher can never claim a code someone else uses.
+create or replace function public.create_class(p_name text)
+returns classes
+language plpgsql
+volatile
+security definer
+set search_path = public, extensions
+as $$
+declare
+  uid uuid := auth.uid();
+  alphabet constant text := '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+  clean_name text := left(regexp_replace(trim(coalesce(p_name, '')), '\s+', ' ', 'g'), 60);
+  code text;
+  raw bytea;
+  created classes;
+begin
+  if not public.is_teacher() then
+    raise exception 'teacher account required' using errcode = '42501';
+  end if;
+  if clean_name = '' then
+    raise exception 'class name required' using errcode = '22023';
+  end if;
+  if (select count(*) from classes where owner_id = uid) >= 50 then
+    raise exception 'class limit reached' using errcode = '54000';
+  end if;
+  loop
+    raw := gen_random_bytes(8);
+    code := '';
+    for i in 0..7 loop
+      code := code || substr(alphabet, (get_byte(raw, i) % 31) + 1, 1);
+    end loop;
+    exit when not exists (select 1 from teacher_codes where class_code = code);
+  end loop;
+  insert into teacher_codes (class_code, teacher_id) values (code, uid);
+  insert into classes (owner_id, school_id, class_code, name)
+    values (uid, (select school_id from teachers where id = uid), code, clean_name)
+    returning * into created;
+  return created;
+end;
+$$;
+revoke all on function public.create_class(text) from public, anon;
+grant execute on function public.create_class(text) to authenticated;
+
+create or replace function public.rename_class(p_class_id uuid, p_name text)
+returns void
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+declare
+  clean_name text := left(regexp_replace(trim(coalesce(p_name, '')), '\s+', ' ', 'g'), 60);
+begin
+  if not public.is_teacher() then
+    raise exception 'teacher account required' using errcode = '42501';
+  end if;
+  if clean_name = '' then
+    raise exception 'class name required' using errcode = '22023';
+  end if;
+  update classes set name = clean_name, updated_at = now()
+    where id = p_class_id and owner_id = auth.uid();
+  if not found then
+    raise exception 'class not found' using errcode = 'P0002';
+  end if;
+end;
+$$;
+revoke all on function public.rename_class(uuid, text) from public, anon;
+grant execute on function public.rename_class(uuid, text) to authenticated;
+
+-- Archive (or reopen) a class. Archived classes keep their roster for the
+-- teacher's records but accept no new students.
+create or replace function public.set_class_archived(p_class_id uuid, p_archived boolean)
+returns void
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_teacher() then
+    raise exception 'teacher account required' using errcode = '42501';
+  end if;
+  update classes
+    set archived_at = case when p_archived then coalesce(archived_at, now()) else null end,
+        updated_at = now()
+    where id = p_class_id and owner_id = auth.uid();
+  if not found then
+    raise exception 'class not found' using errcode = 'P0002';
+  end if;
+end;
+$$;
+revoke all on function public.set_class_archived(uuid, boolean) from public, anon;
+grant execute on function public.set_class_archived(uuid, boolean) to authenticated;
+
+-- Replace one provider's imported roster for a class in one transaction.
+-- p_students is a JSON array of {"externalId": "...", "displayName": "..."};
+-- the client has already minimised the names, and the table checks refuse
+-- anything that looks like an email.
+create or replace function public.import_roster(
+  p_class_id uuid,
+  p_provider text,
+  p_external_class_id text,
+  p_students jsonb
+)
+returns integer
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+declare
+  saved integer;
+begin
+  if not public.is_teacher() then
+    raise exception 'teacher account required' using errcode = '42501';
+  end if;
+  if not exists (select 1 from classes where id = p_class_id and owner_id = auth.uid()) then
+    raise exception 'class not found' using errcode = 'P0002';
+  end if;
+  if coalesce(p_provider, '') not in ('google', 'classlink', 'clever', 'csv') then
+    raise exception 'unknown roster provider' using errcode = '22023';
+  end if;
+  if jsonb_typeof(p_students) is distinct from 'array' or jsonb_array_length(p_students) > 200 then
+    raise exception 'roster must be a list of at most 200 students' using errcode = '22023';
+  end if;
+  delete from roster_students
+    where class_id = p_class_id and provider = p_provider
+      and external_id not in (
+        select s ->> 'externalId' from jsonb_array_elements(p_students) s
+        where s ->> 'externalId' is not null
+      );
+  insert into roster_students (class_id, provider, external_id, display_name)
+    select distinct on (s ->> 'externalId') p_class_id, p_provider, s ->> 'externalId', s ->> 'displayName'
+    from jsonb_array_elements(p_students) s
+    order by s ->> 'externalId'
+    on conflict (class_id, provider, external_id) do update
+      set display_name = excluded.display_name, updated_at = now();
+  get diagnostics saved = row_count;
+  update classes
+    set roster_provider = p_provider,
+        external_class_id = left(nullif(p_external_class_id, ''), 128),
+        updated_at = now()
+    where id = p_class_id;
+  return saved;
+end;
+$$;
+revoke all on function public.import_roster(uuid, text, text, jsonb) from public, anon;
+grant execute on function public.import_roster(uuid, text, text, jsonb) to authenticated;
+
+-- ===== SCHOOL ADMIN VIEW =====
+-- One row per class in the admin's school: counts and minutes only. No
+-- student names, ids or per-student numbers ever leave this function.
+create or replace function public.school_class_summary()
+returns table (
+  class_id uuid,
+  class_name text,
+  teacher_name text,
+  archived boolean,
+  student_count integer,
+  imported_count integer,
+  active_students_7d integer,
+  weekly_minutes numeric
+)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  school uuid := public.my_admin_school_id();
+begin
+  if school is null then
+    raise exception 'school admin only' using errcode = '42501';
+  end if;
+  return query
+    select
+      c.id,
+      c.name,
+      t.display_name,
+      c.archived_at is not null,
+      (select count(distinct coalesce(cr.student_id, cr.profile_id))::integer
+         from class_roster cr where cr.class_code = c.class_code),
+      (select count(*)::integer from roster_students rs where rs.class_id = c.id),
+      (select count(distinct coalesce(cr.student_id, cr.profile_id))::integer
+         from class_roster cr
+         join game_sessions gs on gs.profile_id = cr.profile_id
+         where cr.class_code = c.class_code and gs.created_at > now() - interval '7 days'),
+      (select round(coalesce(sum(gs.duration_seconds), 0) / 60.0, 1)
+         from class_roster cr
+         join game_sessions gs on gs.profile_id = cr.profile_id
+         where cr.class_code = c.class_code and gs.created_at > now() - interval '7 days')
+    from classes c
+    left join teachers t on t.id = c.owner_id
+    where c.school_id = school
+    order by c.archived_at is not null, c.name;
+end;
+$$;
+revoke all on function public.school_class_summary() from public, anon;
+grant execute on function public.school_class_summary() to authenticated;

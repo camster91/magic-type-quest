@@ -126,6 +126,9 @@ export function buildCloudSessionRow(session, userId, createdAt = new Date().toI
     words_completed: session.wordsCompleted || 0,
     max_combo: session.maxCombo || 0,
     skips_used: session.skipsUsed || 0,
+    duration_seconds: Number.isFinite(session.durationSeconds)
+      ? Math.min(1800, Math.max(0, Math.round(session.durationSeconds)))
+      : null,
     created_at: createdAt,
   };
 }
