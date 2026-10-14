@@ -1,4 +1,4 @@
-# ✨ Bloom Typing ✨
+# ✨ BloomType ✨
 
 A beautiful, immersive typing game for kids — built for the web with gorgeous Canvas animations, AI-generated character art, and PWA support.
 
