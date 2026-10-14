@@ -1,0 +1,16 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:03.000
+Cree un PIN docente para que solo usted vea el progreso de la clase.
+
+00:00:03.000 --> 00:00:06.500
+Cree una clase. Recibe un código de clase de 6 caracteres.
+
+00:00:06.500 --> 00:00:10.700
+Imprima las tarjetas de acceso: una por estudiante, con el código y tres pasos.
+
+00:00:10.700 --> 00:00:14.500
+Abra el informe de la clase: velocidad, precisión, teclas difíciles y minutos de cada estudiante.
+
+00:00:14.500 --> 00:00:18.200
+Expórtelo como archivo CSV o imprima códigos de guardado si un estudiante pierde su progreso.
