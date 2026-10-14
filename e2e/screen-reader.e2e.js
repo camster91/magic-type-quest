@@ -275,18 +275,29 @@ test('pause returns focus to whatever opened it', async ({ page }) => {
   await expect(page.locator('#btn-start')).toBeFocused();
 });
 
-test('Esc closes the finger guide and the chapter card', async ({ page }) => {
+test('Esc closes the finger guide', async ({ page }) => {
   await seed(page, { seenFingerGuide: false, completedLevels: [] });
   await page.goto('');
+  await page.waitForFunction(() => window.gameState?.profile);
   await page.locator('#btn-start').click();
-  for (let i = 0; i < 3; i++) {
-    const open = await page.locator('[role="dialog"][aria-hidden="false"]').count();
-    if (!open) break;
-    await expect(page.locator('[role="dialog"][aria-hidden="false"] button').first()).toBeFocused();
-    await page.keyboard.press('Escape');
-  }
+  // A first-time player sees the finger guide (it takes the chapter card's place).
+  await expect(page.locator('#finger-guide')).toHaveAttribute('aria-hidden', 'false');
+  await expect(page.locator('#btn-close-finger-guide')).toBeFocused();
+  await page.keyboard.press('Escape');
   await expect(page.locator('[role="dialog"][aria-hidden="false"]')).toHaveCount(0);
   await expect(page.locator('#game-screen')).toBeFocused();
+  await expect.poll(() => page.evaluate(() => window.gameState.paused)).toBe(false);
+});
+
+test('Esc closes the chapter card', async ({ page }) => {
+  await seed(page, { seenFingerGuide: true, completedLevels: [] });
+  await page.goto('');
+  await page.waitForFunction(() => window.gameState?.profile);
+  await page.locator('#btn-start').click();
+  await expect(page.locator('#chapter-intro')).toHaveAttribute('aria-hidden', 'false');
+  await expect(page.locator('#btn-chapter-continue')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('[role="dialog"][aria-hidden="false"]')).toHaveCount(0);
   await expect.poll(() => page.evaluate(() => window.gameState.paused)).toBe(false);
 });
 
