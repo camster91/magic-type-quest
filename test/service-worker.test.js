@@ -17,7 +17,7 @@ class FakeResponse {
 }
 
 /** Load sw.js into a fake worker scope with an in-memory cache and network. */
-function loadWorker({ network }) {
+function loadWorker({ network, fetchLog = [] }) {
   const store = new Map();
   const cache = {
     put: async (request, response) => { store.set(request.url ?? new URL(request, BASE).href, response); },
@@ -42,7 +42,10 @@ function loadWorker({ network }) {
     skipWaiting() {},
     clients: { claim() {} },
   };
-  const fetch = async (request) => network(request.url);
+  const fetch = async (request, init) => {
+    fetchLog.push({ url: request.url, mode: request.mode, cache: init?.cache });
+    return network(request.url);
+  };
   new Function('self', 'caches', 'fetch', 'Response', source)(self, caches, fetch, FakeResponse);
 
   const waitLog = [];
@@ -104,6 +107,18 @@ describe('service worker caching', () => {
     online = false;
     expect((await worker.request(BASE, { mode: 'navigate' })).body).toBe('release 1');
     expect((await worker.request(`${BASE}garden?x=1`, { mode: 'navigate' })).body).toBe('release 1');
+  });
+
+  it('asks the server about art instead of trusting the browser HTTP cache', async () => {
+    // After a release the HTTP cache can still hold old pictures for an hour;
+    // copying those into the new cache would keep the old art.
+    const fetchLog = [];
+    const worker = loadWorker({ network, fetchLog });
+    await worker.request(`${BASE}assets/pets/fox.png`);
+    await worker.request(BASE, { mode: 'navigate' });
+    expect(fetchLog.find((f) => f.url.endsWith('fox.png')).cache).toBe('no-cache');
+    // Navigations can't take request options; they are network-first anyway.
+    expect(fetchLog.find((f) => f.mode === 'navigate').cache).toBeUndefined();
   });
 
   it('keeps fingerprinted bundles cache-first', async () => {
