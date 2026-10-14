@@ -22,8 +22,8 @@ const SAME_AS_ENGLISH = {
     es: ['a11y.fontDyslexic', 'common.colon'],
   },
   page: {
-    fr: ['family.recordDate', 'family.recordMinutes', 'teacher.local', 'teacher.score', 'teacher.source'],
-    es: ['teacher.local', 'teacher.pin'],
+    fr: ['family.recordDate', 'family.recordMinutes', 'teacher.local', 'teacher.score', 'teacher.source', 'teacher.cloud.importGoogle'],
+    es: ['teacher.local', 'teacher.pin', 'teacher.cloud.importGoogle'],
   },
 };
 
