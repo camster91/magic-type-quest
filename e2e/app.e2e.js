@@ -420,9 +420,11 @@ test('skipping words never finishes a level, but typing them does', async ({ pag
     }));
   });
   await page.goto('');
+  // The app code loads after the menu paints, so wait for it before playing.
+  await page.waitForFunction(() => window.gameState?.profile);
   await page.locator('#btn-start').click();
-  await expect.poll(() => page.evaluate(() => window.gameState.screen)).toBe('game');
-  await expect.poll(() => page.evaluate(() => window.gameState.paused)).toBe(false);
+  await expect.poll(() => page.evaluate(() => window.gameState?.screen)).toBe('game');
+  await expect.poll(() => page.evaluate(() => window.gameState?.paused)).toBe(false);
 
   // Level 1 has 10 words. Skipping more than that must not finish it.
   for (let i = 0; i < 15; i++) {
