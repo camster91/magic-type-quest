@@ -15,6 +15,16 @@ describe('lazy word bank', () => {
     expect(after.every((word) => lessons.isTypableWord(word))).toBe(true);
   });
 
+  it('ships only entries the lesson filter accepts, so no bytes go to unusable words', async () => {
+    const { ALL_WORDS } = await import('../src/words.js');
+    const { LESSON_LEVELS, isTypableWord } = await import('../src/lessonLevels.js');
+    for (const [level, words] of Object.entries(ALL_WORDS)) {
+      const requiresShift = LESSON_LEVELS[level].requiresShift === true;
+      const rejected = words.filter((word) => !isTypableWord(word, requiresShift));
+      expect(rejected, `level ${level}`).toEqual([]);
+    }
+  });
+
   it('keeps the word bank out of the first download', async () => {
     const { readFileSync } = await import('fs');
     const source = readFileSync('src/lessonLevels.js', 'utf8');
