@@ -235,7 +235,7 @@ test('language selection applies immediately and persists after reload', async (
   await page.click('#btn-profile');
 
   await expect(page.locator('#language-select')).toHaveValue('fr');
-  await expect(page.locator('#profile-screen h2')).toContainText('Mon profil');
+  await expect(page.locator('#profile-screen h1')).toContainText('Mon profil');
 
   await page.goto('parents.html');
   await expect(page.locator('html')).toHaveAttribute('lang', 'fr');

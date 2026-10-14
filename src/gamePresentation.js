@@ -33,3 +33,13 @@ export function showKeyFeedback(key, correct) {
     setTimeout(() => keyElement.classList.remove('correct', 'wrong'), 300);
   });
 }
+
+/** Tell screen readers something once, through the page's polite live region. */
+export function announce(message) {
+  const region = document.getElementById('sr-announcer');
+  if (!region || !message) return;
+  // Empty it first so the same words said twice in a row are read twice.
+  region.textContent = '';
+  clearTimeout(announce.timer);
+  announce.timer = setTimeout(() => { region.textContent = message; }, 60);
+}

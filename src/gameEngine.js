@@ -12,7 +12,7 @@ import { getWeakKeys } from './drills.js';
 import { recordKeyPractice } from './spacedRep.js';
 import { formatNumber, localizeAvatarName, localizeFingerLabel, t } from './i18n.js';
 import { localizeAchievement, localizeChapter, localizeLesson, localizeQuest } from './contentTranslations.js';
-import { highlightTargetKey, showKeyFeedback } from './gamePresentation.js';
+import { highlightTargetKey, showKeyFeedback, announce } from './gamePresentation.js';
 import { GameWord } from './gameWord.js';
 import { getLevelScoreBonus, resetGameSession } from './gameSession.js';
 import { createGameInputController, trapDialogFocus } from './gameInput.js';
@@ -265,6 +265,9 @@ function updateWords(deltaTime) {
       updateTargetDisplay();
       updateKeyboardHighlight();
       speakWord(nextWord.text);
+      // One message: the word just finished (if any), then the new word.
+      announce(`${wordDoneMessage} ${t('practice.type', { word: nextWord.text })}`.trim());
+      wordDoneMessage = '';
     }
   }
 }
@@ -395,6 +398,7 @@ function onWrongKeystroke(key) {
   // quick so it doesn't pile up if the kid is mistyping).
   pulsePetFace('wrong');
   showPetBubble(t('pet.tryAgain'), 900);
+  announce(`${t('pet.tryAgain')} ${gameState.targetWord?.text?.[gameState.targetIndex] || ''}`);
   // T22: a wrong key still proves the kid is present. Reset the idle
   // timer so the "Don't forget me!" bubble doesn't fire immediately after.
   lastCorrectKeystrokeAt = performance.now();
@@ -445,6 +449,8 @@ function updateWPM() {
   if (wpmEl) wpmEl.textContent = gameState.levelWPM;
 }
 
+let wordDoneMessage = '';
+
 function completeWord() {
   const word = gameState.targetWord;
   if (!word) return;
@@ -486,6 +492,8 @@ function completeWord() {
   // Stats
   gameState.wordsTyped++;
   gameState.wordsCompleted++;
+  // Said together with the next word (or replaced by the level-complete news).
+  wordDoneMessage = t('a11y.wordDone', { word: word.text, count: gameState.wordsCompleted, total: wordsTarget() });
   gameState.nextSpawnAt = gameState.currentTime + NEXT_WORD_DELAY_MS;
   meadow.cheer();
   
@@ -604,6 +612,12 @@ function gameOver() {
 }
 
 // ===== UI UPDATES =====
+// Words to finish: Daily Moment 12, lessons wordsPerLevel, else 5.
+function wordsTarget() {
+  if (gameState.mode === 'dailyMoment' || gameState.dailyMoment?.active) return gameState.dailyMoment?.wordsTarget || 12;
+  return currentLesson()?.wordsPerLevel || 5;
+}
+
 function updateHUD() {
   const scoreEl = document.getElementById('score');
   const levelEl = document.getElementById('level');
@@ -648,14 +662,7 @@ function updateHUD() {
   }
   if (liveWordsEl) liveWordsEl.textContent = gameState.wordsCompleted || 0;
   if (liveWordsTargetEl) {
-    // Daily Moment: 12-word target. Lesson play: wordsPerLevel. Fall back to 5.
-    let target = 5;
-    if (gameState.mode === 'dailyMoment' || gameState.dailyMoment?.active) {
-      target = gameState.dailyMoment?.wordsTarget || 12;
-    } else {
-      const lesson = currentLesson();
-      if (lesson && lesson.wordsPerLevel) target = lesson.wordsPerLevel;
-    }
+    const target = wordsTarget();
     liveWordsTargetEl.textContent = target;
     // T30: also update the inline progress bar
     const fillEl = document.getElementById('live-progress-fill');
@@ -739,9 +746,10 @@ function updateTargetDisplay() {
       const isLeft = 'asdfgqwertzxcvb'.includes(lowerCh);
       const zoneClass = isNext ? (isLeft ? 'finger-left' : 'finger-right') : '';
       const stateClass = isTyped ? 'typed' : (isNext ? 'next' : '');
-      html += `<span class="tw-char ${stateClass} ${zoneClass}">${ch}</span>`;
+      html += `<span class="tw-char ${stateClass} ${zoneClass}" aria-hidden="true">${ch}</span>`;
     }
-    targetWord.innerHTML = html;
+    // Screen readers get the whole word, not one letter at a time.
+    targetWord.innerHTML = `<span class="sr-only">${word}</span>${html}`;
 
     if (targetTyped) targetTyped.textContent = word.slice(0, typed);
 
@@ -1147,6 +1155,7 @@ function finishDrill() {
       { count: wordsCompleted, wpm, accuracy },
     );
     toast.classList.remove('hidden');
+    announce(`${toast.querySelector('#toast-title').textContent} ${toast.querySelector('#toast-desc').textContent}`);
     setTimeout(() => toast.classList.add('hidden'), 4000);
   }
 
@@ -1225,6 +1234,7 @@ function showNextAchievement() {
     document.getElementById('toast-title').textContent = title;
     document.getElementById('toast-desc').textContent = desc;
     toast.classList.remove('hidden');
+    announce(`${title} ${desc}`);
     setTimeout(() => {
       toast.classList.add('hidden');
       achievementShowing = false;
@@ -1258,6 +1268,7 @@ function checkAchievements() {
 let dailyMomentCountdownId = null;
 
 export function startDailyMoment() {
+  wordDoneMessage = '';
   initAudio();
   playAmbient();
 
@@ -1416,6 +1427,7 @@ export function endDailyMoment({ reason } = {}) {
       { count: wordsCompleted, wpm, accuracy },
     );
     toast.classList.remove('hidden');
+    announce(`${toast.querySelector('#toast-title').textContent} ${toast.querySelector('#toast-desc').textContent}`);
     setTimeout(() => toast.classList.add('hidden'), 4000);
   }
 
@@ -1432,6 +1444,7 @@ export function endDailyMoment({ reason } = {}) {
 
 // ===== START GAME =====
 export function startGame(level = 1) {
+  wordDoneMessage = '';
   initAudio();
   playAmbient();
 
@@ -1502,6 +1515,7 @@ export function startGame(level = 1) {
 }
 
 export function startDrillMode(drillLesson) {
+  wordDoneMessage = '';
   initAudio();
   playAmbient();
   resetGameSession(gameState, {
@@ -1566,6 +1580,8 @@ function preloadImages() {
   return Promise.all(images);
 }
 
+let pauseOpener = null;
+
 export function togglePause() {
   gameState.paused = !gameState.paused;
   // Paused time is not practice time, for WPM or the teacher's minutes.
@@ -1586,6 +1602,9 @@ export function togglePause() {
   }
   const overlay = document.getElementById('pause-overlay');
   if (gameState.paused) {
+    // Remember what opened the pause card (the button, or the game itself
+    // for Esc) so closing it puts focus back there.
+    pauseOpener = document.activeElement;
     overlay.classList.remove('hidden');
     overlay.setAttribute('aria-hidden', 'false');
     canvas.classList.add('blurred');
@@ -1594,7 +1613,10 @@ export function togglePause() {
     overlay.classList.add('hidden');
     overlay.setAttribute('aria-hidden', 'true');
     canvas.classList.remove('blurred');
-    document.getElementById('game-screen')?.focus();
+    const opener = pauseOpener?.isConnected && pauseOpener.getClientRects().length && !overlay.contains(pauseOpener)
+      ? pauseOpener : document.getElementById('game-screen');
+    pauseOpener = null;
+    opener?.focus();
   }
 }
 
@@ -1711,6 +1733,7 @@ function showLevelComplete() {
     overlay.classList.remove('hidden');
     overlay.setAttribute('aria-hidden', 'false');
     nextBtn?.focus();
+    announce(`${t('game.levelCompleteNamed', { level: gameState.level })} ${t('game.starsEarned', { count: stars })}`);
   }
 }
 
@@ -1782,7 +1805,8 @@ export function showScreen(name) {
     const focusTargets = {
       menu: 'btn-start',
       'lesson-select': 'btn-lesson-back',
-      practice: 'btn-practice-back',
+      // Typing areas are role=application so screen readers pass keys through.
+      practice: 'practice-area',
       profile: 'btn-profile-back',
       garden: 'btn-garden-back',
       game: 'game-screen',
