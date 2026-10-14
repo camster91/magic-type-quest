@@ -87,10 +87,15 @@ export const US_EXEMPTION_NOTE =
  * Tax lines for a buyer location.
  * @param {string} country 'CA' or 'US'
  * @param {string} region province, territory or state code, e.g. 'ON', 'NY'
- * @param {{ collectProvincial?: boolean }} [options]
+ * @param {{ collectFederal?: boolean, collectProvincial?: boolean }} [options]
+ *   collectFederal: charge GST/HST. Off by default: an unregistered small
+ *   supplier must not charge it. Turn on only once registered with the CRA.
  * @returns {{ lines: {name: string, rate: number}[], notes: string[] }}
  */
-export function taxFor(country, region, { collectProvincial = false } = {}) {
+export const GST_NOT_REGISTERED_NOTE =
+  'No GST/HST charged: the vendor is not registered for GST/HST (small supplier).';
+
+export function taxFor(country, region, { collectFederal = false, collectProvincial = false } = {}) {
   const c = String(country || '').toUpperCase();
   const r = String(region || '').toUpperCase();
   if (c === 'CA') {
@@ -99,7 +104,9 @@ export function taxFor(country, region, { collectProvincial = false } = {}) {
     const notes = [];
     const lines = [];
     for (const line of entry.lines) {
-      if (line.kind === 'provincial' && !collectProvincial) {
+      if (line.kind === 'federal' && !collectFederal) {
+        if (!notes.includes(GST_NOT_REGISTERED_NOTE)) notes.push(GST_NOT_REGISTERED_NOTE);
+      } else if (line.kind === 'provincial' && !collectProvincial) {
         notes.push(`${line.name} (${formatRate(line.rate)}) not charged by the vendor; the buyer may need to self-assess.`);
       } else {
         lines.push({ name: line.name, rate: line.rate });
@@ -122,9 +129,10 @@ export function taxFor(country, region, { collectProvincial = false } = {}) {
  * @param {boolean} [input.pilot] apply the pilot discount
  * @param {string} input.country 'CA' or 'US'
  * @param {string} input.region province/territory/state code
+ * @param {boolean} [input.collectFederal] charge GST/HST (vendor registered with the CRA)
  * @param {boolean} [input.collectProvincial] charge PST/RST/QST (vendor registered)
  */
-export function computeQuote({ plan, quantity, pilot = false, country, region, collectProvincial = false }) {
+export function computeQuote({ plan, quantity, pilot = false, country, region, collectFederal = false, collectProvincial = false }) {
   const p = PLANS[plan];
   if (!p) throw new Error(`Unknown plan: ${plan}`);
   const qty = Number(quantity);
@@ -142,7 +150,7 @@ export function computeQuote({ plan, quantity, pilot = false, country, region, c
   if (pilot) notes.push(`Pilot discount: ${Math.round(PILOT_DISCOUNT * 100)}% off the first year.`);
   const taxable = subtotal - discount;
 
-  const tax = taxFor(c, region, { collectProvincial });
+  const tax = taxFor(c, region, { collectFederal, collectProvincial });
   const taxes = tax.lines.map((line) => ({ ...line, amount: roundHalfUp(taxable * line.rate) }));
   const taxTotal = taxes.reduce((sum, t) => sum + t.amount, 0);
 

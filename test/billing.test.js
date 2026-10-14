@@ -10,6 +10,7 @@ import {
   formatMoney,
   formatRate,
   taxFor,
+  GST_NOT_REGISTERED_NOTE,
 } from '../src/billing.js';
 
 const root = resolve(import.meta.dirname, '..');
@@ -49,7 +50,7 @@ describe('billing plans', () => {
 
 describe('pilot discount', () => {
   it('takes half off before tax', () => {
-    const q = computeQuote({ plan: 'school', quantity: 1, pilot: true, country: 'CA', region: 'ON' });
+    const q = computeQuote({ plan: 'school', quantity: 1, pilot: true, country: 'CA', region: 'ON', collectFederal: true });
     expect(q.discount).toBe(14950);
     expect(q.taxable).toBe(14950);
     expect(q.taxes).toEqual([{ name: 'HST', rate: 0.13, amount: 1944 }]);
@@ -64,35 +65,44 @@ describe('pilot discount', () => {
   });
 });
 
+const GST = { collectFederal: true };
+
 describe('Canadian tax', () => {
+  it('charges no GST/HST unless the vendor is registered', () => {
+    const q = computeQuote({ plan: 'school', quantity: 1, country: 'CA', region: 'ON' });
+    expect(q.taxes).toEqual([]);
+    expect(q.total).toBe(29900);
+    expect(q.notes).toContain(GST_NOT_REGISTERED_NOTE);
+  });
+
   it('charges Ontario HST at 13%', () => {
-    const q = computeQuote({ plan: 'school', quantity: 1, country: 'CA', region: 'on' });
+    const q = computeQuote({ plan: 'school', quantity: 1, country: 'CA', region: 'on', collectFederal: true });
     expect(q.currency).toBe('CAD');
     expect(q.taxTotal).toBe(3887);
     expect(q.total).toBe(33787);
   });
 
   it('uses the current Atlantic HST rates', () => {
-    expect(taxFor('CA', 'NS').lines).toEqual([{ name: 'HST', rate: 0.14 }]);
-    for (const p of ['NB', 'NL', 'PE']) expect(taxFor('CA', p).lines).toEqual([{ name: 'HST', rate: 0.15 }]);
+    expect(taxFor('CA', 'NS', GST).lines).toEqual([{ name: 'HST', rate: 0.14 }]);
+    for (const p of ['NB', 'NL', 'PE']) expect(taxFor('CA', p, GST).lines).toEqual([{ name: 'HST', rate: 0.15 }]);
   });
 
   it('charges only GST in GST-only provinces and territories', () => {
-    for (const p of ['AB', 'NT', 'NU', 'YT']) expect(taxFor('CA', p).lines).toEqual([{ name: 'GST', rate: 0.05 }]);
+    for (const p of ['AB', 'NT', 'NU', 'YT']) expect(taxFor('CA', p, GST).lines).toEqual([{ name: 'GST', rate: 0.05 }]);
   });
 
   it('leaves provincial tax off by default with a self-assess note', () => {
-    const t = taxFor('CA', 'BC');
+    const t = taxFor('CA', 'BC', GST);
     expect(t.lines).toEqual([{ name: 'GST', rate: 0.05 }]);
     expect(t.notes[0]).toMatch(/BC PST \(7%\).*self-assess/);
   });
 
   it('charges PST, RST and QST when the vendor is registered', () => {
-    const qc = computeQuote({ plan: 'school', quantity: 1, country: 'CA', region: 'QC', collectProvincial: true });
+    const qc = computeQuote({ plan: 'school', quantity: 1, country: 'CA', region: 'QC', collectFederal: true, collectProvincial: true });
     expect(qc.taxes.map((t) => [t.name, t.amount])).toEqual([['GST', 1495], ['QST', 2983]]);
-    const sk = computeQuote({ plan: 'classroom', quantity: 10, country: 'CA', region: 'SK', collectProvincial: true });
+    const sk = computeQuote({ plan: 'classroom', quantity: 10, country: 'CA', region: 'SK', collectFederal: true, collectProvincial: true });
     expect(sk.taxes.map((t) => t.amount)).toEqual([1950, 2340]);
-    const mb = taxFor('CA', 'MB', { collectProvincial: true });
+    const mb = taxFor('CA', 'MB', { collectFederal: true, collectProvincial: true });
     expect(mb.lines.map((l) => l.rate)).toEqual([0.05, 0.07]);
   });
 

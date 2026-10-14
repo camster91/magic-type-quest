@@ -5,7 +5,7 @@
 // Parameters (all optional):
 //   no, date (YYYY-MM-DD), school, attn, address (new lines as %0A), email,
 //   plan (classroom|school|district), qty, pilot (1), country (CA|US),
-//   region (ON, BC, NY...), pst (1 = vendor charges PST/RST/QST),
+//   region (ON, BC, NY...), gst (1 = vendor charges GST/HST), pst (1 = vendor charges PST/RST/QST),
 //   valid (quote validity in days), po and quote (invoice only).
 import { PLANS, PAYMENT_TERMS_DAYS, addDays, computeQuote, formatMoney, formatRate } from './billing.js';
 
@@ -20,7 +20,8 @@ function today() {
 }
 
 function readParams() {
-  const params = new URLSearchParams(location.search);
+  // Details live in the #fragment, which browsers never send to the server.
+  const params = new URLSearchParams(location.hash.slice(1));
   const values = { ...DEFAULTS, date: today() };
   for (const [key, value] of params) values[key] = value;
   return values;
@@ -61,6 +62,7 @@ function render(values) {
       pilot: values.pilot === '1',
       country: values.country,
       region: values.region,
+      collectFederal: values.gst === '1',
       collectProvincial: values.pst === '1',
     });
     const money = (cents) => formatMoney(cents, q.currency);
@@ -130,7 +132,7 @@ function fromForm() {
     const value = el.type === 'checkbox' ? (el.checked ? '1' : '') : el.value.trim();
     if (value) params.set(el.name, value);
   }
-  history.replaceState(null, '', `${location.pathname}?${params}`);
+  history.replaceState(null, '', `${location.pathname}#${params}`);
   return readParams();
 }
 
@@ -138,4 +140,10 @@ const initial = readParams();
 syncForm(initial);
 render(initial);
 form?.addEventListener('input', () => render(fromForm()));
+// Editing the #details in the address bar doesn't reload the page.
+window.addEventListener('hashchange', () => {
+  const values = readParams();
+  syncForm(values);
+  render(values);
+});
 document.getElementById('print')?.addEventListener('click', () => window.print());

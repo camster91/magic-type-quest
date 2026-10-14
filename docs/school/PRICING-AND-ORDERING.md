@@ -109,11 +109,13 @@ School procurement usually asks for these before it can raise a PO. Fill them in
 
 | File | What it does |
 |---|---|
-| [`public/billing/quote.html`](../../public/billing/quote.html) | Printable quote. Fill it in on screen or with URL parameters. |
+| [`public/billing/quote.html`](../../public/billing/quote.html) | Printable quote. Fill it in on screen or with a link (see below). |
 | [`public/billing/invoice.html`](../../public/billing/invoice.html) | Printable invoice with PO number, net-30 due date and remit-to details. |
 | [`public/billing/vendor-info.html`](../../public/billing/vendor-info.html) | One-page vendor information sheet for procurement. |
 | [`src/billing.js`](../../src/billing.js) | The price list, pilot discount and tax table, with tests in `test/billing.test.js`. The pages load a copy at `public/billing/billing.js`; a test fails if the two differ. |
 
-URL parameters for the quote and invoice: `no`, `date` (YYYY-MM-DD), `school`, `attn`, `address` (new lines as `%0A`), `email`, `plan` (`classroom`, `school` or `district`), `qty`, `pilot=1`, `country` (`CA` or `US`), `region` (for example `ON` or `NY`), `pst=1`, `valid` (quote days), and for the invoice `po` and `quote`. Nothing is sent anywhere; the details live only in the link.
+Link fields for the quote and invoice go after a `#`, for example `quote.html#plan=school&qty=1&country=CA&region=ON`. The part after `#` is never sent to the web server, so school names and contacts stay out of server logs. Fields: `no`, `date` (YYYY-MM-DD), `school`, `attn`, `address` (new lines as `%0A`), `email`, `plan` (`classroom`, `school` or `district`), `qty`, `pilot=1`, `country` (`CA` or `US`), `region` (for example `ON` or `NY`), `gst=1`, `pst=1`, `valid` (quote days), and for the invoice `po` and `quote`. A link still sits in browser history, so send schools the printed PDF rather than the link.
+
+**GST/HST is off by default.** An unregistered small supplier must not charge GST/HST. Tick “Charge GST/HST” (or add `gst=1`) only once the business is registered with the CRA.
 
 **Before the first real invoice, the owner must:** confirm the prices, replace every `[OWNER: …]` placeholder in the three pages, decide on GST/HST registration with an accountant, and prepare the bank letter and W-8BEN(-E).
