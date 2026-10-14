@@ -6,3 +6,7 @@ playwright-report/
 .env.*
 
 gauntlet-*
+
+# Pilot exports and the generated report draft (may hold unreviewed quotes)
+pilot-data/
+docs/pilot/PILOT-REPORT-DRAFT.md

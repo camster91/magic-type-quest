@@ -1,0 +1,15 @@
+{
+  "type": "bloomtype-pilot-feedback",
+  "version": 1,
+  "role": "parent",
+  "language": "en",
+  "savedOn": "2026-10-13",
+  "answers": {
+    "setupEase": 2,
+    "childEnjoyment": 3,
+    "typingImprovement": 2,
+    "minutesPerWeek": "under30",
+    "wouldRecommend": 3,
+    "comments": "Too hard at first, better after week two."
+  }
+}

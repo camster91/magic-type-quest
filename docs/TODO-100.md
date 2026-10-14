@@ -114,7 +114,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 ### Pilots and proof
 - [ ] **Owner:** recruit 5 pilot classrooms and 20 homeschool families.
 - [x] **Claude:** add an opt-in, anonymous pilot survey, and local-only progress summaries that teachers can export. No tracking of children. ✅ survey on the teacher and parent pages, plus an anonymised pilot summary export; see docs/pilot/PILOT-SURVEY.md.
-- [ ] **Claude:** write a 6-week pilot report: speed and accuracy gains, minutes used, teacher quotes. **Done when:** it's published on the landing page.
+- [ ] **Claude:** write a 6-week pilot report: speed and accuracy gains, minutes used, teacher quotes. **Done when:** it's published on the landing page. tooling ✅ (`npm run pilot:report`); waits on pilot data.
 
 ### Getting found
 - [ ] **Claude:** a landing page with a 30-second Meadow trailer (Higgsfield), a teacher demo video, the free-for-families promise and the school price list. Lighthouse 100.

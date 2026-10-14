@@ -1,0 +1,15 @@
+{
+  "type": "bloomtype-pilot-feedback",
+  "version": 1,
+  "role": "teacher",
+  "language": "en",
+  "savedOn": "2026-10-13",
+  "answers": {
+    "setupEase": 4,
+    "childEnjoyment": 5,
+    "typingImprovement": 4,
+    "minutesPerWeek": "30to60",
+    "wouldRecommend": 5,
+    "comments": "The meadow kept them going all term."
+  }
+}
