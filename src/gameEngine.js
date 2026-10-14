@@ -636,7 +636,8 @@ function updateHUD() {
   const accuracyEl = document.getElementById('accuracy');
 
   if (scoreEl) scoreEl.textContent = formatNumber(gameState.score);
-  if (levelEl) levelEl.textContent = formatNumber(gameState.level);
+  // Weak-key drills use the level 'drill', which isn't a number.
+  if (levelEl) levelEl.textContent = typeof gameState.level === 'number' ? formatNumber(gameState.level) : '🎯';
 
   if (accuracyEl) {
     const accuracy = gameState.totalKeystrokes > 0
