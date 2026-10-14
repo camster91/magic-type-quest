@@ -14,8 +14,11 @@ test('a save code moves progress to a fresh device without an account', async ({
   });
   await pageA.goto('');
   await pageA.locator('#btn-profile').click();
+  // The app code loads after the menu paints, so wait for the code to appear.
+  const codePattern = /^[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}$/;
+  await expect(pageA.locator('#restore-code')).toHaveText(codePattern);
   const code = (await pageA.locator('#restore-code').textContent()).trim();
-  expect(code).toMatch(/^[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}$/);
+  expect(code).toMatch(codePattern);
   await deviceA.close();
 
   const deviceB = await browser.newContext();
