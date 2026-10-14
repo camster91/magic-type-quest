@@ -1,0 +1,16 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:03.000
+Créez un NIP enseignant pour être seul à voir les progrès de la classe.
+
+00:00:03.000 --> 00:00:06.500
+Créez une classe. Elle reçoit un code de classe de 6 caractères.
+
+00:00:06.500 --> 00:00:10.700
+Imprimez les cartes d'accès : une par élève, avec le code et trois étapes.
+
+00:00:10.700 --> 00:00:14.500
+Ouvrez le rapport de la classe : vitesse, précision, touches difficiles et minutes de chaque élève.
+
+00:00:14.500 --> 00:00:18.200
+Exportez-le en fichier CSV, ou imprimez les codes de sauvegarde si un élève perd ses progrès.

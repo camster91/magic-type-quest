@@ -382,6 +382,69 @@
       line-height: 1.5;
     }
 
+    /* ===== VIDEOS (trailer + teacher demo) ===== */
+    .trailer {
+      padding: 80px 32px 40px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .video-figure { max-width: 960px; margin: 0 auto; }
+    .landing-video {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      border-radius: 20px;
+      background: var(--bg-night-2);
+      border: 1px solid rgba(var(--rgb-white), 0.12);
+      box-shadow: var(--shadow-pop);
+    }
+    .video-caption {
+      margin: 14px auto 0;
+      max-width: 720px;
+      text-align: center;
+      color: rgba(var(--rgb-lilac), 0.72);
+      font-size: 0.92rem;
+    }
+    .teacher-demo { margin-top: 56px; }
+    .teacher-demo h3 {
+      font-family: var(--display);
+      font-size: clamp(1.3rem, 2.2vw, 1.7rem);
+      color: var(--white);
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    /* ===== FREE FOR FAMILIES ===== */
+    .families {
+      padding: 80px 32px;
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+    .families-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .promise {
+      padding: 26px 24px;
+      background: rgba(var(--rgb-mint), 0.08);
+      border: 1px solid rgba(var(--rgb-mint), 0.3);
+      border-radius: 20px;
+    }
+    .promise h3 {
+      font-family: var(--display);
+      font-size: 1.15rem;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+    .promise p { color: rgba(var(--rgb-lilac), 0.8); font-size: 0.95rem; line-height: 1.5; }
+    .families-actions {
+      display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+      margin-top: 32px;
+    }
+    .families-actions .price-cta { min-width: 220px; }
+
     /* ===== PRICING ===== */
     .pricing {
       padding: 80px 32px;
@@ -389,10 +452,11 @@
         radial-gradient(ellipse at bottom, rgba(var(--rgb-accent), 0.10) 0%, transparent 50%),
         var(--bg-night-2);
     }
-    .pricing-inner { max-width: 980px; margin: 0 auto; }
+    .pricing-inner { max-width: 1120px; margin: 0 auto; }
+    .price-note { display: inline-block; margin-top: 16px; padding: 8px 16px; border: 1px dashed var(--streak-gold); border-radius: 12px; color: var(--streak-gold); font-weight: 700; }
     .price-table {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 24px;
       margin-top: 40px;
     }
@@ -482,6 +546,18 @@
       font-size: 0.92rem;
     }
     .price-foot strong { color: rgba(var(--rgb-lilac), 0.9); }
+    .pilot-note {
+      max-width: 720px;
+      margin: 32px auto 0;
+      padding: 16px 20px;
+      text-align: center;
+      border-radius: 16px;
+      background: rgba(var(--rgb-green-ok), 0.08);
+      border: 1px solid rgba(var(--rgb-green-ok), 0.3);
+      color: rgba(var(--rgb-lilac), 0.85);
+      font-size: 0.95rem;
+    }
+    .pilot-note strong { color: var(--mint); }
 
     /* ===== PRIVACY ===== */
     .privacy {
@@ -588,13 +664,14 @@
       .features-grid { grid-template-columns: repeat(2, 1fr); }
       .price-table { grid-template-columns: 1fr; }
       .privacy-grid { grid-template-columns: 1fr; }
+      .families-grid { grid-template-columns: 1fr; }
       .nav-links a:not(.nav-cta) { display: none; }
     }
     @media (max-width: 560px) {
       .hero { padding: 48px 20px 40px; }
       .nav { padding: 14px 20px; }
       .features-grid { grid-template-columns: 1fr; }
-      .bets, .classroom, .demo, .pricing, .privacy, .signup { padding-left: 20px; padding-right: 20px; }
+      .bets, .classroom, .demo, .pricing, .privacy, .signup, .trailer, .families { padding-left: 20px; padding-right: 20px; }
     }
   </style>
 </head>
@@ -623,7 +700,7 @@
   <p class="lede" data-page-i18n="landing.lede">BloomType turns keyboard practice into a calm, garden-typing adventure. Kids build a 7-day streak. Teachers can review and export progress stored on the same classroom browser.</p>
   <div class="hero-actions">
     <a href="./index.html" class="btn btn-primary" data-page-i18n="landing.ctaTry">🌸 Try it free with your class</a>
-    <a href="#demo" class="btn btn-secondary" data-page-i18n="landing.ctaDemo">▶ See it in action</a>
+    <a href="#trailer" class="btn btn-secondary" data-page-i18n="landing.ctaDemo">▶ See it in action</a>
   </div>
 
   <!-- ===== 3 BETS (T5) ===== -->
@@ -664,6 +741,30 @@
     </div>
   </section>
 </header>
+
+<!-- ===== MEADOW TRAILER =====
+     preload="none": the video downloads only when someone presses play, so
+     the page stays inside its 500 KB budget. src/landing.js sets the small
+     WebP poster from data-poster as the video nears the screen, so it never
+     competes with the fonts and the hero on first load. -->
+<section id="trailer" class="trailer" aria-labelledby="trailer-title">
+  <div class="section-head">
+    <span class="kicker" data-page-i18n="landing.trailerKicker">The Meadow</span>
+    <h2 data-page-i18n="landing.trailerTitle" id="trailer-title">Watch the Meadow come back to life</h2>
+    <p data-page-i18n="landing.trailerText">Every word a child types plants something. A dry field slowly turns into a meadow full of flowers, bees, butterflies and birds.</p>
+  </div>
+  <figure class="video-figure">
+    <video id="trailer-video" class="landing-video" controls preload="none" playsinline width="1280" height="720"
+      data-poster="media/meadow-trailer-poster.webp" aria-label="BloomType Meadow trailer, 30 seconds" data-page-i18n-aria-label="landing.trailerLabel"
+      aria-describedby="trailer-caption">
+      <source src="media/meadow-trailer.mp4" type="video/mp4">
+      <track kind="captions" src="media/meadow-trailer.en.vtt" srclang="en" label="English" default>
+      <track kind="captions" src="media/meadow-trailer.fr.vtt" srclang="fr" label="Français">
+      <track kind="captions" src="media/meadow-trailer.es.vtt" srclang="es" label="Español">
+    </video>
+    <figcaption id="trailer-caption" class="video-caption" data-page-i18n="landing.trailerCaption">30-second trailer, painted in the game's own style. It has no sound and no words, so it works in any language. Press play to load it.</figcaption>
+  </figure>
+</section>
 
 <!-- ===== 30-SEC GAMEPLAY LOOP ===== -->
 <section id="demo" class="demo" aria-labelledby="demo-title">
@@ -737,59 +838,115 @@
       <p data-page-i18n="landing.feature8Text">No third-party analytics, ads, or behavioral profiling. Progress stays on the device unless an authenticated school deployment enables cloud sync.</p>
     </article>
   </div>
+
+  <figure class="video-figure teacher-demo">
+    <h3 data-page-i18n="landing.teacherDemoTitle" id="teacher-demo-title">Watch: a class ready in under 20 seconds</h3>
+    <video id="teacher-demo-video" class="landing-video" controls preload="none" playsinline width="1280" height="720"
+      data-poster="media/teacher-demo-poster.webp" aria-label="Teacher dashboard demo" data-page-i18n-aria-label="landing.teacherDemoLabel"
+      aria-describedby="teacher-demo-caption">
+      <source src="media/teacher-demo.mp4" type="video/mp4">
+      <track kind="captions" src="media/teacher-demo.en.vtt" srclang="en" label="English" default>
+      <track kind="captions" src="media/teacher-demo.fr.vtt" srclang="fr" label="Français">
+      <track kind="captions" src="media/teacher-demo.es.vtt" srclang="es" label="Español">
+    </video>
+    <figcaption id="teacher-demo-caption" class="video-caption" data-page-i18n="landing.teacherDemoCaption">Screen recording of the real teacher dashboard: create a class, print the join cards, then open the class report. The students are made-up demo names. Captions in English, French and Spanish.</figcaption>
+  </figure>
 </section>
 
-<!-- ===== PRICING (T4) ===== -->
+<!-- ===== FREE FOR FAMILIES ===== -->
+<section id="families" class="families" aria-labelledby="families-title">
+  <div class="section-head">
+    <span class="kicker" data-page-i18n="landing.familiesKicker">For families</span>
+    <h2 data-page-i18n="landing.familiesTitle" id="families-title">Free for families. Always.</h2>
+    <p data-page-i18n="landing.familiesText">Our promise to parents and homeschoolers: the whole learning game stays free, and your child's progress stays yours.</p>
+  </div>
+  <div class="families-grid">
+    <article class="promise">
+      <span class="feature-icon" aria-hidden="true">🌼</span>
+      <h3 data-page-i18n="landing.family1Title">Free and ad-free</h3>
+      <p data-page-i18n="landing.family1Text">Every level, practice, the Meadow and the parent page. No ads, no in-app purchases, no trial that runs out.</p>
+    </article>
+    <article class="promise">
+      <span class="feature-icon" aria-hidden="true">🙈</span>
+      <h3 data-page-i18n="landing.family2Title">No tracking of children</h3>
+      <p data-page-i18n="landing.family2Text">No analytics, no ad trackers, no profiling. We never ask a child for an email address.</p>
+    </article>
+    <article class="promise">
+      <span class="feature-icon" aria-hidden="true">💾</span>
+      <h3 data-page-i18n="landing.family3Title">Progress stays on the device</h3>
+      <p data-page-i18n="landing.family3Text">Progress is saved in this browser, not on our servers. No account needed, and you can delete it at any time.</p>
+    </article>
+  </div>
+  <div class="families-actions">
+    <a data-page-i18n="landing.studentCta" href="./index.html" class="price-cta gold">🌸 Start playing free</a>
+    <a data-page-i18n="landing.footerParents" href="./parents.html" class="price-cta ghost">For parents</a>
+  </div>
+</section>
+<!-- ===== SCHOOL PRICE LIST (docs/GO-TO-MARKET.md, docs/school/PRICING-AND-ORDERING.md) ===== -->
+<!-- OWNER: "Request a quote" is a mailto placeholder. Point it at a quote request page when one is published. -->
 <section id="pricing" class="pricing" aria-labelledby="pricing-title">
   <div class="pricing-inner">
     <div class="section-head">
       <span class="kicker" data-page-i18n="landing.pricing">Pricing</span>
-      <h2 data-page-i18n="landing.pricingTitle" id="pricing-title">Student play is free. Supervised school pilots are available by request.</h2>
-      <p data-page-i18n="landing.pricingText">Teacher pricing is a proposed model, not an open commercial offer, while privacy and pilot validation remain incomplete.</p>
+      <h2 data-page-i18n="landing.pricingTitle" id="pricing-title">Simple prices for schools</h2>
+      <p data-page-i18n="landing.pricingText">Children always play free. Schools pay only for the adult tools: cloud dashboards, rostering and reports. Prices are per year, in CAD for Canadian schools and USD for US schools.</p>
+      <p data-page-i18n="landing.pricingNote" class="price-note" role="note">Proposed prices. Not for sale yet: school plans open after our privacy review. Families stay free.</p>
     </div>
 
     <div class="price-table">
-      <article class="price-card">
-        <div data-page-i18n="landing.tierStudents" class="price-tier">For Students</div>
+      <article class="price-card" data-plan="classroom">
+        <h3 data-page-i18n="landing.planClassroom" class="price-tier">Classroom</h3>
         <div class="price-amount">
-          <span class="num">$0</span>
+          <span class="num">$39</span>
+          <span data-page-i18n="landing.perTeacherYear" class="per">/ teacher / year</span>
         </div>
-        <div data-page-i18n="landing.alwaysFree" class="price-tag">Always free</div>
+        <div data-page-i18n="landing.classroomTag" class="price-tag">One teacher, up to 40 students</div>
         <ul class="price-features">
-          <li data-page-i18n="landing.studentFeature1">Full game, all 10 levels</li>
-          <li data-page-i18n="landing.studentFeature2">Pet evolution + garden</li>
-          <li data-page-i18n="landing.dailyMoment">Daily 60-second Moment</li>
-          <li data-page-i18n="landing.studentFeature3">Optional local class-code membership</li>
-          <li data-page-i18n="landing.studentFeature4">Works on any device, offline</li>
+          <li data-page-i18n="landing.classroomFeature1">Cloud class dashboard across devices</li>
+          <li data-page-i18n="landing.classroomFeature2">Shared-device class login</li>
+          <li data-page-i18n="landing.classroomFeature3">Google Classroom roster sync</li>
+          <li data-page-i18n="landing.classroomFeature4">CSV and PDF reports, email support</li>
         </ul>
-        <a data-page-i18n="landing.studentCta" href="./index.html" class="price-cta ghost">🌸 Start playing free</a>
+        <a data-page-i18n="landing.quoteCta" href="mailto:cameron@ashbi.ca?subject=BloomType%20quote%3A%20Classroom" class="price-cta ghost">Request a quote</a>
       </article>
 
-      <article class="price-card featured" data-badge="Most popular">
-        <div data-page-i18n="landing.tierTeachers" class="price-tier">For Teachers</div>
+      <article class="price-card featured" data-plan="school" data-badge="Best for schools">
+        <h3 data-page-i18n="landing.planSchool" class="price-tier">School</h3>
         <div class="price-amount">
-          <span class="num">$10</span>
-          <span data-page-i18n="landing.perTeacher" class="per">/month per teacher</span>
+          <span class="num">$299</span>
+          <span data-page-i18n="landing.perSchoolYear" class="per">/ school / year</span>
         </div>
-        <div data-page-i18n="landing.teacherTag" class="price-tag">Proposed pilot pricing · not yet generally available</div>
+        <div data-page-i18n="landing.schoolTag" class="price-tag">All teachers, unlimited students</div>
         <ul class="price-features">
-          <li data-page-i18n="landing.teacherFeature1">Everything in Student, plus:</li>
-          <li data-page-i18n="landing.teacherFeature2">Same-browser class dashboard + exports</li>
-          <li data-page-i18n="landing.teacherFeature3">CSV + JSON data export</li>
-          <li data-page-i18n="landing.teacherFeature4">Red-flag alerts for inactive students</li>
-          <li data-page-i18n="landing.teacherFeature5">Adaptive difficulty controls</li>
-          <li data-page-i18n="landing.teacherFeature6">Priority support for your school</li>
+          <li data-page-i18n="landing.schoolFeature1">Everything in Classroom</li>
+          <li data-page-i18n="landing.schoolFeature2">School admin view</li>
+          <li data-page-i18n="landing.schoolFeature3">ClassLink and Clever rostering</li>
+          <li data-page-i18n="landing.schoolFeature4">Signed data-privacy agreement (DPA)</li>
         </ul>
-        <a data-page-i18n="landing.teacherCta" href="#signup" class="price-cta gold">Request a supervised pilot</a>
+        <a data-page-i18n="landing.quoteCta" href="mailto:cameron@ashbi.ca?subject=BloomType%20quote%3A%20School" class="price-cta gold">Request a quote</a>
+      </article>
+
+      <article class="price-card" data-plan="district">
+        <h3 data-page-i18n="landing.planDistrict" class="price-tier">District</h3>
+        <div class="price-amount">
+          <span class="num">$0.75</span>
+          <span data-page-i18n="landing.perStudentYear" class="per">/ student / year</span>
+        </div>
+        <div data-page-i18n="landing.districtTag" class="price-tag">$750 minimum, several schools</div>
+        <ul class="price-features">
+          <li data-page-i18n="landing.districtFeature1">Everything in School</li>
+          <li data-page-i18n="landing.districtFeature2">District admin view and single sign-on</li>
+          <li data-page-i18n="landing.districtFeature3">Priority support</li>
+          <li data-page-i18n="landing.districtFeature4">Custom data-privacy agreement</li>
+        </ul>
+        <a data-page-i18n="landing.quoteCta" href="mailto:cameron@ashbi.ca?subject=BloomType%20quote%3A%20District" class="price-cta ghost">Request a quote</a>
       </article>
     </div>
 
-    <p data-page-i18n-html="landing.priceFoot" class="price-foot">
-      <strong>Planning a district evaluation?</strong> <a href="#signup" style="color: var(--lavender-l);">Contact us</a> to discuss requirements; production enrollment is not open yet.
-    </p>
+    <p data-page-i18n-html="landing.pilotNote" class="pilot-note"><strong>Free pilot of up to 8 weeks.</strong> No invoice, no commitment. Schools usually order with a quote, then a purchase order, then an invoice (net 30).</p>
+    <p data-page-i18n-html="landing.priceFoot" class="price-foot"><strong>Families and homeschoolers never pay.</strong> One teacher with one class can also use the local dashboard for free.</p>
   </div>
 </section>
-
 <!-- ===== PRIVACY ===== -->
 <section id="privacy" class="privacy" aria-labelledby="privacy-title">
   <div class="section-head">

@@ -39,6 +39,12 @@ _The headers and teacher PIN below arrive with PR #210; confirm them on the live
 - **Build and release:** CI runs lint, unit tests, browser tests (including automated accessibility checks) and a dependency audit on every change. Production images are built from pinned base images.
 - **No live AI** and no user-generated content shared between students.
 
+## Operations
+
+- **Uptime monitoring:** an automated check loads the game, teacher, parent and landing pages every 30 minutes and alerts the owner if any fails.
+- **Incident response:** a written [incident runbook](../ops/INCIDENT-RUNBOOK.md) covers outages, bad releases, leaked secrets and data breaches, including notifying schools and regulators.
+- **Backups (optional cloud sync only):** daily encrypted backups with a 30-day default retention, and a tested restore. See [backups](../ops/BACKUPS.md) and the [restore drill record](../ops/RESTORE-DRILL.md). The public version stores no student data on our servers, so there is nothing of students' to back up there.
+
 ## Device needs
 
 Any browser released in the last 3 years, a physical keyboard (typing practice), and about 5 MB of storage. Sound is optional.

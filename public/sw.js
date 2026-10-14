@@ -139,6 +139,9 @@ function strategyFor(request) {
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
-  if (new URL(request.url).origin !== self.location.origin) return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+  // Landing-page videos are large and streamed in ranges: never cache them.
+  if (url.pathname.includes("/media/")) return;
   event.respondWith(strategyFor(request)(request, event));
 });

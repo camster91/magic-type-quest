@@ -149,6 +149,14 @@ describe('service worker caching', () => {
     expect(worker.store.has(`${BASE}assets/nope.png`)).toBe(false);
     expect(await worker.request('https://example.com/x.js')).toBe('not handled');
   });
+
+  it('leaves the landing-page videos to the network, never precached or cached', async () => {
+    const worker = loadWorker({ network });
+    served[`${BASE}media/meadow-trailer.mp4`] = 'video';
+    expect(await worker.request(`${BASE}media/meadow-trailer.mp4`)).toBe('not handled');
+    expect(worker.store.has(`${BASE}media/meadow-trailer.mp4`)).toBe(false);
+    expect(source.match(/PRECACHE_ASSETS = \[[\s\S]*?\]/)[0]).not.toContain('media/');
+  });
 });
 
 describe('offline language switching', () => {
