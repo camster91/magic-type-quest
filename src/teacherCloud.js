@@ -11,8 +11,6 @@ import { buildCloudClassRows } from './teacherDashboard.js';
 import { CLASSROOM_SCOPES } from './roster/googleClassroom.js';
 import { importRosterToClass } from './roster/importer.js';
 
-const DAY_MS = 86_400_000;
-
 function throwIf(error) {
   if (error) throw error;
 }
@@ -43,7 +41,8 @@ export async function signInWithGoogle(sb, { redirectTo, classroom = false } = {
 /**
  * The signed-in teacher, or null. Anonymous (student) sessions never count.
  * providerToken is Google's access token, present only just after a Google
- * redirect; it is kept in memory, never stored.
+ * redirect. `sb` must be the teacher client (teacherAuth.js), which keeps
+ * the session in memory only, so the token is never stored.
  */
 export async function getTeacherSession(sb) {
   const { data, error } = await sb.auth.getSession();
@@ -97,30 +96,46 @@ export async function setCloudClassArchived(sb, classId, archived) {
   throwIf(error);
 }
 
+function rosterQuery(sb, classCode) {
+  return sb.from('class_roster').select('*').eq('class_code', classCode).order('total_stars', { ascending: false });
+}
+
+/**
+ * The joined roster of a class code the signed-in teacher owns, read with
+ * the teacher's client (the page's typed-code view). Null on any error.
+ */
+export async function fetchRosterByCode(sb, classCode) {
+  try {
+    const { data, error } = await rosterQuery(sb, classCode);
+    throwIf(error);
+    return data || [];
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Everything one class report needs, read under RLS: the joined roster
  * (via teacher_codes, as before), the imported names, and this week's
- * session minutes of the joined students.
+ * minutes per joined device. The minutes are summed in the database
+ * (class_weekly_minutes), so a busy class never runs into the API's
+ * 1,000-row response limit and loses minutes.
  */
 export async function fetchCloudClassReport(sb, cls, now = new Date()) {
-  const [{ data: roster, error: rosterError }, { data: imported, error: importedError }] = await Promise.all([
-    sb.from('class_roster').select('*').eq('class_code', cls.class_code).order('total_stars', { ascending: false }),
+  const [roster, imported, weekly] = await Promise.all([
+    rosterQuery(sb, cls.class_code),
     sb.from('roster_students').select('display_name, provider, external_id').eq('class_id', cls.id),
+    sb.rpc('class_weekly_minutes', { p_class_id: cls.id }),
   ]);
-  throwIf(rosterError);
-  throwIf(importedError);
-  const profileIds = [...new Set((roster || []).map((row) => row.profile_id).filter(Boolean))];
-  let sessions = [];
-  if (profileIds.length) {
-    const { data, error } = await sb
-      .from('game_sessions')
-      .select('profile_id, duration_seconds, created_at')
-      .in('profile_id', profileIds)
-      .gte('created_at', new Date(now.getTime() - 7 * DAY_MS).toISOString());
-    throwIf(error);
-    sessions = data || [];
-  }
-  return buildCloudClassRows({ roster: roster || [], imported: imported || [], sessions, now });
+  throwIf(roster.error);
+  throwIf(imported.error);
+  throwIf(weekly.error);
+  return buildCloudClassRows({
+    roster: roster.data || [],
+    imported: imported.data || [],
+    weeklyMinutes: Array.isArray(weekly.data) ? weekly.data : [],
+    now,
+  });
 }
 
 export { importRosterToClass };

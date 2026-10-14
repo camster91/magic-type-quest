@@ -5,7 +5,10 @@
 --   * a school admin sees only aggregates for their own school;
 --   * a student (anonymous account) cannot read the classes table or
 --     become a teacher;
---   * archived classes accept no new students, legacy class codes still do;
+--   * archived classes accept no new students, legacy class codes still do,
+--     and students already in an archived class keep syncing;
+--   * class_weekly_minutes sums a class's weekly minutes per student in SQL,
+--     for the owner only, correctly past the 1,000-row API limit;
 --   * imported rosters refuse emails.
 --
 -- Run it against a scratch database that has the stub and the schema:
@@ -237,6 +240,36 @@ do $$ begin
 end $$;
 set role authenticated;
 
+-- ===== Weekly minutes per student, summed in the database =====
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1', 'teacher.a@north.example');
+do $$
+declare
+  r record;
+begin
+  if (select count(*) from public.class_weekly_minutes(current_setting('bt.class_a')::uuid)) <> 1 then
+    raise exception 'FAIL: A''s class should have one profile with minutes';
+  end if;
+  select * into r from public.class_weekly_minutes(current_setting('bt.class_a')::uuid);
+  if r.profile_id <> '00000000-0000-0000-0000-000000000051' or r.minutes <> 15.00 then
+    raise exception 'FAIL: A''s weekly minutes wrong: %', r;
+  end if;
+  begin
+    perform * from public.class_weekly_minutes(current_setting('bt.class_b')::uuid);
+    raise exception 'FAIL: A read the minutes of B''s class';
+  exception when no_data_found then null;
+  end;
+  raise notice 'PASS: a teacher gets per-student weekly minutes for their own class only';
+end $$;
+select pg_temp.login('00000000-0000-0000-0000-000000000051', null, true);
+do $$ begin
+  begin
+    perform * from public.class_weekly_minutes(current_setting('bt.class_a')::uuid);
+    raise exception 'FAIL: a student read class minutes';
+  exception when insufficient_privilege then null;
+  end;
+  raise notice 'PASS: a student cannot read class weekly minutes';
+end $$;
+
 -- ===== Rename and archive (teacher A) =====
 select pg_temp.login('00000000-0000-0000-0000-0000000000a1', 'teacher.a@north.example');
 do $$ begin
@@ -255,7 +288,37 @@ do $$ begin
   exception when insufficient_privilege then null;
   end;
   if not public.class_code_exists('LEGACY1') then raise exception 'FAIL: legacy code closed'; end if;
+  if exists (select 1 from class_roster where profile_id = auth.uid()) then
+    raise exception 'FAIL: a refused join left a roster row';
+  end if;
   raise notice 'PASS: an archived class accepts no new students; legacy codes stay open';
+end $$;
+-- Sam joined before the class was archived, so Sam's saves still land.
+select pg_temp.login('00000000-0000-0000-0000-000000000051', null, true);
+do $$ begin
+  perform public.sync_class_membership(current_setting('bt.code_a'), 'Sam', '🌸', 42, 7, 90, '{1,2}');
+  if (select total_words from class_roster where profile_id = auth.uid() and class_code = current_setting('bt.code_a')) <> 42 then
+    raise exception 'FAIL: an existing member''s roster row did not update';
+  end if;
+  raise notice 'PASS: an existing member of an archived class still syncs their progress';
+end $$;
+-- Bea (in B's class) cannot move into the archived class, by RPC or directly.
+select pg_temp.login('00000000-0000-0000-0000-000000000052', null, true);
+do $$ begin
+  begin
+    perform public.sync_class_membership(current_setting('bt.code_a'), 'Bea', '🌼', 5, 1, 20, '{}');
+    raise exception 'FAIL: a student switched into an archived class';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    update class_roster set class_code = current_setting('bt.code_a') where profile_id = auth.uid();
+    raise exception 'FAIL: a student moved their roster row into an archived class';
+  exception when insufficient_privilege then null;
+  end;
+  if (select class_code from class_roster where profile_id = auth.uid()) <> current_setting('bt.code_b') then
+    raise exception 'FAIL: Bea lost her class';
+  end if;
+  raise notice 'PASS: a student from another class cannot move into an archived class';
 end $$;
 select pg_temp.login('00000000-0000-0000-0000-0000000000a1', 'teacher.a@north.example');
 do $$ begin
@@ -351,6 +414,30 @@ do $$ begin
   end if;
   if (select count(*) from teachers) <> 1 then raise exception 'FAIL: South admin sees North staff'; end if;
   raise notice 'PASS: another school''s admin sees none of these classes';
+end $$;
+
+reset role;
+-- ===== Weekly minutes stay correct past the 1,000-row API limit =====
+-- 1,500 one-minute sittings for Bea this week, one 25-minute sitting eight
+-- days ago (outside the week): the RPC returns one row with every minute.
+insert into game_sessions (profile_id, level, duration_seconds, created_at)
+  select '00000000-0000-0000-0000-000000000052', 1, 60, now() - interval '1 hour'
+    from generate_series(1, 1500);
+insert into game_sessions (profile_id, level, duration_seconds, created_at)
+  values ('00000000-0000-0000-0000-000000000052', 1, 1500, now() - interval '8 days');
+set role authenticated;
+select pg_temp.login('00000000-0000-0000-0000-0000000000b1', 'teacher.b@north.example');
+do $$
+declare
+  r record;
+begin
+  if (select count(*) from game_sessions) < 1500 then raise exception 'FAIL: setup'; end if;
+  if (select count(*) from public.class_weekly_minutes(current_setting('bt.class_b')::uuid)) <> 1 then
+    raise exception 'FAIL: expected one row for Bea';
+  end if;
+  select * into r from public.class_weekly_minutes(current_setting('bt.class_b')::uuid);
+  if r.minutes <> 1502.00 then raise exception 'FAIL: Bea''s weekly minutes: % (want 1502)', r.minutes; end if;
+  raise notice 'PASS: weekly minutes over 1,500 sessions come back as one correct row per student';
 end $$;
 
 reset role;

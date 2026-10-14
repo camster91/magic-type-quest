@@ -10,7 +10,7 @@
  *   - roster import (Google Classroom, CSV; ClassLink and Clever later);
  *   - the school admin overview (aggregates only).
  */
-import { getSupabase } from './sync.js';
+import { getTeacherSupabase } from './teacherAuth.js';
 import { escapeHTML } from './utils.js';
 import { formatNumber } from './i18n.js';
 import { pageT } from './pageTranslations.js';
@@ -18,6 +18,7 @@ import {
   claimTeacherRole,
   createCloudClass,
   fetchCloudClassReport,
+  fetchRosterByCode,
   fetchSchoolSummary,
   getTeacherSession,
   importRosterToClass,
@@ -92,6 +93,7 @@ async function startGoogleSignIn() {
 function resetCloudView() {
   state.session = null;
   state.role = null;
+  state.host.setRosterReader(null);
   state.classes = [];
   $('cloud-classes').hidden = true;
   $('admin-panel').hidden = true;
@@ -134,6 +136,7 @@ async function refreshSession() {
   $('cloud-intro').hidden = true;
   $('cloud-teacher-name').textContent = pageT('teacher.cloud.signedInAs', { name: session.displayName || session.email });
   state.role = role;
+  state.host.setRosterReader((code) => fetchRosterByCode(state.sb, code));
   state.host.openCloudOnly();
   $('cloud-classes').hidden = false;
   await loadClasses(storageGet(sessionStorage, RETURN_KEY) || storageGet(localStorage, SELECTED_KEY));
@@ -369,7 +372,7 @@ export async function mountTeacherCloud(host) {
   state.host = host;
   $('cloud-signin').hidden = false;
   $('cloud-panel').hidden = false;
-  state.sb = await getSupabase();
+  state.sb = await getTeacherSupabase();
   if (!state.sb) {
     // A pilot build without Supabase settings: say so, offer nothing.
     $('btn-google-signin').disabled = true;

@@ -37,20 +37,35 @@ export function weeklyMinutesByProfile(sessions = [], now = new Date()) {
   return minutes;
 }
 
+/**
+ * The same per-profile minutes, from the class_weekly_minutes RPC (which
+ * sums them in the database): [{ profile_id, minutes }].
+ */
+export function weeklyMinutesFromRows(rows = []) {
+  const minutes = new Map();
+  for (const row of rows) {
+    const value = Number(row?.minutes);
+    if (!row?.profile_id || !Number.isFinite(value) || value <= 0) continue;
+    minutes.set(row.profile_id, (minutes.get(row.profile_id) || 0) + value);
+  }
+  return minutes;
+}
+
 const round1 = (n) => Math.round(n * 10) / 10;
 
 /**
  * One report row per student for a cloud class:
  *  - joined students (class_roster), one row per child across linked
- *    devices, with their minutes this week from game_sessions;
+ *    devices, with their minutes this week (`weeklyMinutes` rows from the
+ *    class_weekly_minutes RPC, or raw game_sessions `sessions`);
  *  - imported students (roster_students) who have not joined yet, marked
  *    notJoined so the teacher can chase them.
  * An imported name matches a joined student when the names are equal, or
  * when the child typed just the first name and only one imported student
  * has it.
  */
-export function buildCloudClassRows({ roster = [], imported = [], sessions = [], now = new Date() } = {}) {
-  const minutes = weeklyMinutesByProfile(sessions, now);
+export function buildCloudClassRows({ roster = [], imported = [], sessions = [], weeklyMinutes = null, now = new Date() } = {}) {
+  const minutes = weeklyMinutes ? weeklyMinutesFromRows(weeklyMinutes) : weeklyMinutesByProfile(sessions, now);
   const minutesByStudent = new Map();
   for (const row of roster) {
     const key = row.student_id || row.profile_id;

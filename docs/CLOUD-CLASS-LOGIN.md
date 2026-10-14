@@ -58,10 +58,20 @@ public build contains none of it (`npm run verify:local-only-build`).
   this device still needs the PIN, because a shared classroom device can hold
   other children's data. **Lock** also signs the Google session out of the
   device.
+- **Teacher and student sessions never mix.** A classroom browser can hold a
+  student's anonymous session and a teacher's Google session at once, so the
+  teacher page uses its own Supabase client (`src/teacherAuth.js`) with its
+  own auth storage key, `bloomtype-teacher-auth`. Signing a teacher in or
+  out, or **Lock**, never replaces or removes the student's session (which
+  stays under Supabase's default key), so a child never loses their cloud
+  identity or rejoins as a duplicate. Only the teacher client reads the
+  Google redirect (`detectSessionInUrl`); the student client has it off.
 - **Multi-class dashboard:** a class switcher; create, rename and archive
   (archived classes keep their report but accept no new students). Each
   class report uses the existing table, stats, alerts and CSV/JSON exports,
-  with this week's minutes from `game_sessions.duration_seconds`.
+  with this week's minutes from `game_sessions.duration_seconds`, summed per
+  student in the database by `class_weekly_minutes` (so a busy class never
+  hits the API's 1,000-row response limit and loses minutes).
 - **Roster import** into a class, through one provider-neutral importer
   (`src/roster/importer.js`):
   `{ provider, externalClassId, students: [{ externalId, displayName }] }`.
@@ -101,7 +111,12 @@ Signed-out (`anon`) callers have no privileges on the new tables at all.
 A class owns one code in `teacher_codes`, so the existing roster and session
 policies give a teacher their joined students with no change.
 `class_code_exists` now also refuses archived classes; codes made before
-`classes` existed keep working.
+`classes` existed keep working. Archiving closes a class to **new** students
+only: a child already in the class keeps saving their progress.
+`sync_class_membership` updates an existing roster row in place, and
+"Roster self update" accepts the caller's own existing membership
+(`is_class_roster_member`), so a member's row never goes stale. A new join,
+or moving a row from another class into an archived one, is still refused.
 
 ### New RPCs (signed-in callers only; `revoke all … from public, anon`)
 
@@ -113,6 +128,7 @@ policies give a teacher their joined students with no change.
 | `rename_class(id, name)`, `set_class_archived(id, bool)` | the class owner | |
 | `import_roster(class, provider, external class, students)` | the class owner | replaces that provider's list in one transaction; max 200 |
 | `school_class_summary()` | school admin | aggregates per class: counts and minutes only |
+| `class_weekly_minutes(class)` | the class owner | minutes this week per joined device (profile id + minutes; capped at 30 per sitting). Runs as the caller, so session RLS still applies |
 
 `caller_is_anonymous()` treats a token with `is_anonymous` or without an
 email as a student, so no child account can ever become a teacher.
@@ -129,12 +145,14 @@ psql -d scratch -f supabase/schema.sql
 psql -d scratch -v ON_ERROR_STOP=1 -f supabase/tests/teacher-dashboard-rls.sql
 ```
 
-It proves, among 25 checks: teacher A cannot see, rename, archive or import
+It proves, among 30 checks: teacher A cannot see, rename, archive or import
 into teacher B's class, roster, imported names or sessions; an admin sees
 only aggregates for their own school (and no rows of other teachers'
 classes); a student cannot read `classes`, `teachers`, `schools`,
 `roster_students` or invites; uninvited and anonymous accounts cannot open a
-class; archived classes refuse new students; emails are refused. The schema
+class; archived classes refuse new students, but a student already in one
+keeps syncing; weekly minutes per student are correct for the owner only,
+also past 1,500 sessions; emails are refused. The schema
 also re-runs cleanly on an existing database, and the earlier link-code and
 roster scenarios still pass.
 
@@ -146,9 +164,29 @@ roster scenarios still pass.
 | Only when the teacher clicks **Google Classroom** | `https://www.googleapis.com/auth/classroom.courses.readonly`, `https://www.googleapis.com/auth/classroom.rosters.readonly` |
 
 We never ask for `classroom.profile.emails` or `classroom.profile.photos`.
-The Google token stays in the browser's memory for the import and is never
-stored. `courses.list` needs the courses scope; the roster scope alone is
-not enough.
+`courses.list` needs the courses scope; the roster scope alone is not
+enough.
+
+### Where the teacher's tokens live
+
+The session that comes back from the Classroom consent carries Google's
+`provider_token` (and possibly `provider_refresh_token`), which can read the
+teacher's rosters. Supabase's default `persistSession: true` would write it
+to `localStorage`. The teacher client therefore uses the simplest safe
+option: **`persistSession: false` with in-memory storage** (implicit flow, so
+the tokens go from the redirect's URL hash straight into memory). Nothing
+about the teacher session, and never a provider token, is written to
+`localStorage` or `sessionStorage`; `test/teacher-auth.test.js` checks this
+with the real supabase-js client.
+
+The trade-off: reloading or closing the teacher page signs the teacher out,
+and they click **Sign in with Google** again (Google remembers the account,
+so it is one click). On a shared classroom device that is also the safer
+default. If a pilot needs a session that survives a reload, the alternative
+is a custom storage adapter that strips `provider_token` and
+`provider_refresh_token` before writing; we chose not to, because it keeps a
+refresh token in `localStorage` and needs the provider token caught from the
+sign-in event.
 
 ### Pilot build and Content Security Policy
 

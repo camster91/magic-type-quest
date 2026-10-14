@@ -30,6 +30,9 @@ let currentStudents = [];
 // the PIN (a shared classroom device may hold other children's progress).
 let cloudOnly = false;
 const lockListeners = [];
+// Pilot builds: while a teacher is signed in with Google, typed class codes
+// are read with the teacher's own Supabase client (never the student one).
+let cloudRosterReader = null;
 
 function init() {
   initializePageTranslations();
@@ -67,6 +70,7 @@ function cloudHost() {
       showEmpty(pageT('teacher.cloud.pickClass'));
     },
     onLock(listener) { lockListeners.push(listener); },
+    setRosterReader(reader) { cloudRosterReader = reader; },
     lockPage() {
       lock.lock();
       showLock();
@@ -306,7 +310,7 @@ async function loadClass(code) {
   renderClassSettings();
   
   if (currentMode === 'cloud') {
-    const rows = await fetchClassRoster(currentClassCode);
+    const rows = await (cloudRosterReader || fetchClassRoster)(currentClassCode);
     // A child on several linked devices shows as one student.
     const roster = rows ? mergeLinkedRosterRows(rows) : rows;
     if (roster?.length) renderRoster(roster, true);

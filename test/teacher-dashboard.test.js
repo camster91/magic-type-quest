@@ -8,6 +8,7 @@ import {
   pickSelectedClass,
   summarizeSchool,
   weeklyMinutesByProfile,
+  weeklyMinutesFromRows,
 } from '../src/teacherDashboard.js';
 import {
   claimTeacherRole,
@@ -196,22 +197,66 @@ describe('teacher cloud API (mocked Supabase)', () => {
     expect(sb.calls.at(-1).table).toBe('classes');
   });
 
-  it('builds a class report from the roster, imported names and this week\'s sessions', async () => {
+  it('builds a class report from the roster, imported names and this week\'s minutes', async () => {
     const sb = mockSupabase({
       tables: {
         class_roster: [{ profile_id: 'p1', student_id: 'p1', name: 'Ava', completed_levels: [1] }],
         roster_students: [{ display_name: 'Ava T.' }, { display_name: 'Ben O.' }],
-        game_sessions: [{ profile_id: 'p1', duration_seconds: 600, created_at: daysAgo(1) }],
       },
+      rpc: { class_weekly_minutes: [{ profile_id: 'p1', minutes: 10 }] },
     });
     const rows = await fetchCloudClassReport(sb, { id: 'c1', class_code: 'ABCD2345' }, NOW);
     expect(rows.map((r) => [r.name, r.minutes7d, Boolean(r.notJoined)])).toEqual([['Ava', 10, false], ['Ben O.', null, true]]);
-    const [roster, imported, sessions] = sb.calls;
+    const [roster, imported] = sb.calls;
     expect(roster.filters).toContainEqual(['eq', 'class_code', 'ABCD2345']);
     expect(imported.filters).toContainEqual(['eq', 'class_id', 'c1']);
     expect(imported.select).not.toMatch(/email/);
-    expect(sessions.filters).toContainEqual(['in', 'profile_id', ['p1']]);
-    expect(sessions.filters).toContainEqual(['gte', 'created_at', daysAgo(7)]);
+    // Minutes are summed in the database; no session rows are downloaded.
+    expect(sb.calls.map((c) => c.table)).not.toContain('game_sessions');
+    expect(sb.rpc).toHaveBeenCalledWith('class_weekly_minutes', { p_class_id: 'c1' });
+  });
+
+  it('counts every minute of a class with more than 1,000 sessions this week', async () => {
+    // 1,500 one-minute sittings across three devices of two children. The
+    // old query downloaded the session rows, and the API stops at 1,000.
+    const sessions = Array.from({ length: 1500 }, (_, i) => ({
+      profile_id: ['p1', 'p1b', 'p2'][i % 3], duration_seconds: 60, created_at: daysAgo(1),
+    }));
+    // What class_weekly_minutes returns: one row per profile. PostgREST may
+    // send numeric as a string.
+    const weekly = [...weeklyMinutesByProfile(sessions, NOW)]
+      .map(([profile_id, minutes]) => ({ profile_id, minutes: String(minutes) }));
+    expect(weekly).toHaveLength(3);
+    const sb = mockSupabase({
+      tables: {
+        class_roster: [
+          { profile_id: 'p1', student_id: 's1', name: 'Ava', completed_levels: [] },
+          { profile_id: 'p1b', student_id: 's1', name: 'Ava', completed_levels: [] },
+          { profile_id: 'p2', student_id: 'p2', name: 'Ben', completed_levels: [] },
+        ],
+      },
+      rpc: { class_weekly_minutes: weekly },
+    });
+    const rows = await fetchCloudClassReport(sb, { id: 'c1', class_code: 'ABCD2345' }, NOW);
+    expect(Object.fromEntries(rows.map((r) => [r.name, r.minutes7d]))).toEqual({ Ava: 1000, Ben: 500 });
+    expect(rows.reduce((sum, r) => sum + r.minutes7d, 0)).toBe(1500);
+  });
+
+  it('reads weekly minutes rows defensively', () => {
+    const minutes = weeklyMinutesFromRows([
+      { profile_id: 'p1', minutes: '12.5' },
+      { profile_id: 'p2', minutes: 3 },
+      { profile_id: null, minutes: 9 },
+      { profile_id: 'p3', minutes: 'x' },
+      { profile_id: 'p4', minutes: -2 },
+    ]);
+    expect([...minutes]).toEqual([['p1', 12.5], ['p2', 3]]);
+  });
+
+  it('fails the report when the minutes RPC fails', async () => {
+    const sb = mockSupabase();
+    sb.rpc.mockResolvedValueOnce({ data: null, error: new Error('denied') });
+    await expect(fetchCloudClassReport(sb, { id: 'c1', class_code: 'ABCD2345' }, NOW)).rejects.toThrow('denied');
   });
 
   it('reads the admin summary and sends invites through RPCs', async () => {

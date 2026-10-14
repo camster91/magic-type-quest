@@ -395,6 +395,24 @@ begin
     where profile_id = auth.uid()
       and (p_class_code is null or class_code <> p_class_code);
   if p_class_code is not null then
+    -- An existing membership is updated in place, so only the UPDATE
+    -- policy applies to it (Postgres checks the INSERT policy on the
+    -- proposed row even when ON CONFLICT turns it into an update). This
+    -- keeps a member of a since-archived class saving; a new member still
+    -- goes through the INSERT policy, which needs an open class.
+    update class_roster set
+      student_id = public.my_student_id(),
+      name = left(p_name, 40),
+      avatar = left(p_avatar, 16),
+      total_words = greatest(p_total_words, 0),
+      total_stars = greatest(p_total_stars, 0),
+      high_score = greatest(p_high_score, 0),
+      completed_levels = coalesce(p_completed_levels, '{}'),
+      updated_at = now()
+    where profile_id = auth.uid() and class_code = p_class_code;
+    if found then
+      return;
+    end if;
     insert into class_roster (
       class_code, profile_id, student_id, name, avatar, total_words, total_stars,
       high_score, completed_levels, updated_at
@@ -651,6 +669,36 @@ as $$
 $$;
 revoke all on function public.class_code_exists(text) from public, anon;
 grant execute on function public.class_code_exists(text) to authenticated;
+
+-- Archiving closes a class to NEW students only. A child who already has a
+-- roster row in the class keeps saving to it: sync_class_membership updates
+-- that row in place, which "Roster self update" checks, so that check must
+-- also accept the caller's own existing membership. This answers only
+-- "is the caller already in this class?" for auth.uid(); it runs on the
+-- statement's snapshot, so an UPDATE that moves a row into another class
+-- (where the caller has no row yet) is still refused when that class is
+-- archived.
+create or replace function public.is_class_roster_member(code text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select auth.uid() is not null and exists (
+    select 1 from class_roster where class_code = code and profile_id = auth.uid()
+  );
+$$;
+revoke all on function public.is_class_roster_member(text) from public, anon;
+grant execute on function public.is_class_roster_member(text) to authenticated;
+
+drop policy if exists "Roster self update" on class_roster;
+create policy "Roster self update" on class_roster for update
+  using (auth.uid() = profile_id)
+  with check (
+    auth.uid() = profile_id
+    and (public.class_code_exists(class_code) or public.is_class_roster_member(class_code))
+  );
 
 -- ===== TEACHER RPCS =====
 -- First Google sign-in: turn a pending invite for this email into a
@@ -920,3 +968,43 @@ end;
 $$;
 revoke all on function public.school_class_summary() from public, anon;
 grant execute on function public.school_class_summary() to authenticated;
+
+-- ===== CLASS WEEKLY MINUTES =====
+-- Practice minutes over the last 7 days for each joined device (profile) in
+-- one class the caller owns, summed in the database. The class report used
+-- to download every session row, and PostgREST caps a response at 1,000
+-- rows by default, so a busy class lost minutes. One row per profile keeps
+-- the response small and the total correct. A single sitting counts for at
+-- most 30 minutes, as in the dashboard (src/teacherDashboard.js).
+-- Runs as the caller: the class must be theirs, and the session rows it can
+-- sum are still limited by the game_sessions RLS policies.
+create or replace function public.class_weekly_minutes(p_class_id uuid)
+returns table (profile_id uuid, minutes numeric)
+language plpgsql
+stable
+security invoker
+set search_path = public
+as $$
+declare
+  code text;
+begin
+  if not public.is_teacher() then
+    raise exception 'teacher account required' using errcode = '42501';
+  end if;
+  select c.class_code into code from classes c
+    where c.id = p_class_id and c.owner_id = auth.uid();
+  if code is null then
+    raise exception 'class not found' using errcode = 'P0002';
+  end if;
+  return query
+    select gs.profile_id,
+           round(sum(least(1800, greatest(0, coalesce(gs.duration_seconds, 0)))) / 60.0, 2)
+      from game_sessions gs
+      where gs.profile_id in (select cr.profile_id from class_roster cr where cr.class_code = code)
+        and gs.created_at > now() - interval '7 days'
+        and gs.created_at <= now() + interval '1 day'
+      group by gs.profile_id;
+end;
+$$;
+revoke all on function public.class_weekly_minutes(uuid) from public, anon;
+grant execute on function public.class_weekly_minutes(uuid) to authenticated;

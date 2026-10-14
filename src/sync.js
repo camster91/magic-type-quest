@@ -46,6 +46,17 @@ export function createLatestSyncQueue(worker) {
   };
 }
 
+/**
+ * The student client keeps Supabase's default auth storage key, so existing
+ * anonymous sessions survive. It never reads a session from the URL:
+ * students sign in anonymously with no redirect, and an OAuth callback on
+ * the teacher page belongs to the teacher's own client (teacherAuth.js),
+ * which must not end up in, or replace, the student's session.
+ */
+export function studentClientOptions() {
+  return { auth: { detectSessionInUrl: false } };
+}
+
 /** Lazy-load Supabase client. Returns null if no credentials. */
 export async function getSupabase() {
   if (supabaseClient) return supabaseClient;
@@ -54,7 +65,7 @@ export async function getSupabase() {
   if (!url || !key) return null;
   try {
     const { createClient } = await import('@supabase/supabase-js');
-    supabaseClient = createClient(url, key);
+    supabaseClient = createClient(url, key, studentClientOptions());
     return supabaseClient;
   } catch {
     return null;
