@@ -100,7 +100,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [ ] **Claude:** a teacher sign-in (Google), a multi-class dashboard and a school admin view.
 - [ ] **Claude:** Google Classroom roster import, then ClassLink, then Clever.
 - [ ] **Claude:** backups, uptime monitoring and an incident runbook. **Done when:** a restore drill works and is written down.
-- [ ] **Claude:** billing for schools (invoice / purchase order first, card payment later). **Owner:** pick the payment provider.
+- [ ] **Claude:** billing for schools (invoice / purchase order first, card payment later). **Owner:** pick the payment provider. invoice/PO path ✅ (templates + calculator); Owner: confirm prices, fill business details, pick a card provider. See [PRICING-AND-ORDERING.md](school/PRICING-AND-ORDERING.md) and [PAYMENT-PROVIDER-OPTIONS.md](school/PAYMENT-PROVIDER-OPTIONS.md).
 
 ### Trust paperwork
 - [ ] **Owner:** sign the SDPC National Data Privacy Agreement.
