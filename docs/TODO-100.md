@@ -104,6 +104,9 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [ ] **Claude:** billing for schools (invoice / purchase order first, card payment later). **Owner:** pick the payment provider. invoice/PO path ✅ (templates + calculator); Owner: confirm prices, fill business details, pick a card provider. See [PRICING-AND-ORDERING.md](school/PRICING-AND-ORDERING.md) and [PAYMENT-PROVIDER-OPTIONS.md](school/PAYMENT-PROVIDER-OPTIONS.md).
 
 ### Trust paperwork
+
+> **Note:** draft [terms of service](legal/TERMS-OF-SERVICE-DRAFT.md) and a draft public [privacy policy](legal/PRIVACY-POLICY-DRAFT.md) are in [`docs/legal/`](legal/README.md), for directory and marketplace listings. They are **not published** and need legal review, the owner's `[OWNER/LEGAL: …]` details and the #132 privacy approvals first.
+
 - [ ] **Owner:** sign the SDPC National Data Privacy Agreement.
 - [x] **Claude:** a plain-language privacy page and a one-page security summary ✅ drafts in #222. for IT staff. **Owner** approves both.
 - [ ] **Owner:** request a Common Sense Privacy evaluation, and consider iKeepSafe COPPA certification.
