@@ -1,0 +1,52 @@
+name: Uptime
+
+# Checks the live site every 30 minutes. A failed run is the alert: GitHub
+# emails a failed scheduled run to the person who last changed the cron line
+# below (Settings > Notifications > Actions must allow it). See
+# docs/ops/INCIDENT-RUNBOOK.md for what to do.
+#
+# Repository variables (Settings > Secrets and variables > Actions > Variables):
+#   BLOOMTYPE_SITE_URL    site to check. Default: the production site.
+#   BLOOMTYPE_HEALTH_URL  plain 200 check. Default: production /healthz.
+#                         Set to "none" to skip.
+# Optional repository secrets (the Supabase step is skipped without them):
+#   SUPABASE_HEALTH_URL   e.g. https://<project-ref>.supabase.co/auth/v1/health
+#   SUPABASE_ANON_KEY     the project's public anon key
+
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: uptime
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SITE_URL: ${{ vars.BLOOMTYPE_SITE_URL || 'https://bloomtype.ashbi.ca/magic-type-quest/' }}
+      HEALTH_URL: ${{ vars.BLOOMTYPE_HEALTH_URL || 'https://bloomtype.ashbi.ca/healthz' }}
+      SUPABASE_HEALTH_URL: ${{ secrets.SUPABASE_HEALTH_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+          sparse-checkout: scripts/uptime-check.mjs
+          sparse-checkout-cone-mode: false
+      - name: Check site pages and manifest
+        run: node scripts/uptime-check.mjs
+      - name: Check Supabase health
+        if: env.SUPABASE_HEALTH_URL != ''
+        run: |
+          code=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
+            --max-time 15 --retry 1 --retry-delay 10 \
+            --header "apikey: $SUPABASE_ANON_KEY" "$SUPABASE_HEALTH_URL")
+          echo "Supabase health: HTTP $code"
+          test "$code" = 200

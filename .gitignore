@@ -10,3 +10,6 @@ gauntlet-*
 # Pilot exports and the generated report draft (may hold unreviewed quotes)
 pilot-data/
 docs/pilot/PILOT-REPORT-DRAFT.md
+
+# Encrypted database backups (scripts/backup-db.sh); never commit them
+backups/
