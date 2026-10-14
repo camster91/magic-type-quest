@@ -190,19 +190,22 @@ Existing files you can use now:
 
 Most directories want WebP converted to PNG or JPG. Convert a copy; don't change the game files.
 
-Screenshots you still need to take (none are in the repo yet):
+Screenshots are in [`screenshots/`](screenshots/). Its [README](screenshots/README.md) lists every file with its size, what it shows and which listing it suits. To make them again, run `npm run build` and then `npm run screenshots`. They use made-up demo data only: the player "Demo" and the class "Room 12" with students Ava, Ben, Cleo, Dev and Mia.
 
-- [ ] Home screen with the meadow and the fox (phone and laptop)
-- [ ] A level being played, with a word half typed
-- [ ] "Meadow restored!" level-complete screen
-- [ ] World map / Lessons screen
-- [ ] Parents page weekly card
-- [ ] Printable homeschool record
-- [ ] Teacher page class report (use made-up demo names, never real children)
-- [ ] One French and one Spanish screen
-- [ ] Accessibility settings (easy-read font, high contrast)
+- [x] Home screen with the meadow and the fox (phone and laptop): `screenshots/en-desktop-home.png`, `screenshots/en-phone-home.webp`, `screenshots/en-small-home.png` (640×400)
+- [x] A level being played, with a word half typed: `screenshots/en-desktop-gameplay.png`, `screenshots/en-phone-gameplay.webp`
+- [x] "Meadow restored!" level-complete screen: `screenshots/en-desktop-level-complete.webp`, `screenshots/en-phone-level-complete.webp`
+- [x] World map / Lessons screen: `screenshots/en-desktop-world-map.webp`, `screenshots/en-phone-world-map.webp`
+- [x] Garden and Field Guide: `screenshots/en-desktop-garden-field-guide.webp`, `screenshots/en-phone-field-guide.webp`, `screenshots/en-phone-garden.webp`
+- [x] Parents page weekly card: `screenshots/en-desktop-parents.webp`, `screenshots/en-phone-parents.webp`
+- [x] Printable homeschool record: `screenshots/en-desktop-homeschool-record.webp`
+- [x] Teacher page class report (made-up demo names, never real children): `screenshots/en-desktop-teacher-dashboard.png`, plus class setup in `screenshots/en-desktop-teacher-class-setup.webp`
+- [x] One French and one Spanish screen: `screenshots/fr-*-home.webp`, `screenshots/fr-*-gameplay.webp`, `screenshots/es-*-home.webp`, `screenshots/es-*-gameplay.webp` (desktop and phone; the typing words are still English)
+- [x] Accessibility settings (easy-read font, high contrast): `screenshots/en-desktop-accessibility.webp`, `screenshots/en-phone-accessibility.webp`
+- [x] Landing page hero: `screenshots/en-desktop-landing-hero.webp`, `screenshots/en-phone-landing-hero.webp` (re-take after the landing copy is updated)
+- [ ] 1920×1080 versions, if a directory asks for them (add a size to the script)
 
-Take them on a fresh browser profile with demo data. Common sizes: 1280×800 (Google), 1920×1080, and 1080×1920 for phones.
+Sizes: 1280×800 (Google stores), 1080×1920 (phones) and 640×400 (Chrome Web Store small). The Chrome Web Store and Google Workspace Marketplace accept only PNG or JPEG. The four PNGs are ready for those stores. Convert a copy of any WebP you need, or run `npm run screenshots -- --png-all` into another folder.
 
 Other things forms ask for:
 

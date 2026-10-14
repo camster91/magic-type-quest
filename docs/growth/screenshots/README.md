@@ -13,7 +13,7 @@ npm run screenshots -- --png-all    # every shot as PNG (large; don't commit)
 npm run screenshots -- some/dir     # write somewhere else
 ```
 
-The script (`scripts/capture-screenshots.mjs`) serves `dist/` with `vite preview` on a free port, seeds `localStorage` with the demo profile, and closes the server when it is done. Animations, sound and the fox voice are turned off and toasts are hidden so the shots are stable. If Playwright's bundled browser is missing, point it at another Chromium with `CHROMIUM_PATH=/path/to/chrome`.
+The script (`scripts/capture-screenshots.mjs`) serves `dist/` with `vite preview` on a free port, seeds `localStorage` with the demo profile, and closes the server when it is done. Animations, sound and the fox voice are turned off and toasts are hidden so the shots are stable. The script also sets `.screen.active { transform: none }` so the meadow background covers long screens on phones when you scroll. This works around an app bug; remove once #259 is merged. If Playwright's bundled browser is missing, point it at another Chromium with `CHROMIUM_PATH=/path/to/chrome`.
 
 Dates in the garden, teacher table and homeschool record are relative to the day you run it, so re-run before a submission if the dates matter.
 

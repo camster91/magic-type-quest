@@ -110,11 +110,15 @@ function freePort() {
   });
 }
 
+// The running preview server, so the signal handlers can stop it.
+let previewChild = null;
+
 async function startPreview() {
   const port = await freePort();
   const child = spawn('npx', ['vite', 'preview', '--host', '127.0.0.1', '--port', String(port), '--strictPort'], {
     stdio: ['ignore', 'pipe', 'pipe'], detached: process.platform !== 'win32',
   });
+  previewChild = child;
   child.stderr.on('data', (d) => process.stderr.write(d));
   const url = `http://127.0.0.1:${port}/magic-type-quest/`;
   for (let i = 0; i < 100; i++) {
@@ -124,22 +128,30 @@ async function startPreview() {
     } catch { /* not up yet */ }
     await new Promise((r) => setTimeout(r, 200));
   }
-  stopPreview(child);
+  await stopPreview(child);
   throw new Error(`vite preview did not start on port ${port}`);
 }
 
+// Stops the whole preview process group (npx and vite) and waits for it to exit.
 function stopPreview(child) {
-  if (!child || child.exitCode !== null) return;
-  try {
-    if (process.platform === 'win32') child.kill();
-    else process.kill(-child.pid, 'SIGTERM');
-  } catch { /* already gone */ }
+  if (!child || child.exitCode !== null || child.signalCode !== null) return Promise.resolve();
+  const exited = new Promise((resolve) => child.once('exit', resolve));
+  const signal = (sig) => {
+    try {
+      if (process.platform === 'win32') child.kill(sig);
+      else process.kill(-child.pid, sig);
+    } catch { /* already gone */ }
+  };
+  signal('SIGTERM');
+  const force = setTimeout(() => signal('SIGKILL'), 3000);
+  return exited.finally(() => clearTimeout(force));
 }
 
 // ---------- capture helpers ----------
 // The active screen keeps an identity transform, which makes its fixed meadow
 // background scroll with the content and end partway down long screens on
-// phones. Dropping it here keeps scrolled shots clean (an app bug to fix).
+// phones. Dropping it here keeps scrolled shots clean.
+// TODO: remove once #259 is merged (it sets `.screen.active { transform: none }` in the app).
 const STABLE_CSS = `
   *, *::before, *::after { caret-color: transparent !important; }
   .screen.active { transform: none !important; }
@@ -349,10 +361,24 @@ async function shootTeacher(browser, base, encoder, sizes) {
 
 // ---------- run ----------
 await mkdir(outDir, { recursive: true });
-const { url, child } = await startPreview();
 let browser;
+let stopping = false;
+// Ctrl-C or SIGTERM skips `finally`, so stop the detached preview server here.
+for (const [sig, code] of [['SIGINT', 130], ['SIGTERM', 143]]) {
+  process.once(sig, async () => {
+    stopping = true;
+    console.error(`\n${sig}: stopping the preview server`);
+    await browser?.close().catch(() => {});
+    await stopPreview(previewChild);
+    process.exit(code);
+  });
+}
+const { url, child } = await startPreview();
 try {
-  browser = await chromium.launch({ executablePath, args: ['--mute-audio'] });
+  // Our own signal handlers close the browser and stop the preview server.
+  browser = await chromium.launch({
+    executablePath, args: ['--mute-audio'], handleSIGINT: false, handleSIGTERM: false, handleSIGHUP: false,
+  });
   const encoder = await browser.newPage();
 
   for (const size of ['desktop', 'phone', 'small']) await shootHome(browser, url, encoder, 'en', size);
@@ -380,7 +406,11 @@ try {
     }
   }
   console.log(`\n${written.length} screenshots in ${outDir}`);
+} catch (err) {
+  // A signal closed the browser under us; the handler stops the server and exits.
+  if (stopping) await new Promise(() => {});
+  throw err;
 } finally {
   await browser?.close();
-  stopPreview(child);
+  await stopPreview(child);
 }
