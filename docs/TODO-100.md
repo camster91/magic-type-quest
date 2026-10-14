@@ -68,7 +68,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [x] **Claude:** a world map with 5 habitats (Meadow, Pond, Forest, Shore, Mountain), one per pair of levels, using the same restoration idea. ✅ On the Lessons screen (`src/habitats.js`); placeholder CSS art until the painted scenes land.
 - [x] **Claude:** gentle streaks and a "plant of the day" in place of punishments ✅ (plants only grow; no red warnings, no "keep me" pet). No hearts and no losing (v2 product contract).
 - [x] **Claude:** sound: soft nature ambience and a pleasant chime per word, with a mute button that is remembered. ✅ #219 (mute, gentle tones) and #224 (breeze and birdsong).
-- [ ] **Claude:** the fox speaks short encouragement with a pre-recorded voice in EN, FR and ES, made once (no live AI with children).
+- [x] **Claude:** the fox speaks short encouragement with a pre-recorded voice in EN, FR and ES, made once (no live AI with children). ✅ 8 lines per language (`src/foxVoiceLines.js`, clips in `public/audio/fox/`), loaded only during play, at most one line every 20 s, with a "Fox voice" setting and the mute button. A native speaker should still listen to the FR and ES clips.
 
 ## Phase 2 — Teachers and parents love it (weeks 3–6)
 
@@ -87,7 +87,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [x] **Claude:** a parent PIN for settings, like the teacher PIN in #210 ✅ (grown-up lock on the profile screen).
 
 ### Everyone
-- [ ] **Claude:** an accessibility pass with a real screen reader (dyslexia-friendly font, high contrast and relaxed mode ✅ #223; manual screen-reader pass still to do) (NVDA and VoiceOver), keyboard-only play, a dyslexia-friendly font option and high-contrast mode. **Done when:** checked in [DEVICE-ACCESSIBILITY-QA.md](DEVICE-ACCESSIBILITY-QA.md).
+- [ ] **Claude:** an accessibility pass with a real screen reader (dyslexia-friendly font, high contrast and relaxed mode ✅ #223; automated / virtual screen-reader pass ✅ 2026-10-14, see [DEVICE-ACCESSIBILITY-QA.md](DEVICE-ACCESSIBILITY-QA.md#automated--virtual-screen-reader-pass--2026-10-14); manual NVDA and VoiceOver pass still to do by a person, using the [manual script](DEVICE-ACCESSIBILITY-QA.md#manual-screen-reader-script-nvda-and-voiceover)) (NVDA and VoiceOver), keyboard-only play, a dyslexia-friendly font option and high-contrast mode. **Done when:** checked in [DEVICE-ACCESSIBILITY-QA.md](DEVICE-ACCESSIBILITY-QA.md).
 - [ ] **Claude:** a full French and Spanish pass on the new screens (Claude pre-review pass ✅ recorded in LANGUAGE-QA.md; still needs sign-off from a fluent French and a fluent Spanish reviewer). **Done when:** checked in [LANGUAGE-QA.md](LANGUAGE-QA.md).
 - [ ] **Owner:** test on real devices: a school Chromebook, an iPad, an Android phone and an old Windows laptop. Record the results.
 

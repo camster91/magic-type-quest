@@ -12,7 +12,7 @@ import { getWeakKeys } from './drills.js';
 import { recordKeyPractice } from './spacedRep.js';
 import { formatNumber, localizeAvatarName, localizeFingerLabel, t } from './i18n.js';
 import { localizeAchievement, localizeChapter, localizeLesson, localizeQuest } from './contentTranslations.js';
-import { highlightTargetKey, showKeyFeedback } from './gamePresentation.js';
+import { highlightTargetKey, showKeyFeedback, announce } from './gamePresentation.js';
 import { GameWord } from './gameWord.js';
 import { getLevelScoreBonus, resetGameSession } from './gameSession.js';
 import { createGameInputController, trapDialogFocus } from './gameInput.js';
@@ -21,6 +21,7 @@ import { createMeadowScene } from './v2/meadowScene.js';
 import { discoverForLevel } from './fieldGuide.js';
 import { recordPractice } from './practiceLog.js';
 import { isRelaxed } from './accessibility.js';
+import { foxVoiceAllowed, isFoxNudge, isFoxStreak } from './foxMoments.js';
 
 // ===== CONSTANTS =====
 const COLORS = {
@@ -103,6 +104,43 @@ const NEXT_WORD_DELAY_MS = 450;
 let animationId = null;
 let lastFrameTime = 0;
 
+// The fox's pre-recorded encouragement (src/foxVoice.js). The module and its
+// clips load only when the fox has something to say, never when muted.
+let fox = null;
+let foxStartPending = false;
+let missesThisWord = 0;
+// Bumped whenever the fox must go quiet (quit, new level, leaving play), so
+// a line still loading from a slow network is dropped instead of playing later.
+let foxSession = 0;
+// iOS plays sound only if a tap started it. The tap that starts a level primes
+// this one element, and every fox line reuses it.
+const SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+let foxAudio = null;
+function primeFoxAudio() {
+  if (!foxVoiceAllowed(gameState.profile) || typeof Audio === 'undefined') return;
+  foxAudio ??= new Audio();
+  foxAudio.src = SILENT_WAV;
+  foxAudio.play()?.catch?.(() => {});
+}
+function foxSay(moment) {
+  if (!foxVoiceAllowed(gameState.profile)) return;
+  const session = foxSession;
+  import('./foxVoice.js').then((m) => {
+    if (session !== foxSession) return;
+    fox = m.foxVoice({ createAudio: (src) => {
+      const audio = foxAudio ?? new Audio();
+      audio.src = src;
+      return audio;
+    } });
+    fox.say(moment, { onLine: (text) => {
+      showPetBubble(`🦊 ${text}`, 2600);
+      m.announceFoxLine(text);
+      if (!prefersReducedMotion()) meadow.cheer();
+    } });
+  }).catch(() => {});
+}
+export function stopFoxVoice() { foxSession++; fox?.stop(); }
+
 // Run exactly one animation loop. Starting a new game cancels any loop that
 // is still scheduled, so loops never pile up across games.
 function startLoop() {
@@ -156,6 +194,10 @@ function gameLoop(timestamp) {
   if (gameState.paused) {
     animationId = requestAnimationFrame(gameLoop);
     return;
+  }
+  if (foxStartPending) {
+    foxStartPending = false;
+    foxSay('start');
   }
 
   const deltaTime = lastFrameTime ? Math.min((timestamp - lastFrameTime) / 1000, 0.05) : 0.016;
@@ -262,9 +304,13 @@ function updateWords(deltaTime) {
       nextWord.isTarget = true;
       gameState.targetWord = nextWord;
       gameState.targetIndex = 0;
+      missesThisWord = 0;
       updateTargetDisplay();
       updateKeyboardHighlight();
       speakWord(nextWord.text);
+      // One message: the word just finished (if any), then the new word.
+      announce(`${wordDoneMessage} ${t('practice.type', { word: nextWord.text })}`.trim());
+      wordDoneMessage = '';
     }
   }
 }
@@ -377,6 +423,7 @@ function onWrongKeystroke(key) {
   gameState.combo = 0;
   updateCombo();
   meadow.notice();
+  if (isFoxNudge(++missesThisWord)) foxSay('miss');
   if (gameState.targetWord) {
     gameState.targetWord.shake = 1;
   }
@@ -395,6 +442,7 @@ function onWrongKeystroke(key) {
   // quick so it doesn't pile up if the kid is mistyping).
   pulsePetFace('wrong');
   showPetBubble(t('pet.tryAgain'), 900);
+  announce(`${t('pet.tryAgain')} ${gameState.targetWord?.text?.[gameState.targetIndex] || ''}`);
   // T22: a wrong key still proves the kid is present. Reset the idle
   // timer so the "Don't forget me!" bubble doesn't fire immediately after.
   lastCorrectKeystrokeAt = performance.now();
@@ -445,6 +493,8 @@ function updateWPM() {
   if (wpmEl) wpmEl.textContent = gameState.levelWPM;
 }
 
+let wordDoneMessage = '';
+
 function completeWord() {
   const word = gameState.targetWord;
   if (!word) return;
@@ -482,10 +532,13 @@ function completeWord() {
   if (gameState.combo >= 2) playSound('combo');
   // T26: COMBO x5 / x10 / x15 milestone callout floats up for 800ms.
   showComboFloater(gameState.combo);
+  if (isFoxStreak(gameState.combo)) foxSay('streak');
   
   // Stats
   gameState.wordsTyped++;
   gameState.wordsCompleted++;
+  // Said together with the next word (or replaced by the level-complete news).
+  wordDoneMessage = t('a11y.wordDone', { word: word.text, count: gameState.wordsCompleted, total: wordsTarget() });
   gameState.nextSpawnAt = gameState.currentTime + NEXT_WORD_DELAY_MS;
   meadow.cheer();
   
@@ -604,6 +657,12 @@ function gameOver() {
 }
 
 // ===== UI UPDATES =====
+// Words to finish: Daily Moment 12, lessons wordsPerLevel, else 5.
+function wordsTarget() {
+  if (gameState.mode === 'dailyMoment' || gameState.dailyMoment?.active) return gameState.dailyMoment?.wordsTarget || 12;
+  return currentLesson()?.wordsPerLevel || 5;
+}
+
 function updateHUD() {
   const scoreEl = document.getElementById('score');
   const levelEl = document.getElementById('level');
@@ -649,14 +708,7 @@ function updateHUD() {
   }
   if (liveWordsEl) liveWordsEl.textContent = gameState.wordsCompleted || 0;
   if (liveWordsTargetEl) {
-    // Daily Moment: 12-word target. Lesson play: wordsPerLevel. Fall back to 5.
-    let target = 5;
-    if (gameState.mode === 'dailyMoment' || gameState.dailyMoment?.active) {
-      target = gameState.dailyMoment?.wordsTarget || 12;
-    } else {
-      const lesson = currentLesson();
-      if (lesson && lesson.wordsPerLevel) target = lesson.wordsPerLevel;
-    }
+    const target = wordsTarget();
     liveWordsTargetEl.textContent = target;
     // T30: also update the inline progress bar
     const fillEl = document.getElementById('live-progress-fill');
@@ -740,9 +792,10 @@ function updateTargetDisplay() {
       const isLeft = 'asdfgqwertzxcvb'.includes(lowerCh);
       const zoneClass = isNext ? (isLeft ? 'finger-left' : 'finger-right') : '';
       const stateClass = isTyped ? 'typed' : (isNext ? 'next' : '');
-      html += `<span class="tw-char ${stateClass} ${zoneClass}">${ch}</span>`;
+      html += `<span class="tw-char ${stateClass} ${zoneClass}" aria-hidden="true">${ch}</span>`;
     }
-    targetWord.innerHTML = html;
+    // Screen readers get the whole word, not one letter at a time.
+    targetWord.innerHTML = `<span class="sr-only">${word}</span>${html}`;
 
     if (targetTyped) targetTyped.textContent = word.slice(0, typed);
 
@@ -1076,6 +1129,7 @@ function levelComplete() {
   gameState.gameOver = true;
   gameState.levelComplete = true;
   playSound('level');
+  foxSay('complete');
 
   // T26: soft pink 300ms screen flash (was: harsh white 800ms). Pink reads
   // as celebratory, not jarring — and 300ms is short enough to feel snappy
@@ -1148,6 +1202,7 @@ function finishDrill() {
       { count: wordsCompleted, wpm, accuracy },
     );
     toast.classList.remove('hidden');
+    announce(`${toast.querySelector('#toast-title').textContent} ${toast.querySelector('#toast-desc').textContent}`, { queue: true });
     setTimeout(() => toast.classList.add('hidden'), 4000);
   }
 
@@ -1226,6 +1281,7 @@ function showNextAchievement() {
     document.getElementById('toast-title').textContent = title;
     document.getElementById('toast-desc').textContent = desc;
     toast.classList.remove('hidden');
+    announce(`${title} ${desc}`, { queue: true });
     setTimeout(() => {
       toast.classList.add('hidden');
       achievementShowing = false;
@@ -1259,6 +1315,7 @@ function checkAchievements() {
 let dailyMomentCountdownId = null;
 
 export function startDailyMoment() {
+  wordDoneMessage = '';
   initAudio();
   playAmbient();
 
@@ -1417,6 +1474,7 @@ export function endDailyMoment({ reason } = {}) {
       { count: wordsCompleted, wpm, accuracy },
     );
     toast.classList.remove('hidden');
+    announce(`${toast.querySelector('#toast-title').textContent} ${toast.querySelector('#toast-desc').textContent}`, { queue: true });
     setTimeout(() => toast.classList.add('hidden'), 4000);
   }
 
@@ -1433,8 +1491,12 @@ export function endDailyMoment({ reason } = {}) {
 
 // ===== START GAME =====
 export function startGame(level = 1) {
+  wordDoneMessage = '';
   initAudio();
   playAmbient();
+  stopFoxVoice();
+  primeFoxAudio();
+  foxStartPending = true;
 
   const lesson = getLessonByLevel(level);
   
@@ -1503,6 +1565,7 @@ export function startGame(level = 1) {
 }
 
 export function startDrillMode(drillLesson) {
+  wordDoneMessage = '';
   initAudio();
   playAmbient();
   resetGameSession(gameState, {
@@ -1567,6 +1630,8 @@ function preloadImages() {
   return Promise.all(images);
 }
 
+let pauseOpener = null;
+
 export function togglePause() {
   gameState.paused = !gameState.paused;
   // Paused time is not practice time, for WPM or the teacher's minutes.
@@ -1587,6 +1652,9 @@ export function togglePause() {
   }
   const overlay = document.getElementById('pause-overlay');
   if (gameState.paused) {
+    // Remember what opened the pause card (the button, or the game itself
+    // for Esc) so closing it puts focus back there.
+    pauseOpener = document.activeElement;
     overlay.classList.remove('hidden');
     overlay.setAttribute('aria-hidden', 'false');
     canvas.classList.add('blurred');
@@ -1595,7 +1663,10 @@ export function togglePause() {
     overlay.classList.add('hidden');
     overlay.setAttribute('aria-hidden', 'true');
     canvas.classList.remove('blurred');
-    document.getElementById('game-screen')?.focus();
+    const opener = pauseOpener?.isConnected && pauseOpener.getClientRects().length && !overlay.contains(pauseOpener)
+      ? pauseOpener : document.getElementById('game-screen');
+    pauseOpener = null;
+    opener?.focus();
   }
 }
 
@@ -1610,6 +1681,7 @@ export function quitGame() {
   gameState.gameOver = true;
   stopLoop();
   stopAmbient();
+  stopFoxVoice();
   showScreen('menu');
 }
 
@@ -1712,6 +1784,7 @@ function showLevelComplete() {
     overlay.classList.remove('hidden');
     overlay.setAttribute('aria-hidden', 'false');
     nextBtn?.focus();
+    announce(`${t('game.levelCompleteNamed', { level: gameState.level })} ${t('game.starsEarned', { count: stars })}`, { queue: true });
   }
 }
 
@@ -1719,11 +1792,15 @@ function speakWord(word) {
   if (!('speechSynthesis' in window)) return;
   if (gameState.profile?.voiceEnabled === false) return;
   
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(word);
-  utterance.rate = 0.85;
-  utterance.pitch = 1.2;
-  window.speechSynthesis.speak(utterance);
+  const speak = () => {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(word);
+    utterance.rate = 0.85;
+    utterance.pitch = 1.2;
+    window.speechSynthesis.speak(utterance);
+  };
+  // Never talk over the fox: read the word once it has finished.
+  if (fox) fox.whenQuiet(speak); else speak();
 }
 
 // ===== INIT =====
@@ -1775,6 +1852,7 @@ export function init() {
 }
 
 export function showScreen(name) {
+  if (name !== 'game') stopFoxVoice();
   gameState.screen = name;
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const target = document.getElementById(`${name}-screen`);
@@ -1783,7 +1861,8 @@ export function showScreen(name) {
     const focusTargets = {
       menu: 'btn-start',
       'lesson-select': 'btn-lesson-back',
-      practice: 'btn-practice-back',
+      // Typing areas are role=application so screen readers pass keys through.
+      practice: 'practice-area',
       profile: 'btn-profile-back',
       garden: 'btn-garden-back',
       game: 'game-screen',
