@@ -104,6 +104,9 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [ ] **Claude:** billing for schools (invoice / purchase order first, card payment later). **Owner:** pick the payment provider. invoice/PO path ✅ (templates + calculator); Owner: confirm prices, fill business details, pick a card provider. See [PRICING-AND-ORDERING.md](school/PRICING-AND-ORDERING.md) and [PAYMENT-PROVIDER-OPTIONS.md](school/PAYMENT-PROVIDER-OPTIONS.md).
 
 ### Trust paperwork
+
+> **Note:** draft [terms of service](legal/TERMS-OF-SERVICE-DRAFT.md) and a draft public [privacy policy](legal/PRIVACY-POLICY-DRAFT.md) are in [`docs/legal/`](legal/README.md), for directory and marketplace listings. They are **not published** and need legal review, the owner's `[OWNER/LEGAL: …]` details and the #132 privacy approvals first.
+
 - [ ] **Owner:** sign the SDPC National Data Privacy Agreement.
 - [x] **Claude:** a plain-language privacy page and a one-page security summary ✅ drafts in #222. for IT staff. **Owner** approves both.
 - [ ] **Owner:** request a Common Sense Privacy evaluation, and consider iKeepSafe COPPA certification.
@@ -120,8 +123,11 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [x] **Claude:** a landing page with a 30-second Meadow trailer (Higgsfield), a teacher demo video, the free-for-families promise and the school price list. Lighthouse 100. ✅ (`landing/trailer-pricing`: 29 s Seedance 2.0 Mini trailer made from the meadow art, 3.1 MB H.264, and an 18 s Playwright recording of the teacher flow, 334 KB, in `public/media/`, both `preload="none"` with lazy WebP posters and EN/FR/ES captions; three school plans plus the free pilot; Lighthouse accessibility, SEO and best practices 100, performance 98–100 on a quiet machine. "Request a quote" is a mailto placeholder for the owner.)
 - [x] **Claude:** homeschool curriculum guides, plus a "Typing Week" classroom event kit (certificates and posters) ✅ (`docs/homeschool/CURRICULUM-GUIDE.md`, `docs/school/TYPING-WEEK-KIT.md`, printable poster and certificate linked from the teacher page).
 - [ ] **Owner:** list it in homeschool directories, state ESA (education savings account) approved-vendor lists, the Google for Education marketplace, ClassLink and Clever.
+  - Copy-paste text, tags and an asset checklist: [growth/DIRECTORY-LISTINGS.md](growth/DIRECTORY-LISTINGS.md).
 - [ ] **Owner:** contact homeschool influencers and co-ops.
+  - Email and DM templates, a follow-up and a tracking table: [growth/OUTREACH-TEMPLATES.md](growth/OUTREACH-TEMPLATES.md).
 - [ ] **Owner:** go to one teacher conference (ISTE, or a provincial one), with materials made by Claude.
+  - Booth one-pager, demo script, talk outline, handout, interest form, packing list and follow-up: [growth/CONFERENCE-KIT.md](growth/CONFERENCE-KIT.md).
 
 ### Success targets
 - [ ] 1,000 homeschool families active monthly.
