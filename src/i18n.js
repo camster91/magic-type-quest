@@ -182,28 +182,46 @@ export function isLocaleLoaded(locale) {
 }
 
 /**
- * Loads a language's strings. Resolves once they are in place; never
- * rejects (a failed download leaves English showing, and the next call
- * tries again).
+ * Loads a language's strings. Resolves to true once they are in place, or
+ * false if they could not be fetched (offline before the service worker
+ * cached them); never rejects, and the next call tries again.
  */
 export function loadLocale(locale) {
   const name = supported(locale);
-  if (isLocaleLoaded(name)) return Promise.resolve();
+  if (isLocaleLoaded(name)) return Promise.resolve(true);
   localeLoading[name] ||= localeModules[name]()
     .then((pack) => {
       localePacks[name] = pack;
       dictionaries[name] = pack.ui;
       for (const listener of packListeners) listener(name, pack);
+      return true;
     })
-    .catch(() => {})
+    .catch(() => false)
     .finally(() => { delete localeLoading[name]; });
   return localeLoading[name];
 }
 
-/** Runs `callback` now if `locale` is loaded, or once it has loaded. */
+/**
+ * Runs `callback(loaded)` now if `locale` is loaded, or once loading has
+ * finished; `loaded` is false when the strings could not be fetched.
+ */
 export function whenLocaleLoaded(locale, callback) {
-  if (isLocaleLoaded(locale)) callback();
+  if (isLocaleLoaded(locale)) callback(true);
   else loadLocale(locale).then(callback);
+}
+
+/**
+ * Switches to `locale` once its strings are here, then calls
+ * `apply(activeLocale, switched)`: synchronously when nothing needs loading.
+ * If the strings cannot be fetched, the current language stays, so the page
+ * never claims a language its text is not in. `stillWanted()` lets a newer
+ * pick made while this one was loading win.
+ */
+export function changeLocale(locale, apply, stillWanted = () => true) {
+  whenLocaleLoaded(locale, (loaded) => {
+    if (!stillWanted()) return;
+    apply(loaded ? setLocale(locale) : activeLocale, loaded);
+  });
 }
 
 /**
