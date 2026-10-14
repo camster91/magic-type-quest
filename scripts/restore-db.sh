@@ -42,7 +42,10 @@ case $file in
     age -d -i "$BACKUP_AGE_IDENTITY_FILE" "$file" | gzip -dc | tar -C "$work" -xf -
     ;;
   *.enc)
-    : "${BACKUP_PASSPHRASE:?set BACKUP_PASSPHRASE for an .enc backup}"
+    if [[ -z ${BACKUP_PASSPHRASE-} ]]; then
+      echo "restore-db: an .enc backup needs the BACKUP_PASSPHRASE environment variable" >&2
+      exit 1
+    fi
     openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -pass env:BACKUP_PASSPHRASE -in "$file" |
       gzip -dc | tar -C "$work" -xf -
     ;;
