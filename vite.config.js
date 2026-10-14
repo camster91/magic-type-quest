@@ -2,11 +2,12 @@ import { defineConfig, loadEnv } from 'vite';
 import { resolve } from 'path';
 import { criticalCss } from './scripts/critical-css.mjs';
 import { pilotCsp } from './scripts/pilot-csp.mjs';
+import { swLocaleChunks } from './scripts/sw-locale-chunks.mjs';
 
 export default defineConfig(({ mode }) => ({
   base: '/magic-type-quest/',
   // pilotCsp changes nothing in the public build (no cloud flag set).
-  plugins: [criticalCss(), pilotCsp(loadEnv(mode, import.meta.dirname, ''))],
+  plugins: [criticalCss(), swLocaleChunks(), pilotCsp(loadEnv(mode, import.meta.dirname, ''))],
   build: {
     rollupOptions: {
       input: {

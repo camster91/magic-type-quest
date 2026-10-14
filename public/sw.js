@@ -5,7 +5,7 @@
 // fallback. Vite's fingerprinted JS/CSS never change, so they are cache-first.
 // Other same-origin files (art, icons) are served from cache and refreshed in
 // the background.
-const CACHE_NAME = "bloomtype-v21";
+const CACHE_NAME = "bloomtype-v22";
 const MAX_CACHE_ENTRIES = 200;
 const NETWORK_TIMEOUT_MS = 4000;
 const PRECACHE_ASSETS = [
@@ -19,13 +19,22 @@ const PRECACHE_ASSETS = [
   "assets/icon-512.png",
   "manifest.json",
 ];
+// French and Spanish load only when a player picks them (src/i18n.js), so
+// the page never fetches them while online for an English player. Cache
+// them here so an installed app can still switch language offline. The
+// build fills this in with the fingerprinted chunk names
+// (scripts/sw-locale-chunks.mjs); it stays empty in dev.
+const LOCALE_CHUNKS = [];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
+    caches.open(CACHE_NAME).then((cache) =>
       // precache what we can; ignore missing files gracefully
-      return cache.addAll(PRECACHE_ASSETS).catch(() => {});
-    })
+      Promise.all([
+        cache.addAll(PRECACHE_ASSETS).catch(() => {}),
+        cache.addAll(LOCALE_CHUNKS).catch(() => {}),
+      ])
+    )
   );
   self.skipWaiting();
 });
@@ -57,8 +66,16 @@ async function store(request, response) {
 
 // The cache write is handed to event.waitUntil so the worker is not shut
 // down before the response is saved for offline use.
+// Ask the server whether a file changed (a cheap 304 when it hasn't) instead of
+// trusting the browser's own HTTP cache, which can hold old art for an hour
+// after a release and would copy it into the new cache. Page navigations
+// can't take request options and are network-first anyway.
+function freshFetch(request) {
+  return request.mode === "navigate" ? fetch(request) : fetch(request, { cache: "no-cache" });
+}
+
 function fetchAndStore(request, event) {
-  return fetch(request).then((response) => {
+  return freshFetch(request).then((response) => {
     if (isCacheable(response)) {
       const saving = store(request, response.clone()).catch(() => {});
       event?.waitUntil?.(saving);
@@ -91,8 +108,12 @@ async function networkFirst(request, event) {
   }
 }
 
+// Fingerprinted files never change, so a cached copy fits any request for
+// them. ignoreVary matters for the precached language chunks: they were
+// stored by a plain request, while import() sends an Origin header, and a
+// server that answers with "Vary: Origin" would otherwise never match.
 async function cacheFirst(request, event) {
-  const cached = await caches.match(request);
+  const cached = await caches.match(request, { ignoreVary: true });
   return cached || fetchAndStore(request, event);
 }
 

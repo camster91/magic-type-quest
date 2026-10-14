@@ -35,11 +35,13 @@ function watchFoxRequests(page) {
 }
 
 async function startPlaying(page) {
+  // The game code loads after the menu paints; a click before then does nothing.
+  await page.waitForFunction(() => window.gameState?.profile);
   await page.locator('#btn-start').click();
   for (const id of ['#btn-close-finger-guide', '#btn-chapter-continue']) {
     if (await page.locator(id).isVisible().catch(() => false)) await page.locator(id).click();
   }
-  await expect.poll(() => page.evaluate(() => window.gameState.targetWord?.text || '')).not.toBe('');
+  await expect.poll(() => page.evaluate(() => window.gameState.targetWord?.text || ''), { timeout: 15_000 }).not.toBe('');
 }
 
 async function missThreeTimes(page) {
@@ -116,18 +118,21 @@ test('quitting while the fox voice is still loading keeps the home screen quiet'
   // A slow network: the voice code arrives only after the child has already
   // quit. Holding it until then (rather than for a fixed time) keeps the test
   // honest on a busy machine, where reaching the quit button can take longer.
-  let releaseVoice;
-  const voiceHeld = new Promise((resolve) => { releaseVoice = resolve; });
+  let quit;
+  const quitDone = new Promise((resolve) => { quit = resolve; });
+  let requested = false;
   await page.route(/\/foxVoice[-.][^/]*\.js$/, async (route) => {
-    await voiceHeld;
+    requested = true;
+    await quitDone;
     await route.continue();
   });
   await page.goto('');
   await startPlaying(page);
+  await expect.poll(() => requested).toBe(true);
   await page.locator('#btn-pause').click();
   await page.locator('#btn-quit').click();
   await expect(page.locator('#menu-screen')).toHaveClass(/active/);
-  releaseVoice();
+  quit();
   await page.waitForTimeout(2500);
   expect(await page.evaluate(() => window.__foxPlays)).toEqual([]);
 });

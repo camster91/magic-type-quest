@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { HABITATS, MAX_STAGE, habitatForLevel, habitatStage, isHabitatUnlocked, worldMap } from '../src/habitats.js';
 import { LESSON_LEVELS } from '../src/lessonLevels.js';
-import { dictionaries } from '../src/i18n.js';
+import { loadLocale, dictionaries } from '../src/i18n.js';
+
+// French and Spanish load on demand (src/lang/); the checks below need them.
+await Promise.all(['fr', 'es'].map((locale) => loadLocale(locale)));
 
 describe('world map habitats', () => {
   it('has 5 habitats in order, two levels each, covering every level once', () => {

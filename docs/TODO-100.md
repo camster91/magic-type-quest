@@ -57,7 +57,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 ### Looks (UI)
 - [x] **Claude:** a "Meadow restored!" level-complete celebration ✅ #217.: the whole scene glows, the fox dances, and stars count up.
 - [x] **Claude:** a Meadow home screen ✅ #217., with the scene and the fox behind the menu instead of plain purple.
-- [ ] **Claude (Higgsfield):** remake the 10 level tiles, the pets and the achievement badges in the Meadow painted style. **Done when:** no v1 3D-render art remains on a child-facing screen.
+- [x] **Claude (Higgsfield):** remake the 10 level tiles, the pets and the achievement badges in the Meadow painted style ✅ branch `art/meadow-painted`: 10 painted level scenes, 10 pets × 5 states, 5 category medallions. **Done when:** no v1 3D-render art remains on a child-facing screen.
 - [x] **Claude:** on phones, shrink the pet bubble ✅ #217. so the meadow and the word have room.
 - [x] **Claude:** one design system (colors, type, spacing, buttons) written down and used on all 4 pages ✅ #230 #231 (`docs/DESIGN-SYSTEM.md`; every colour on all four pages comes from tokens, guarded by `test/css-tokens.test.js` and `test/page-tokens.test.js`).
 
@@ -87,7 +87,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [x] **Claude:** a parent PIN for settings, like the teacher PIN in #210 ✅ (grown-up lock on the profile screen).
 
 ### Everyone
-- [ ] **Claude:** an accessibility pass with a real screen reader (dyslexia-friendly font, high contrast and relaxed mode ✅ #223; manual screen-reader pass still to do) (NVDA and VoiceOver), keyboard-only play, a dyslexia-friendly font option and high-contrast mode. **Done when:** checked in [DEVICE-ACCESSIBILITY-QA.md](DEVICE-ACCESSIBILITY-QA.md).
+- [ ] **Claude:** an accessibility pass with a real screen reader (dyslexia-friendly font, high contrast and relaxed mode ✅ #223; automated / virtual screen-reader pass ✅ 2026-10-14, see [DEVICE-ACCESSIBILITY-QA.md](DEVICE-ACCESSIBILITY-QA.md#automated--virtual-screen-reader-pass--2026-10-14); manual NVDA and VoiceOver pass still to do by a person, using the [manual script](DEVICE-ACCESSIBILITY-QA.md#manual-screen-reader-script-nvda-and-voiceover)) (NVDA and VoiceOver), keyboard-only play, a dyslexia-friendly font option and high-contrast mode. **Done when:** checked in [DEVICE-ACCESSIBILITY-QA.md](DEVICE-ACCESSIBILITY-QA.md).
 - [ ] **Claude:** a full French and Spanish pass on the new screens (Claude pre-review pass ✅ recorded in LANGUAGE-QA.md; still needs sign-off from a fluent French and a fluent Spanish reviewer). **Done when:** checked in [LANGUAGE-QA.md](LANGUAGE-QA.md).
 - [ ] **Owner:** test on real devices: a school Chromebook, an iPad, an Android phone and an old Windows laptop. Record the results.
 

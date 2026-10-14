@@ -209,6 +209,7 @@
   </style>
 </head>
 <body>
+  <main>
   <h1 data-page-i18n="teacher.heading">🌸 BloomType Teacher Dashboard</h1>
   <p class="subtitle" data-page-i18n="teacher.subtitle">Track typing progress for your classroom.</p>
 
@@ -282,7 +283,7 @@
   </section>
 
   <section class="panel local-only" aria-labelledby="classes-title">
-    <h2 id="classes-title" data-page-i18n="teacher.myClasses">My classes</h2>
+    <h2 id="classes-title" tabindex="-1" data-page-i18n="teacher.myClasses">My classes</h2>
     <p class="hint" data-page-i18n="teacher.classesHint">Make a class, give students the code, then watch their progress here.</p>
     <div id="class-list" class="class-list"></div>
     <form id="new-class-form" class="row">
@@ -421,6 +422,7 @@
       </details>
   </section>
   </div>
+  </main>
 
   <section id="print-cards" aria-hidden="true"></section>
 

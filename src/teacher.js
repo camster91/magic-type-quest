@@ -139,11 +139,14 @@ async function submitPin(event) {
     if (pin !== $('pin-confirm').value.trim()) return say('teacher.pinMismatch');
     await lock.setPin(pin);
     showDashboard();
+    // The PIN form is gone: move focus to the top of the dashboard.
+    $('classes-title')?.focus();
     return;
   }
   const result = await lock.unlock(pin);
   if (result === 'ok') {
     showDashboard();
+    $('classes-title')?.focus();
     return;
   }
   $('pin-input').value = '';
