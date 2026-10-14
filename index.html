@@ -21,6 +21,9 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<!-- One main landmark holds every screen; only the active screen is visible
+     to screen readers (inactive screens are visibility:hidden). -->
+<main>
 
 <!-- ===== MAIN MENU (T15 redesign) =====
      Single primary action. Progress visible. Pet reacts. Lesson nav small.
@@ -41,13 +44,13 @@
        T29: a small "60s" pill sits on the right of the progress bar so the
        Daily Moment is reachable in 1 tap from the home screen (not just
        behind the at-risk streak warning). -->
-  <div class="progress-card" aria-label="Your progress" data-i18n-aria-label="a11y.yourProgress">
+  <div class="progress-card" role="group" aria-label="Your progress" data-i18n-aria-label="a11y.yourProgress">
     <div class="progress-row">
       <span class="progress-level" id="menu-level-badge">Level 1 · Home Row Garden 🌸</span>
       <span class="progress-next" id="menu-level-next">Master the home row garden 🌸 to unlock Lv 2</span>
     </div>
-    <div class="progress-bar-row" aria-hidden="true">
-      <div class="progress-bar">
+    <div class="progress-bar-row">
+      <div class="progress-bar" aria-hidden="true">
         <div class="progress-fill" id="menu-level-fill" style="width:0%"></div>
       </div>
       <button type="button" id="btn-dm-pill" class="dm-pill" aria-label="Start a 60-second Daily Moment" data-i18n-aria-label="a11y.startDaily">
@@ -55,7 +58,7 @@
         <span class="dm-pill-text">60s</span>
       </button>
     </div>
-    <div class="keyboard-mini" id="menu-keyboard-mini" aria-label="Keys you've learned" data-i18n-aria-label="a11y.keysLearned">
+    <div class="keyboard-mini" id="menu-keyboard-mini" role="group" aria-label="Keys you've learned" data-i18n-aria-label="a11y.keysLearned">
       <!-- populated by main.js: mastered keys highlighted -->
     </div>
   </div>
@@ -67,7 +70,7 @@
 
   <!-- Pet: the brand. Centered, single focal point with the CTA. -->
   <!-- F3 contract: must contain #pet-hero with .pet-hero-img, .pet-hero-bubble, and .pet-evolution -->
-  <div id="pet-hero" class="pet-hero" aria-label="Your pet companion" data-i18n-aria-label="a11y.petCompanion">
+  <div id="pet-hero" class="pet-hero" role="group" aria-label="Your pet companion" data-i18n-aria-label="a11y.petCompanion">
     <div class="pet-hero-stage">
       <img id="pet-hero-img" class="pet-hero-img" src="assets/pets/flower-idle.webp" alt="Your pet" data-i18n-alt="a11y.yourPet" width="180" height="180" fetchpriority="high" />
       <div id="pet-hero-bubble" class="pet-hero-bubble" aria-live="polite">Hi! I'm Bloom 🌸</div>
@@ -102,31 +105,31 @@
   <!-- Small icon row: modes, not parallel choices. -->
   <!-- F3 contract: <div class="menu-dock"> with 8+ .menu-dock-item children.
        T15 visual: a 4-icon row. Hidden 8-item dock is in DOM for contract. -->
-  <div class="menu-dock" aria-label="Other screens" data-i18n-aria-label="a11y.otherScreens">
-    <button type="button" class="menu-dock-item menu-icon" aria-label="Lessons" data-i18n-aria-label="nav.lessons" id="btn-lesson-select">
-      <span class="mi-emoji">📚</span><span class="mi-label" data-i18n="nav.lessons">Lessons</span>
+  <nav class="menu-dock" aria-label="Other screens" data-i18n-aria-label="a11y.otherScreens">
+    <button type="button" class="menu-dock-item menu-icon" id="btn-lesson-select">
+      <span class="mi-emoji" aria-hidden="true">📚</span><span class="mi-label" data-i18n="nav.lessons">Lessons</span>
     </button>
-    <button type="button" class="menu-dock-item menu-icon" aria-label="Practice" data-i18n-aria-label="nav.practice" id="btn-practice">
-      <span class="mi-emoji">🎯</span><span class="mi-label" data-i18n="nav.practice">Practice</span>
+    <button type="button" class="menu-dock-item menu-icon" id="btn-practice">
+      <span class="mi-emoji" aria-hidden="true">🎯</span><span class="mi-label" data-i18n="nav.practice">Practice</span>
     </button>
-    <button type="button" class="menu-dock-item menu-icon" aria-label="My Garden" data-i18n-aria-label="garden.title" id="btn-garden">
-      <span class="mi-emoji">🌺</span><span class="mi-label" data-i18n="nav.garden">Garden</span>
+    <button type="button" class="menu-dock-item menu-icon" id="btn-garden">
+      <span class="mi-emoji" aria-hidden="true">🌺</span><span class="mi-label" data-i18n="nav.garden">Garden</span>
     </button>
-    <button type="button" class="menu-dock-item menu-icon" aria-label="Profile" data-i18n-aria-label="nav.profile" id="btn-profile">
-      <span class="mi-emoji">👤</span><span class="mi-label" data-i18n="nav.profile">Profile</span>
+    <button type="button" class="menu-dock-item menu-icon" id="btn-profile">
+      <span class="mi-emoji" aria-hidden="true">👤</span><span class="mi-label" data-i18n="nav.profile">Profile</span>
     </button>
     <!-- Contract fillers (F3 expects 8+ items; semantically present, visually hidden) -->
     <a href="./parents.html" class="menu-dock-item" style="display:none">Parents</a>
     <a href="./teacher.html" class="menu-dock-item" style="display:none">Progress</a>
     <a href="./landing.html" class="menu-dock-item" style="display:none">For Schools</a>
     <a href="./landing.html" class="menu-dock-item" style="display:none">Help</a>
-  </div>
+  </nav>
 
   <!-- Compact bottom: stats + parent/teacher/school links, one line -->
   <footer class="menu-bottom">
-    <span class="menu-stat"><span class="ms-icon">🌸</span><span id="menu-stars">0</span></span>
-    <span class="menu-stat"><span class="ms-icon">🏅</span><span id="menu-best">0</span></span>
-    <span class="menu-stat"><span class="ms-icon">📝</span><span id="menu-words">0</span></span>
+    <span class="menu-stat"><span class="ms-icon" aria-hidden="true">🌸</span><span class="sr-only" data-i18n="profile.stars">Stars</span><span id="menu-stars">0</span></span>
+    <span class="menu-stat"><span class="ms-icon" aria-hidden="true">🏅</span><span class="sr-only" data-i18n="profile.best">Best Score</span><span id="menu-best">0</span></span>
+    <span class="menu-stat"><span class="ms-icon" aria-hidden="true">📝</span><span class="sr-only" data-i18n="profile.words">Words</span><span id="menu-words">0</span></span>
     <span class="menu-divider"></span>
     <a href="./parents.html" class="menu-link" data-i18n="nav.parents">Parents</a>
     <a href="./teacher.html" class="menu-link" data-i18n="nav.progress">Progress</a>
@@ -147,11 +150,11 @@
 <div id="lesson-select-screen" class="screen">
   <div class="menu-bg"></div>
   <div class="screen-header">
-    <button type="button" id="btn-lesson-back" class="btn-back">← <span data-i18n="nav.back">Back</span></button>
-    <h2>📚 <span data-i18n="lesson.pick">Pick Your Adventure!</span></h2>
+    <button type="button" id="btn-lesson-back" class="btn-back"><span aria-hidden="true">←</span> <span data-i18n="nav.back">Back</span></button>
+    <h1><span aria-hidden="true">📚</span> <span data-i18n="lesson.pick">Pick Your Adventure!</span></h1>
   </div>
   <section id="world-map" class="world-map" aria-labelledby="world-map-title">
-    <h3 id="world-map-title" class="world-map-title"><span aria-hidden="true">🗺️</span> <span data-i18n="map.title">Your world map</span></h3>
+    <h2 id="world-map-title" class="world-map-title"><span aria-hidden="true">🗺️</span> <span data-i18n="map.title">Your world map</span></h2>
     <p class="world-map-hint" data-i18n="map.hint">Tap a place to see its levels.</p>
     <ol id="world-map-list" class="world-map-list"></ol>
   </section>
@@ -162,11 +165,11 @@
 <div id="practice-screen" class="screen">
   <div class="menu-bg"></div>
   <div class="screen-header">
-    <button type="button" id="btn-practice-back" class="btn-back">← <span data-i18n="nav.back">Back</span></button>
-    <h2>🎯 <span data-i18n="practice.title">Practice Power!</span></h2>
+    <button type="button" id="btn-practice-back" class="btn-back"><span aria-hidden="true">←</span> <span data-i18n="nav.back">Back</span></button>
+    <h1><span aria-hidden="true">🎯</span> <span data-i18n="practice.title">Practice Power!</span></h1>
   </div>
-  <div class="practice-viewport">
-    <div id="practice-char-display" class="practice-char-display">A</div>
+  <div class="practice-viewport" id="practice-area" tabindex="-1" role="application" aria-labelledby="practice-hint practice-finger-hint">
+    <div id="practice-char-display" class="practice-char-display" aria-hidden="true">A</div>
     <div id="practice-hint" class="practice-hint">Press <kbd>A</kbd> on your keyboard</div>
     <div id="practice-finger-hint" class="practice-finger-hint" data-i18n="finger.useLeftPinky">Use your left pinky</div>
   </div>
@@ -175,51 +178,18 @@
     <span id="practice-count">1 / 26</span>
   </div>
   <div class="practice-stats">
-    <div class="practice-stat">⚡ <span id="practice-wpm">0</span> <span data-i18n="metric.wpm">WPM</span></div>
-    <div class="practice-stat">🎯 <span id="practice-accuracy">0</span> <span data-i18n="metric.accuracy">Accuracy</span></div>
+    <div class="practice-stat"><span aria-hidden="true">⚡</span> <span id="practice-wpm">0</span> <span data-i18n="metric.wpm">WPM</span></div>
+    <div class="practice-stat"><span aria-hidden="true">🎯</span> <span id="practice-accuracy">0</span> <span data-i18n="metric.accuracy">Accuracy</span></div>
   </div>
 
-  <div class="virtual-keyboard" id="virtual-keyboard-practice">
-    <div class="kb-row">
-      <span class="key" tabindex="0" data-key="q" data-finger="lp" data-finger-label="L-Pinky">Q</span>
-      <span class="key" tabindex="0" data-key="w" data-finger="lr" data-finger-label="L-Ring">W</span>
-      <span class="key" tabindex="0" data-key="e" data-finger="lm" data-finger-label="L-Middle">E</span>
-      <span class="key" tabindex="0" data-key="r" data-finger="li" data-finger-label="L-Index">R</span>
-      <span class="key" tabindex="0" data-key="t" data-finger="li" data-finger-label="L-Index">T</span>
-      <span class="key" tabindex="0" data-key="y" data-finger="ri" data-finger-label="R-Index">Y</span>
-      <span class="key" tabindex="0" data-key="u" data-finger="ri" data-finger-label="R-Index">U</span>
-      <span class="key" tabindex="0" data-key="i" data-finger="rm" data-finger-label="R-Middle">I</span>
-      <span class="key" tabindex="0" data-key="o" data-finger="rr" data-finger-label="R-Ring">O</span>
-      <span class="key" tabindex="0" data-key="p" data-finger="rp" data-finger-label="R-Pinky">P</span>
-    </div>
-    <div class="kb-row">
-      <span class="key" tabindex="0" data-key="a" data-finger="lp" data-finger-label="L-Pinky">A</span>
-      <span class="key" tabindex="0" data-key="s" data-finger="lr" data-finger-label="L-Ring">S</span>
-      <span class="key" tabindex="0" data-key="d" data-finger="lm" data-finger-label="L-Middle">D</span>
-      <span class="key" tabindex="0" data-key="f" data-finger="li" data-finger-label="L-Index">F</span>
-      <span class="key" tabindex="0" data-key="g" data-finger="li" data-finger-label="L-Index">G</span>
-      <span class="key" tabindex="0" data-key="h" data-finger="ri" data-finger-label="R-Index">H</span>
-      <span class="key" tabindex="0" data-key="j" data-finger="ri" data-finger-label="R-Index">J</span>
-      <span class="key" tabindex="0" data-key="k" data-finger="rm" data-finger-label="R-Middle">K</span>
-      <span class="key" tabindex="0" data-key="l" data-finger="rr" data-finger-label="R-Ring">L</span>
-    </div>
-    <div class="kb-row">
-      <span class="key key-wide" tabindex="0" data-key="z" data-finger="lp" data-finger-label="L-Pinky">Z</span>
-      <span class="key" tabindex="0" data-key="x" data-finger="lr" data-finger-label="L-Ring">X</span>
-      <span class="key" tabindex="0" data-key="c" data-finger="lm" data-finger-label="L-Middle">C</span>
-      <span class="key" tabindex="0" data-key="v" data-finger="li" data-finger-label="L-Index">V</span>
-      <span class="key" tabindex="0" data-key="b" data-finger="li" data-finger-label="L-Index">B</span>
-      <span class="key" tabindex="0" data-key="n" data-finger="ri" data-finger-label="R-Index">N</span>
-      <span class="key" tabindex="0" data-key="m" data-finger="ri" data-finger-label="R-Index">M</span>
-    </div>
-    <div class="kb-row kb-space-row">
-      <span class="key key-space" tabindex="0" data-key=" " data-i18n="key.space">SPACE</span>
-    </div>
+  <div class="virtual-keyboard" id="virtual-keyboard-practice" aria-hidden="true">
+    <!-- Copied from #virtual-keyboard-game by main.js -->
   </div>
 </div>
 
 <!-- ===== GAME SCREEN ===== -->
-<div id="game-screen" class="screen" tabindex="-1" aria-label="Typing game" data-i18n-aria-label="a11y.typingGame">
+<div id="game-screen" class="screen" tabindex="-1" role="application" aria-label="Typing game" data-i18n-aria-label="a11y.typingGame">
+  <h1 class="sr-only" data-i18n="a11y.typingGame">Typing game</h1>
   <canvas id="game-canvas"></canvas>
   <input type="text" id="mobile-input" inputmode="text" autocapitalize="off" autocomplete="off" spellcheck="false" aria-label="Type the current word" data-i18n-aria-label="a11y.typeCurrentWord" tabindex="-1" style="position:fixed;bottom:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1;">
 
@@ -232,7 +202,7 @@
       <div class="hud-focus" id="focus-display">🎯 <span id="focus-score">100</span>%</div>
     </div>
     <div class="hud-center">
-      <div class="hud-combo" id="combo-display">🔥 x<span id="combo-count">0</span></div>
+      <div class="hud-combo" id="combo-display" aria-hidden="true">🔥 x<span id="combo-count">0</span></div>
       <div id="shift-hint" class="shift-hint hidden">Hold SHIFT!</div>
     </div>
     <div class="hud-right">
@@ -250,9 +220,9 @@
 
   <!-- T30: live gameplay HUD — WPM, accuracy, words done. Subtle pill, top-left, -->
   <!-- small + low-opacity so the centered word stays the dominant focal point.   -->
-  <div id="live-hud" class="live-hud" aria-live="polite" aria-label="Live typing progress" data-i18n-aria-label="a11y.liveProgress">
-    <div class="lh-row lh-stats"><span class="lh-emoji">⚡</span> <span id="live-wpm">0</span> <span class="lh-unit" data-i18n="metric.wpm">WPM</span> <span class="lh-dot">·</span> <span id="live-accuracy">100</span><span class="lh-unit">%</span></div>
-    <div class="lh-row lh-words"><span class="lh-emoji">🌸</span> <span id="live-words">0</span><span class="lh-unit"> / </span><span id="live-words-target">5</span></div>
+  <div id="live-hud" class="live-hud" role="group" aria-label="Live typing progress" data-i18n-aria-label="a11y.liveProgress">
+    <div class="lh-row lh-stats"><span class="lh-emoji" aria-hidden="true">⚡</span> <span id="live-wpm">0</span> <span class="lh-unit" data-i18n="metric.wpm">WPM</span> <span class="lh-dot" aria-hidden="true">·</span> <span id="live-accuracy">100</span><span class="lh-unit">%</span></div>
+    <div class="lh-row lh-words"><span class="lh-emoji" aria-hidden="true">🌸</span> <span id="live-words">0</span><span class="lh-unit"> / </span><span id="live-words-target">5</span></div>
     <div class="lh-progress" aria-hidden="true"><div class="lh-progress-fill" id="live-progress-fill"></div></div>
   </div>
 
@@ -274,9 +244,9 @@
   </div>
 
   <!-- T15: target word + finger hint (overlay above canvas) -->
-  <div id="target-word" class="target-word" aria-live="polite"></div>
-  <div id="finger-hint" class="finger-hint hidden" aria-live="polite">
-    <span class="fh-arrow" id="finger-hint-arrow">👆</span>
+  <div id="target-word" class="target-word"></div>
+  <div id="finger-hint" class="finger-hint hidden">
+    <span class="fh-arrow" id="finger-hint-arrow" aria-hidden="true">👆</span>
     <span id="finger-hint-text" data-i18n="finger.useLeftHand">Use your left hand</span>
   </div>
 
@@ -286,41 +256,41 @@
   </div>
 
   <!-- Compact Keyboard -->
-  <div class="virtual-keyboard" id="virtual-keyboard-game">
+  <div class="virtual-keyboard" id="virtual-keyboard-game" aria-hidden="true">
     <div class="kb-row">
-      <span class="key" tabindex="0" data-key="q" data-finger="lp" data-finger-label="L-Pinky">Q</span>
-      <span class="key" tabindex="0" data-key="w" data-finger="lr" data-finger-label="L-Ring">W</span>
-      <span class="key" tabindex="0" data-key="e" data-finger="lm" data-finger-label="L-Middle">E</span>
-      <span class="key" tabindex="0" data-key="r" data-finger="li" data-finger-label="L-Index">R</span>
-      <span class="key" tabindex="0" data-key="t" data-finger="li" data-finger-label="L-Index">T</span>
-      <span class="key" tabindex="0" data-key="y" data-finger="ri" data-finger-label="R-Index">Y</span>
-      <span class="key" tabindex="0" data-key="u" data-finger="ri" data-finger-label="R-Index">U</span>
-      <span class="key" tabindex="0" data-key="i" data-finger="rm" data-finger-label="R-Middle">I</span>
-      <span class="key" tabindex="0" data-key="o" data-finger="rr" data-finger-label="R-Ring">O</span>
-      <span class="key" tabindex="0" data-key="p" data-finger="rp" data-finger-label="R-Pinky">P</span>
+      <span class="key" data-key="q" data-finger="lp">Q</span>
+      <span class="key" data-key="w" data-finger="lr">W</span>
+      <span class="key" data-key="e" data-finger="lm">E</span>
+      <span class="key" data-key="r" data-finger="li">R</span>
+      <span class="key" data-key="t" data-finger="li">T</span>
+      <span class="key" data-key="y" data-finger="ri">Y</span>
+      <span class="key" data-key="u" data-finger="ri">U</span>
+      <span class="key" data-key="i" data-finger="rm">I</span>
+      <span class="key" data-key="o" data-finger="rr">O</span>
+      <span class="key" data-key="p" data-finger="rp">P</span>
     </div>
     <div class="kb-row">
-      <span class="key" tabindex="0" data-key="a" data-finger="lp" data-finger-label="L-Pinky">A</span>
-      <span class="key" tabindex="0" data-key="s" data-finger="lr" data-finger-label="L-Ring">S</span>
-      <span class="key" tabindex="0" data-key="d" data-finger="lm" data-finger-label="L-Middle">D</span>
-      <span class="key" tabindex="0" data-key="f" data-finger="li" data-finger-label="L-Index">F</span>
-      <span class="key" tabindex="0" data-key="g" data-finger="li" data-finger-label="L-Index">G</span>
-      <span class="key" tabindex="0" data-key="h" data-finger="ri" data-finger-label="R-Index">H</span>
-      <span class="key" tabindex="0" data-key="j" data-finger="ri" data-finger-label="R-Index">J</span>
-      <span class="key" tabindex="0" data-key="k" data-finger="rm" data-finger-label="R-Middle">K</span>
-      <span class="key" tabindex="0" data-key="l" data-finger="rr" data-finger-label="R-Ring">L</span>
+      <span class="key" data-key="a" data-finger="lp">A</span>
+      <span class="key" data-key="s" data-finger="lr">S</span>
+      <span class="key" data-key="d" data-finger="lm">D</span>
+      <span class="key" data-key="f" data-finger="li">F</span>
+      <span class="key" data-key="g" data-finger="li">G</span>
+      <span class="key" data-key="h" data-finger="ri">H</span>
+      <span class="key" data-key="j" data-finger="ri">J</span>
+      <span class="key" data-key="k" data-finger="rm">K</span>
+      <span class="key" data-key="l" data-finger="rr">L</span>
     </div>
     <div class="kb-row">
-      <span class="key key-wide" tabindex="0" data-key="z" data-finger="lp" data-finger-label="L-Pinky">Z</span>
-      <span class="key" tabindex="0" data-key="x" data-finger="lr" data-finger-label="L-Ring">X</span>
-      <span class="key" tabindex="0" data-key="c" data-finger="lm" data-finger-label="L-Middle">C</span>
-      <span class="key" tabindex="0" data-key="v" data-finger="li" data-finger-label="L-Index">V</span>
-      <span class="key" tabindex="0" data-key="b" data-finger="li" data-finger-label="L-Index">B</span>
-      <span class="key" tabindex="0" data-key="n" data-finger="ri" data-finger-label="R-Index">N</span>
-      <span class="key" tabindex="0" data-key="m" data-finger="ri" data-finger-label="R-Index">M</span>
+      <span class="key key-wide" data-key="z" data-finger="lp">Z</span>
+      <span class="key" data-key="x" data-finger="lr">X</span>
+      <span class="key" data-key="c" data-finger="lm">C</span>
+      <span class="key" data-key="v" data-finger="li">V</span>
+      <span class="key" data-key="b" data-finger="li">B</span>
+      <span class="key" data-key="n" data-finger="ri">N</span>
+      <span class="key" data-key="m" data-finger="ri">M</span>
     </div>
     <div class="kb-row kb-space-row">
-      <span class="key key-space" tabindex="0" data-key=" " data-i18n="key.space">SPACE</span>
+      <span class="key key-space" data-key=" " data-i18n="key.space">SPACE</span>
     </div>
   </div>
 
@@ -336,9 +306,9 @@
   <!-- Pause Overlay -->
   <div id="pause-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="pause-title">
     <div class="overlay-card">
-      <h2 id="pause-title">⏸️ <span data-i18n="game.paused">Paused</span></h2>
-      <button type="button" id="btn-resume" class="btn btn-primary">▶ <span data-i18n="game.resume">Resume</span> <span class="btn-shortcut">(Esc)</span></button>
-      <button type="button" id="btn-quit" class="btn btn-danger">🏠 <span data-i18n="game.quit">Quit to Menu</span></button>
+      <h2 id="pause-title"><span aria-hidden="true">⏸️</span> <span data-i18n="game.paused">Paused</span></h2>
+      <button type="button" id="btn-resume" class="btn btn-primary"><span aria-hidden="true">▶</span> <span data-i18n="game.resume">Resume</span> <span class="btn-shortcut">(Esc)</span></button>
+      <button type="button" id="btn-quit" class="btn btn-danger"><span aria-hidden="true">🏠</span> <span data-i18n="game.quit">Quit to Menu</span></button>
     </div>
   </div>
 
@@ -368,7 +338,7 @@
   </div>
 
   <!-- Level Complete Overlay -->
-  <div id="level-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="level-complete-title">
+  <div id="level-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="level-complete-title" aria-describedby="level-complete-sub">
     <div class="overlay-card level-complete-card">
       <div class="level-stars"><span class="level-star earned">★</span><span class="level-star earned">★</span><span class="level-star earned">★</span></div>
       <h2 id="level-complete-title" data-i18n="game.meadowRestored">Meadow restored!</h2>
@@ -384,16 +354,16 @@
       </div>
       <button type="button" id="btn-next-level" class="btn btn-primary"><span data-i18n="game.next">Next Level</span> →</button>
       <button type="button" id="btn-replay" class="btn btn-secondary" data-i18n="game.replay">Replay</button>
-      <button type="button" id="btn-level-menu" class="btn btn-secondary">📚 <span data-i18n="nav.allLessons">All Lessons</span></button>
+      <button type="button" id="btn-level-menu" class="btn btn-secondary"><span aria-hidden="true">📚</span> <span data-i18n="nav.allLessons">All Lessons</span></button>
     </div>
   </div>
 
   <!-- Game Over Overlay -->
-  <div id="gameover-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="gameover-title">
+  <div id="gameover-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="gameover-title" aria-describedby="gameover-msg">
     <div class="overlay-card gameover-card">
-      <div class="gameover-emoji">😢</div>
+      <div class="gameover-emoji" aria-hidden="true">😢</div>
       <h2 id="gameover-title" data-i18n="game.almost">Almost!</h2>
-      <p class="gameover-message" data-i18n="game.overMessage">The words snuck past us! Bloom believes in you — try again!</p>
+      <p id="gameover-msg" class="gameover-message" data-i18n="game.overMessage">The words snuck past us! Bloom believes in you — try again!</p>
       <div class="gameover-stats">
         <p>🌸 <span data-i18n="metric.finalScore">Final Score</span><span data-i18n="common.colon">:</span> <span id="final-score">0</span></p>
         <p>🔥 <span data-i18n="game.bestCombo">Best Combo</span><span data-i18n="common.colon">:</span> <span id="final-combo">0</span></p>
@@ -410,7 +380,7 @@
   <!-- Finger Guide Overlay -->
   <div id="finger-guide" class="finger-guide hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="finger-guide-title">
     <div class="finger-guide-card">
-      <h3 id="finger-guide-title">👐 <span data-i18n="finger.title">Home Row Position</span></h3>
+      <h2 id="finger-guide-title"><span aria-hidden="true">👐</span> <span data-i18n="finger.title">Home Row Position</span></h2>
       <div class="finger-hands">
         <div class="hand left-hand">
           <div class="finger pinky active">A</div>
@@ -476,15 +446,15 @@
 <div id="profile-screen" class="screen">
   <div class="menu-bg"></div>
   <div class="screen-header">
-    <button type="button" id="btn-profile-back" class="btn-back">← <span data-i18n="nav.back">Back</span></button>
-    <h2>👤 <span data-i18n="profile.title">My Profile</span></h2>
+    <button type="button" id="btn-profile-back" class="btn-back"><span aria-hidden="true">←</span> <span data-i18n="nav.back">Back</span></button>
+    <h1><span aria-hidden="true">👤</span> <span data-i18n="profile.title">My Profile</span></h1>
   </div>
   <div class="profile-card">
     <div class="avatar-preview" id="avatar-preview">
       <img id="avatar-preview-img" src="assets/pets/flower-idle.webp" alt="Your pet" data-i18n-alt="a11y.yourPet" />
       <span class="avatar-preview-emoji" id="avatar-preview-emoji" style="display:none">🌸</span>
     </div>
-    <input type="text" id="player-name" class="player-name-input" placeholder="Your Name" data-i18n-placeholder="profile.name" maxlength="12">
+    <input type="text" id="player-name" class="player-name-input" placeholder="Your Name" data-i18n-placeholder="profile.name" aria-label="Your Name" data-i18n-aria-label="profile.name" maxlength="12">
     <div class="avatar-picker">
       <button type="button" class="avatar-btn active" data-avatar="🌸" data-avatar-name="flower" aria-label="Select Flower Avatar">🌸</button>
       <button type="button" class="avatar-btn" data-avatar="🌻" data-avatar-name="sunflower" aria-label="Select Sunflower Avatar">🌻</button>
@@ -498,35 +468,35 @@
       <button type="button" class="avatar-btn" data-avatar="🐶" data-avatar-name="puppy" aria-label="Select Puppy Avatar">🐶</button>
     </div>
     <section class="players-section" aria-labelledby="players-title">
-      <h3 id="players-title" class="profile-label" data-i18n="players.title">Players on this device</h3>
+      <h2 id="players-title" class="profile-label" data-i18n="players.title">Players on this device</h2>
       <div id="players-list" class="players-list"></div>
       <button type="button" id="btn-add-player" class="btn btn-secondary" data-i18n="players.add">➕ Add a player</button>
     </section>
     <div class="profile-stats">
       <div class="profile-stat">
-        <span class="ps-icon">🌸</span>
+        <span class="ps-icon" aria-hidden="true">🌸</span>
         <span class="ps-num" id="profile-stars">0</span>
         <span class="ps-label" data-i18n="profile.stars">Stars</span>
       </div>
       <div class="profile-stat">
-        <span class="ps-icon">🏅</span>
+        <span class="ps-icon" aria-hidden="true">🏅</span>
         <span class="ps-num" id="profile-best">0</span>
         <span class="ps-label" data-i18n="profile.best">Best Score</span>
       </div>
       <div class="profile-stat">
-        <span class="ps-icon">📝</span>
+        <span class="ps-icon" aria-hidden="true">📝</span>
         <span class="ps-num" id="profile-words">0</span>
         <span class="ps-label" data-i18n="profile.words">Words</span>
       </div>
       <div class="profile-stat">
-        <span class="ps-icon">🏆</span>
+        <span class="ps-icon" aria-hidden="true">🏆</span>
         <span class="ps-num" id="profile-achievements">0</span>
         <span class="ps-label" data-i18n="profile.achievements">Achievements</span>
       </div>
     </div>
     <div class="profile-achievements-section">
       <div class="achievements-header">
-        <span>🏆 <span data-i18n="profile.achievements">Achievements</span></span>
+        <span><span aria-hidden="true">🏆</span> <span data-i18n="profile.achievements">Achievements</span></span>
         <span id="achievements-count">0 / 18</span>
       </div>
       <div class="achievements-categories" id="achievements-categories">
@@ -540,7 +510,7 @@
     <div id="review-keys" class="review-keys"></div>
 
     <div class="profile-class-section">
-      <label class="profile-label" data-i18n="profile.classCode">Class Code</label>
+      <label class="profile-label" for="class-code" data-i18n="profile.classCode">Class Code</label>
       <input type="text" id="class-code" class="profile-input" placeholder="Enter code (e.g. ABC123)" data-i18n-placeholder="profile.classPlaceholder" maxlength="10">
       <p class="profile-hint" data-i18n="profile.classHint">Ask your teacher for a class code to share your progress.</p>
       <button type="button" id="btn-join-class-online" class="btn btn-secondary" data-i18n="cloudLogin.join" hidden>Join class online</button>
@@ -548,7 +518,7 @@
     </div>
 
     <section class="profile-restore-section" aria-labelledby="restore-code-title">
-      <h3 id="restore-code-title" class="profile-label" data-i18n="restore.title">My Save Code</h3>
+      <h2 id="restore-code-title" class="profile-label" data-i18n="restore.title">My Save Code</h2>
       <p class="profile-hint" data-i18n="restore.hint">Write this code down. Type it on another device to bring your progress with you.</p>
       <div class="restore-code-row">
         <output id="restore-code" class="restore-code" aria-live="polite"></output>
@@ -590,14 +560,14 @@
     </fieldset>
 
     <label class="toggle-label">
-      <input type="checkbox" id="voice-toggle"> 🗣 <span data-i18n="profile.voice">Voice Narration</span>
+      <input type="checkbox" id="voice-toggle"> <span aria-hidden="true">🗣</span> <span data-i18n="profile.voice">Voice Narration</span>
     </label>
     <label class="toggle-label">
-      <input type="checkbox" id="fox-voice-toggle"> 🦊 <span data-i18n="profile.foxVoice">Fox voice</span>
+      <input type="checkbox" id="fox-voice-toggle"> <span aria-hidden="true">🦊</span> <span data-i18n="profile.foxVoice">Fox voice</span>
     </label>
     <button type="button" id="btn-save-profile" class="btn btn-primary" data-i18n="profile.save">Save Profile</button>
     <section class="grown-up-lock" aria-labelledby="grown-up-title">
-      <h3 id="grown-up-title" class="profile-label" data-i18n="parentLock.title">Grown-up lock</h3>
+      <h2 id="grown-up-title" class="profile-label" data-i18n="parentLock.title">Grown-up lock</h2>
       <p id="grown-up-status" class="profile-hint" role="status" aria-live="polite"></p>
       <form id="grown-up-form" class="grown-up-form" novalidate>
         <label for="grown-up-pin" class="profile-label" data-i18n="parentLock.pin">PIN (4 to 8 digits)</label>
@@ -630,12 +600,12 @@
 <div id="garden-screen" class="screen">
   <div class="menu-bg"></div>
   <div class="screen-header">
-    <button type="button" id="btn-garden-back" class="btn-back">← <span data-i18n="nav.back">Back</span></button>
-    <h2>🌺 <span data-i18n="garden.title">My Garden</span></h2>
+    <button type="button" id="btn-garden-back" class="btn-back"><span aria-hidden="true">←</span> <span data-i18n="nav.back">Back</span></button>
+    <h1><span aria-hidden="true">🌺</span> <span data-i18n="garden.title">My Garden</span></h1>
   </div>
   <section class="meadow-plants" aria-labelledby="meadow-plants-title">
     <div class="field-guide-head">
-      <h3 id="meadow-plants-title">🌱 <span data-i18n="plant.title">Plants I’ve grown</span></h3>
+      <h2 id="meadow-plants-title"><span aria-hidden="true">🌱</span> <span data-i18n="plant.title">Plants I’ve grown</span></h2>
       <span id="meadow-plants-count" class="field-guide-count"></span>
     </div>
     <p id="meadow-plants-today" class="profile-hint"></p>
@@ -643,18 +613,21 @@
   </section>
   <section class="field-guide" aria-labelledby="field-guide-title">
     <div class="field-guide-head">
-      <h3 id="field-guide-title">🦋 <span data-i18n="fieldguide.title">Field Guide</span></h3>
+      <h2 id="field-guide-title"><span aria-hidden="true">🦋</span> <span data-i18n="fieldguide.title">Field Guide</span></h2>
       <span id="field-guide-count" class="field-guide-count"></span>
     </div>
     <div id="field-guide-grid" class="field-guide-grid"></div>
   </section>
   <div class="garden-stats" id="garden-stats">
-    <span>🌸 <span id="garden-count">0</span> <span data-i18n="garden.plantedLabel">flowers planted</span></span>
+    <span><span aria-hidden="true">🌸</span> <span id="garden-count">0</span> <span data-i18n="garden.plantedLabel">flowers planted</span></span>
   </div>
   <div class="garden-grid" id="garden-grid" tabindex="0" role="region" aria-label="My Garden" data-i18n-aria-label="garden.title">
     <!-- Populated by JS -->
   </div>
 </div>
+</main>
+<!-- Screen-reader announcements: word typed, level finished, toasts. -->
+<div id="sr-announcer" class="sr-only" role="status" aria-live="polite"></div>
 
 <script type="module" src="/src/main.js"></script>
 <script>

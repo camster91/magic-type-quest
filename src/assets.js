@@ -40,18 +40,24 @@ export const ASSET_PATHS = {
     fox: "assets/pets/fox.webp",
   },
   badges: {
-    bronze: "assets/badges/bronze.png",
-    silver: "assets/badges/silver.png",
-    gold: "assets/badges/gold.png",
-    platinum: "assets/badges/platinum.png",
+    // Painted Meadow medallions, one per achievement category
+    speed: "assets/badges/speed.webp",
+    accuracy: "assets/badges/accuracy.webp",
+    combo: "assets/badges/combo.webp",
+    volume: "assets/badges/volume.webp",
+    mastery: "assets/badges/mastery.webp",
   },
   levels: {
     homeRow: "assets/levels/home-row.webp",
     topRow: "assets/levels/top-row.webp",
     bottomRow: "assets/levels/bottom-row.webp",
+    allLetters: "assets/levels/all-letters.webp",
     capitals: "assets/levels/capitals.webp",
     numbers: "assets/levels/numbers.webp",
+    speed: "assets/levels/speed.webp",
+    accuracy: "assets/levels/accuracy.webp",
     master: "assets/levels/master.webp",
+    legend: "assets/levels/legend.webp",
   },
   guides: {
     leftHand: "assets/guides/left-hand.png",

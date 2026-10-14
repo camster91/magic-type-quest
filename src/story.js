@@ -1,4 +1,4 @@
-import { getLocale } from './i18n.js';
+import { getLocale, onLocalePack } from './i18n.js';
 
 /**
  * BloomType — Story & Narrative Engine
@@ -82,40 +82,9 @@ export const PET_PERSONALITY = {
   ],
 };
 
-export const PET_PERSONALITY_TRANSLATIONS = {
-  fr: {
-    greeting: ['Salut ! Prêt à faire pousser quelque chose de génial ?', 'Faisons briller le jardin aujourd’hui !', 'C’est l’heure de taper ! Je suis tellement heureux que je pourrais fleurir !', 'Prêt ? Partez ? TAPE !', 'Un nouveau jour, de nouvelles fleurs à planter !'],
-    correct: ['Bravo ! Tu deviens RAPIDE !', 'Boum ! C’était parfait !', 'Regarde-toi aller !', 'Oui, oui, OUI ! Continue !', 'Tu es un magicien du clavier !', 'Cette lettre a presque sauté toute seule !'],
-    wrong: ['Ouf, presque ! Réessaie !', 'Pas grave, même moi je trébuche parfois !', 'On se reprend ! La prochaine lettre est à toi !', 'Oups ! Tes doigts se réchauffent encore !', 'C’est comme ça qu’on apprend !'],
-    combo2: ['Combo ! Ça en fait deux ! 🔥', 'Double réussite ! Bravo !', 'Deux de suite !'],
-    combo3: ['TRIPLÉ ! Tu es en feu ! 🔥🔥', 'Trois ! Ne t’arrête pas !', 'Ça en fait trois ! Continue !'],
-    combo5: ['CINQ ?! Tu es INARRÊTABLE ! 🔥🔥🔥', 'Par toutes les pétales ! Cinq combos !', 'Série légendaire !'],
-    combo10: ['DIX ?! MAIS COMMENT FAIS-TU ?! 🌟', 'LE JARDIN TREMBLE !', 'PUISSANCE MAXIMALE !'],
-    wordComplete: ['Mot planté ! Une fleur de plus dans le jardin !', 'Magnifique ! Le jardin adore ce mot !', 'Superbe floraison !', 'Ce mot vient de devenir une fleur !', 'Le jardin se remplit — et c’est tant mieux !'],
-    levelComplete: ['Niveau écrasé ! Nous devenons plus forts !', 'OUI ! Nous avons réussi ! Tape-m’en cinq ! 🙌', 'Ce niveau ne faisait pas le poids !', 'Pouvoir floral ! Au suivant !', 'Grâce à toi, le jardin est FLORISSANT !'],
-    gameOver: ['Oh, les étoiles se sont échappées… nous les attraperons la prochaine fois !', 'Chaque jardinier a une mauvaise journée. On réessaie ?', 'Ces mots difficiles ne gagneront pas deux fois !', 'Secoue tes pétales et recommençons !', 'Tu étais SI près ! Encore un essai ?'],
-    newLevel: ['Nouveau défi ! Je sens l’excitation !', 'C’est parti ! Nouvelles lettres, nouvelles fleurs !', 'Prêt à monter de niveau ? Faisons fleurir tout ça !', 'Une nouvelle terre à cultiver !'],
-    hurt: ['Aïe ! Un mot nous a échappé !', 'Hé ! Celui-là s’est sauvé !', 'Oh non, notre jardin ! Vite, tape plus vite !', 'Nous perdons des fleurs ! Concentre-toi !'],
-    encouragement: ['Tu te débrouilles très bien ! Ne t’arrête pas !', 'Chaque lettre compte !', 'Le jardin t’encourage !', 'Tu as un talent naturel !', 'Tape comme si personne ne te regardait !'],
-    idle: ['Tape le mot !', 'J’attends tes doigts magiques !', 'Le prochain mot arrive !', 'Quand tu veux !'],
-  },
-  es: {
-    greeting: ['¡Hola! ¿Listo para cultivar algo increíble?', '¡Hagamos brillar el jardín hoy!', '¡Hora de escribir! ¡Estoy tan emocionado que podría florecer!', '¿Listo? ¿Preparado? ¡ESCRIBE!', '¡Otro día y más flores que plantar!'],
-    correct: ['¡Muy bien! ¡Cada vez eres más RÁPIDO!', '¡Bum! ¡Eso fue perfecto!', '¡Mira cómo avanzas!', '¡Sí, sí, SÍ! ¡Sigue así!', '¡Eres un mago del teclado!', '¡Esa letra casi saltó sola!'],
-    wrong: ['¡Uf, casi! ¡Inténtalo otra vez!', 'No pasa nada, ¡hasta yo tropiezo!', '¡Sacúdelo! ¡La próxima letra es tuya!', '¡Uy! Tus dedos aún están calentando.', '¡Así es como aprendemos!'],
-    combo2: ['¡Combo! ¡Ya van dos! 🔥', '¡Doble acierto! ¡Bien!', '¡Dos seguidas!'],
-    combo3: ['¡TRIPLE! ¡Estás que ardes! 🔥🔥', '¡Tres! ¡No pares ahora!', '¡Ya van tres! ¡Sigue!'],
-    combo5: ['¿CINCO? ¡Eres IMPARABLE! 🔥🔥🔥', '¡Santos pétalos! ¡Cinco combos!', '¡Racha legendaria!'],
-    combo10: ['¿DIEZ? ¿ERES DE ESTE PLANETA? 🌟', '¡EL JARDÍN ESTÁ TEMBLANDO!', '¡POTENCIA MÁXIMA!'],
-    wordComplete: ['¡Palabra plantada! ¡Otra flor para el jardín!', '¡Precioso! ¡Al jardín le encanta!', '¡Una floración magnífica!', '¡Esa palabra se convirtió en flor!', 'El jardín se llena, ¡y eso es bueno!'],
-    levelComplete: ['¡Nivel superado! ¡Nos hacemos más fuertes!', '¡SÍ! ¡Lo logramos! ¡Choca esos cinco! 🙌', '¡Ese nivel no pudo con nosotros!', '¡Poder floral! ¡Vamos al siguiente!', '¡Gracias a ti, el jardín está FLORECIENDO!'],
-    gameOver: ['Oh, las estrellas escaparon… ¡las atraparemos la próxima vez!', 'Todo jardinero tiene un mal día. ¿Probamos otra vez?', '¡Esas palabras difíciles no ganarán dos veces!', '¡Sacude tus pétalos y volvamos!', '¡Estuviste MUY cerca! ¿Otro intento?'],
-    newLevel: ['¡Nuevo desafío! ¡Se siente la emoción!', '¡Vamos! ¡Nuevas letras, nuevas flores!', '¿Listo para subir de nivel? ¡Hagamos que florezca!', '¡Tierra nueva para plantar!'],
-    hurt: ['¡Ay! ¡Una palabra se nos escapó!', '¡Eh! ¡Esa se escapó!', '¡No, nuestro jardín! ¡Rápido, escribe más deprisa!', '¡Perdemos flores! ¡Concéntrate!'],
-    encouragement: ['¡Lo haces genial! ¡No pares!', '¡Cada letra cuenta!', '¡El jardín te anima!', '¡Tienes un talento natural!', '¡Escribe como si nadie mirara!'],
-    idle: ['¡Escribe la palabra!', '¡Espero tus dedos mágicos!', '¡Llega la siguiente palabra!', '¡Cuando quieras!'],
-  },
-};
+// Filled per language as it loads (src/lang/, see loadLocale in i18n.js).
+export const PET_PERSONALITY_TRANSLATIONS = {};
+onLocalePack((locale, pack) => { PET_PERSONALITY_TRANSLATIONS[locale] = pack.pet; });
 
 // Chapter narrative data — each level is a chapter in Bloom's journey
 export const CHAPTERS = {

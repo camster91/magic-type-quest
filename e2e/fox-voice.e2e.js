@@ -35,11 +35,13 @@ function watchFoxRequests(page) {
 }
 
 async function startPlaying(page) {
+  // The game code loads after the menu paints; a click before then does nothing.
+  await page.waitForFunction(() => window.gameState?.profile);
   await page.locator('#btn-start').click();
   for (const id of ['#btn-close-finger-guide', '#btn-chapter-continue']) {
     if (await page.locator(id).isVisible().catch(() => false)) await page.locator(id).click();
   }
-  await expect.poll(() => page.evaluate(() => window.gameState.targetWord?.text || '')).not.toBe('');
+  await expect.poll(() => page.evaluate(() => window.gameState.targetWord?.text || ''), { timeout: 15_000 }).not.toBe('');
 }
 
 async function missThreeTimes(page) {
@@ -113,17 +115,23 @@ test.describe('slow network', () => {
 
 test('quitting while the fox voice is still loading keeps the home screen quiet', async ({ page }) => {
   await seed(page, {});
-  // A slow network: the voice code arrives after the child has already quit.
+  // A slow network: the voice code arrives only after the child has quit.
+  let quit;
+  const quitDone = new Promise((resolve) => { quit = resolve; });
+  let requested = false;
   await page.route(/\/foxVoice[-.][^/]*\.js$/, async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    requested = true;
+    await quitDone;
     await route.continue();
   });
   await page.goto('');
   await startPlaying(page);
+  await expect.poll(() => requested).toBe(true);
   await page.locator('#btn-pause').click();
   await page.locator('#btn-quit').click();
   await expect(page.locator('#menu-screen')).toHaveClass(/active/);
-  await page.waitForTimeout(2500);
+  quit();
+  await page.waitForTimeout(1500);
   expect(await page.evaluate(() => window.__foxPlays)).toEqual([]);
 });
 });

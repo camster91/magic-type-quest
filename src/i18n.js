@@ -115,6 +115,7 @@ export const dictionaries = {
     'metric.wpm': 'WPM', 'hud.levelShort': 'Lv', 'key.space': 'SPACE', 'a11y.pauseShortcut': 'Pause game (Esc)',
     'a11y.yourPet': 'Your pet', 'a11y.petAlt': '{name} pet', 'a11y.selectAvatar': 'Select {name} avatar',
     'a11y.achievementsList': 'Achievements list', 'players.unnamed': 'Player',
+    'a11y.wordDone': 'Well done: {word}. {count} of {total}.',
     'evolution.stage1': 'Sprout', 'evolution.stage2': 'Bud', 'evolution.stage3': 'Bloom',
     'avatar.flower': 'Flower', 'avatar.sunflower': 'Sunflower', 'avatar.dragon': 'Dragon', 'avatar.cat': 'Cat',
     'avatar.bunny': 'Bunny', 'avatar.fox': 'Fox', 'avatar.panda': 'Panda', 'avatar.robot': 'Robot',
@@ -153,319 +154,89 @@ export const dictionaries = {
     'evolution.3.title': 'Legend Bloom!', 'evolution.3.desc': 'Bloom has fully bloomed! A true typing legend!',
     'evolution.3.line': '“We’re UNSTOPPABLE together!” — Bloom',
   },
-  fr: {
-    'cloudLogin.join': 'Rejoindre la classe en ligne', 'cloudLogin.joining': 'Connexion à ta classe…',
-    'cloudLogin.joined': 'C’est fait ! Ton enseignant peut maintenant voir tes progrès.',
-    'cloudLogin.bad-code': 'Tape d’abord le code de classe de ton enseignant.',
-    'cloudLogin.unknown-class': 'Classe introuvable. Vérifie le code avec ton enseignant.',
-    'cloudLogin.offline': 'Connecte-toi à Internet pour rejoindre ta classe en ligne.',
-    'cloudLogin.sign-in-failed': 'Ça n’a pas marché. Réessaie ou demande à ton enseignant.',
-    'cloudLogin.disabled': 'Les classes en ligne ne sont pas encore activées.',
-    'plant.title': 'Mes plantes', 'plant.count': '{count} plantées',
-    'plant.today': 'Plante du jour : {plant}. Exerce-toi aujourd’hui pour la planter.',
-    'plant.plantedToday': 'Bravo ! Tu as planté {plant} aujourd’hui.', 'plant.waiting': 'Plante du jour : {plant}',
-    'plant.none': 'Exerce-toi n’importe quel jour pour planter la fleur de ce jour-là.',
-    'plant.sunflower': 'Tournesol', 'plant.lupine': 'Lupin', 'plant.blackEyedSusan': 'Rudbeckie',
-    'plant.coneflower': 'Échinacée', 'plant.beeBalm': 'Monarde', 'plant.wildRose': 'Rosier sauvage',
-    'plant.milkweed': 'Asclépiade', 'plant.clover': 'Trèfle', 'plant.goldenrod': 'Verge d’or', 'plant.aster': 'Aster',
-    'cloudLogin.bad-link': 'Ce code de liaison n’a pas fonctionné. Il a peut-être expiré. Demandes-en un nouveau sur ton autre appareil.',
-    'cloudLogin.not-joined': 'Rejoins d’abord ta classe en ligne sur cet appareil.',
-    'link.hint': 'Tu joues en classe sur plus d’un appareil ? Obtiens un code de liaison ici et tape-le sur ton autre appareil.',
-    'link.get': 'Obtenir un code pour mes autres appareils',
-    'link.made': 'Tape ce code dans « Tu as un code ? » sur ton autre appareil. Il fonctionne pendant 14 jours.',
-    'link.linked': 'Appareils liés ! Tes progrès sont maintenant ici.',
-    'parentLock.title': 'Verrou parent',
-    'parentLock.off': 'Ajoute un NIP pour que seul un adulte puisse effacer les progrès, changer de classe, utiliser un code ou ajouter des joueurs.',
-    'parentLock.locked': 'Les réglages pour adultes sont verrouillés.',
-    'parentLock.unlocked': 'Les réglages pour adultes sont déverrouillés jusqu’à la fermeture de cet onglet.',
-    'parentLock.pin': 'NIP (4 à 8 chiffres)', 'parentLock.confirm': 'Tape le NIP encore une fois',
-    'parentLock.set': 'Créer le NIP', 'parentLock.unlock': 'Déverrouiller', 'parentLock.lock': '🔒 Verrouiller', 'parentLock.remove': 'Retirer le NIP',
-    'parentLock.invalid': 'Utilise de 4 à 8 chiffres.', 'parentLock.mismatch': 'Les deux NIP ne correspondent pas.',
-    'parentLock.wrong': 'Ce NIP n’est pas le bon.', 'parentLock.wait': 'Trop d’essais. Attends {seconds} secondes.',
-    'parentLock.needed': 'Demande à un adulte de déverrouiller avec le NIP.',
-    'parentLock.forgot': 'NIP oublié ? Effacer les données de ce site dans le navigateur le supprime, ainsi que les progrès enregistrés ici.',
-    'restore.title': 'Mon code de sauvegarde',
-    'restore.hint': 'Note ce code. Tape-le sur un autre appareil pour retrouver tes progrès.',
-    'restore.copy': 'Copier', 'restore.copied': 'Copié !',
-    'restore.enterLabel': 'Tu as un code ? Tape-le ici',
-    'restore.button': 'Récupérer mes progrès',
-    'restore.invalid': 'Ce code ne semble pas correct. Vérifie chaque lettre et réessaie.',
-    'restore.done': 'Progrès récupérés ! Bon retour.',
-    'a11y.settings': 'Lecture et jeu', 'a11y.font': 'Lettres', 'a11y.fontDefault': 'Standard',
-    'a11y.fontReadable': 'Lecture facile (Atkinson Hyperlegible)', 'a11y.fontDyslexic': 'OpenDyslexic',
-    'a11y.highContrast': 'Contraste élevé', 'a11y.relaxed': 'Mode détente : sans chrono',
-    'a11y.relaxedHint': 'Les mots t’attendent et le Moment quotidien n’a pas de chrono.',
-    'players.title': 'Joueurs sur cet appareil', 'players.add': '➕ Ajouter un joueur', 'players.switchTo': 'Passer à {name}', 'players.onlyOne': 'Chaque enfant de la famille peut avoir son propre joueur ici.', 'players.cloudOnly': 'Connecté à un compte de classe. Déconnecte-toi pour changer de joueur sur cet appareil.',
-    'class.assignment': 'Ton enseignant demande : termine le niveau {level} pour le {due}.', 'class.assignmentNoDue': 'Ton enseignant demande : termine le niveau {level}.',
-    'class.assignmentDone': 'Devoir fait : niveau {level} ! 🎉', 'class.words': '📝 Pratiquer les mots de la classe',
-    'fieldguide.title': 'Guide nature', 'fieldguide.new': 'Nouvelle carte du guide nature !',
-    'fieldguide.locked': 'Termine le niveau {level} pour la découvrir', 'fieldguide.count': '{found} sur {total} trouvées',
-    'fieldguide.monarch.name': 'Papillon monarque', 'fieldguide.monarch.fact': 'Les chenilles du monarque mangent seulement des feuilles d’asclépiade.',
-    'fieldguide.bumblebee.name': 'Bourdon', 'fieldguide.bumblebee.fact': 'Les bourdons transportent le pollen dans de petites corbeilles sur leurs pattes arrière.',
-    'fieldguide.bluebird.name': 'Merlebleu de l’Est', 'fieldguide.bluebird.fact': 'Les merlebleus nichent dans des trous d’arbres et dans des nichoirs installés par les gens.',
-    'fieldguide.milkweed.name': 'Asclépiade', 'fieldguide.milkweed.fact': 'Les graines d’asclépiade s’envolent sur un duvet doux et soyeux.',
-    'sound.on': 'Son activé', 'sound.off': 'Son désactivé',
-    'game.meadowRestored': 'Prairie restaurée !', 'game.starsEarned': '{count} étoiles sur 3',
-    'nav.lessons': 'Leçons', 'nav.practice': 'Pratique', 'nav.garden': 'Jardin', 'nav.profile': 'Profil',
-    'nav.parents': 'Parents', 'nav.progress': 'Progrès', 'nav.schools': 'Pour les écoles', 'nav.back': 'Retour', 'nav.allLessons': 'Toutes les leçons',
-    'menu.cta': 'Tape pour planter', 'menu.daily': 'Moment quotidien de 60 s', 'menu.lowStress': '60 s · sans stress',
-    'profile.title': 'Mon profil', 'profile.name': 'Ton nom', 'profile.language': 'Langue',
-    'profile.stars': 'Étoiles', 'profile.best': 'Meilleur score', 'profile.words': 'Mots', 'profile.achievements': 'Réussites',
-    'profile.classCode': 'Code de classe', 'profile.voice': 'Narration vocale', 'profile.foxVoice': 'Voix du renard', 'profile.save': 'Enregistrer le profil',
-    'metric.score': 'Score', 'metric.finalScore': 'Score final', 'metric.accuracy': 'Précision', 'metric.words': 'Mots', 'metric.wordsTyped': 'Mots tapés',
-    'garden.title': 'Mon jardin', 'garden.empty': 'Ton jardin est vide !',
-    'game.level': 'Niveau {level}', 'game.typeWord': 'Tape le mot !', 'game.paused': 'Pause', 'game.resume': 'Continuer',
-    'game.levelName': 'Niveau {level} · {name}', 'game.levelCleared': 'Niveau {level} terminé — essaie le suivant !',
-    'game.levelUnlock': 'Maîtrise « {name} » pour débloquer le niveau {level}', 'game.mastery': 'Continue pour devenir maître du clavier !',
-    'game.quit': 'Retour au menu', 'game.over': 'Partie terminée…', 'game.next': 'Niveau suivant',
-    'daily.title': 'Moment quotidien', 'daily.complete': 'Moment quotidien terminé !', 'daily.questDone': 'Quête terminée !',
-  
-    'profile.classPlaceholder': 'Entre le code (ex. ABC123)',
-    'profile.classHint': 'Demande un code de classe à ton enseignant pour partager tes progrès.',
-    'garden.emptyHint': 'Termine des niveaux pour planter des fleurs ici.',
-    'game.combo': '🔥 Combo de {count} !', 'game.shift': 'Maintiens MAJ pour écrire les majuscules !',
-    'game.useFinger': 'Utilise ton {finger}', 'game.levelComplete': 'Niveau terminé ! 🌟', 'game.levelCompleteNamed': 'Niveau {level} terminé !',
-    'game.complete': 'Jeu terminé !', 'daily.subtitle': '60 secondes de frappe concentrée',
-    'daily.summaryOne': '1 mot · {wpm} MPM · {accuracy} % de précision',
-    'daily.summaryMany': '{count} mots · {wpm} MPM · {accuracy} % de précision',
-    'drill.complete': 'Exercice des touches faibles terminé !', 'drill.summaryOne': '1 mot d’exercice · {wpm} MPM · {accuracy} % de précision',
-    'drill.summaryMany': '{count} mots d’exercice · {wpm} MPM · {accuracy} % de précision',
-    'daily.intro': 'Aucune pression. Tape ce que tu peux. On t’encourage !',
-    'practice.type': 'Tape : {word}', 'practice.wordProgress': 'Mot {current} sur {total}',
-    'menu.dailyQuests': 'Quêtes quotidiennes', 'lesson.pick': 'Choisis ton aventure !', 'practice.title': 'À toi de t’entraîner !',
-    'profile.delete': 'Supprimer les progrès locaux',
-    'profile.deleteHint': 'Supprime de ce navigateur le profil, les progrès et l’appartenance à la classe de cet élève. Ne supprime pas les données infonuagiques de l’école.',
-    'profile.deleteConfirm': 'Supprimer les progrès BloomType de cet élève dans ce navigateur ? Cette action est irréversible.',
-    'profile.deleted': 'Progrès supprimés', 'profile.deletedDesc': 'Ce navigateur ne conserve plus le profil de l’élève.',
-    'profile.deleteCloud': 'Supprimer les progrès infonuagiques et locaux',
-    'profile.deleteCloudConfirm': 'Supprimer définitivement les progrès infonuagiques et locaux de cet élève, y compris les dossiers de classe et de session ? Cette action est irréversible.',
-    'profile.deletingCloud': 'Suppression des progrès infonuagiques…',
-    'profile.deleteCloud.not-authenticated': 'La suppression infonuagique exige une session scolaire authentifiée.',
-    'profile.deleteCloud.offline': 'Reconnecte-toi à Internet avant de supprimer les progrès infonuagiques.',
-    'profile.deleteCloud.delete-failed': 'Les progrès infonuagiques n’ont pas été supprimés. Réessaie ou communique avec l’administration scolaire.',
-    'profile.cloudDeleted': 'Progrès infonuagiques supprimés',
-    'profile.cloudDeletedDesc': 'Les progrès infonuagiques et locaux ont été supprimés, et ce navigateur a été déconnecté.',
-    'profile.cloudDeletedSignoutWarning': 'Les progrès infonuagiques et locaux ont été supprimés, mais la déconnexion a échoué. Ferme BloomType et demande de l’aide à l’administration scolaire avant de continuer.',
-    'profile.exportLocal': 'Télécharger les progrès locaux',
-    'profile.exportLocalHint': 'Télécharge le profil de l’élève de ce navigateur au format JSON.',
-    'profile.exportCloud': 'Télécharger les progrès scolaires infonuagiques',
-    'profile.exportingCloud': 'Préparation de l’exportation infonuagique complète…',
-    'profile.exportCloud.not-authenticated': 'L’exportation infonuagique exige une session scolaire authentifiée.',
-    'profile.exportCloud.offline': 'Reconnecte-toi à Internet avant d’exporter les progrès infonuagiques.',
-    'profile.exportCloud.export-failed': 'Les progrès infonuagiques n’ont pas pu être exportés. Réessaie ou communique avec l’administration scolaire.',
-    'profile.exportCloudDone': 'Progrès infonuagiques téléchargés.',
-    'garden.planted': '{count} fleurs plantées', 'garden.plantedLabel': 'fleurs plantées', 'achievement.unlocked': 'Réussite débloquée !',
-    'practice.master': 'Maître de la pratique', 'practice.lessonComplete': 'Leçon {name} terminée !',
-    'practice.wordTyped': 'Mot tapé !', 'practice.typedWord': 'Tu as tapé « {word} » !',
-    'a11y.dailyStreak': 'Plantes cultivées', 'a11y.yourProgress': 'Tes progrès',
-    'a11y.startDaily': 'Commencer un moment quotidien de 60 secondes', 'a11y.keysLearned': 'Touches apprises',
-    'a11y.petCompanion': 'Ton compagnon', 'a11y.petEvolution': 'Étape d’évolution du compagnon',
-    'a11y.otherScreens': 'Autres écrans', 'a11y.startTyping': 'Commencer à taper pour planter des fleurs',
-    'a11y.typingGame': 'Jeu de frappe', 'a11y.typeCurrentWord': 'Tape le mot actuel',
-    'a11y.pauseGame': 'Mettre le jeu en pause', 'a11y.liveProgress': 'Progression de frappe en direct',
-    'a11y.levelProgress': 'Progression du niveau', 'a11y.practiceProgress': 'Progression de la pratique',
-    'app.title': '🌸 BloomType - Aventure de frappe au jardin', 'a11y.schools': 'BloomType pour les écoles',
-    'metric.wpm': 'MPM', 'hud.levelShort': 'Niv.', 'key.space': 'ESPACE', 'a11y.pauseShortcut': 'Mettre le jeu en pause (Échap)',
-    'a11y.yourPet': 'Ton compagnon', 'a11y.petAlt': 'Compagnon : {name}', 'a11y.selectAvatar': 'Choisir l’avatar {name}',
-    'a11y.achievementsList': 'Liste des réussites', 'players.unnamed': 'Joueur',
-    'evolution.stage1': 'Pousse', 'evolution.stage2': 'Bouton', 'evolution.stage3': 'Fleur',
-    'avatar.flower': 'fleur', 'avatar.sunflower': 'tournesol', 'avatar.dragon': 'dragon', 'avatar.cat': 'chat',
-    'avatar.bunny': 'lapin', 'avatar.fox': 'renard', 'avatar.panda': 'panda', 'avatar.robot': 'robot',
-    'avatar.owl': 'hibou', 'avatar.puppy': 'chiot', 'common.colon': '\u00a0:',
-    'chapter.new': 'Nouveau chapitre', 'chapter.ready': 'Quand tu veux.', 'chapter.start': 'Commencer la leçon',
-    'evolution.badge': 'Évolution !', 'common.continue': 'Continuer',
-    'game.bestCombo': 'Meilleur combo', 'game.replay': 'Rejouer', 'game.almost': 'Presque !',
-    'game.overMessage': 'Les mots nous ont échappé ! Bloom croit en toi — réessaie !',
-    'game.tryAgain': 'Réessayer', 'game.drillWeak': 'Travailler les touches faibles', 'game.mainMenu': 'Menu principal',
-    'tutorial.welcome': 'Bienvenue dans BloomType !', 'tutorial.welcomeLine1': 'Les mots fleurissent quand tu les tapes !',
-    'tutorial.welcomeLine2': 'Tape chaque lettre avant que le mot atteigne le bas.',
-    'tutorial.how': 'Comment jouer', 'tutorial.howLine1': 'Regarde le mot en haut de l’écran.',
-    'tutorial.howLine2': 'Appuie sur UNE touche à la fois.',
-    'tutorial.howLine3': 'Le clavier s’illumine pour montrer quel doigt utiliser !',
-    'tutorial.scores': 'Fais de gros scores !', 'tutorial.scoreLine1': 'Enchaîne les mots pour gagner des combos ! 🔥',
-    'tutorial.scoreLine2': 'Chaque mot plante une fleur dans ton jardin ! 🌺',
-    'tutorial.scoreLine3': 'Appuie sur Espace pour passer un mot difficile.', 'tutorial.next': 'Suivant', 'tutorial.begin': 'Commencer ! 🌸',
-    'finger.title': 'Position sur la rangée de repos', 'finger.text': 'Pose tes doigts ici ! 🏠', 'finger.gotIt': 'Compris ! ✨',
-    'finger.lp': 'auriculaire gauche', 'finger.lr': 'annulaire gauche', 'finger.lm': 'majeur gauche', 'finger.li': 'index gauche',
-    'finger.ri': 'index droit', 'finger.rm': 'majeur droit', 'finger.rr': 'annulaire droit', 'finger.rp': 'auriculaire droit',
-    'finger.leftHand': 'main gauche', 'finger.rightHand': 'main droite',
-    'finger.useLeftPinky': 'Utilise ton auriculaire gauche', 'finger.useLeftHand': 'Utilise ta main gauche',
-    'finger.withShift': '{finger} (maintiens la touche Maj {side} !)', 'finger.leftShift': 'gauche', 'finger.rightShift': 'droite',
-    'lesson.completeToUnlock': 'Termine le niveau {level} pour débloquer', 'lesson.locked': 'Verrouillé',
-    'map.title': 'Ta carte du monde', 'map.hint': 'Touche un lieu pour voir ses niveaux.',
-    'map.meadow': 'Prairie', 'map.pond': 'Étang', 'map.forest': 'Forêt', 'map.shore': 'Rivage', 'map.mountain': 'Montagne',
-    'map.levels': 'Niveaux {first} et {last}', 'map.progress': 'Niveaux terminés : {done} sur {total}',
-    'map.restored': 'Tout est restauré !', 'map.lockedHint': 'Termine le niveau {level} pour l’ouvrir',
-    'a11y.masteredKey': 'Touche {key} maîtrisée', 'a11y.learningKey': 'Touche {key} en apprentissage', 'game.allLevelsCleared': '🏆 Tous les niveaux sont terminés !',
-    'pet.celebrate': 'Youpi ! 🎉',
-    'pet.keepStreakOne': 'Notre première plante ! 🌱', 'pet.keepStreakMany': '{count} plantes dans notre pré ! 🌱', 'pet.plantWaiting': 'Plantons {plant} aujourd’hui !',
-    'pet.greeting': 'Salut ! Je suis {pet} 🌸', 'pet.tryAgain': 'Réessaie !', 'pet.dontForget': 'Ne m’oublie pas !',
-    'pet.saysType': 'Bloom dit : tape !', 'pet.dailySupport': '« Je suis juste là, avec toi. » — Bloom',
-    'evolution.2.title': 'Bloom grandit !', 'evolution.2.desc': 'Ta frappe a aidé Bloom à faire pousser de nouvelles feuilles !',
-    'evolution.2.line': '« Je me sens plus fort ! Tapons encore plus vite ! » — Bloom',
-    'evolution.3.title': 'Bloom légendaire !', 'evolution.3.desc': 'Bloom a complètement fleuri ! Une véritable légende de la frappe !',
-    'evolution.3.line': '« Ensemble, nous sommes INARRÊTABLES ! » — Bloom',
-  },
-  es: {
-    'cloudLogin.join': 'Unirse a la clase en línea', 'cloudLogin.joining': 'Uniéndote a tu clase…',
-    'cloudLogin.joined': '¡Listo! Tu maestro ya puede ver tu progreso.',
-    'cloudLogin.bad-code': 'Primero escribe el código de clase de tu maestro.',
-    'cloudLogin.unknown-class': 'No encontramos esa clase. Revisa el código con tu maestro.',
-    'cloudLogin.offline': 'Conéctate a Internet para unirte a tu clase en línea.',
-    'cloudLogin.sign-in-failed': 'No funcionó. Inténtalo de nuevo o pregunta a tu maestro.',
-    'cloudLogin.disabled': 'Las clases en línea aún no están activadas.',
-    'plant.title': 'Mis plantas', 'plant.count': '{count} plantadas',
-    'plant.today': 'Planta del día: {plant}. Practica hoy para plantarla.',
-    'plant.plantedToday': '¡Bien! Plantaste {plant} hoy.', 'plant.waiting': 'Planta del día: {plant}',
-    'plant.none': 'Practica cualquier día para plantar la flor de ese día.',
-    'plant.sunflower': 'Girasol', 'plant.lupine': 'Lupino', 'plant.blackEyedSusan': 'Rudbeckia',
-    'plant.coneflower': 'Equinácea', 'plant.beeBalm': 'Monarda', 'plant.wildRose': 'Rosa silvestre',
-    'plant.milkweed': 'Algodoncillo', 'plant.clover': 'Trébol', 'plant.goldenrod': 'Vara de oro', 'plant.aster': 'Áster',
-    'cloudLogin.bad-link': 'Ese código de enlace no funcionó. Puede que sea muy viejo. Pide uno nuevo en tu otro dispositivo.',
-    'cloudLogin.not-joined': 'Primero únete a tu clase en línea en este dispositivo.',
-    'link.hint': '¿Juegas en clase en más de un dispositivo? Pide aquí un código de enlace y escríbelo en tu otro dispositivo.',
-    'link.get': 'Obtener un código para mis otros dispositivos',
-    'link.made': 'Escribe este código en «¿Tienes un código?» en tu otro dispositivo. Funciona durante 14 días.',
-    'link.linked': '¡Dispositivos enlazados! Tu progreso ya está aquí.',
-    'parentLock.title': 'Bloqueo para adultos',
-    'parentLock.off': 'Agrega un PIN para que solo un adulto pueda borrar el progreso, cambiar la clase, usar un código o agregar jugadores.',
-    'parentLock.locked': 'La configuración para adultos está bloqueada.',
-    'parentLock.unlocked': 'La configuración para adultos está desbloqueada hasta que cierres esta pestaña.',
-    'parentLock.pin': 'PIN (de 4 a 8 dígitos)', 'parentLock.confirm': 'Escribe el PIN otra vez',
-    'parentLock.set': 'Crear PIN', 'parentLock.unlock': 'Desbloquear', 'parentLock.lock': '🔒 Bloquear', 'parentLock.remove': 'Quitar PIN',
-    'parentLock.invalid': 'Usa de 4 a 8 dígitos.', 'parentLock.mismatch': 'Los dos PIN no coinciden.',
-    'parentLock.wrong': 'Ese PIN no es correcto.', 'parentLock.wait': 'Demasiados intentos. Espera {seconds} segundos.',
-    'parentLock.needed': 'Pide a un adulto que lo desbloquee con el PIN.',
-    'parentLock.forgot': '¿Olvidaste el PIN? Borrar los datos de este sitio en el navegador lo quita, junto con el progreso guardado aquí.',
-    'restore.title': 'Mi código de guardado',
-    'restore.hint': 'Anota este código. Escríbelo en otro dispositivo para llevar tu progreso contigo.',
-    'restore.copy': 'Copiar', 'restore.copied': '¡Copiado!',
-    'restore.enterLabel': '¿Tienes un código? Escríbelo aquí',
-    'restore.button': 'Recuperar progreso',
-    'restore.invalid': 'Ese código no parece correcto. Revisa cada letra e inténtalo de nuevo.',
-    'restore.done': '¡Progreso recuperado! Qué bueno verte de nuevo.',
-    'a11y.settings': 'Lectura y juego', 'a11y.font': 'Letras', 'a11y.fontDefault': 'Estándar',
-    'a11y.fontReadable': 'Lectura fácil (Atkinson Hyperlegible)', 'a11y.fontDyslexic': 'OpenDyslexic',
-    'a11y.highContrast': 'Alto contraste', 'a11y.relaxed': 'Modo tranquilo: sin prisa',
-    'a11y.relaxedHint': 'Las palabras te esperan y el Momento diario no tiene reloj.',
-    'players.title': 'Jugadores en este dispositivo', 'players.add': '➕ Agregar jugador', 'players.switchTo': 'Cambiar a {name}', 'players.onlyOne': 'Cada hermano o hermana puede tener su propio jugador aquí.', 'players.cloudOnly': 'Sesión iniciada en una cuenta de clase. Cierra sesión para cambiar de jugador en este dispositivo.',
-    'class.assignment': 'Tu maestro pide: termina el nivel {level} antes del {due}.', 'class.assignmentNoDue': 'Tu maestro pide: termina el nivel {level}.',
-    'class.assignmentDone': '¡Tarea hecha: nivel {level}! 🎉', 'class.words': '📝 Practicar palabras de clase',
-    'fieldguide.title': 'Guía de campo', 'fieldguide.new': '¡Nueva tarjeta de la guía de campo!',
-    'fieldguide.locked': 'Termina el nivel {level} para descubrirla', 'fieldguide.count': '{found} de {total} encontradas',
-    'fieldguide.monarch.name': 'Mariposa monarca', 'fieldguide.monarch.fact': 'Las orugas de la monarca solo comen hojas de algodoncillo.',
-    'fieldguide.bumblebee.name': 'Abejorro', 'fieldguide.bumblebee.fact': 'Los abejorros llevan el polen en pequeñas cestas en sus patas traseras.',
-    'fieldguide.bluebird.name': 'Azulejo oriental', 'fieldguide.bluebird.fact': 'Los azulejos anidan en huecos de árboles y en cajas nido que pone la gente.',
-    'fieldguide.milkweed.name': 'Algodoncillo', 'fieldguide.milkweed.fact': 'Las semillas del algodoncillo vuelan en una pelusa suave y sedosa.',
-    'sound.on': 'Sonido activado', 'sound.off': 'Sonido desactivado',
-    'game.meadowRestored': '¡Pradera restaurada!', 'game.starsEarned': '{count} de 3 estrellas',
-    'nav.lessons': 'Lecciones', 'nav.practice': 'Práctica', 'nav.garden': 'Jardín', 'nav.profile': 'Perfil',
-    'nav.parents': 'Familias', 'nav.progress': 'Progreso', 'nav.schools': 'Para escuelas', 'nav.back': 'Volver', 'nav.allLessons': 'Todas las lecciones',
-    'menu.cta': 'Escribe para plantar', 'menu.daily': 'Momento diario de 60 s', 'menu.lowStress': '60 s · sin presión',
-    'profile.title': 'Mi perfil', 'profile.name': 'Tu nombre', 'profile.language': 'Idioma',
-    'profile.stars': 'Estrellas', 'profile.best': 'Mejor puntuación', 'profile.words': 'Palabras', 'profile.achievements': 'Logros',
-    'profile.classCode': 'Código de clase', 'profile.voice': 'Narración de voz', 'profile.foxVoice': 'Voz del zorro', 'profile.save': 'Guardar perfil',
-    'metric.score': 'Puntuación', 'metric.finalScore': 'Puntuación final', 'metric.accuracy': 'Precisión', 'metric.words': 'Palabras', 'metric.wordsTyped': 'Palabras escritas',
-    'garden.title': 'Mi jardín', 'garden.empty': '¡Tu jardín está vacío!',
-    'game.level': 'Nivel {level}', 'game.typeWord': '¡Escribe la palabra!', 'game.paused': 'Pausa', 'game.resume': 'Continuar',
-    'game.levelName': 'Nivel {level} · {name}', 'game.levelCleared': 'Nivel {level} superado — ¡prueba el siguiente!',
-    'game.levelUnlock': 'Domina «{name}» para desbloquear el nivel {level}', 'game.mastery': '¡Sigue para convertirte en maestro del teclado!',
-    'game.quit': 'Salir al menú', 'game.over': 'Fin del juego…', 'game.next': 'Siguiente nivel',
-    'daily.title': 'Momento diario', 'daily.complete': '¡Momento diario completado!', 'daily.questDone': '¡Misión completada!',
-  
-    'profile.classPlaceholder': 'Ingresa el código (p. ej., ABC123)',
-    'profile.classHint': 'Pídele a tu maestro un código de clase para compartir tu progreso.',
-    'garden.emptyHint': 'Completa niveles para plantar flores aquí.',
-    'game.combo': '¡Combo de {count}! 🔥', 'game.shift': '¡Mantén MAYÚS para escribir mayúsculas!',
-    'game.useFinger': 'Usa tu {finger}', 'game.levelComplete': '¡Nivel completado! 🌟', 'game.levelCompleteNamed': '¡Nivel {level} completado!',
-    'game.complete': '¡Juego completado!', 'daily.subtitle': '60 segundos de escritura concentrada',
-    'daily.summaryOne': '1 palabra · {wpm} PPM · {accuracy} % de precisión',
-    'daily.summaryMany': '{count} palabras · {wpm} PPM · {accuracy} % de precisión',
-    'drill.complete': '¡Práctica de teclas débiles completada!', 'drill.summaryOne': '1 palabra de práctica · {wpm} PPM · {accuracy} % de precisión',
-    'drill.summaryMany': '{count} palabras de práctica · {wpm} PPM · {accuracy} % de precisión',
-    'daily.intro': 'Sin presión. Escribe lo que puedas. ¡Te animaremos!',
-    'practice.type': 'Escribe: {word}', 'practice.wordProgress': 'Palabra {current} de {total}',
-    'menu.dailyQuests': 'Misiones diarias', 'lesson.pick': '¡Elige tu aventura!', 'practice.title': '¡A practicar!',
-    'profile.delete': 'Eliminar progreso local',
-    'profile.deleteHint': 'Elimina de este navegador el perfil, el progreso y la inscripción en la clase de este estudiante. No elimina datos escolares en la nube.',
-    'profile.deleteConfirm': '¿Eliminar el progreso de BloomType de este estudiante en este navegador? No se puede deshacer.',
-    'profile.deleted': 'Progreso eliminado', 'profile.deletedDesc': 'Este navegador ya no guarda el perfil del estudiante.',
-    'profile.deleteCloud': 'Eliminar el progreso local y en la nube',
-    'profile.deleteCloudConfirm': '¿Eliminar permanentemente el progreso local y en la nube de este estudiante, incluidos los registros de clase y sesión? No se puede deshacer.',
-    'profile.deletingCloud': 'Eliminando el progreso en la nube…',
-    'profile.deleteCloud.not-authenticated': 'La eliminación en la nube requiere una sesión escolar autenticada.',
-    'profile.deleteCloud.offline': 'Vuelve a conectarte a Internet antes de eliminar el progreso en la nube.',
-    'profile.deleteCloud.delete-failed': 'No se eliminó el progreso en la nube. Inténtalo de nuevo o comunícate con la administración escolar.',
-    'profile.cloudDeleted': 'Progreso en la nube eliminado',
-    'profile.cloudDeletedDesc': 'Se eliminó el progreso local y en la nube, y se cerró la sesión de este navegador.',
-    'profile.cloudDeletedSignoutWarning': 'Se eliminó el progreso local y en la nube, pero no se pudo cerrar la sesión. Cierra BloomType y pide ayuda a la administración escolar antes de continuar.',
-    'profile.exportLocal': 'Descargar el progreso local',
-    'profile.exportLocalHint': 'Descarga el perfil del estudiante de este navegador en formato JSON.',
-    'profile.exportCloud': 'Descargar el progreso escolar en la nube',
-    'profile.exportingCloud': 'Preparando la exportación completa de la nube…',
-    'profile.exportCloud.not-authenticated': 'La exportación en la nube requiere una sesión escolar autenticada.',
-    'profile.exportCloud.offline': 'Vuelve a conectarte a Internet antes de exportar el progreso en la nube.',
-    'profile.exportCloud.export-failed': 'No se pudo exportar el progreso en la nube. Inténtalo de nuevo o comunícate con la administración escolar.',
-    'profile.exportCloudDone': 'Progreso en la nube descargado.',
-    'garden.planted': '{count} flores plantadas', 'garden.plantedLabel': 'flores plantadas', 'achievement.unlocked': '¡Logro desbloqueado!',
-    'practice.master': 'Maestro de práctica', 'practice.lessonComplete': '¡Lección {name} completada!',
-    'practice.wordTyped': '¡Palabra escrita!', 'practice.typedWord': '¡Escribiste «{word}»!',
-    'a11y.dailyStreak': 'Plantas cultivadas', 'a11y.yourProgress': 'Tu progreso',
-    'a11y.startDaily': 'Iniciar un momento diario de 60 segundos', 'a11y.keysLearned': 'Teclas que has aprendido',
-    'a11y.petCompanion': 'Tu compañero', 'a11y.petEvolution': 'Etapa de evolución del compañero',
-    'a11y.otherScreens': 'Otras pantallas', 'a11y.startTyping': 'Empezar a escribir para plantar flores',
-    'a11y.typingGame': 'Juego de escritura', 'a11y.typeCurrentWord': 'Escribe la palabra actual',
-    'a11y.pauseGame': 'Pausar el juego', 'a11y.liveProgress': 'Progreso de escritura en vivo',
-    'a11y.levelProgress': 'Progreso del nivel', 'a11y.practiceProgress': 'Progreso de práctica',
-    'app.title': '🌸 BloomType - Aventura de mecanografía en el jardín', 'a11y.schools': 'BloomType para escuelas',
-    'metric.wpm': 'PPM', 'hud.levelShort': 'Nv.', 'key.space': 'ESPACIO', 'a11y.pauseShortcut': 'Pausar el juego (Esc)',
-    'a11y.yourPet': 'Tu compañero', 'a11y.petAlt': 'Compañero: {name}', 'a11y.selectAvatar': 'Elegir el avatar {name}',
-    'a11y.achievementsList': 'Lista de logros', 'players.unnamed': 'Jugador',
-    'evolution.stage1': 'Brote', 'evolution.stage2': 'Capullo', 'evolution.stage3': 'Flor',
-    'avatar.flower': 'flor', 'avatar.sunflower': 'girasol', 'avatar.dragon': 'dragón', 'avatar.cat': 'gato',
-    'avatar.bunny': 'conejo', 'avatar.fox': 'zorro', 'avatar.panda': 'panda', 'avatar.robot': 'robot',
-    'avatar.owl': 'búho', 'avatar.puppy': 'perrito', 'common.colon': ':',
-    'chapter.new': 'Nuevo capítulo', 'chapter.ready': 'Cuando quieras.', 'chapter.start': 'Iniciar lección',
-    'evolution.badge': '¡Evolución!', 'common.continue': 'Continuar',
-    'game.bestCombo': 'Mejor combo', 'game.replay': 'Repetir', 'game.almost': '¡Casi!',
-    'game.overMessage': '¡Las palabras se escaparon! Bloom cree en ti. ¡Inténtalo otra vez!',
-    'game.tryAgain': 'Intentar de nuevo', 'game.drillWeak': 'Practicar teclas débiles', 'game.mainMenu': 'Menú principal',
-    'tutorial.welcome': '¡Te damos la bienvenida a BloomType!', 'tutorial.welcomeLine1': '¡Las palabras florecen mientras las escribes!',
-    'tutorial.welcomeLine2': 'Escribe cada letra antes de que la palabra llegue abajo.',
-    'tutorial.how': 'Cómo jugar', 'tutorial.howLine1': 'Mira la palabra en la parte de arriba de la pantalla.',
-    'tutorial.howLine2': 'Presiona UNA tecla a la vez.',
-    'tutorial.howLine3': '¡El teclado se ilumina para mostrarte qué dedo usar!',
-    'tutorial.scores': '¡Consigue puntuaciones altas!', 'tutorial.scoreLine1': '¡Encadena palabras para ganar combos! 🔥',
-    'tutorial.scoreLine2': '¡Cada palabra planta una flor en tu jardín! 🌺',
-    'tutorial.scoreLine3': 'Presiona Espacio para saltar una palabra difícil.', 'tutorial.next': 'Siguiente', 'tutorial.begin': '¡Empezar! 🌸',
-    'finger.title': 'Posición de la fila guía', 'finger.text': '¡Apoya los dedos aquí! 🏠', 'finger.gotIt': '¡Entendido! ✨',
-    'finger.lp': 'meñique izquierdo', 'finger.lr': 'anular izquierdo', 'finger.lm': 'dedo medio izquierdo', 'finger.li': 'índice izquierdo',
-    'finger.ri': 'índice derecho', 'finger.rm': 'dedo medio derecho', 'finger.rr': 'anular derecho', 'finger.rp': 'meñique derecho',
-    'finger.leftHand': 'mano izquierda', 'finger.rightHand': 'mano derecha',
-    'finger.useLeftPinky': 'Usa el meñique izquierdo', 'finger.useLeftHand': 'Usa la mano izquierda',
-    'finger.withShift': '{finger} (¡mantén la tecla Mayús {side}!)', 'finger.leftShift': 'izquierda', 'finger.rightShift': 'derecha',
-    'lesson.completeToUnlock': 'Completa el nivel {level} para desbloquear', 'lesson.locked': 'Bloqueado',
-    'map.title': 'Tu mapa del mundo', 'map.hint': 'Toca un lugar para ver sus niveles.',
-    'map.meadow': 'Pradera', 'map.pond': 'Estanque', 'map.forest': 'Bosque', 'map.shore': 'Costa', 'map.mountain': 'Montaña',
-    'map.levels': 'Niveles {first} y {last}', 'map.progress': '{done} de {total} niveles completados',
-    'map.restored': '¡Todo restaurado!', 'map.lockedHint': 'Termina el nivel {level} para abrirlo',
-    'a11y.masteredKey': 'Tecla {key} dominada', 'a11y.learningKey': 'Tecla {key} en aprendizaje', 'game.allLevelsCleared': '🏆 ¡Todos los niveles completados!',
-    'pet.celebrate': '¡Bien! 🎉',
-    'pet.keepStreakOne': '¡Nuestra primera planta! 🌱', 'pet.keepStreakMany': '¡{count} plantas en nuestro prado! 🌱', 'pet.plantWaiting': '¡Plantemos {plant} hoy!',
-    'pet.greeting': '¡Hola! Soy {pet} 🌸', 'pet.tryAgain': '¡Inténtalo otra vez!', 'pet.dontForget': '¡No te olvides de mí!',
-    'pet.saysType': 'Bloom dice: ¡escribe!', 'pet.dailySupport': '«Estaré aquí contigo.» — Bloom',
-    'evolution.2.title': '¡Bloom está creciendo!', 'evolution.2.desc': '¡Tu escritura ayudó a Bloom a sacar hojas nuevas!',
-    'evolution.2.line': '«¡Me siento más fuerte! ¡Escribamos aún más rápido!» — Bloom',
-    'evolution.3.title': '¡Bloom legendario!', 'evolution.3.desc': '¡Bloom ha florecido por completo! ¡Una leyenda de la mecanografía!',
-    'evolution.3.line': '«¡Juntos somos IMPARABLES!» — Bloom',
-  },
 };
 
 export { supportedLocales };
 let activeLocale = 'en';
 
+// French and Spanish live in src/lang/ and load only for a player who uses
+// them, so the home page never downloads them for everyone else (about
+// 45 KB; e2e/page-weight.e2e.js). Until a language arrives, t() falls back
+// to English: wait for loadLocale() (or use whenLocaleLoaded()) before
+// switching to it.
+const localeModules = {
+  fr: () => import('./lang/fr.js'),
+  es: () => import('./lang/es.js'),
+};
+const localePacks = {};
+const localeLoading = {};
+const packListeners = [];
+
+function supported(locale) {
+  return supportedLocales.includes(locale) ? locale : 'en';
+}
+
+/** True when `locale`'s strings are here (English always is). */
+export function isLocaleLoaded(locale) {
+  const name = supported(locale);
+  return name === 'en' || name in localePacks;
+}
+
+/**
+ * Loads a language's strings. Resolves to true once they are in place, or
+ * false if they could not be fetched (offline before the service worker
+ * cached them); never rejects, and the next call tries again.
+ */
+export function loadLocale(locale) {
+  const name = supported(locale);
+  if (isLocaleLoaded(name)) return Promise.resolve(true);
+  localeLoading[name] ||= localeModules[name]()
+    .then((pack) => {
+      localePacks[name] = pack;
+      dictionaries[name] = pack.ui;
+      for (const listener of packListeners) listener(name, pack);
+      return true;
+    })
+    .catch(() => false)
+    .finally(() => { delete localeLoading[name]; });
+  return localeLoading[name];
+}
+
+/**
+ * Runs `callback(loaded)` now if `locale` is loaded, or once loading has
+ * finished; `loaded` is false when the strings could not be fetched.
+ */
+export function whenLocaleLoaded(locale, callback) {
+  if (isLocaleLoaded(locale)) callback(true);
+  else loadLocale(locale).then(callback);
+}
+
+/**
+ * Switches to `locale` once its strings are here, then calls
+ * `apply(activeLocale, switched)`: synchronously when nothing needs loading.
+ * If the strings cannot be fetched, the current language stays, so the page
+ * never claims a language its text is not in. `stillWanted()` lets a newer
+ * pick made while this one was loading win.
+ */
+export function changeLocale(locale, apply, stillWanted = () => true) {
+  whenLocaleLoaded(locale, (loaded) => {
+    if (!stillWanted()) return;
+    apply(loaded ? setLocale(locale) : activeLocale, loaded);
+  });
+}
+
+/**
+ * Calls `listener(locale, pack)` for each language pack, those already
+ * loaded and those still to come. Modules with their own translated content
+ * (story lines, lesson names) take their part of the pack this way.
+ */
+export function onLocalePack(listener) {
+  packListeners.push(listener);
+  for (const [name, pack] of Object.entries(localePacks)) listener(name, pack);
+}
+
 export function setLocale(locale) {
-  activeLocale = supportedLocales.includes(locale) ? locale : 'en';
+  activeLocale = supported(locale);
   document.documentElement.lang = activeLocale;
   return activeLocale;
 }
