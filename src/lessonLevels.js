@@ -1,4 +1,4 @@
-// The full word bank (about 70 KB) loads after the menu shows, so it never
+// The full word bank (about 64 KB of source) loads after the menu shows, so it never
 // slows the first screen. Until it arrives, each lesson uses its own words.
 let wordBank = null;
 let wordBankLoading = null;
