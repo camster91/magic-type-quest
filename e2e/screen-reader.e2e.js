@@ -222,7 +222,7 @@ test('typing a word, a wrong key and finishing a level are announced politely', 
   await recordAnnouncements(page);
   for (let word = second; word !== 'DONE'; word = await nextWord(page)) await page.keyboard.type(word);
   await expect(page.locator('#level-overlay')).toBeVisible();
-  await expect.poll(async () => (await said(page)).some((message) => /^Level 1 Complete! [1-3] of 3 stars$/.test(message))).toBe(true);
+  await expect.poll(async () => (await said(page)).some((message) => /Level 1 Complete! [1-3] of 3 stars$/.test(message))).toBe(true);
   await expect(page.locator('#btn-next-level')).toBeFocused();
   await expect(page.locator('#level-overlay')).toHaveAccessibleName(/Meadow restored!/);
   await expect(page.locator('#level-overlay')).toHaveAccessibleDescription('Level 1 Complete!');
@@ -238,7 +238,7 @@ test('achievement toasts are announced', async ({ page }) => {
   // Toasts take turns; whichever is showing is the one being announced.
   await expect.poll(() => page.evaluate(() => {
     const shown = `${document.getElementById('toast-title').textContent} ${document.getElementById('toast-desc').textContent}`;
-    return document.getElementById('sr-announcer').textContent === shown;
+    return document.getElementById('sr-announcer').textContent.includes(shown);
   })).toBe(true);
 });
 

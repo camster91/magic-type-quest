@@ -1202,7 +1202,7 @@ function finishDrill() {
       { count: wordsCompleted, wpm, accuracy },
     );
     toast.classList.remove('hidden');
-    announce(`${toast.querySelector('#toast-title').textContent} ${toast.querySelector('#toast-desc').textContent}`);
+    announce(`${toast.querySelector('#toast-title').textContent} ${toast.querySelector('#toast-desc').textContent}`, { queue: true });
     setTimeout(() => toast.classList.add('hidden'), 4000);
   }
 
@@ -1281,7 +1281,7 @@ function showNextAchievement() {
     document.getElementById('toast-title').textContent = title;
     document.getElementById('toast-desc').textContent = desc;
     toast.classList.remove('hidden');
-    announce(`${title} ${desc}`);
+    announce(`${title} ${desc}`, { queue: true });
     setTimeout(() => {
       toast.classList.add('hidden');
       achievementShowing = false;
@@ -1474,7 +1474,7 @@ export function endDailyMoment({ reason } = {}) {
       { count: wordsCompleted, wpm, accuracy },
     );
     toast.classList.remove('hidden');
-    announce(`${toast.querySelector('#toast-title').textContent} ${toast.querySelector('#toast-desc').textContent}`);
+    announce(`${toast.querySelector('#toast-title').textContent} ${toast.querySelector('#toast-desc').textContent}`, { queue: true });
     setTimeout(() => toast.classList.add('hidden'), 4000);
   }
 
