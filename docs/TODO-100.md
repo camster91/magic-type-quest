@@ -68,7 +68,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [x] **Claude:** a world map with 5 habitats (Meadow, Pond, Forest, Shore, Mountain), one per pair of levels, using the same restoration idea. ✅ On the Lessons screen (`src/habitats.js`); placeholder CSS art until the painted scenes land.
 - [x] **Claude:** gentle streaks and a "plant of the day" in place of punishments ✅ (plants only grow; no red warnings, no "keep me" pet). No hearts and no losing (v2 product contract).
 - [x] **Claude:** sound: soft nature ambience and a pleasant chime per word, with a mute button that is remembered. ✅ #219 (mute, gentle tones) and #224 (breeze and birdsong).
-- [ ] **Claude:** the fox speaks short encouragement with a pre-recorded voice in EN, FR and ES, made once (no live AI with children).
+- [x] **Claude:** the fox speaks short encouragement with a pre-recorded voice in EN, FR and ES, made once (no live AI with children). ✅ 8 lines per language (`src/foxVoiceLines.js`, clips in `public/audio/fox/`), loaded only during play, at most one line every 20 s, with a "Fox voice" setting and the mute button. A native speaker should still listen to the FR and ES clips.
 
 ## Phase 2 — Teachers and parents love it (weeks 3–6)
 
@@ -101,7 +101,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [ ] **Claude:** a teacher sign-in (Google), a multi-class dashboard and a school admin view. code ✅ behind the pilot flag; goes live after #132/#133.
 - [ ] **Claude:** Google Classroom roster import, then ClassLink, then Clever. code ✅ behind the pilot flag; goes live after #132/#133. (Google Classroom and CSV import are built; ClassLink and Clever are stubs until partner agreements are signed.)
 - [ ] **Claude:** backups, uptime monitoring and an incident runbook. **Done when:** a restore drill works and is written down.
-- [ ] **Claude:** billing for schools (invoice / purchase order first, card payment later). **Owner:** pick the payment provider.
+- [ ] **Claude:** billing for schools (invoice / purchase order first, card payment later). **Owner:** pick the payment provider. invoice/PO path ✅ (templates + calculator); Owner: confirm prices, fill business details, pick a card provider. See [PRICING-AND-ORDERING.md](school/PRICING-AND-ORDERING.md) and [PAYMENT-PROVIDER-OPTIONS.md](school/PAYMENT-PROVIDER-OPTIONS.md).
 
 ### Trust paperwork
 - [ ] **Owner:** sign the SDPC National Data Privacy Agreement.
