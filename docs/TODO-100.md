@@ -99,7 +99,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [ ] **Claude:** switch on class login for pilot schools only, using a pilot build. The public site stays local-only.
 - [ ] **Claude:** a teacher sign-in (Google), a multi-class dashboard and a school admin view.
 - [ ] **Claude:** Google Classroom roster import, then ClassLink, then Clever.
-- [ ] **Claude:** backups, uptime monitoring and an incident runbook. **Done when:** a restore drill works and is written down.
+- [x] **Claude:** backups, uptime monitoring and an incident runbook ✅ (`ops/backups-runbook`: encrypted `scripts/backup-db.sh` / `restore-db.sh` with 30-day retention, `.github/workflows/uptime.yml` every 30 minutes, [INCIDENT-RUNBOOK.md](ops/INCIDENT-RUNBOOK.md)). The [restore drill](ops/RESTORE-DRILL.md) passed on 2026-10-14 on a **local PostgreSQL 16** with a Supabase stub, and caught and fixed a privilege-widening bug in restores. **Still to do:** repeat it on the live project with `scripts/restore-drill.sh --live` after #133. **Done when:** a restore drill works and is written down.
 - [ ] **Claude:** billing for schools (invoice / purchase order first, card payment later). **Owner:** pick the payment provider.
 
 ### Trust paperwork
