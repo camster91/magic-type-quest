@@ -15,7 +15,8 @@
     "check:v2-theme": "node scripts/check-v2-theme.mjs",
     "test:v2-theme": "node --test test/v2-theme-guard.node.mjs",
     "check:v2-assets": "node scripts/check-v2-assets.mjs",
-    "test:v2-assets": "node --test test/v2-assets.node.mjs"
+    "test:v2-assets": "node --test test/v2-assets.node.mjs",
+    "screenshots": "node scripts/capture-screenshots.mjs"
   },
   "repository": {
     "type": "git",
