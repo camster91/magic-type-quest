@@ -11,6 +11,8 @@ import {
   formatRate,
   taxFor,
   GST_NOT_REGISTERED_NOTE,
+  CLOUD_FEATURES_LIVE,
+  PREVIEW_NOTICE,
 } from '../src/billing.js';
 
 const root = resolve(import.meta.dirname, '..');
@@ -163,5 +165,13 @@ describe('printable billing pages', () => {
       // Long digit runs would be account, transit or tax numbers; those stay placeholders.
       expect(html.replace(/<style[\s\S]*?<\/style>/g, ''), page).not.toMatch(/\d{7,}/);
     }
+  });
+});
+
+describe('cloud features gate', () => {
+  it('keeps quotes and invoices in preview until the cloud features are live', () => {
+    // Flip CLOUD_FEATURES_LIVE only once the plans' cloud features ship (#132, #133).
+    expect(CLOUD_FEATURES_LIVE).toBe(false);
+    expect(PREVIEW_NOTICE).toMatch(/not for sending/);
   });
 });

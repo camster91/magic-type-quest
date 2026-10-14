@@ -38,6 +38,18 @@ export const PLANS = {
   },
 };
 
+/**
+ * The paid plans sell cloud features (class dashboard, roster sync, admin
+ * views, SSO) that stay switched off until the privacy approvals (#132) and
+ * the live project (#133). Until the owner sets this to true, every quote
+ * and invoice prints a "preview, not for sending" banner, so no school is
+ * billed for features that can't be delivered yet.
+ */
+export const CLOUD_FEATURES_LIVE = false;
+
+export const PREVIEW_NOTICE =
+  'Preview only, not for sending. The cloud features in these plans are not live yet, so BloomType cannot bill for them.';
+
 /** Pilot schools get this share off their first year. Proposed, owner to confirm. */
 export const PILOT_DISCOUNT = 0.5;
 

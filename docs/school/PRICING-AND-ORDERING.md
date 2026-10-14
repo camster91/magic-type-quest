@@ -116,6 +116,8 @@ School procurement usually asks for these before it can raise a PO. Fill them in
 
 Link fields for the quote and invoice go after a `#`, for example `quote.html#plan=school&qty=1&country=CA&region=ON`. The part after `#` is never sent to the web server, so school names and contacts stay out of server logs. Fields: `no`, `date` (YYYY-MM-DD), `school`, `attn`, `address` (new lines as `%0A`), `email`, `plan` (`classroom`, `school` or `district`), `qty`, `pilot=1`, `country` (`CA` or `US`), `region` (for example `ON` or `NY`), `gst=1`, `pst=1`, `valid` (quote days), and for the invoice `po` and `quote`. A link still sits in browser history, so send schools the printed PDF rather than the link.
 
+**Preview until the cloud features are live.** The paid plans include cloud features (class dashboard, roster sync, admin views, SSO) that stay off until the privacy approvals (#132) and the live project (#133). Until then every quote and invoice prints a red “Preview only, not for sending” notice. Set `CLOUD_FEATURES_LIVE = true` in `src/billing.js` (and copy it to `public/billing/billing.js`) only when those features ship.
+
 **GST/HST is off by default.** An unregistered small supplier must not charge GST/HST. Tick “Charge GST/HST” (or add `gst=1`) only once the business is registered with the CRA.
 
 **Before the first real invoice, the owner must:** confirm the prices, replace every `[OWNER: …]` placeholder in the three pages, decide on GST/HST registration with an accountant, and prepare the bank letter and W-8BEN(-E).

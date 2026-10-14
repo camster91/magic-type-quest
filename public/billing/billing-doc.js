@@ -7,7 +7,7 @@
 //   plan (classroom|school|district), qty, pilot (1), country (CA|US),
 //   region (ON, BC, NY...), gst (1 = vendor charges GST/HST), pst (1 = vendor charges PST/RST/QST),
 //   valid (quote validity in days), po and quote (invoice only).
-import { PLANS, PAYMENT_TERMS_DAYS, addDays, computeQuote, formatMoney, formatRate } from './billing.js';
+import { CLOUD_FEATURES_LIVE, PLANS, PAYMENT_TERMS_DAYS, PREVIEW_NOTICE, addDays, computeQuote, formatMoney, formatRate } from './billing.js';
 
 const kind = document.body.dataset.doc; // 'quote' or 'invoice'
 const form = document.getElementById('fill');
@@ -134,6 +134,12 @@ function fromForm() {
   }
   history.replaceState(null, '', `${location.pathname}#${params}`);
   return readParams();
+}
+
+const previewNotice = document.getElementById('preview-notice');
+if (previewNotice && !CLOUD_FEATURES_LIVE) {
+  previewNotice.textContent = PREVIEW_NOTICE;
+  previewNotice.hidden = false;
 }
 
 const initial = readParams();

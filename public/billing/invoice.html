@@ -8,11 +8,12 @@
   <meta name="description" content="A printable BloomType invoice for a school or district, with PO number and net-30 terms.">
   <meta name="robots" content="noindex">
   <style>
-    :root { --ink: #1E1B4B; --muted: #4B5563; --accent: #6D28D9; --line: #C4B5FD; --soft: #F5F3FF; --paper: #FFFFFF; --owner-bg: #FEF3C7; --owner-ink: #92400E; --error: #B91C1C; }
+    :root { --preview-bg: #FEE2E2; --ink: #1E1B4B; --muted: #4B5563; --accent: #6D28D9; --line: #C4B5FD; --soft: #F5F3FF; --paper: #FFFFFF; --owner-bg: #FEF3C7; --owner-ink: #92400E; --error: #B91C1C; }
     @page { size: letter; margin: 12mm; }
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--paper); color: var(--ink); font: 10.5pt/1.4 Arial, Helvetica, sans-serif; }
     .sheet { max-width: 800px; margin: 24px auto; padding: 0 16px; }
+    .preview-notice { background: var(--preview-bg); color: var(--error); border: 2px solid var(--error); border-radius: 8px; padding: 8px 12px; font-weight: 700; margin: 0 0 12px; }
     header { display: flex; justify-content: space-between; gap: 24px; border-bottom: 3px solid var(--accent); padding-bottom: 10px; }
     .brand { font-size: 1.6rem; font-weight: 700; color: var(--accent); margin: 0; }
     .vendor { margin: 4px 0 0; color: var(--muted); }
@@ -126,6 +127,7 @@
       </div>
     </div>
 
+    <p id="preview-notice" class="preview-notice" role="note" hidden></p>
     <p id="error" role="alert" hidden></p>
 
     <table>
