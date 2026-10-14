@@ -5,7 +5,7 @@
 // fallback. Vite's fingerprinted JS/CSS never change, so they are cache-first.
 // Other same-origin files (art, icons) are served from cache and refreshed in
 // the background.
-const CACHE_NAME = "bloomtype-v21";
+const CACHE_NAME = "bloomtype-v22";
 const MAX_CACHE_ENTRIES = 200;
 const NETWORK_TIMEOUT_MS = 4000;
 const PRECACHE_ASSETS = [

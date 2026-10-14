@@ -56,7 +56,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 ### Looks (UI)
 - [x] **Claude:** a "Meadow restored!" level-complete celebration ✅ #217.: the whole scene glows, the fox dances, and stars count up.
 - [x] **Claude:** a Meadow home screen ✅ #217., with the scene and the fox behind the menu instead of plain purple.
-- [ ] **Claude (Higgsfield):** remake the 10 level tiles, the pets and the achievement badges in the Meadow painted style. **Done when:** no v1 3D-render art remains on a child-facing screen.
+- [x] **Claude (Higgsfield):** remake the 10 level tiles, the pets and the achievement badges in the Meadow painted style ✅ branch `art/meadow-painted`: 10 painted level scenes, 10 pets × 5 states, 5 category medallions. **Done when:** no v1 3D-render art remains on a child-facing screen.
 - [x] **Claude:** on phones, shrink the pet bubble ✅ #217. so the meadow and the word have room.
 - [x] **Claude:** one design system (colors, type, spacing, buttons) written down and used on all 4 pages ✅ #230 #231 (`docs/DESIGN-SYSTEM.md`; every colour on all four pages comes from tokens, guarded by `test/css-tokens.test.js` and `test/page-tokens.test.js`).
 

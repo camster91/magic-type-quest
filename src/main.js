@@ -259,13 +259,12 @@ function renderLevelCards() {
   if (!container) return;
 
   const completed = gameState.profile?.completedLevels || [];
-  // Unique artwork per lesson where it exists. Lessons 4, 7, 8, 9, 10 fall back
-  // to the big "master" badge — we render the lesson's emoji icon over it instead
-  // of leaning on a generic illustration.
+  // One painted Meadow-style scene per lesson, matching its name
+  // (garden, sky, seashore, forest, town, night sky, meadow, peak, valley, castle).
   const levelImages = {
     1: 'home-row.webp', 2: 'top-row.webp', 3: 'bottom-row.webp',
-    4: 'master.webp', 5: 'capitals.webp', 6: 'numbers.webp',
-    7: 'master.webp', 8: 'master.webp', 9: 'master.webp', 10: 'master.webp'
+    4: 'all-letters.webp', 5: 'capitals.webp', 6: 'numbers.webp',
+    7: 'speed.webp', 8: 'accuracy.webp', 9: 'master.webp', 10: 'legend.webp'
   };
 
   container.innerHTML = Object.values(LESSON_LEVELS).map(rawLesson => {
@@ -703,7 +702,7 @@ function loadProfileScreen() {
       const item = document.createElement('div');
       item.className = `achievement-item ${ach.unlocked ? 'unlocked' : ''}`;
       item.innerHTML = `
-        <div class="ach-icon">${ach.unlocked ? escapeHTML(ach.icon) : '🔒'}</div>
+        <div class="ach-icon"><img class="ach-medal" src="assets/badges/${escapeHTML(ach.category)}.webp" alt="" aria-hidden="true" width="48" height="48" loading="lazy" onerror="this.style.display='none'"><span class="ach-emoji">${ach.unlocked ? escapeHTML(ach.icon) : '🔒'}</span></div>
         <div class="ach-title">${escapeHTML(ach.title)}</div>
         <div class="ach-desc">${escapeHTML(ach.desc)}</div>
       `;
