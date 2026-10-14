@@ -8,6 +8,13 @@ Short messages for homeschool influencers, co-op leaders and teacher Facebook gr
 > - School prices are **proposed**, and cloud class login is **not live yet**. Don't promise either.
 > - Don't send more than one follow-up. If they say no, thank them and stop.
 > - Never ask for children's names, photos or data.
+> - **Canada's anti-spam law (CASL):** every email must say who it's from, give a mailing address and one other way to reach you, and offer an easy way to unsubscribe. The signature block below does this. Keep it on every email, including follow-ups. `[OWNER: mailing address]` must be a real address before you send anything.
+
+**Signature block for every email:**
+
+> [Your name], BloomType (Ashbi Design)
+> [OWNER: mailing address] · cameron@ashbi.ca
+> Don't want emails from me? Reply "unsubscribe" and I'll stop.
 
 Fill in everything in `[square brackets]`. Links:
 
@@ -31,12 +38,13 @@ Fill in everything in `[square brackets]`. Links:
 > No need to post about it. I'd just love to hear what your kids think, good or bad.
 >
 > Thanks,
-> [Your name]
-> BloomType, made in Toronto
+> [Your name], BloomType (Ashbi Design)
+> [OWNER: mailing address] · cameron@ashbi.ca
+> Don't want emails from me? Reply "unsubscribe" and I'll stop.
 
 **DM version (short):**
 
-> Hi [Name]! I make BloomType, a free, ad-free typing game for kids 6–12 (no accounts, works offline). If typing is on your list, here it is: [play link]. Would love your honest thoughts. No pressure to share.
+> Hi [Name]! I make BloomType, a free, ad-free typing game for kids 6–12 (no accounts, no ads). If typing is on your list, here it is: [play link]. Would love your honest thoughts. No pressure to share. — [Your name], BloomType (Ashbi Design), cameron@ashbi.ca
 
 ## 2. Co-op leader
 
@@ -55,8 +63,9 @@ Fill in everything in `[square brackets]`. Links:
 > If it's useful, feel free to pass it on to families. I'm happy to answer questions by email or join a short call.
 >
 > Thanks,
-> [Your name]
-> [Email]
+> [Your name], BloomType (Ashbi Design)
+> [OWNER: mailing address] · cameron@ashbi.ca
+> Don't want emails from me? Reply "unsubscribe" and I'll stop.
 
 ## 3. Teacher Facebook group post
 
@@ -67,12 +76,12 @@ Read the group's rules first. Many groups ban self-promotion or allow it only on
 > Hi all. I'm [Your name], and I make BloomType, a touch-typing game for kids 6 to 12. I'm sharing it because it's free for students and families, with no ads.
 >
 > - No student accounts and no emails. Progress is saved on the device.
-> - A free teacher page for one class on one computer: class codes, assignments, spelling-word lessons and CSV export.
-> - Works offline. English, French and Spanish.
+> - A free teacher page for one class: class codes, assignments, spelling-word lessons and CSV export.
+> - Works offline once installed. English, French and Spanish.
 >
-> Honest limits: progress is saved per device right now, so it works best on shared class computers or with each student's save code. Online class sign-in across devices isn't live yet.
+> Honest limits: the class report only shows students who play on the same computer and browser as the teacher page, so it suits shared class computers or a lab. Students on their own devices won't appear in it. A save code moves a child's progress to another device, but not their class, assignments or spelling lists. Class reporting across devices comes with online class sign-in, which isn't live yet and waits on a privacy review.
 >
-> Try it here: [landing page link]. I'd really value feedback from anyone who teaches keyboarding.
+> Try it here: [landing page link]. I'd really value feedback from anyone who teaches keyboarding. You can reach me at cameron@ashbi.ca.
 
 ## 4. Follow-up (one only, about 7–10 days later)
 
@@ -85,7 +94,9 @@ Read the group's rules first. Many groups ban self-promotion or allow it only on
 > If it's not a fit, no worries at all. I won't follow up again.
 >
 > Thanks,
-> [Your name]
+> [Your name], BloomType (Ashbi Design)
+> [OWNER: mailing address] · cameron@ashbi.ca
+> Don't want emails from me? Reply "unsubscribe" and I'll stop.
 
 ## 5. Thank-you (if they try it or share it)
 
@@ -93,7 +104,9 @@ Read the group's rules first. Many groups ban self-promotion or allow it only on
 >
 > Thank you for trying BloomType [and sharing it with your group]. If your kids found anything confusing or frustrating, I'd love to know so I can fix it.
 >
-> [Your name]
+> [Your name], BloomType (Ashbi Design)
+> [OWNER: mailing address] · cameron@ashbi.ca
+> Don't want emails from me? Reply "unsubscribe" and I'll stop.
 
 ## Tracking table
 

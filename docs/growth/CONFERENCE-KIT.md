@@ -4,6 +4,7 @@ Materials for one teacher conference. It is written for an Ontario conference su
 
 > **Draft for the owner.** Keep these facts straight at the booth and on stage:
 > - BloomType is **free for families and for one teacher** using the local teacher page.
+> - **The local class report only sees students on the same device and browser profile** as the teacher page (shared class computers or a lab). Students on their own computers won't appear in it. Save codes move a child's progress, but not their class, assignments or spelling lists. Cross-device class reporting comes with cloud class login, after the privacy review.
 > - School prices are **proposed, not final**. Say "proposed" every time.
 > - **Cloud class login is not live yet.** Progress is saved on each device today. Online class sign-in across devices, Google Classroom, ClassLink and Clever come after the privacy approvals.
 > - We have **no pilot results, testimonials or certifications yet**. Don't imply any.
@@ -40,6 +41,7 @@ A calm touch-typing game for children aged 6 to 12. Every word a child types hel
 - Make a class and get a code in a few clicks
 - Print student cards, set assignments, paste spelling lists as typing lessons
 - Class report with speed, accuracy, weak keys and minutes, plus CSV export
+- Today the report works on shared class computers: it shows students who play on the same device and browser as the teacher page
 - A Typing Week kit with a poster and certificates
 
 **For privacy officers**
@@ -64,7 +66,7 @@ Use a laptop with a keyboard, a fresh browser profile and made-up student names.
 | 2:00–2:30 | Open Profile → Reading and play | "Relaxed mode makes words wait. There's an easy-read font, OpenDyslexic and high contrast." |
 | 2:30–3:45 | Switch to the teacher page. Create a class, show the code and student cards, paste three spelling words. | "Setup takes a few clicks. Kids join with this code and a first name. No emails. Your spelling words become a typing lesson." |
 | 3:45–4:30 | Show the class report and Export CSV | "You see speed, accuracy, weak keys and minutes. Export it for your gradebook." |
-| 4:30–5:00 | Hand them the handout | "One honest note: progress is saved on each device today, so it works best on shared class computers or with save codes. Online class sign-in is coming after privacy approvals. Scan this to try it today." |
+| 4:30–5:00 | Hand them the handout | "One honest note: the class report only sees students who play on this same computer and browser, so today it suits shared class computers or a lab. Students on their own devices won't show up. Class reporting across devices comes with online class sign-in, after a privacy review. Scan this to try it today." |
 
 **If asked about privacy:** "Nothing leaves the device in the public version. There are no student accounts. Our privacy summary is in plain language."
 **If asked about price:** "Free for families and for one teacher. School plans are proposed, not final, and they're for cloud features that aren't live yet."
@@ -81,8 +83,8 @@ Title idea: **"Ten minutes a day: teaching keyboarding without ads, accounts or 
 | 3 | What gets in the way | Ads in free tools, student accounts and emails, privacy approvals, timers that stress young kids. Keep this about the problem, not competitors by name. |
 | 4 | Little and often | 10–15 minutes a day beats one long weekly session. Accuracy first, speed later. Move on at 3 stars two days in a row. |
 | 5 | The BloomType approach | Each word restores a meadow. No losing. Stars for accuracy. Daily Moment for a 60-second return. |
-| 6 | Live demo (2 minutes) | Use the first half of the demo script. Have a screenshot backup in case Wi-Fi fails (it works offline after the first visit). |
-| 7 | The teacher view | Class codes, student cards, assignments, spelling lists, report and CSV. Mention that it's free for one class on one device. |
+| 6 | Live demo (2 minutes) | Use the first half of the demo script. Have a screenshot backup in case Wi-Fi fails (it can work offline once it has been opened online a couple of times or installed; test this before the talk). |
+| 7 | The teacher view | Class codes, student cards, assignments, spelling lists, report and CSV. Mention that it's free, and that the report only sees students on the same shared device and browser. Cross-device reporting waits for cloud class login. |
 | 8 | Privacy by design | No accounts, data stays on the device, no ads, no tracking, no live AI with children. Designed to make approval easy under Ontario's MFIPPA and Bill 194, and COPPA and FERPA. Say clearly that this is a design goal, not a certification. |
 | 9 | Run a Typing Week | Walk through the five days in the [Typing Week kit](../school/TYPING-WEEK-KIT.md): roots, reach up, dig down, whole meadow, bloom day. Class goal: plant 100 flowers together. |
 | 10 | What's next, and the QR code | Honest roadmap: online class sign-in and rosters after privacy approvals; school prices proposed. Invite pilot classrooms. Show the QR code and your email. |
@@ -98,13 +100,14 @@ Print on one side of a letter-size page, or as a half-page card.
 > 1. Open the teacher page and create a class. You get a code.
 > 2. Print the student cards.
 > 3. Students open BloomType, go to Profile, type their first name and the code.
-> 4. Play 10–15 minutes a day. Check the class report on Friday.
+> 4. Play 10–15 minutes a day. On shared class computers, check the class report on Friday.
 >
 > **Good to know**
 > - No student accounts, no emails, no ads.
-> - Progress is saved on the device. Use the same computers, or have students keep their save code.
-> - Works offline. English, French and Spanish.
-> - Online class sign-in for schools is coming after privacy approvals. School prices are proposed.
+> - Progress is saved on the device. The class report only shows students who play on the same computer and browser as your teacher page, so use shared class computers. Students on their own devices won't appear in it.
+> - A save code moves a child's progress to a new device, but not their class, assignments or spelling lists.
+> - Works offline once installed. English, French and Spanish.
+> - Online class sign-in, with class reports across devices, is coming after privacy approvals. School prices are proposed.
 >
 > **Scan to start:** [QR code → https://bloomtype.ashbi.ca/magic-type-quest/landing.html]
 > Questions: cameron@ashbi.ca
@@ -128,14 +131,18 @@ Use a paper sheet or a form tool your business already controls. **Collect no ch
 | Language | No | English, French, Spanish |
 | Consent | Yes | "Yes, you may email me about BloomType. I can unsubscribe at any time." (Canada's anti-spam law, CASL, needs this consent.) |
 
-Add at the bottom: "We use this only to reply to you. We don't share or sell it." Store the sheet safely and delete entries when someone asks.
+Print this on the form, next to the consent box (CASL needs the sender named, a mailing address and one more way to reach them, and an unsubscribe option):
+
+> This request is from [Your name], BloomType (Ashbi Design), [OWNER: mailing address]. Email: cameron@ashbi.ca. You can unsubscribe at any time by replying "unsubscribe" to any email or writing to cameron@ashbi.ca.
+
+Add at the bottom: "We use this only to reply to you. We don't share or sell it." Store the sheet safely and delete entries when someone asks. Fill in `[OWNER: mailing address]` with a real address before printing.
 
 ## 6. Packing checklist
 
 **Demo**
 - [ ] Laptop with a physical keyboard, charger and a power bar
 - [ ] A Chromebook, if you have one (most schools use them)
-- [ ] BloomType opened once on each device so it works offline
+- [ ] BloomType installed, or opened online a couple of times, on each device, then tested with Wi-Fi off
 - [ ] Fresh browser profile with a demo class and made-up student names
 - [ ] Screenshots or a screen recording as a backup
 - [ ] Headphones or a small speaker (sound is optional)
@@ -165,7 +172,7 @@ Send only to people who ticked the consent box.
 > Thanks for stopping by the BloomType [booth/session] at [Conference name]. Here's what you asked for:
 >
 > - **Try it:** https://bloomtype.ashbi.ca/magic-type-quest/landing.html
-> - **Teacher quick start:** create a class on the teacher page, print the student cards and you're ready.
+> - **Teacher quick start:** create a class on the teacher page, print the student cards and you're ready. The class report shows students who play on the same shared computers as your teacher page.
 > - **Typing Week kit:** a five-day plan with a poster and certificates.
 > [Only if they asked: **Pilot classrooms:** reply to this email and I'll send the details.]
 > [Only if they asked: **School pricing:** our plans are proposed, not final, and are for online class sign-in, which isn't live yet. I'll let you know when it is.]
@@ -174,7 +181,7 @@ Send only to people who ticked the consent box.
 >
 > If you have any questions, just reply.
 >
-> [Your name]
-> BloomType, made in Toronto
+> [Your name], BloomType (Ashbi Design)
+> [OWNER: mailing address] · cameron@ashbi.ca
 >
-> You're getting this because you asked at [Conference name]. Reply "unsubscribe" and I won't email again.
+> You're getting this because you asked at [Conference name]. Reply "unsubscribe" or write to cameron@ashbi.ca and I won't email again.

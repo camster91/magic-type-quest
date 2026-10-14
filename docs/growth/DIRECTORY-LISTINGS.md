@@ -15,12 +15,13 @@ Copy-paste text for listing BloomType in homeschool directories, state ESA vendo
 | What it is | A touch-typing game for children, played in the web browser |
 | Ages | 6 to 12 |
 | Price for families | Free, with no ads, for all levels and features. Forever. |
-| Price for one teacher | Free with the local teacher dashboard on one device |
+| Price for one teacher | Free with the local teacher dashboard. It only sees students who play on the same device and browser profile (shared class computers). |
+| Class reporting across devices | Not available yet. Each student's own computer keeps its own progress; the teacher's report can't see it. Cross-device class reporting comes with cloud class login, after the privacy review. Save codes carry a child's progress to a new device, but not their class, assignments or spelling lists. |
 | Price for schools | Paid adult tools (cloud class sync, rostering, admin views, signed privacy agreement). Prices are **proposed**; see [PRICING-AND-ORDERING.md](../school/PRICING-AND-ORDERING.md). Not on sale until cloud features are live. |
 | Accounts | None. Children play without signing up. |
 | Data | Progress stays in the browser on the child's device. Nothing is sent to us. |
 | Ads, tracking, AI | No ads, no tracking, no data selling, no live AI with children |
-| Offline | Works offline after the first visit (installable web app) |
+| Offline | Works offline once it has been opened online a couple of times, or installed as an app. Test this on your devices before relying on it. |
 | Languages | English, French and Spanish (French and Spanish still need a fluent reviewer's sign-off) |
 | Devices | Any modern browser with a physical keyboard: Chromebook, Windows, Mac, iPad with a keyboard. `[OWNER: confirm after the real-device tests in TODO-100 Phase 2]` |
 | Content | 10 levels: home row, top row, bottom row, all letters, capitals, numbers, speed, accuracy, mastery and a final no-looking challenge |
@@ -33,19 +34,19 @@ Copy-paste text for listing BloomType in homeschool directories, state ESA vendo
 
 ### 25 words
 
-> BloomType is a free, ad-free touch-typing game for kids 6 to 12. Each word typed restores a meadow. No accounts, no tracking, works offline.
+> BloomType is a free, ad-free touch-typing game for kids 6 to 12. Each word typed restores a meadow. No accounts, no tracking, can work offline once installed.
 
 ### 50 words
 
-> BloomType teaches touch typing to children aged 6 to 12 through ten short levels, from the home row to typing without looking. Every word a child types helps restore a meadow. It is free for families, has no ads and no accounts, keeps progress on the device, and works offline.
+> BloomType teaches touch typing to children aged 6 to 12 through ten short levels, from the home row to typing without looking. Every word a child types helps restore a meadow. It is free for families, has no ads and no accounts, keeps progress on the device, and can work offline once installed.
 
 ### 150 words
 
 > BloomType is a calm touch-typing game for children aged 6 to 12. Ten levels move from the home row to the top and bottom rows, capitals, numbers, speed and accuracy, ending with a no-looking challenge. Each word a child types helps restore a meadow, and a fox companion cheers them on. Stars reward accuracy, not speed, and there is no losing.
 >
-> Short daily sessions of 10 to 15 minutes are the goal. A 60-second Daily Moment and weak-key drills help children practise the keys they miss most. Parents get a weekly progress card and a printable homeschool record. Teachers get a free local class dashboard with class codes, assignments, spelling-word lessons and CSV export.
+> Short daily sessions of 10 to 15 minutes are the goal. A 60-second Daily Moment and weak-key drills help children practise the keys they miss most. Parents get a weekly progress card and a printable homeschool record. Teachers get a free local class dashboard with class codes, assignments, spelling-word lessons and CSV export, for students who play on the same shared class computers.
 >
-> BloomType is free for families, with no ads and no accounts. Progress stays on the child's device, and nothing is sent online. It works offline and plays in English, French and Spanish.
+> BloomType is free for families, with no ads and no accounts. Progress stays on the child's device, and nothing is sent online. It can work offline once installed, and plays in English, French and Spanish.
 
 ## Tags
 
@@ -55,7 +56,7 @@ Copy-paste text for listing BloomType in homeschool directories, state ESA vendo
 | Subjects | Keyboarding, Computer science / digital literacy, English language arts (writing) |
 | Grades | 1, 2, 3, 4, 5, 6, 7 (best fit: grades 2–6) |
 | Ages | 6–12 |
-| Format | Web app (browser), installable, works offline |
+| Format | Web app (browser), installable; works offline once installed or opened online a couple of times |
 | Cost | Free for families and single teachers; paid school plans proposed (not yet on sale) |
 | Languages | English, French, Spanish |
 | Standards (draft) | Common Core W.3.6–W.6.6 keyboarding; ISTE Student Standard 1 (Empowered Learner). See [STANDARDS-MAP.md](../school/STANDARDS-MAP.md); confirm the official wording first. |
@@ -86,7 +87,7 @@ Most general homeschool directories and curriculum review sites ask for the same
 | Grade or age range | Grades 1–7, ages 6–12 |
 | Price | Free (no ads, no in-app purchases) |
 | Faith-based or secular | Secular |
-| Format | Online, self-paced, works offline |
+| Format | Online, self-paced; works offline once installed or opened online a couple of times |
 | Teacher-led or independent | Independent; a parent can follow along on the Parents page |
 | Parent tools | Weekly progress card, printable homeschool record (log of hours and levels), parent PIN, several children on one device |
 | Lesson plan | Yes: [homeschool typing guide](../homeschool/CURRICULUM-GUIDE.md) with Sprout, Bloom and Meadow tracks and a 12-week plan |
@@ -116,7 +117,7 @@ ESA (education savings account) programs let families spend state money on appro
 | Grades served | 1–7 |
 | Product description | 150-word version |
 | Price to families | Free |
-| How it is delivered | Online in the browser; works offline after the first visit |
+| How it is delivered | Online in the browser; works offline once installed or opened online a couple of times |
 | Is it a full curriculum? | No. It is a keyboarding course: 10 levels with a 12-week plan. |
 | Standards alignment | Draft map to Common Core W.3.6–W.6.6 and ISTE ([STANDARDS-MAP.md](../school/STANDARDS-MAP.md)); confirm the wording first |
 | Student data and privacy | Privacy one-liner, plus [PRIVACY-SUMMARY.md](../school/PRIVACY-SUMMARY.md) once approved |
@@ -135,7 +136,7 @@ Google lists education apps in the Google Workspace Marketplace (Education categ
 | Usually asked | Our answer |
 |---|---|
 | App name | BloomType |
-| Short description (often about 80 characters) | Free, ad-free touch-typing game for kids 6–12. No accounts. Works offline. |
+| Short description (often about 80 characters) | Free, ad-free touch-typing game for kids 6–12. No accounts. No ads. |
 | Detailed description | 150-word version, plus one line: "Google Classroom roster import is coming for schools." Only change this once it is live. |
 | Category | Education |
 | Grades and subjects | Grades 1–7; keyboarding, digital literacy |
@@ -162,7 +163,7 @@ ClassLink and Clever let schools add apps to students' single sign-on dashboards
 | Long description | 150-word version |
 | Grades | 1–7 |
 | Subjects | Keyboarding, digital literacy |
-| Pricing model | Free for teachers using the local dashboard; school and district plans proposed (Classroom $39/teacher, School $299/school, District $0.75/student, $750 minimum, per year). **Proposed, owner to confirm.** |
+| Pricing model | Free for teachers using the local dashboard on shared class devices; school and district plans proposed (Classroom $39/teacher, School $299/school, District $0.75/student, $750 minimum, per year). **Proposed, owner to confirm.** |
 | Integration type wanted | Single sign-on and roster sync (ClassLink OneRoster; Clever SSO and Secure Sync) |
 | Integration status | In development. Not live. |
 | Data we would receive | `[OWNER: confirm with PRIVACY-OPERATIONS.md once the cloud schema is final]` |
