@@ -38,11 +38,20 @@ ignored. Folder and file names never appear in the draft.
 
 ## Rules the script follows
 
-- **Small groups are suppressed.** Any class, comparison, or survey group
-  with fewer than 5 students or responses shows "suppressed" instead of
-  numbers. If one role (teachers or parents) has 1 to 4 responses, the
-  combined survey table is suppressed too, so it can't be worked out by
-  subtraction.
+- **Small groups are suppressed.** A class or family with fewer than 5
+  students shows "suppressed" and is left out of **every** total, median and
+  count of students, so its figures can't be worked out by subtracting the
+  visible classes from a total.
+- **Every figure needs 5 contributors.** Inside a bigger class, each metric
+  is checked on its own contributor count: WPM and accuracy need 5 students
+  with a score (`studentsCounted`); minutes need 5 students who practised in
+  the last 7 days (and, for the 28-day figure, a full practice log for every
+  counted student). A figure that fails is shown as "suppressed" and left out
+  of the totals. So a class of 10 where one child played shows nothing about
+  that child.
+- **Surveys.** A role (teachers or parents) with fewer than 5 responses is
+  suppressed. If one role has 1 to 4 responses, the combined table is
+  suppressed too, so it can't be worked out by subtraction.
 - **Significance.** With fewer than 30 students (overall or in the
   before/after comparison), the draft says the results are not statistically
   significant. The exports are class-level (one median per class), so no

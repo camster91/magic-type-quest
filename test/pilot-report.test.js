@@ -49,7 +49,7 @@ describe('pilot report stats', () => {
   it('compares each class from its earliest to its latest export', () => {
     const report = buildReport(readExports(FIXTURES), { now: NOW });
     expect(report.groups).toBe(4);
-    expect(report.studentsTotal).toBe(41);
+    expect(report.studentsTotal).toBe(38); // the class of 3 is left out of the total;
     expect(report.files).toEqual({ summaries: 7, surveys: 10, skipped: 1 });
     const c = report.comparison;
     expect(c.sixWeek).toBe(true);
@@ -66,11 +66,11 @@ describe('pilot report stats', () => {
   it('works out minutes per student per week from the latest export', () => {
     const { minutes, rows } = buildReport(readExports(FIXTURES), { now: NOW });
     // 1200 min / 20 students / 4 weeks, 800 / 10 / 4, 320 / 8 / 4
-    expect(rows.filter((r) => !r.suppressed).map((r) => r.minutesPerStudentWeek)).toEqual([15, 20, 10]);
+    expect(rows.filter((r) => !r.suppressed).map((r) => r.minutes.perStudentWeek)).toEqual([15, 20, 10]);
     expect(minutes.perStudentWeek.median).toBe(15);
-    expect(minutes.totalLast28Days).toBe(2680);
-    expect(minutes.totalLast7Days).toBe(670);
-    expect(minutes.activeShare7Days).toBe(85.4); // 35 of 41
+    expect(minutes.totalLast28Days).toBe(2320);
+    expect(minutes.totalLast7Days).toBe(580);
+    expect(minutes.activeShare7Days).toBe(84.2); // 32 of 38
   });
 
   it('builds rating distributions and minute bands from valid answers only', () => {
@@ -128,6 +128,64 @@ describe('pilot report small-sample guard', () => {
     expect(md).not.toContain('99%');
     expect(md).toContain('| <5 |');
     expect(md).not.toContain('| 4 | 5 | 4 |'); // no teacher-only rating rows
+  });
+
+  it('keeps a suppressed class out of every total, so it cannot be found by subtraction', () => {
+    // Fixture classes: 20, 10 and 8 students shown, plus a hidden class of 3.
+    // A total of 41 would give away 41 - 20 - 10 - 8 = 3.
+    const report = buildReport(readExports(FIXTURES), { now: NOW });
+    const shown = report.rows.filter((r) => !r.suppressed);
+    expect(shown.map((r) => r.students)).toEqual([20, 10, 8]);
+    expect(report.studentsTotal).toBe(20 + 10 + 8);
+    // Minute totals are the visible classes only (the hidden class had 360 and 90).
+    expect(report.minutes.totalLast28Days).toBe(1200 + 800 + 320);
+    expect(report.minutes.totalLast7Days).toBe(300 + 200 + 80);
+    expect(report.minutes.studentsCounted7Days).toBe(38);
+    const md = renderMarkdown(report);
+    expect(md).not.toMatch(/\b41\b/);
+    expect(md).not.toMatch(/\b(2680|670)\b/);
+    expect(md).toContain('| Students in classes with 5 or more (latest export) | 38 |');
+  });
+
+  it('suppresses each metric with fewer than 5 contributors, even in a bigger class', () => {
+    const raw = (generatedOn, { wpm, acc, counted, active, m7, m28 }) => ({
+      group: 'one-active',
+      ...sanitizeSummary({
+        type: 'bloomtype-pilot-summary',
+        version: 1,
+        generatedOn,
+        studentCount: 10,
+        wpm: { median: wpm, average: wpm, studentsCounted: counted },
+        accuracyPercent: { median: acc, average: acc, studentsCounted: counted },
+        minutes: { last7Days: m7, last28Days: m28, studentsCounted7Days: 10, studentsCounted28Days: 10, activeStudentsLast7Days: active },
+      }),
+    });
+    // A class of 10 where only one child has played: every figure is that child's.
+    const oneChild = raw('2026-10-13', { wpm: 23, acc: 97, counted: 1, active: 1, m7: 42, m28: 133 });
+    const other = [summary('b', '2026-09-01', 12, 8, 85), summary('b', '2026-10-13', 12, 12, 90, { m7: 120, m28: 480 })];
+    const report = buildReport({ summaries: [oneChild, ...other] }, { now: NOW });
+    const row = report.rows.find((r) => r.students === 10);
+    expect(row.suppressed).toBe(false);
+    expect(row.wpm.end).toBeNull();
+    expect(row.accuracy.end).toBeNull();
+    expect(row.minutes.perStudentWeek).toBeNull();
+    expect(row.minutes.last7).toBeNull();
+    expect(row.minutes.last28).toBeNull();
+    expect(report.snapshot.wpm.n).toBe(1);
+    expect(report.minutes.totalLast7Days).toBe(120);
+    expect(report.minutes.totalLast28Days).toBe(480);
+    const md = renderMarkdown(report);
+    for (const leaked of ['23', '97', '42', '133', '162', '613', '4.2', '3.3']) expect(md).not.toMatch(new RegExp(`(^|[^\\d.])${leaked.replace('.', '\\.')}(?![\\d])`));
+    expect(md).toContain('| 10 | 1 | n/a | suppressed (one export) | suppressed (one export) | suppressed |');
+
+    // A comparable class whose start had one scored child: start is hidden and
+    // the class drops out of the WPM comparison instead of showing that child.
+    const early = raw('2026-09-01', { wpm: 23, acc: 97, counted: 1, active: 6, m7: 60, m28: 60 });
+    const late = raw('2026-10-13', { wpm: 11, acc: 88, counted: 10, active: 8, m7: 100, m28: 400 });
+    const paired = buildReport({ summaries: [early, late, ...other] }, { now: NOW });
+    expect(paired.rows.find((r) => r.students === 10).wpm).toEqual({ start: null, end: 11 });
+    expect(paired.comparison.wpmStart.n).toBe(1);
+    expect(renderMarkdown(paired)).toContain('suppressed → 11');
   });
 
   it('suppresses every student number when the whole pilot has fewer than 5 students', () => {

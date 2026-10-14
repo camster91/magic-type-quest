@@ -184,14 +184,35 @@ export function redactQuote(text) {
 
 // ===== Building the report data =====
 
-const perStudentWeek = (s) => {
-  const m = s.minutes;
-  if (m.studentsCounted28Days > 0) return round1(m.last28Days / m.studentsCounted28Days / 4);
-  if (m.studentsCounted7Days > 0) return round1(m.last7Days / m.studentsCounted7Days);
-  return null;
-};
+/** A class median is shown only when at least MIN_GROUP students contributed to it. */
+const guarded = (metric) => (metric && metric.studentsCounted >= MIN_GROUP ? metric.median : null);
 
+/**
+ * Minutes for one export, each figure shown only when at least MIN_GROUP
+ * students actually contributed practice to it. A class of 10 where one child
+ * played would otherwise reveal that child's minutes.
+ * - 7-day: at least 5 students counted and at least 5 active in those 7 days.
+ * - 28-day: as above, and every counted student has a full practice log
+ *   (studentsCounted28Days === studentsCounted7Days), so the 5 active
+ *   students are inside the 28-day total too.
+ */
+function guardedMinutes(s) {
+  const m = s.minutes;
+  const active = m.activeStudentsLast7Days;
+  const ok7 = m.studentsCounted7Days >= MIN_GROUP && active >= MIN_GROUP;
+  const ok28 = ok7 && m.studentsCounted28Days >= MIN_GROUP && m.studentsCounted28Days === m.studentsCounted7Days;
+  return {
+    last7: ok7 ? { minutes: m.last7Days, students: m.studentsCounted7Days } : null,
+    last28: ok28 ? { minutes: m.last28Days, students: m.studentsCounted28Days } : null,
+    perStudentWeek: ok28 ? round1(m.last28Days / m.studentsCounted28Days / 4) : ok7 ? round1(m.last7Days / m.studentsCounted7Days) : null,
+    active: m.studentsCounted7Days >= MIN_GROUP ? { active, counted: m.studentsCounted7Days } : null,
+  };
+}
+
+const NO_MINUTES = { last7: null, last28: null, perStudentWeek: null, active: null };
 const letter = (i) => (i < 26 ? String.fromCharCode(65 + i) : `${String.fromCharCode(65 + Math.floor(i / 26) - 1)}${String.fromCharCode(65 + (i % 26))}`);
+const sum = (xs) => xs.reduce((a, b) => a + b, 0);
+const change = (a, b) => (a != null && b != null ? round1(b - a) : null);
 
 export function buildReport({ summaries = [], surveys = [], skipped = 0 } = {}, { now = new Date() } = {}) {
   const byGroup = new Map();
@@ -209,8 +230,9 @@ export function buildReport({ summaries = [], surveys = [], skipped = 0 } = {}, 
     const span = daysBetween(start.generatedOn, end.generatedOn);
     const comparable = list.length > 1 && span >= MIN_COMPARE_DAYS;
     const students = end.studentCount;
-    const small = students < MIN_GROUP
-      || (comparable && (Math.min(start.wpm.studentsCounted, end.wpm.studentsCounted) < MIN_GROUP));
+    // A class under MIN_GROUP shows nothing and is left out of every total,
+    // so no figure about it can be worked out by subtracting visible classes.
+    const suppressed = students < MIN_GROUP;
     return {
       label: `Group ${letter(i)}`,
       students,
@@ -219,55 +241,56 @@ export function buildReport({ summaries = [], surveys = [], skipped = 0 } = {}, 
       weeks: round1(span / 7),
       comparable,
       sixWeek: comparable && span >= SIX_WEEK_DAYS,
-      suppressed: small,
-      start: { wpm: start.wpm, accuracy: start.accuracy },
-      end: { wpm: end.wpm, accuracy: end.accuracy },
-      latest: end,
-      minutesPerStudentWeek: perStudentWeek(end),
+      suppressed,
+      wpm: suppressed ? { start: null, end: null } : { start: comparable ? guarded(start.wpm) : null, end: guarded(end.wpm) },
+      accuracy: suppressed ? { start: null, end: null } : { start: comparable ? guarded(start.accuracy) : null, end: guarded(end.accuracy) },
+      minutes: suppressed ? NO_MINUTES : guardedMinutes(end),
     };
   });
 
-  const studentsTotal = rows.reduce((a, r) => a + r.students, 0);
   const visible = rows.filter((r) => !r.suppressed);
+  const studentsTotal = sum(visible.map((r) => r.students));
   const enoughStudents = studentsTotal >= MIN_GROUP;
 
-  // Before/after: only groups big enough to show, with two exports far enough apart.
+  // Before/after, per metric: only classes where both ends of that metric are shown.
   const pairs = visible.filter((r) => r.comparable);
   const sixWeekPairs = pairs.filter((r) => r.sixWeek);
   const headlinePairs = sixWeekPairs.length ? sixWeekPairs : pairs;
-  const pairStudents = headlinePairs.reduce((a, r) => a + r.students, 0);
-  const comparison = headlinePairs.length && pairStudents >= MIN_GROUP
+  const wpmPairs = headlinePairs.filter((r) => r.wpm.start != null && r.wpm.end != null);
+  const accPairs = headlinePairs.filter((r) => r.accuracy.start != null && r.accuracy.end != null);
+  const compared = headlinePairs.filter((r) => wpmPairs.includes(r) || accPairs.includes(r));
+  const comparison = compared.length
     ? {
       sixWeek: sixWeekPairs.length > 0,
-      groups: headlinePairs.length,
-      students: pairStudents,
-      wpmStart: quartiles(headlinePairs.map((r) => r.start.wpm.median)),
-      wpmEnd: quartiles(headlinePairs.map((r) => r.end.wpm.median)),
-      wpmChange: quartiles(headlinePairs.map((r) => (r.start.wpm.median != null && r.end.wpm.median != null ? round1(r.end.wpm.median - r.start.wpm.median) : null))),
-      accStart: quartiles(headlinePairs.map((r) => r.start.accuracy.median)),
-      accEnd: quartiles(headlinePairs.map((r) => r.end.accuracy.median)),
-      accChange: quartiles(headlinePairs.map((r) => (r.start.accuracy.median != null && r.end.accuracy.median != null ? round1(r.end.accuracy.median - r.start.accuracy.median) : null))),
+      groups: compared.length,
+      students: sum(compared.map((r) => r.students)),
+      wpmStart: quartiles(wpmPairs.map((r) => r.wpm.start)),
+      wpmEnd: quartiles(wpmPairs.map((r) => r.wpm.end)),
+      wpmChange: quartiles(wpmPairs.map((r) => change(r.wpm.start, r.wpm.end))),
+      accStart: quartiles(accPairs.map((r) => r.accuracy.start)),
+      accEnd: quartiles(accPairs.map((r) => r.accuracy.end)),
+      accChange: quartiles(accPairs.map((r) => change(r.accuracy.start, r.accuracy.end))),
     }
     : null;
 
-  const snapshot = enoughStudents && visible.length
-    ? {
-      groups: visible.length,
-      wpm: quartiles(visible.map((r) => r.latest.wpm.median)),
-      accuracy: quartiles(visible.map((r) => r.latest.accuracy.median)),
-    }
+  const snapshot = enoughStudents
+    ? { groups: visible.length, wpm: quartiles(visible.map((r) => r.wpm.end)), accuracy: quartiles(visible.map((r) => r.accuracy.end)) }
     : null;
 
-  const latest = rows.map((r) => r.latest.minutes);
-  const counted7 = latest.reduce((a, m) => a + m.studentsCounted7Days, 0);
+  const with7 = visible.filter((r) => r.minutes.last7);
+  const with28 = visible.filter((r) => r.minutes.last28);
+  const withActive = visible.filter((r) => r.minutes.active);
+  const activeCounted = sum(withActive.map((r) => r.minutes.active.counted));
   const minutes = enoughStudents
     ? {
-      totalLast28Days: round1(latest.reduce((a, m) => a + m.last28Days, 0)),
-      totalLast7Days: round1(latest.reduce((a, m) => a + m.last7Days, 0)),
-      studentsCounted28Days: latest.reduce((a, m) => a + m.studentsCounted28Days, 0),
-      studentsCounted7Days: counted7,
-      activeShare7Days: counted7 >= MIN_GROUP ? round1((latest.reduce((a, m) => a + m.activeStudentsLast7Days, 0) / counted7) * 100) : null,
-      perStudentWeek: quartiles(visible.map((r) => r.minutesPerStudentWeek)),
+      totalLast28Days: with28.length ? round1(sum(with28.map((r) => r.minutes.last28.minutes))) : null,
+      studentsCounted28Days: sum(with28.map((r) => r.minutes.last28.students)),
+      classes28: with28.length,
+      totalLast7Days: with7.length ? round1(sum(with7.map((r) => r.minutes.last7.minutes))) : null,
+      studentsCounted7Days: sum(with7.map((r) => r.minutes.last7.students)),
+      classes7: with7.length,
+      activeShare7Days: activeCounted >= MIN_GROUP ? round1((sum(withActive.map((r) => r.minutes.active.active)) / activeCounted) * 100) : null,
+      perStudentWeek: quartiles(visible.map((r) => r.minutes.perStudentWeek)),
     }
     : null;
 
@@ -308,6 +331,7 @@ export function buildReport({ summaries = [], surveys = [], skipped = 0 } = {}, 
     generatedOn: now.toISOString().slice(0, 10),
     files: { summaries: summaries.length, surveys: surveys.length, skipped },
     groups: rows.length,
+    smallGroups: rows.length - visible.length,
     studentsTotal,
     enoughStudents,
     significant: studentsTotal >= MIN_SIGNIFICANT && (!comparison || comparison.students >= MIN_SIGNIFICANT),
@@ -340,7 +364,9 @@ export function renderMarkdown(r) {
   );
 
   const warnings = [];
-  if (!r.enoughStudents) warnings.push(`Fewer than ${MIN_GROUP} students in total: all student numbers are suppressed for privacy.`);
+  if (!r.enoughStudents) warnings.push(`No class or family with ${MIN_GROUP} or more students: all student numbers are suppressed for privacy.`);
+  if (r.smallGroups) warnings.push(`${r.smallGroups} class(es) or families with fewer than ${MIN_GROUP} students are left out of every student number and total, so their figures can't be worked out by subtraction.`);
+  warnings.push(`Each figure needs at least ${MIN_GROUP} contributing students (for minutes: at least ${MIN_GROUP} who practised in the last 7 days). Figures with fewer are shown as "suppressed" and left out of the totals and medians below.`);
   if (!r.significant) {
     const n = r.comparison && r.comparison.students < r.studentsTotal ? r.comparison.students : r.studentsTotal;
     warnings.push(`**Not statistically significant.** ${n} students is below the ${MIN_SIGNIFICANT}-student threshold. Treat every number as anecdotal and say so if quoted.`);
@@ -355,7 +381,8 @@ export function renderMarkdown(r) {
     '| | Count |',
     '| --- | ---: |',
     `| Classes or families that sent a pilot summary | ${r.groups} |`,
-    `| Students in those summaries (latest export) | ${r.enoughStudents ? r.studentsTotal : SUPPRESSED} |`,
+    `| ...of which with fewer than ${MIN_GROUP} students (left out of all student numbers) | ${r.smallGroups} |`,
+    `| Students in classes with ${MIN_GROUP} or more (latest export) | ${r.enoughStudents ? r.studentsTotal : SUPPRESSED} |`,
     `| Teacher surveys | ${r.surveys.teacher} |`,
     `| Parent surveys (families) | ${r.surveys.parent} |`,
     `| Files skipped (not a v1 BloomType export) | ${r.files.skipped} |`,
@@ -382,8 +409,8 @@ export function renderMarkdown(r) {
       '',
       '| | Start | End | Change per class |',
       '| --- | --- | --- | --- |',
-      `| Class median WPM | ${fmtQ(c.wpmStart)} | ${fmtQ(c.wpmEnd)} | ${fmtQSigned(c.wpmChange)} |`,
-      `| Class median accuracy | ${fmtQ(c.accStart, '%')} | ${fmtQ(c.accEnd, '%')} | ${fmtQSigned(c.accChange, ' pts')} |`,
+      `| Class median WPM (${c.wpmStart.n} classes) | ${fmtQ(c.wpmStart)} | ${fmtQ(c.wpmEnd)} | ${fmtQSigned(c.wpmChange)} |`,
+      `| Class median accuracy (${c.accStart.n} classes) | ${fmtQ(c.accStart, '%')} | ${fmtQ(c.accEnd, '%')} | ${fmtQSigned(c.accChange, ' pts')} |`,
       '',
     );
   }
@@ -393,8 +420,8 @@ export function renderMarkdown(r) {
     push(
       `Across ${r.snapshot.groups} class(es), from each one's latest export:`,
       '',
-      `- Class median WPM: ${fmtQ(r.snapshot.wpm)}`,
-      `- Class median accuracy: ${fmtQ(r.snapshot.accuracy, '%')}`,
+      `- Class median WPM: ${fmtQ(r.snapshot.wpm)}${r.snapshot.wpm.n < r.snapshot.groups ? ` (${r.snapshot.wpm.n} classes; others suppressed)` : ''}`,
+      `- Class median accuracy: ${fmtQ(r.snapshot.accuracy, '%')}${r.snapshot.accuracy.n < r.snapshot.groups ? ` (${r.snapshot.accuracy.n} classes; others suppressed)` : ''}`,
       '',
     );
   } else push(suppressedNote('students'), '');
@@ -405,8 +432,8 @@ export function renderMarkdown(r) {
     push(
       'From each class\'s latest export. Class snapshots only carry a 7-day total, so 28-day minutes cover only students with a full practice log on that device.',
       '',
-      `- Total minutes, last 28 days: ${m.totalLast28Days} (${m.studentsCounted28Days} students counted)`,
-      `- Total minutes, last 7 days: ${m.totalLast7Days} (${m.studentsCounted7Days} students counted)`,
+      `- Total minutes, last 28 days: ${m.totalLast28Days == null ? SUPPRESSED : `${m.totalLast28Days} (${m.studentsCounted28Days} students in ${m.classes28} classes)`}`,
+      `- Total minutes, last 7 days: ${m.totalLast7Days == null ? SUPPRESSED : `${m.totalLast7Days} (${m.studentsCounted7Days} students in ${m.classes7} classes)`}`,
       `- Minutes per student per week, median across classes: ${fmtQ(m.perStudentWeek)}`,
       `- Students active in the last 7 days: ${m.activeShare7Days == null ? SUPPRESSED : `${m.activeShare7Days}%`}`,
       '',
@@ -423,14 +450,14 @@ export function renderMarkdown(r) {
     );
     for (const row of r.rows) {
       if (row.suppressed) {
-        push(`| ${row.label} | ${row.students < MIN_GROUP ? '<5' : row.students} | ${row.exports} | ${row.comparable ? row.weeks : 'n/a'} | ${SUPPRESSED} | ${SUPPRESSED} | ${SUPPRESSED} |`);
+        push(`| ${row.label} | <5 | ${row.exports} | ${row.comparable ? row.weeks : 'n/a'} | ${SUPPRESSED} | ${SUPPRESSED} | ${SUPPRESSED} |`);
         continue;
       }
-      const wpm = row.comparable ? `${fmt(row.start.wpm.median)} → ${fmt(row.end.wpm.median)}` : `${fmt(row.end.wpm.median)} (one export)`;
-      const acc = row.comparable ? `${fmt(row.start.accuracy.median, '%')} → ${fmt(row.end.accuracy.median, '%')}` : `${fmt(row.end.accuracy.median, '%')} (one export)`;
-      push(`| ${row.label} | ${row.students} | ${row.exports} | ${row.comparable ? row.weeks : 'n/a'} | ${wpm} | ${acc} | ${fmt(row.minutesPerStudentWeek)} |`);
+      const cell = (v, unit = '') => (v == null ? 'suppressed' : `${v}${unit}`);
+      const pair = (m, unit = '') => (row.comparable ? `${cell(m.start, unit)} → ${cell(m.end, unit)}` : `${cell(m.end, unit)} (one export)`);
+      push(`| ${row.label} | ${row.students} | ${row.exports} | ${row.comparable ? row.weeks : 'n/a'} | ${pair(row.wpm)} | ${pair(row.accuracy, '%')} | ${cell(row.minutes.perStudentWeek)} |`);
     }
-    push('', 'Class labels are assigned by this script and do not match folder or school names.', '');
+    push('', `Class labels are assigned by this script and do not match folder or school names. "suppressed" means fewer than ${MIN_GROUP} students contributed to that figure.`, '');
   } else push('No pilot summaries found.', '');
 
   push('## Survey ratings', '', 'Scale is 1 (low) to 5 (high). Groups with fewer than 5 responses are suppressed.', '');
