@@ -98,8 +98,8 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [ ] **Owner:** create the Supabase project (#133), in a Canadian region for Ontario boards.
 - [ ] **Claude:** run `supabase/schema.sql` and the cloud drill against the real project. **Done when:** every check in [CLOUD-CLASS-LOGIN.md](CLOUD-CLASS-LOGIN.md) passes on the live project.
 - [ ] **Claude:** switch on class login for pilot schools only, using a pilot build. The public site stays local-only.
-- [ ] **Claude:** a teacher sign-in (Google), a multi-class dashboard and a school admin view.
-- [ ] **Claude:** Google Classroom roster import, then ClassLink, then Clever.
+- [ ] **Claude:** a teacher sign-in (Google), a multi-class dashboard and a school admin view. code ✅ behind the pilot flag; goes live after #132/#133.
+- [ ] **Claude:** Google Classroom roster import, then ClassLink, then Clever. code ✅ behind the pilot flag; goes live after #132/#133. (Google Classroom and CSV import are built; ClassLink and Clever are stubs until partner agreements are signed.)
 - [ ] **Claude:** backups, uptime monitoring and an incident runbook. **Done when:** a restore drill works and is written down.
 - [ ] **Claude:** billing for schools (invoice / purchase order first, card payment later). **Owner:** pick the payment provider. invoice/PO path ✅ (templates + calculator); Owner: confirm prices, fill business details, pick a card provider. See [PRICING-AND-ORDERING.md](school/PRICING-AND-ORDERING.md) and [PAYMENT-PROVIDER-OPTIONS.md](school/PAYMENT-PROVIDER-OPTIONS.md).
 
