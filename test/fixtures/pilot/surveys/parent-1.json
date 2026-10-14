@@ -1,0 +1,17 @@
+{
+  "type": "bloomtype-pilot-feedback",
+  "version": 1,
+  "role": "parent",
+  "language": "en",
+  "savedOn": "2026-10-13",
+  "answers": {
+    "setupEase": 5,
+    "childEnjoyment": 5,
+    "typingImprovement": 5,
+    "minutesPerWeek": "60to120",
+    "wouldRecommend": 5,
+    "comments": "My son Zebedee asks for the fox every day."
+  },
+  "childName": "Zebedee Fakechild",
+  "email": "fake.parent@example.test"
+}

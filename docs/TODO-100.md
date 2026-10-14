@@ -117,7 +117,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 ### Pilots and proof
 - [ ] **Owner:** recruit 5 pilot classrooms and 20 homeschool families.
 - [x] **Claude:** add an opt-in, anonymous pilot survey, and local-only progress summaries that teachers can export. No tracking of children. ✅ survey on the teacher and parent pages, plus an anonymised pilot summary export; see docs/pilot/PILOT-SURVEY.md.
-- [ ] **Claude:** write a 6-week pilot report: speed and accuracy gains, minutes used, teacher quotes. **Done when:** it's published on the landing page.
+- [ ] **Claude:** write a 6-week pilot report: speed and accuracy gains, minutes used, teacher quotes. **Done when:** it's published on the landing page. tooling ✅ (`npm run pilot:report`); waits on pilot data.
 
 ### Getting found
 - [x] **Claude:** a landing page with a 30-second Meadow trailer (Higgsfield), a teacher demo video, the free-for-families promise and the school price list. Lighthouse 100. ✅ (`landing/trailer-pricing`: 29 s Seedance 2.0 Mini trailer made from the meadow art, 3.1 MB H.264, and an 18 s Playwright recording of the teacher flow, 334 KB, in `public/media/`, both `preload="none"` with lazy WebP posters and EN/FR/ES captions; three school plans plus the free pilot; Lighthouse accessibility, SEO and best practices 100, performance 98–100 on a quiet machine. "Request a quote" is a mailto placeholder for the owner.)
