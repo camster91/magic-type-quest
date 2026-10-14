@@ -69,6 +69,7 @@ export const defaultState = {
     totalWords: 0,
     completedLevels: [],
     voiceEnabled: true,
+    foxVoiceEnabled: true,
     locale: 'en',
     petEvolution: 1, // 1=sprout, 2=bud, 3=bloom
     seenEvolutions: [], // Track which evolutions the player has seen

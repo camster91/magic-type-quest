@@ -3,7 +3,7 @@
  */
 import { LESSON_LEVELS, getLessonByLevel, getFingerHint, getLessonWordsForPractice, isLevelUnlocked, loadWordBank } from './lessonLevels.js';
 import { deleteLocalProfile, gameState, loadProfile, saveProfile } from './state.js';
-import { init as initEngine, startGame, togglePause, quitGame, showScreen, startDrillMode, startDailyMoment, onAvatarChanged } from './gameEngine.js';
+import { init as initEngine, startGame, togglePause, quitGame, showScreen, startDrillMode, startDailyMoment, onAvatarChanged, stopFoxVoice } from './gameEngine.js';
 import { highlightTargetKey, showKeyFeedback, announce } from './gamePresentation.js';
 import { getAchievementStats, getAllAchievements } from './achievements.js';
 import { getTodaysQuests } from './quests.js';
@@ -678,6 +678,7 @@ function loadProfileScreen() {
   $('profile-words') && ($('profile-words').textContent = p.totalWords || 0);
   $('profile-achievements') && ($('profile-achievements').textContent = (p.achievements?.length) || 0);
   $('voice-toggle') && ($('voice-toggle').checked = p.voiceEnabled !== false);
+  $('fox-voice-toggle') && ($('fox-voice-toggle').checked = p.foxVoiceEnabled !== false);
   const a11y = accessibilitySettings(p);
   $('font-select') && ($('font-select').value = a11y.font);
   $('contrast-toggle') && ($('contrast-toggle').checked = a11y.highContrast);
@@ -778,6 +779,7 @@ function saveProfileScreen() {
   p.name = $('player-name')?.value?.trim() || 'Player';
   p.avatar = document.querySelector('.avatar-btn.active')?.dataset?.avatar || '🌸';
   p.voiceEnabled = $('voice-toggle')?.checked !== false;
+  p.foxVoiceEnabled = $('fox-voice-toggle')?.checked !== false;
   p.locale = setLocale($('language-select')?.value || 'en');
   applyTranslations();
   const code = $('class-code')?.value?.trim();
@@ -1229,7 +1231,7 @@ function bindEvents() {
   $('btn-pause')?.addEventListener('click', togglePause);
   $('btn-sound')?.addEventListener('click', () => {
     gameState.profile.soundEnabled = !isSoundOn();
-    if (isSoundOn()) playAmbient(); else stopAmbient();
+    if (isSoundOn()) playAmbient(); else { stopAmbient(); stopFoxVoice(); }
     saveProfile();
     updateSoundButton();
     document.getElementById('game-screen')?.focus();
