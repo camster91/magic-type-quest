@@ -117,7 +117,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [ ] **Claude:** write a 6-week pilot report: speed and accuracy gains, minutes used, teacher quotes. **Done when:** it's published on the landing page.
 
 ### Getting found
-- [ ] **Claude:** a landing page with a 30-second Meadow trailer (Higgsfield), a teacher demo video, the free-for-families promise and the school price list. Lighthouse 100.
+- [x] **Claude:** a landing page with a 30-second Meadow trailer (Higgsfield), a teacher demo video, the free-for-families promise and the school price list. Lighthouse 100. ✅ (`landing/trailer-pricing`: 29 s Seedance 2.0 Mini trailer made from the meadow art, 3.1 MB H.264, and an 18 s Playwright recording of the teacher flow, 334 KB, in `public/media/`, both `preload="none"` with lazy WebP posters and EN/FR/ES captions; three school plans plus the free pilot; Lighthouse accessibility, SEO and best practices 100, performance 98–100 on a quiet machine. "Request a quote" is a mailto placeholder for the owner.)
 - [x] **Claude:** homeschool curriculum guides, plus a "Typing Week" classroom event kit (certificates and posters) ✅ (`docs/homeschool/CURRICULUM-GUIDE.md`, `docs/school/TYPING-WEEK-KIT.md`, printable poster and certificate linked from the teacher page).
 - [ ] **Owner:** list it in homeschool directories, state ESA (education savings account) approved-vendor lists, the Google for Education marketplace, ClassLink and Clever.
 - [ ] **Owner:** contact homeschool influencers and co-ops.

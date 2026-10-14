@@ -1,0 +1,16 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:03.000
+Set a teacher PIN so only you can see class progress.
+
+00:00:03.000 --> 00:00:06.500
+Create a class. It gets a 6-character class code.
+
+00:00:06.500 --> 00:00:10.700
+Print the join cards: one per student, with the code and three steps.
+
+00:00:10.700 --> 00:00:14.500
+Open the class report: speed, accuracy, weak keys and minutes for each student.
+
+00:00:14.500 --> 00:00:18.200
+Export it as a CSV file, or print save codes if a student loses progress.
