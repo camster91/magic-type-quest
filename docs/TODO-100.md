@@ -100,7 +100,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [ ] **Claude:** switch on class login for pilot schools only, using a pilot build. The public site stays local-only.
 - [ ] **Claude:** a teacher sign-in (Google), a multi-class dashboard and a school admin view. code ✅ #247, behind the pilot flag (the public build stays local-only); goes live after #132/#133.
 - [ ] **Claude:** Google Classroom roster import, then ClassLink, then Clever. code ✅ #247, behind the pilot flag; goes live after #132/#133. (Google Classroom and CSV import are built; ClassLink and Clever are stubs until partner agreements are signed.)
-- [ ] **Claude:** backups, uptime monitoring and an incident runbook. **Done when:** a restore drill works and is written down.
+- [x] **Claude:** backups, uptime monitoring and an incident runbook ✅ (#243: encrypted `scripts/backup-db.sh` / `restore-db.sh` with 30-day retention, `.github/workflows/uptime.yml` every 30 minutes, [INCIDENT-RUNBOOK.md](ops/INCIDENT-RUNBOOK.md)). The [restore drill](ops/RESTORE-DRILL.md) passed on 2026-10-14 on a **local PostgreSQL 16** with a Supabase stub, and caught and fixed a privilege-widening bug in restores. **Still to do:** repeat it on the live project with `scripts/restore-drill.sh --live` after #133. **Done when:** a restore drill works and is written down.
 - [ ] **Claude:** billing for schools (invoice / purchase order first, card payment later). **Owner:** pick the payment provider. invoice/PO path ✅ (templates + calculator); Owner: confirm prices, fill business details, pick a card provider. See [PRICING-AND-ORDERING.md](school/PRICING-AND-ORDERING.md) and [PAYMENT-PROVIDER-OPTIONS.md](school/PAYMENT-PROVIDER-OPTIONS.md).
 
 ### Trust paperwork
@@ -117,7 +117,7 @@ Lighthouse scores were measured on 2026-10-13 on a local production build (phone
 - [ ] **Claude:** write a 6-week pilot report: speed and accuracy gains, minutes used, teacher quotes. **Done when:** it's published on the landing page.
 
 ### Getting found
-- [ ] **Claude:** a landing page with a 30-second Meadow trailer (Higgsfield), a teacher demo video, the free-for-families promise and the school price list. Lighthouse 100.
+- [x] **Claude:** a landing page with a 30-second Meadow trailer (Higgsfield), a teacher demo video, the free-for-families promise and the school price list. Lighthouse 100. ✅ (`landing/trailer-pricing`: 29 s Seedance 2.0 Mini trailer made from the meadow art, 3.1 MB H.264, and an 18 s Playwright recording of the teacher flow, 334 KB, in `public/media/`, both `preload="none"` with lazy WebP posters and EN/FR/ES captions; three school plans plus the free pilot; Lighthouse accessibility, SEO and best practices 100, performance 98–100 on a quiet machine. "Request a quote" is a mailto placeholder for the owner.)
 - [x] **Claude:** homeschool curriculum guides, plus a "Typing Week" classroom event kit (certificates and posters) ✅ (`docs/homeschool/CURRICULUM-GUIDE.md`, `docs/school/TYPING-WEEK-KIT.md`, printable poster and certificate linked from the teacher page).
 - [ ] **Owner:** list it in homeschool directories, state ESA (education savings account) approved-vendor lists, the Google for Education marketplace, ClassLink and Clever.
 - [ ] **Owner:** contact homeschool influencers and co-ops.
