@@ -148,13 +148,8 @@ function stopPreview(child) {
 }
 
 // ---------- capture helpers ----------
-// The active screen keeps an identity transform, which makes its fixed meadow
-// background scroll with the content and end partway down long screens on
-// phones. Dropping it here keeps scrolled shots clean.
-// TODO: remove once #259 is merged (it sets `.screen.active { transform: none }` in the app).
 const STABLE_CSS = `
   *, *::before, *::after { caret-color: transparent !important; }
-  .screen.active { transform: none !important; }
   .toast, #toast-container, #achievement-toast { display: none !important; }
 `;
 
