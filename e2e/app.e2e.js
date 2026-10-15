@@ -356,25 +356,22 @@ test('the installed app switches to French while offline', async ({ context, pag
 
 test('service-worker activation removes stale BloomType caches', async ({ page }) => {
   await page.goto('');
+  // The page registers its own worker on load. Wait until it is active, so
+  // the test's registration below can't race it and replace the worker the
+  // test is waiting on (which would then never activate).
+  await page.evaluate(() => navigator.serviceWorker.ready);
   await page.evaluate(async () => {
     const registrations = await navigator.serviceWorker.getRegistrations();
     await Promise.all(registrations.map((registration) => registration.unregister()));
     await caches.open('bloomtype-stale-verification');
-    const registration = await navigator.serviceWorker.register('sw.js?cache-cleanup-verification=1');
-    const worker = registration.installing || registration.waiting || registration.active;
-    if (worker?.state !== 'activated') {
-      await new Promise((resolve) => {
-        worker.addEventListener('statechange', () => {
-          if (worker.state === 'activated') resolve();
-        });
-      });
-    }
+    await navigator.serviceWorker.register('sw.js?cache-cleanup-verification=1');
   });
+  await expect.poll(() => page.evaluate(async () => {
+    const registration = await navigator.serviceWorker.getRegistration();
+    return registration?.active?.scriptURL || '';
+  }), { timeout: 15_000 }).toContain('cache-cleanup-verification');
 
-  await expect.poll(async () => page.evaluate(async () => {
-    await navigator.serviceWorker.ready;
-    return caches.keys();
-  })).not.toContain('bloomtype-stale-verification');
+  await expect.poll(() => page.evaluate(() => caches.keys())).not.toContain('bloomtype-stale-verification');
 });
 
 test('the teacher dashboard stays locked until the PIN is entered', async ({ page }) => {
