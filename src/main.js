@@ -309,7 +309,7 @@ function renderLevelCards() {
     const lockHint = lev.id > 1 ? t('lesson.completeToUnlock', { level: lev.id - 1 }) : t('lesson.locked');
 
     return `${heading}
-      <button type="button" class="level-card ${status}" data-level="${lev.id}" ${status === 'locked' ? 'disabled' : ''} aria-label="${escapeHTML(`${lev.name}: ${shortTeaches}${done ? `. ${t('game.levelCompleteNamed', { level: lev.id })}` : status === 'locked' ? `. ${lockHint}` : ''}`)}" title="${status === 'locked' ? escapeHTML(lockHint) : ''}">
+      <button type="button" class="level-card ${status}" data-level="${lev.id}" ${status === 'locked' ? 'disabled' : ''} aria-label="${escapeHTML(`${status === 'locked' ? `${t('lesson.locked').toUpperCase()} ` : ''}${lev.name} ${shortTeaches}${done ? `. ${t('game.levelCompleteNamed', { level: lev.id })}` : status === 'locked' ? ` ${lockHint}` : ''}`)}" title="${status === 'locked' ? escapeHTML(lockHint) : ''}">
         <div class="level-card-art">
           <img class="level-card-img" src="assets/levels/${imgName}" alt="" aria-hidden="true"
                onerror="this.style.display='none'">
@@ -353,7 +353,7 @@ function renderWorldMap(completed) {
     return `
       <li class="world-map-item">
         <button type="button" class="habitat habitat--${h.id} ${state}" data-habitat="${h.id}" data-stage="${h.stage}"
-          aria-label="${escapeHTML(`${name}. ${levels}. ${status}`)}">
+          aria-label="${escapeHTML(`${name} ${status}. ${levels}`)}">
           <span class="habitat-art" aria-hidden="true">
             <span class="habitat-emoji">${h.emoji}</span>
             ${h.restored ? '<span class="habitat-sparkle">✨</span>' : ''}

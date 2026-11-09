@@ -110,7 +110,7 @@ test('the home screen reads in order, with landmarks and named controls', async 
     'heading, BloomType, level 1',
     'group, Your progress',
     'group, Keys you have learned',
-    'button, Start typing to plant flowers',
+    'button, Type to plant flowers',
     'navigation, Other screens',
     'button, Lessons',
     'button, Practice',
@@ -132,6 +132,8 @@ test('the home screen reads in order, with landmarks and named controls', async 
   expect(phrases.slice(phrases.indexOf('Stars'), phrases.indexOf('Stars') + 2)).toEqual(['Stars', '9']);
   expect(emojiOnly(phrases)).toEqual([]);
   expectSensibleOutline(phrases);
+  await expect(page.locator('#btn-start')).toHaveAccessibleName(/^Type to plant/);
+  await expect(page.locator('#btn-dm-pill')).toHaveAccessibleName(/^60s/);
 });
 
 for (const [name, button, screen] of [
@@ -159,6 +161,12 @@ test('locked and finished lessons say so in their names', async ({ page }) => {
   await page.locator('#btn-lesson-select').click();
   await expect(page.locator('.level-card[data-level="1"]')).toHaveAccessibleName(/Level 1 Complete!/);
   await expect(page.locator('.level-card[data-level="3"]')).toHaveAccessibleName(/Complete level 2 to unlock/);
+  await expect(page.locator('.level-card[data-level="3"]')).toHaveAccessibleName(/^LOCKED Bottom Row/);
+  for (const habitat of await page.locator('[data-habitat]').all()) {
+    const name = await habitat.locator('.habitat-name').textContent();
+    const status = await habitat.locator('.habitat-status').textContent();
+    expect(await habitat.getAttribute('aria-label')).toContain(`${name} ${status}`);
+  }
 });
 
 test('profile controls expose their names and the chosen avatar', async ({ page }) => {

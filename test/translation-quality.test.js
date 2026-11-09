@@ -61,6 +61,14 @@ describe.each(sets)('%s dictionary translation quality', (name, dicts) => {
 });
 
 describe('static markup and dictionaries stay in sync', () => {
+  it.each(['en', 'fr', 'es'])('keeps the visible home button labels in their accessible names in %s', (locale) => {
+    const doc = new JSDOM(readFileSync(resolve(root, 'index.html'), 'utf8')).window.document;
+    for (const [id, visible] of [['btn-start', dictionaries[locale]['menu.cta']], ['btn-dm-pill', '60s']]) {
+      const key = doc.getElementById(id).getAttribute('data-i18n-aria-label');
+      expect(dictionaries[locale][key], id).toContain(visible);
+    }
+  });
+
   it('defines every data-i18n key used by the game markup', () => {
     const markup = readFileSync(resolve(root, 'index.html'), 'utf8');
     const referenced = [...markup.matchAll(/data-i18n(?:-placeholder|-aria-label|-title|-alt)?="([^"]+)"/g)].map((m) => m[1]);
