@@ -1,6 +1,6 @@
 // Uptime check for the live BloomType site. Used by .github/workflows/uptime.yml.
 //
-//   SITE_URL=https://bloomtype.ashbi.ca/magic-type-quest/ node scripts/uptime-check.mjs
+//   SITE_URL=https://camster91.github.io/magic-type-quest/ node scripts/uptime-check.mjs
 //
 // Each page must answer HTTP 200 and contain its marker text, so an error page
 // or an empty response that still says 200 is caught too. Optional:
@@ -8,13 +8,13 @@
 // Exit code 1 if anything fails. See docs/ops/INCIDENT-RUNBOOK.md.
 import { pathToFileURL } from 'node:url';
 
-export const DEFAULT_SITE_URL = 'https://bloomtype.ashbi.ca/magic-type-quest/';
+export const DEFAULT_SITE_URL = 'https://camster91.github.io/magic-type-quest/';
 
 export const PAGES = [
   { path: '', marker: 'id="menu-screen"', name: 'game (home)' },
   { path: 'teacher.html', marker: 'Teacher Dashboard', name: 'teacher' },
   { path: 'parents.html', marker: 'Help Your Child Learn to Type', name: 'parents' },
-  { path: 'landing.html', marker: 'Typing That Grows With Your Class', name: 'landing' },
+  // landing.html is in the repo but is not published on GitHub Pages.
   { path: 'manifest.json', marker: '"start_url"', name: 'manifest', json: true },
 ];
 

@@ -7,8 +7,8 @@ name: Uptime
 #
 # Repository variables (Settings > Secrets and variables > Actions > Variables):
 #   BLOOMTYPE_SITE_URL    site to check. Default: the production site.
-#   BLOOMTYPE_HEALTH_URL  plain 200 check. Default: production /healthz.
-#                         Set to "none" to skip.
+#   BLOOMTYPE_HEALTH_URL  plain 200 check. Default: none (GitHub Pages has no /healthz).
+#                         Set to a URL to enable, or keep "none" to skip.
 # Optional repository secrets (the Supabase step is skipped without them):
 #   SUPABASE_HEALTH_URL   e.g. https://<project-ref>.supabase.co/auth/v1/health
 #   SUPABASE_ANON_KEY     the project's public anon key
@@ -30,8 +30,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      SITE_URL: ${{ vars.BLOOMTYPE_SITE_URL || 'https://bloomtype.ashbi.ca/magic-type-quest/' }}
-      HEALTH_URL: ${{ vars.BLOOMTYPE_HEALTH_URL || 'https://bloomtype.ashbi.ca/healthz' }}
+      SITE_URL: ${{ vars.BLOOMTYPE_SITE_URL || 'https://camster91.github.io/magic-type-quest/' }}
+      HEALTH_URL: ${{ vars.BLOOMTYPE_HEALTH_URL || 'none' }}
       SUPABASE_HEALTH_URL: ${{ secrets.SUPABASE_HEALTH_URL }}
       SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
     steps:
