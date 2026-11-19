@@ -12,7 +12,6 @@ const SOURCE = {
   '': 'index.html',
   'teacher.html': 'teacher.html',
   'parents.html': 'parents.html',
-  'landing.html': 'landing.html',
   'manifest.json': 'public/manifest.json',
 };
 
@@ -52,7 +51,7 @@ describe('uptime check', () => {
       [`${base}teacher.html`]: { status: 503, body: 'Teacher Dashboard' },
       [`${base}parents.html`]: { body: '<h1>Welcome to nginx</h1>' },
       [`${base}manifest.json`]: { body: '"start_url" <html>' },
-      [`${base}landing.html`]: new Error('ECONNRESET'),
+      [`${base}`]: new Error('ECONNRESET'),
     };
     const results = await runChecks({
       siteUrl: base,
@@ -61,11 +60,10 @@ describe('uptime check', () => {
       retries: 0,
     });
     const byName = Object.fromEntries(results.map((r) => [r.name, r]));
-    expect(byName['game (home)'].ok).toBe(true);
+    expect(byName['game (home)'].problem).toMatch(/network error/);
     expect(byName.teacher.problem).toBe('HTTP 503');
     expect(byName.parents.problem).toMatch(/missing marker/);
     expect(byName.manifest.problem).toBe('not valid JSON');
-    expect(byName.landing.problem).toMatch(/network error/);
     expect(byName.health.problem).toBe('HTTP 404');
   });
 });
